@@ -6,6 +6,7 @@
 1. Clone this repo
 1. Run `./gradlew` to download gradle and needed FRC libraries
 1. Run `./gradlew tasks` to see available build options
+1. Enjoy!
 
 ### Eclipse
 1. Run `./gradlew eclipse`
