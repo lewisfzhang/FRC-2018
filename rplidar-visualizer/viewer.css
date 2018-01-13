@@ -6,6 +6,8 @@ h1 {
 canvas {
     display: block;
     margin: 0 auto;
+    background-image: url("field.png");
+    background-size: 1002px 407px;
 }
 
 button {

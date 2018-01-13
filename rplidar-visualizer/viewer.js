@@ -18,8 +18,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
     // connection opened
     socket.addEventListener('open', function (event) {
         status.innerHTML = "Status: Connected to WebSocket";
-        socket.send("Hello World!");
-        drawCanvasBorders();
+        socket.send("update");
     });
 
     // received messed from server
@@ -39,16 +38,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
         status.innerHTML = "Status: Error";
     });
 
-    function drawCanvasBorders() {
-        var fieldImage = new Image();
-        fieldImage.src = 'field.png';
-        fieldImage.width.style = '50%';
-        fieldImage.height.style = 'auto';
-        fieldImage.onload = function() {
-            ctx.drawImage(fieldImage, 0, 0, width, height);
-        }
-    } 
-
     function updatePoints() {
         console.log("Updating Points");
         console.log(coordinateQueue);
@@ -57,7 +46,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
             ctx.fillRect(coordinateQueue[i].x, coordinateQueue[i].y, 5, 5);
         }
 
-        clearQueue();
+        coordinateQueue = [];
         console.log(coordinateQueue.length);
     }
 
@@ -66,11 +55,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
             this.x = x;
             this.y = y;
         }
-    }
-
-    // clears coordinateQueue
-    function clearQueue() {
-        coordinateQueue = [];
     }
 
     function parseData(data) {

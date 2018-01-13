@@ -2,19 +2,16 @@ var WebSocketServer = require('websocket').server;
 var http = require('http');
 var port = 8080;
 
-// =============================================
+// const ntClient = require('wpilib-nt-client');
+// const client = new ntClient.Client();
 
-const ntClient = require('wpilib-nt-client');
-const client = new ntClient.Client();
+// client.start((isConnected, err) => {
+//     console.log({ isConnected, err });
+// }, 'roborio-254.local');
 
-client.start((isConnected, err) => {
-    console.log({ isConnected, err });
-}, 'roborio-254.local');
-
-client.addListener((key, val, type, id) => {
-    console.log({ key, val, type, id });
-})
-
+// client.addListener((key, val, type, id) => {
+//     console.log({ key, val, type, id });
+// })
 
 var server = http.createServer(function(request, response) {});
 server.listen(port, function() {});
@@ -42,9 +39,13 @@ socket.on('request', function(request) {
 
     console.log('connected to ' + connection);
 
-    connection.send(JSON.stringify(json));
+    connection.on('message', function(event) {
+        console.log(event.utf8Data);
+        connection.send(JSON.stringify(json));
+    });
 
-    connection.on('close', function(connection) {
+    connection.on('close', function() {
         console.log('connection closed');
+        connection = null;
     });
 });
