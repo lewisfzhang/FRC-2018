@@ -43,9 +43,9 @@ public class RPLidar {
         // make sure we have all 84 bytes available, all being input not guaranteed
         int bytesRead = 0;
         byte[] buffer = new byte[EXPRESS_PACKET_SIZE];
-        while (bytesRead < packetSize) {
+        while (bytesRead < EXPRESS_PACKET_SIZE) {
             byte[] readData = mPort.read(EXPRESS_PACKET_SIZE - bytesRead);
-            System.arraycopy(readData, 0, buffer, bytesRead);
+            System.arraycopy(readData, 0, buffer, bytesRead, readData.length);
             bytesRead += readData.length;
         }
         ExpressScanFrame frame = new ExpressScanFrame();
@@ -60,7 +60,7 @@ public class RPLidar {
         // parse cabins
 
         for (int i = 0; i < CABIN_COUNT; i++) {
-            Cabin cabin = new Cabin();
+            ExpressScanFrame.Cabin cabin = new ExpressScanFrame.Cabin();
             int ci = 4 + i*5;
             cabin.distance1 = ((int)buffer[ci + 1] << 7) & (buffer[ci] >> 1);
             cabin.distance2 = ((int)buffer[ci + 3] << 7) & (buffer[ci + 2] >> 1);
