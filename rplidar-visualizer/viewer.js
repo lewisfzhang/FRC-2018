@@ -1,59 +1,53 @@
 document.addEventListener("DOMContentLoaded", function(event) {
+    // robot position
     var robotX, robotY;
 
-    // things in the Queue will be drawn then removed
+    // things in the queue will be drawn then removed
     var coordinateQueue = [];
 
-    // canvas stuff
+    // create WebSocket connection
+    const socket = new WebSocket('ws://localhost:8080');
+
+    // canvas variables
     var canvas = document.getElementById("field");
     var ctx = canvas.getContext("2d");
     var status = document.getElementById("status");
-
-    // dimensions
     var width = canvas.width;
     var height = canvas.height;
 
-    // Create WebSocket connection.
-    const socket = new WebSocket('ws://localhost:8080');
-
-    // Connection opened
+    // connection opened
     socket.addEventListener('open', function (event) {
         status.innerHTML = "Status: Connected to WebSocket";
         socket.send("Hello World!");
         drawCanvasBorders();
     });
 
+    // received messed from server
     socket.addEventListener('message', function (event) {
         console.log('Message from server ', event.data);
         parseData(JSON.parse(event.data));
         updatePoints();
     });
 
+    // connection closed
     socket.addEventListener('close', function(event) {
         status.innerHTML = "Status: Connection Lost";
     });
 
+    // connection error
     socket.addEventListener('error', function(event) {
         status.innerHTML = "Status: Error";
     });
 
-    class Point {
-        constructor(x, y) {
-            this.x = x;
-            this.y = y;
+    function drawCanvasBorders() {
+        var fieldImage = new Image();
+        fieldImage.src = 'field.png';
+        fieldImage.width.style = '50%';
+        fieldImage.height.style = 'auto';
+        fieldImage.onload = function() {
+            ctx.drawImage(fieldImage, 0, 0, width, height);
         }
-    }
-
-    //clears coordinateQueue
-    function clearQueue() {
-        coordinateQueue = [];
-    }
-
-    function parseData(data) {
-        for (var i = 0; i < data.scan.length; i++) {
-            coordinateQueue[i] = data.scan[i];
-        }
-    }
+    } 
 
     function updatePoints() {
         console.log("Updating Points");
@@ -67,13 +61,21 @@ document.addEventListener("DOMContentLoaded", function(event) {
         console.log(coordinateQueue.length);
     }
 
-    function drawCanvasBorders() {
-        var fieldImage = new Image();
-        fieldImage.src = 'https://i.imgur.com/8nOUMJt.png';
-        fieldImage.width.style = '50%';
-        fieldImage.height.style = 'auto';
-        fieldImage.onload = function() {
-            ctx.drawImage(fieldImage, 0, 0, width, height);
+    class Point {
+        constructor(x, y) {
+            this.x = x;
+            this.y = y;
+        }
+    }
+
+    // clears coordinateQueue
+    function clearQueue() {
+        coordinateQueue = [];
+    }
+
+    function parseData(data) {
+        for (var i = 0; i < data.scan.length; i++) {
+            coordinateQueue[i] = data.scan[i];
         }
     }
 });
