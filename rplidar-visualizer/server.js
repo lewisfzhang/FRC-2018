@@ -24,14 +24,18 @@ socket = new WebSocketServer({
     httpServer: server
 });
 
-var json = {'scan':[{'x':0, 'y':0}, {'x':0, 'y':0}, {'x':0, 'y':0}, {'x':0, 'y':0}, {'x':0, 'y':0}]};
+var json = {'scan':[]};
+var points = 100;
 
 // randomize numbers (for testing purposes)
-for (var i in json.scan) {
-    point = json.scan[i];
-    point.x = Math.round(Math.random() * 50);
-    point.y = Math.round(Math.random() * 50);
+for (var i = 0; i < points; i++) {
+    json.scan[i] = {
+        'x': Math.round(Math.random() * 500),
+        'y': Math.round(Math.random() * 500)
+    };
 }
+
+console.log(json);
 
 socket.on('request', function(request) {
     var connection = request.accept(null, request.origin);
