@@ -1,6 +1,6 @@
 var WebSocketServer = require('websocket').server;
 var http = require('http');
-var port = 1337;
+var port = 8080;
 
 // =============================================
 
@@ -20,13 +20,13 @@ client.addListener((key, val, type, id) => {
 
 var server = http.createServer(function(request, response) {});
 server.listen(port, function() {});
-console.log("connected on port " + port);
+console.log('connected on port ' + port);
 
 socket = new WebSocketServer({
     httpServer: server
 });
 
-var json = {"scan":[{"x":0, "y":0}, {"x":0, "y":0}, {"x":0, "y":0}, {"x":0, "y":0}, {"x":0, "y":0}]};
+var json = {'scan':[{'x':0, 'y':0}, {'x':0, 'y':0}, {'x':0, 'y':0}, {'x':0, 'y':0}, {'x':0, 'y':0}]};
 
 // randomize numbers (for testing purposes)
 for (var i in json.scan) {
@@ -40,9 +40,11 @@ console.log(json);
 socket.on('request', function(request) {
     var connection = request.accept(null, request.origin);
 
+    console.log('connected to ' + connection);
+
     connection.send(JSON.stringify(json));
 
     connection.on('close', function(connection) {
-        console.log("connection closed");
+        console.log('connection closed');
     });
 });
