@@ -32,9 +32,9 @@ function randomizePoints() {
             'y': Math.round(Math.random() * 500)
         };
     }
-
-    console.log(json);
 }
+
+var count = 0;
 
 socket.on('request', function(request) {
     var connection = request.accept(null, request.origin);
@@ -43,12 +43,16 @@ socket.on('request', function(request) {
 
     connection.on('message', function(event) {
         console.log(event.utf8Data);
-        randomizePoints();
-        connection.send(JSON.stringify(json));
-        randomizePoints();
-        connection.send(JSON.stringify(json));
-        randomizePoints();
-        connection.send(JSON.stringify(json));
+
+        var interval = setInterval(function() {
+            randomizePoints();
+            connection.send(JSON.stringify(json));
+            console.log('message ' + ++count + ' sent');
+        }, 100);
+
+        setTimeout(function() {
+            clearInterval(interval);
+        }, 10000); 
     });
 
     connection.on('close', function() {

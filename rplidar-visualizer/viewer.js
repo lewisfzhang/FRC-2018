@@ -30,14 +30,13 @@ document.addEventListener('DOMContentLoaded', function(event) {
     });
 
     var lastData;
+    var count = 0;
 
     // received message from server
     socket.addEventListener('message', function(event) {
-        parseData(JSON.parse(event.data));
-        console.log('message received:\n' + event.data);
-        updatePoints();
-
         lastData = JSON.parse(event.data);
+        console.log('message ' + ++count + ' received');
+        plotData(lastData);
     });
 
     // connection closed
@@ -86,8 +85,8 @@ document.addEventListener('DOMContentLoaded', function(event) {
         canvas.style = backgroundSize + 'background-position: ' + backgroundPositionX + 'px ' + backgroundPositionY + 'px';
     }
 
-    function plotLastData() {
-        parseData(lastData);
+    function plotData(data) {
+        parseData(data);
         for (var i = 0; i < coordinateQueue.length; i++) {
             coordinateQueue[i].x *= getZoom();
             coordinateQueue[i].x += backgroundPositionX;
@@ -115,7 +114,7 @@ document.addEventListener('DOMContentLoaded', function(event) {
         backgroundPositionY = backgroundPositionY > getMaxMove().y ? getMaxMove().y : backgroundPositionY;
         updateCanvasStyle();
 
-        plotLastData()
+        plotData(lastData);
 
         document.getElementById('zoom').innerHTML = "Zoom: " + Math.round(100 * getZoom()) + "%";
     });
@@ -152,7 +151,7 @@ document.addEventListener('DOMContentLoaded', function(event) {
             backgroundPositionY = dragY;
             updateCanvasStyle();
 
-            plotLastData()
+            plotData(lastData)
         }, 10);
     };
 
