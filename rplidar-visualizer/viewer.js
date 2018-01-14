@@ -1,14 +1,12 @@
 // things in the queue will be drawn then removed
 var coordinateQueue = [];
-var cache = [];
-var cacheIndex = 0;
 
 // create WebSocket connection
 const socket = new WebSocket('ws://localhost:8080');
 
 // canvas variables
 var canvas;
-var ctx;
+var context;
 var status;
 var width;
 var height;
@@ -19,7 +17,7 @@ var zoomSlider;
 document.addEventListener('DOMContentLoaded', function(event) {
     // initialize canvas variables
     canvas = document.getElementById('field');
-    ctx = canvas.getContext('2d');
+    context = canvas.getContext('2d');
     status = document.getElementById('status');
     width = parseInt(canvas.width);
     height = parseInt(canvas.height);
@@ -34,13 +32,15 @@ document.addEventListener('DOMContentLoaded', function(event) {
         socket.send('update');
     });
 
+    var lastData;
+
     // received message from server
     socket.addEventListener('message', function(event) {
         parseData(JSON.parse(event.data));
-        updatePoints();
         console.log('Message from server ', event.data);
-        // document.getElementById('slidecontainer').innerHTML = '<h1 class='timestamp'>' + cache[cacheIndex].timestamp + '</h1>' +
-        //     '<input type='range' min='0' max='' + (cache.length - 1) + '' value='' + cacheIndex + '' class='slider'>';
+        updatePoints();
+
+        lastData = JSON.parse(event.data);
     });
 
     // connection closed
@@ -56,27 +56,31 @@ document.addEventListener('DOMContentLoaded', function(event) {
     });
 
     function updatePoints() {
-        cache.push(coordinateQueue);
+        clearPoints();
         drawPoints();
         coordinateQueue = [];
     }
 
+    function clearPoints() {
+        context.clearRect(0, 0, width, height);
+    }
+
     function drawPoints() {
-        for (var i = 0; i < cache[cacheIndex].length; i++) {
-            ctx.fillRect(cache[cacheIndex][i].x, cache[cacheIndex][i].y, 5, 5);
+        for (var i = 0; i < coordinateQueue.length; i++) {
+            context.fillRect(coordinateQueue[i].x - 3, coordinateQueue[i].y - 3, 6, 6);
         }
     }
 
     function parseData(data) {
         for (var i = 0; i < data.scan.length; i++) {
-            coordinateQueue[i] = data.scan[i];
+            coordinateQueue[i] = Object.assign({}, data.scan[i]);
         }
     }
 
     var zoom = 0;
 
     function getZoom() {
-        return (1 + (0.5 * zoom));
+        return (1 + (0.005 * zoom));
     }
 
     var backgroundSize = 'background-size: 100%; ';
@@ -90,10 +94,19 @@ document.addEventListener('DOMContentLoaded', function(event) {
     // do stuff when zoom slider is changed
     zoomSlider.addEventListener('input', function (evt) {
         zoom = parseInt(this.value);
+
         backgroundSize = 'background-size: ' + (100 * getZoom()) + '%;';
-        backgroundPositionX = 0;
-        backgroundPositionY = 0;
+        backgroundPositionX *= zoom;
+        backgroundPositionY *= zoom;
         updateCanvasStyle();
+
+        parseData(lastData);
+        console.log(coordinateQueue);
+        for (var i = 0; i < coordinateQueue.length; i++) {
+            coordinateQueue[i].x *= getZoom();
+            coordinateQueue[i].y *= getZoom();
+        }
+        updatePoints();
     });
 
     function getMaxMove() {
@@ -127,6 +140,15 @@ document.addEventListener('DOMContentLoaded', function(event) {
             backgroundPositionX = dragX;
             backgroundPositionY = dragY;
             updateCanvasStyle();
+
+            parseData(lastData);
+            for (var i = 0; i < coordinateQueue.length; i++) {
+                coordinateQueue[i].x *= getZoom();
+                coordinateQueue[i].x += dragX;
+                coordinateQueue[i].y *= getZoom();
+                coordinateQueue[i].y += dragY;
+            }
+            updatePoints();
         }, 10);
     };
 
