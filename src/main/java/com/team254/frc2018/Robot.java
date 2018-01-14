@@ -5,11 +5,11 @@ import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.SerialPort;
 
 public class Robot extends IterativeRobot {
-    private RPLidar mRPLidar;
+    private RPLidar mRPLidar = new RPLidar(SerialPort.Port.kUSB);
 
     @Override
     public void robotInit() {
-        mRPLidar = new RPLidar(SerialPort.Port.kUSB);
+        System.out.println("Robot Init");
     }
 
     @Override
@@ -20,7 +20,8 @@ public class Robot extends IterativeRobot {
 
     @Override
     public void teleopInit() {
-        mRPLidar.startExpressScan();
+        System.out.println("Teleop Init");
+        mRPLidar.startScan();
     }
 
     @Override
@@ -35,6 +36,7 @@ public class Robot extends IterativeRobot {
 
     @Override
     public void teleopPeriodic() {
+        System.out.println("Teleop Periodic");
         RPLidar.ExpressScanFrame frame = mRPLidar.readExpressScanPacket();
         System.out.println(frame);
     }
