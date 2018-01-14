@@ -91,22 +91,37 @@ document.addEventListener('DOMContentLoaded', function(event) {
         canvas.style = backgroundSize + 'background-position: ' + backgroundPositionX + 'px ' + backgroundPositionY + 'px';
     }
 
+    function plotLastData() {
+        parseData(lastData);
+        for (var i = 0; i < coordinateQueue.length; i++) {
+            coordinateQueue[i].x *= getZoom();
+            coordinateQueue[i].x += backgroundPositionX;
+            coordinateQueue[i].y *= getZoom();
+            coordinateQueue[i].y += backgroundPositionY;
+        }
+        updatePoints();
+    }
+
+    var previousZoom = zoom;
+
     // do stuff when zoom slider is changed
     zoomSlider.addEventListener('input', function (evt) {
+        previousZoom = zoom;
         zoom = parseInt(this.value);
 
         backgroundSize = 'background-size: ' + (100 * getZoom()) + '%;';
-        backgroundPositionX *= zoom;
-        backgroundPositionY *= zoom;
+
+        var multiplier = zoom / previousZoom;
+        multiplier = zoom < previousZoom ? multiplier : 1 / multiplier;
+        backgroundPositionX *= multiplier;
+        backgroundPositionY *= multiplier;
+        backgroundPositionX = backgroundPositionX > getMaxMove().x ? getMaxMove().x : backgroundPositionX;
+        backgroundPositionY = backgroundPositionY > getMaxMove().y ? getMaxMove().y : backgroundPositionY;
+        console.log(previousZoom);
+        console.log(backgroundPositionX + ", " + backgroundPositionY);
         updateCanvasStyle();
 
-        parseData(lastData);
-        console.log(coordinateQueue);
-        for (var i = 0; i < coordinateQueue.length; i++) {
-            coordinateQueue[i].x *= getZoom();
-            coordinateQueue[i].y *= getZoom();
-        }
-        updatePoints();
+        plotLastData()
     });
 
     function getMaxMove() {
@@ -141,14 +156,7 @@ document.addEventListener('DOMContentLoaded', function(event) {
             backgroundPositionY = dragY;
             updateCanvasStyle();
 
-            parseData(lastData);
-            for (var i = 0; i < coordinateQueue.length; i++) {
-                coordinateQueue[i].x *= getZoom();
-                coordinateQueue[i].x += dragX;
-                coordinateQueue[i].y *= getZoom();
-                coordinateQueue[i].y += dragY;
-            }
-            updatePoints();
+            plotLastData()
         }, 10);
     };
 
