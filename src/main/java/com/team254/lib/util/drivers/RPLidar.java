@@ -19,6 +19,7 @@ public class RPLidar {
     }
 
     public void startExpressScan() {
+        System.out.println("Creating request");
         byte[] request = {(byte) 0xA5, (byte) 0x82, (byte) 0x05, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x22};
         sendRequest(request);
     }
@@ -34,11 +35,12 @@ public class RPLidar {
     }
 
     private void sendRequest(byte[] request) {
+        System.out.println("Sending request" + request);
         mPort.write(request, request.length);
+        System.out.println("Sent request");
     }
 
-    public void readScanPacket() {
-    }
+    public void readScanPacket() {}
 
     public ExpressScanFrame readExpressScanPacket() {
         // make sure we have all 84 bytes available, all being input not guaranteed
