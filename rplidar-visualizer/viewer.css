@@ -1,5 +1,9 @@
-h1 {
+body {
     font-family: "Arial", cursive, sans-serif;
+    user-select: none;
+}
+
+h1 {
     text-align: center;
 }
 
@@ -7,7 +11,6 @@ canvas {
     display: block;
     margin: 0 auto;
     background-image: url("field.png");
-    background-size: 1002px 407px;
 }
 
 button {
@@ -39,7 +42,11 @@ button {
     -webkit-transition: .2s;
     transition: opacity .2s;
     display: block;
-    margin: 30px auto;
+    margin: 15px auto;
+}
+
+#zoom-slider {
+    width: 250px;
 }
 
 .slider:hover {
