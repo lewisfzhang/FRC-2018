@@ -1,59 +1,62 @@
+// things in the queue will be drawn then removed
+var coordinateQueue = [];
+var cache = [];
+var cacheIndex = 0;
+
+// create WebSocket connection
+var socket = new WebSocket('ws://localhost:8080');
+
+// canvas variables
+var canvas;
+var ctx;
+var status;
+
+// document.onload = function() {
 document.addEventListener("DOMContentLoaded", function(event) {
-    // robot position
-    var robotX, robotY;
+    // socket = new WebSocket('ws://localhost:8080');
 
-    // things in the queue will be drawn then removed
-    var coordinateQueue = [];
-
-    // create WebSocket connection
-    const socket = new WebSocket('ws://localhost:8080');
-
-    // canvas variables
-    var canvas = document.getElementById("field");
-    var ctx = canvas.getContext("2d");
-    var status = document.getElementById("status");
-    var width = canvas.width;
-    var height = canvas.height;
+    // initialize variables
+    canvas = document.getElementById("field");
+    ctx = canvas.getContext("2d");
+    status = document.getElementById("status");
 
     // connection opened
-    socket.addEventListener('open', function (event) {
-        status.innerHTML = "Status: Connected to WebSocket";
+    socket.addEventListener('open', function(event) {
+        console.log("connected");
+        status.innerHTML = 'Connected to the WebSocket';
         socket.send("update");
     });
 
-    // received messed from server
-    socket.addEventListener('message', function (event) {
-        console.log('Message from server ', event.data);
+    // received message from server
+    socket.addEventListener('message', function(event) {
         parseData(JSON.parse(event.data));
         updatePoints();
+        console.log('Message from server ', event.data);
+        document.getElementById("slidecontainer").innerHTML = '<h1 class="timestamp">' + cache[cacheIndex].timestamp + '</h1>' +
+            '<input type="range" min="0" max="' + (cache.length - 1) + '" value="' + cacheIndex + '" class="slider">';
     });
 
     // connection closed
     socket.addEventListener('close', function(event) {
-        status.innerHTML = "Status: Connection Lost";
+        console.log("closed");
+        status.innerHTML = 'Status: Connection Lost';
     });
 
     // connection error
     socket.addEventListener('error', function(event) {
-        status.innerHTML = "Status: Error";
+        console.log("error");
+        status.innerHTML = 'Status: Error';
     });
 
     function updatePoints() {
-        console.log("Updating Points");
-        console.log(coordinateQueue);
-        // draw Points
-        for (var i = 0; i < coordinateQueue.length; i++) {
-            ctx.fillRect(coordinateQueue[i].x, coordinateQueue[i].y, 5, 5);
-        }
-
+        cache.push(coordinateQueue);
+        drawPoints();
         coordinateQueue = [];
-        console.log(coordinateQueue.length);
     }
 
-    class Point {
-        constructor(x, y) {
-            this.x = x;
-            this.y = y;
+    function drawPoints() {
+        for (var i = 0; i < cache[cacheIndex].length; i++) {
+            ctx.fillRect(cache[cacheIndex][i].x, cache[cacheIndex][i].y, 5, 5);
         }
     }
 
