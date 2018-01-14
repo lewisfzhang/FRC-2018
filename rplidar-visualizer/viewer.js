@@ -7,7 +7,6 @@ const socket = new WebSocket('ws://localhost:8080');
 // canvas variables
 var canvas;
 var context;
-var status;
 var width;
 var height;
 
@@ -18,7 +17,6 @@ document.addEventListener('DOMContentLoaded', function(event) {
     // initialize canvas variables
     canvas = document.getElementById('field');
     context = canvas.getContext('2d');
-    status = document.getElementById('status');
     width = parseInt(canvas.width);
     height = parseInt(canvas.height);
 
@@ -28,7 +26,6 @@ document.addEventListener('DOMContentLoaded', function(event) {
     // connection opened
     socket.addEventListener('open', function(event) {
         console.log('connected');
-        status.innerHTML = 'Connected to the WebSocket';
         socket.send('update');
     });
 
@@ -37,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function(event) {
     // received message from server
     socket.addEventListener('message', function(event) {
         parseData(JSON.parse(event.data));
-        console.log('Message from server ', event.data);
+        console.log('message received:\n' + event.data);
         updatePoints();
 
         lastData = JSON.parse(event.data);
@@ -45,14 +42,12 @@ document.addEventListener('DOMContentLoaded', function(event) {
 
     // connection closed
     socket.addEventListener('close', function(event) {
-        console.log('closed');
-        status.innerHTML = 'Status: Connection Lost';
+        console.log('connection lost');
     });
 
     // connection error
     socket.addEventListener('error', function(event) {
         console.log('error');
-        status.innerHTML = 'Status: Error';
     });
 
     function updatePoints() {
@@ -115,13 +110,14 @@ document.addEventListener('DOMContentLoaded', function(event) {
         multiplier = zoom < previousZoom ? multiplier : 1 / multiplier;
         backgroundPositionX *= multiplier;
         backgroundPositionY *= multiplier;
+        // make sure backgroundPositionX and backgroundPositionY don't go above the limit
         backgroundPositionX = backgroundPositionX > getMaxMove().x ? getMaxMove().x : backgroundPositionX;
         backgroundPositionY = backgroundPositionY > getMaxMove().y ? getMaxMove().y : backgroundPositionY;
-        console.log(previousZoom);
-        console.log(backgroundPositionX + ", " + backgroundPositionY);
         updateCanvasStyle();
 
         plotLastData()
+
+        document.getElementById('zoom').innerHTML = "Zoom: " + Math.round(100 * getZoom()) + "%";
     });
 
     function getMaxMove() {
