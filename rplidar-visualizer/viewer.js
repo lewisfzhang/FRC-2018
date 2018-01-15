@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function(event) {
 
     // initiate slider variables
     zoomSlider = document.getElementById('zoom-slider');
-    cacheSlider = document.getElementById('cache-slider')
+    cacheSlider = document.getElementById('cache-slider');
 
     // connection opened
     socket.addEventListener('open', function(event) {
@@ -38,9 +38,10 @@ document.addEventListener('DOMContentLoaded', function(event) {
         var data = JSON.parse(event.data);
         cache.push(data);
 
-        document.getElementById("title").innerHTML = 'Timestamp: ' + data.timestamp;
+        document.getElementById("title").innerHTML = 'Timestamp: ' + new Date(data.timestamp).toISOString();
         cacheSlider.max = cache.length - 1;
         cacheSlider.value = cache.length - 1;
+        cacheSlider.style = "display: block";
 
         console.log('message ' + ++count + ' received');
         plotData(data);
@@ -139,7 +140,7 @@ document.addEventListener('DOMContentLoaded', function(event) {
     });
 
     cacheSlider.addEventListener('input', function (evt) {
-        document.getElementById('title').innerHTML = 'Timestamp: ' + cache[parseInt(this.value)].timestamp;
+        document.getElementById('title').innerHTML = 'Timestamp: ' + new Date(cache[parseInt(this.value)].timestamp).toISOString();
         plotData(cache[parseInt(this.value)]);
     });
 
