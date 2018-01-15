@@ -1,5 +1,4 @@
-// things in the queue will be drawn then removed
-var coordinateQueue = [];
+var cache = [];
 
 // create WebSocket connection
 const socket = new WebSocket('ws://localhost:8080');
@@ -12,6 +11,7 @@ var height;
 
 // sliders
 var zoomSlider;
+var cacheSlider;
 
 document.addEventListener('DOMContentLoaded', function(event) {
     // initialize canvas variables
@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', function(event) {
 
     // initiate slider variables
     zoomSlider = document.getElementById('zoom-slider');
+    cacheSlider = document.getElementById('cache-slider')
 
     // connection opened
     socket.addEventListener('open', function(event) {
@@ -34,7 +35,12 @@ document.addEventListener('DOMContentLoaded', function(event) {
 
     // received message from server
     socket.addEventListener('message', function(event) {
-        lastData = JSON.parse(event.data);
+        lastData = parseData(JSON.parse(event.data));
+        cache.push(lastData);
+        document.getElementById("title").innerHTML = lastData.timestamp;
+        cacheSlider.style.display = "block";
+        cacheSlider.max = cache.length - 1;
+        cacheSlider.value = cache.length - 1;
         console.log('message ' + ++count + ' received');
         plotData(lastData);
     });
@@ -46,29 +52,35 @@ document.addEventListener('DOMContentLoaded', function(event) {
 
     // connection error
     socket.addEventListener('error', function(event) {
+        document.getElementById("title").innerHTML = "Status: Error";
         console.log('error');
     });
 
-    function updatePoints() {
+    function updatePoints(data) {
         clearPoints();
-        drawPoints();
-        coordinateQueue = [];
+        drawPoints(data);
     }
 
     function clearPoints() {
         context.clearRect(0, 0, width, height);
     }
 
-    function drawPoints() {
-        for (var i = 0; i < coordinateQueue.length; i++) {
-            context.fillRect(coordinateQueue[i].x - 3, coordinateQueue[i].y - 3, 6, 6);
+    function drawPoints(data) {
+        for (var i = 0; i < data.length; i++) {
+            context.fillRect(data[i].x - 3, data[i].y - 3, 6, 6);
         }
     }
 
     function parseData(data) {
+        var retVal = [];
         for (var i = 0; i < data.scan.length; i++) {
-            coordinateQueue[i] = Object.assign({}, data.scan[i]);
+            retVal[i] = {
+                'x': data.scan[i].x,
+                'y': data.scan[i].y
+            }
         }
+        
+        return retVal;
     }
 
     var zoom = 0;
@@ -86,14 +98,13 @@ document.addEventListener('DOMContentLoaded', function(event) {
     }
 
     function plotData(data) {
-        parseData(data);
-        for (var i = 0; i < coordinateQueue.length; i++) {
-            coordinateQueue[i].x *= getZoom();
-            coordinateQueue[i].x += backgroundPositionX;
-            coordinateQueue[i].y *= getZoom();
-            coordinateQueue[i].y += backgroundPositionY;
+        for (var i = 0; i < data.length; i++) {
+            data[i].x *= getZoom();
+            data[i].x += backgroundPositionX;
+            data[i].y *= getZoom();
+            data[i].y += backgroundPositionY;
         }
-        updatePoints();
+        updatePoints(data);
     }
 
     var previousZoom = zoom;
@@ -117,6 +128,11 @@ document.addEventListener('DOMContentLoaded', function(event) {
         plotData(lastData);
 
         document.getElementById('zoom').innerHTML = "Zoom: " + Math.round(100 * getZoom()) + "%";
+    });
+
+    cacheSlider.addEventListener('input', function (evt) {
+        document.getElementById('title').innerHTML = cache[parseInt(this.value)].timestamp;
+        plotData(cache[parseInt(this.value)]);
     });
 
     function getMaxMove() {
