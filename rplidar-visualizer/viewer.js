@@ -35,14 +35,17 @@ document.addEventListener('DOMContentLoaded', function(event) {
 
     // received message from server
     socket.addEventListener('message', function(event) {
-        lastData = parseData(JSON.parse(event.data));
-        cache.push(lastData);
-        document.getElementById("title").innerHTML = lastData.timestamp;
-        cacheSlider.style.display = "block";
+        var data = JSON.parse(event.data);
+        cache.push(data);
+
+        document.getElementById("title").innerHTML = 'Timestamp: ' + data.timestamp;
         cacheSlider.max = cache.length - 1;
         cacheSlider.value = cache.length - 1;
+
         console.log('message ' + ++count + ' received');
-        plotData(lastData);
+        plotData(data);
+
+        lastData = data;
     });
 
     // connection closed
@@ -72,15 +75,17 @@ document.addEventListener('DOMContentLoaded', function(event) {
     }
 
     function parseData(data) {
-        var retVal = [];
+        var points = [];
+
         for (var i = 0; i < data.scan.length; i++) {
-            retVal[i] = {
+            points[i] = {
                 'x': data.scan[i].x,
                 'y': data.scan[i].y
             }
         }
         
-        return retVal;
+        console.log(points);
+        return points;
     }
 
     var zoom = 0;
@@ -98,13 +103,16 @@ document.addEventListener('DOMContentLoaded', function(event) {
     }
 
     function plotData(data) {
-        for (var i = 0; i < data.length; i++) {
-            data[i].x *= getZoom();
-            data[i].x += backgroundPositionX;
-            data[i].y *= getZoom();
-            data[i].y += backgroundPositionY;
+        var points = parseData(data);
+
+        for (var i = 0; i < points.length; i++) {
+            points[i].x *= getZoom();
+            points[i].x += backgroundPositionX;
+            points[i].y *= getZoom();
+            points[i].y += backgroundPositionY;
         }
-        updatePoints(data);
+
+        updatePoints(points);
     }
 
     var previousZoom = zoom;
@@ -131,7 +139,7 @@ document.addEventListener('DOMContentLoaded', function(event) {
     });
 
     cacheSlider.addEventListener('input', function (evt) {
-        document.getElementById('title').innerHTML = cache[parseInt(this.value)].timestamp;
+        document.getElementById('title').innerHTML = 'Timestamp: ' + cache[parseInt(this.value)].timestamp;
         plotData(cache[parseInt(this.value)]);
     });
 

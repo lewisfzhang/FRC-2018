@@ -21,10 +21,11 @@ const socket = new WebSocketServer({
     httpServer: server
 });
 
-var json = {'scan':[]};
 var points = 100;
 
 function randomizePoints() {
+    var json = {'scan':[], 'timestamp': 0};
+
     // randomize numbers (for testing purposes)
     for (var i = 0; i < points; i++) {
         json.scan[i] = {
@@ -32,6 +33,10 @@ function randomizePoints() {
             'y': Math.round(Math.random() * 500)
         };
     }
+
+    json.timestamp = (new Date()).getTime();
+
+    return json;
 }
 
 var count = 0;
@@ -45,8 +50,7 @@ socket.on('request', function(request) {
         console.log(event.utf8Data);
 
         var interval = setInterval(function() {
-            randomizePoints();
-            connection.send(JSON.stringify(json));
+            connection.send(JSON.stringify(randomizePoints()));
             console.log('message ' + ++count + ' sent');
         }, 100);
 
