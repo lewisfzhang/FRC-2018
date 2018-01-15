@@ -3,25 +3,67 @@ package com.team254.lib.util.drivers;
 import edu.wpi.first.wpilibj.SerialPort;
 
 public class RPLidar {
-    private static SerialPort mPort;
+    private SerialPort mPort;
     private static final int BAUD_RATE = 115200;
 
     private static final int EXPRESS_PACKET_SIZE = 84;
     private static final int CABIN_COUNT = 16;
 
+    private static final int DEFAULT_MOTOR_PWM = 660;
+
     public RPLidar(SerialPort.Port port) {
-        mPort = new SerialPort(BAUD_RATE, port);
+
+        mPort = new SerialPort(BAUD_RATE, port, 8, SerialPort.Parity.kNone);
     }
+
+    public void startMotor() {
+        byte[] request = {(byte) 0xA5, (byte) 0xF0, (byte)0x02, (byte)0x94, (byte)0x02, (byte)0xc1};
+        sendRequest(request);
+        System.out.println("pls start");
+    }
+
+    public void setMotorStartPwm() {
+//        sendRequest({(byte)0x94, (byte)0x02});
+    }
+
+//    public void sendRequest(int cmd, byte[] payload) {
+//
+//    }
 
     public void startScan() {
         byte[] request = {(byte) 0xA5, (byte) 0x20};
         sendRequest(request);
     }
 
+    public void forceScan() {
+        byte[] request = {(byte) 0xA5, (byte) 0x20};
+        sendRequest(request);
+
+        byte[] eat = readFixedLengthBuffer(7);
+    }
+
+    public void SRSRSend() {
+//        byte[] req = {(byte)};
+//        sendRequest(req);
+    }
+
     public void startExpressScan() {
         System.out.println("Creating request");
         byte[] request = {(byte) 0xA5, (byte) 0x82, (byte) 0x05, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x22};
         sendRequest(request);
+
+        // Read in confirmation
+        byte[] resp = mPort.read(7);
+        // assert equ
+
+    }
+
+    public int checkHealth() {
+        byte[] request = {(byte) 0xA5, (byte) 0x52};
+        sendRequest(request);
+
+        byte[] response = readFixedLengthBuffer(10);
+        return Byte.toUnsignedInt(response[7]);
     }
 
     public void reset() {
@@ -35,24 +77,32 @@ public class RPLidar {
     }
 
     private void sendRequest(byte[] request) {
-        System.out.println("Sending request" + request);
         mPort.write(request, request.length);
         System.out.println("Sent request");
     }
 
     public void readScanPacket() {}
 
-    public ExpressScanFrame readExpressScanPacket() {
+    public byte[] dumpDetas() {
+        byte[] foond = mPort.read(8);
+        return foond;
+    }
+
+    public byte[] readFixedLengthBuffer(int length) {
         // make sure we have all 84 bytes available, all being input not guaranteed
         int bytesRead = 0;
-        byte[] buffer = new byte[EXPRESS_PACKET_SIZE];
-        while (bytesRead < EXPRESS_PACKET_SIZE) {
-            byte[] readData = mPort.read(EXPRESS_PACKET_SIZE - bytesRead);
+        byte[] buffer = new byte[length];
+        while (bytesRead < length) {
+            byte[] readData = mPort.read(length - bytesRead);
             System.arraycopy(readData, 0, buffer, bytesRead, readData.length);
             bytesRead += readData.length;
         }
-        ExpressScanFrame frame = new ExpressScanFrame();
+        return buffer;
+    }
 
+    public ExpressScanFrame readExpressScanPacket() {
+        ExpressScanFrame frame = new ExpressScanFrame();
+        byte[] buffer = readFixedLengthBuffer(EXPRESS_PACKET_SIZE);
         // parse headers
         frame.ChkSum = (((int) buffer[1] & 0x0F) << 4) & (buffer[0] & 0x0F);
         frame.sync1 = buffer[0] & 0xF0;

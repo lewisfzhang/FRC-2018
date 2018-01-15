@@ -21,6 +21,17 @@ public class Robot extends IterativeRobot {
     @Override
     public void teleopInit() {
         System.out.println("Teleop Init");
+
+//        mRPLidar.startExpressScan();
+        System.out.println("initial health: " +mRPLidar.checkHealth());
+        mRPLidar.startMotor();
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println("STERT MONTOR health: " +mRPLidar.checkHealth());
+//        mRPLidar.forceScan();
         mRPLidar.startScan();
     }
 
@@ -37,8 +48,26 @@ public class Robot extends IterativeRobot {
     @Override
     public void teleopPeriodic() {
         System.out.println("Teleop Periodic");
-        RPLidar.ExpressScanFrame frame = mRPLidar.readExpressScanPacket();
-        System.out.println(frame);
+//        try {
+//            Thread.sleep(1000);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+
+//         RPLidar.ExpressScanFrame frame = mRPLidar.readExpressScanPacket();
+//         System.out.println(frame);
+
+
+        byte[] foond = mRPLidar.dumpDetas();
+        System.out.println("read " + foond.length + " units of foond");
+
+        for (int i = 0; i < foond.length; i++) {
+            System.out.print(Integer.toHexString(Byte.toUnsignedInt(foond[i])) + " ");
+        }
+        System.out.println();
+
+
+        System.out.println("heatlh: " +mRPLidar.checkHealth());
     }
 
     @Override
