@@ -12,23 +12,19 @@ public class RPLidar {
     private static final int DEFAULT_MOTOR_PWM = 660;
 
     public RPLidar(SerialPort.Port port) {
-
         mPort = new SerialPort(BAUD_RATE, port, 8, SerialPort.Parity.kNone);
     }
 
     public void startMotor() {
-        byte[] request = {(byte) 0xA5, (byte) 0xF0, (byte)0x02, (byte)0x94, (byte)0x02, (byte)0xc1};
+        byte[] request = {(byte) 0xA5, (byte) 0xF0, (byte) 0x02, (byte) 0x94, (byte) 0x02, (byte) 0xc1};
         sendRequest(request);
-        System.out.println("pls start");
+        System.out.println("Please Start");
     }
 
     public void setMotorStartPwm() {
-//        sendRequest({(byte)0x94, (byte)0x02});
+        byte[] request = {(byte) 0x94, (byte) 0x02};
+        sendRequest(request);
     }
-
-//    public void sendRequest(int cmd, byte[] payload) {
-//
-//    }
 
     public void startScan() {
         byte[] request = {(byte) 0xA5, (byte) 0x20};
@@ -39,12 +35,7 @@ public class RPLidar {
         byte[] request = {(byte) 0xA5, (byte) 0x20};
         sendRequest(request);
 
-        byte[] eat = readFixedLengthBuffer(7);
-    }
-
-    public void SRSRSend() {
-//        byte[] req = {(byte)};
-//        sendRequest(req);
+        byte[] response = readFixedLengthBuffer(7);
     }
 
     public void startExpressScan() {
@@ -53,7 +44,7 @@ public class RPLidar {
         sendRequest(request);
 
         // Read in confirmation
-        byte[] resp = mPort.read(7);
+        byte[] response = mPort.read(7);
         // assert equ
 
     }
@@ -81,11 +72,8 @@ public class RPLidar {
         System.out.println("Sent request");
     }
 
-    public void readScanPacket() {}
-
-    public byte[] dumpDetas() {
-        byte[] foond = mPort.read(8);
-        return foond;
+    public byte[] dataDump() {
+        return mPort.read(8);
     }
 
     public byte[] readFixedLengthBuffer(int length) {
@@ -99,6 +87,8 @@ public class RPLidar {
         }
         return buffer;
     }
+
+    public void readScanPacket() {}
 
     public ExpressScanFrame readExpressScanPacket() {
         ExpressScanFrame frame = new ExpressScanFrame();
