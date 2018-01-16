@@ -15,13 +15,19 @@ var cacheSlider;
 
 document.addEventListener('DOMContentLoaded', function(event) {
     // initialize canvas variables
-    canvas = document.getElementById('field');
+    canvas  = document.getElementById('field');
     context = canvas.getContext('2d');
-    width = parseInt(canvas.width);
-    height = parseInt(canvas.height);
+    width   = parseInt(canvas.width);
+    height  = parseInt(canvas.height);
+
+    // initialize a few constants
+    var pointSize    = 6; 
+    var actualWidth  = 3905.25; // millimeters
+    var actualHeight = 1422.4; // also millimeters
+
 
     // initiate slider variables
-    zoomSlider = document.getElementById('zoom-slider');
+    zoomSlider  = document.getElementById('zoom-slider');
     cacheSlider = document.getElementById('cache-slider');
 
     // connection opened
@@ -71,7 +77,9 @@ document.addEventListener('DOMContentLoaded', function(event) {
 
     function drawPoints(data) {
         for (var i = 0; i < data.length; i++) {
-            context.fillRect(data[i].x - 3, data[i].y - 3, 6, 6);
+	    var actualX = (data[i].x / actualWidth) * width;
+	    var actualY = (data[i].y / actualHeight) * height;
+            context.fillRect(actualX - (pointSize / 2), actualY - (pointSize / 2), pointSize, pointSize);
         }
     }
 
