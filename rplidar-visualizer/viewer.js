@@ -15,14 +15,14 @@ var cacheSlider;
 
 document.addEventListener('DOMContentLoaded', function(event) {
     // initialize canvas variables
-    canvas  = document.getElementById('field');
+    canvas = document.getElementById('field');
     context = canvas.getContext('2d');
-    width   = parseInt(canvas.width);
-    height  = parseInt(canvas.height);
+    width = parseInt(canvas.width);
+    height = parseInt(canvas.height);
 
     // initialize a few constants
-    var pointSize    = 6; 
-    var actualWidth  = 3905.25; // millimeters
+    var pointSize = 6; 
+    var actualWidth = 3905.25; // millimeters
     var actualHeight = 1422.4; // also millimeters
 
 
@@ -116,9 +116,9 @@ document.addEventListener('DOMContentLoaded', function(event) {
 
         for (var i = 0; i < points.length; i++) {
             points[i].x *= getZoom();
-            points[i].x += backgroundPositionX;
+            points[i].x += (backgroundPositionX / width) * actualWidth;
             points[i].y *= getZoom();
-            points[i].y += backgroundPositionY;
+            points[i].y += (backgroundPositionY / width) * actualWidth;
         }
 
         updatePoints(points);
