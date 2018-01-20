@@ -17,7 +17,7 @@ public class RPLidarJNI {
 
     public native void startScan();
 
-    public native void grabScanData(double[] data);
+    public native String grabScanData();
 
     public native void stop();
 }

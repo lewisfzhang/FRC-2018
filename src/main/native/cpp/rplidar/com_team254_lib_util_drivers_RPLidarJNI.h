@@ -42,10 +42,10 @@ JNIEXPORT void JNICALL Java_com_team254_lib_util_drivers_RPLidarJNI_startScan
 /*
  * Class:     com_team254_lib_util_drivers_RPLidarJNI
  * Method:    grabScanData
- * Signature: ([D)V
+ * Signature: ()Ljava/lang/String;
  */
-JNIEXPORT void JNICALL Java_com_team254_lib_util_drivers_RPLidarJNI_grabScanData
-  (JNIEnv *, jobject, jdoubleArray);
+JNIEXPORT jstring JNICALL Java_com_team254_lib_util_drivers_RPLidarJNI_grabScanData
+  (JNIEnv *, jobject);
 
 /*
  * Class:     com_team254_lib_util_drivers_RPLidarJNI
