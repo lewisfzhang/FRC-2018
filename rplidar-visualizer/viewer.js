@@ -14,7 +14,8 @@ var zoomSlider;
 var cacheSlider;
 
 // field and point size
-var actualWidth = 24993.6; // 82 ft --> mm
+// var actualWidth = 24993.6; // 82 ft --> mm
+var actualWidth = 22511.76412776413;
 var actualHeight = 9144; // 30 ft --> mm
 var pointSize = 6; // px
 
