@@ -29,8 +29,8 @@ function randomizePoints() {
     // randomize numbers (for testing purposes)
     for (var i = 0; i < points; i++) {
         json.scan[i] = {
-            'x': Math.round(Math.random() * 500),
-            'y': Math.round(Math.random() * 500)
+            'x': Math.round(Math.random() * 24993.6),
+            'y': Math.round(Math.random() * 9144)
         };
     }
 

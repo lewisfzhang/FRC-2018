@@ -13,18 +13,17 @@ var height;
 var zoomSlider;
 var cacheSlider;
 
+// field and point size
+var actualWidth = 24993.6; // 82 ft --> mm
+var actualHeight = 9144; // 30 ft --> mm
+var pointSize = 6; // px
+
 document.addEventListener('DOMContentLoaded', function(event) {
     // initialize canvas variables
     canvas = document.getElementById('field');
     context = canvas.getContext('2d');
     width = parseInt(canvas.width);
     height = parseInt(canvas.height);
-
-    // initialize a few constants
-    var pointSize = 6; 
-    var actualWidth = 3905.25; // millimeters
-    var actualHeight = 1422.4; // also millimeters
-
 
     // initiate slider variables
     zoomSlider  = document.getElementById('zoom-slider');
@@ -36,6 +35,21 @@ document.addEventListener('DOMContentLoaded', function(event) {
         socket.send('update');
     });
 
+    function parseTimestamp(timestamp) {
+        var date = new Date(timestamp);
+
+        var hours = date.getHours();
+        dateString = (date.getMonth() + 1) + "/" 
+            + date.getDate() + "/" 
+            + date.getFullYear() + ", " 
+            + (date.getHours() % 12) + ":" 
+            + ("00" + date.getMinutes()).slice(-2) + ":" 
+            + ("00" + (date.getSeconds() + (date.getMilliseconds() / 1000).toFixed(3).slice(1))).slice(-6) + " "
+            + ((hours > 12) ? "PM" : "AM");
+
+        return dateString;
+    }
+
     var lastData;
     var count = 0;
 
@@ -44,7 +58,7 @@ document.addEventListener('DOMContentLoaded', function(event) {
         var data = JSON.parse(event.data);
         cache.push(data);
 
-        document.getElementById("title").innerHTML = 'Timestamp: ' + new Date(data.timestamp).toISOString();
+        document.getElementById("title").innerHTML = 'Timestamp: ' + parseTimestamp(data.timestamp);
         cacheSlider.max = cache.length - 1;
         cacheSlider.value = cache.length - 1;
         cacheSlider.style = "display: block";
@@ -148,7 +162,7 @@ document.addEventListener('DOMContentLoaded', function(event) {
     });
 
     cacheSlider.addEventListener('input', function (evt) {
-        document.getElementById('title').innerHTML = 'Timestamp: ' + new Date(cache[parseInt(this.value)].timestamp).toISOString();
+        document.getElementById('title').innerHTML = 'Timestamp: ' + parseDate(cache[parseInt(this.value)].timestamp);
         plotData(cache[parseInt(this.value)]);
     });
 
