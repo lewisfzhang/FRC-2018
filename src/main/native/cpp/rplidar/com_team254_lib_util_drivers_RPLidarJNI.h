@@ -7,6 +7,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#undef com_team254_lib_util_drivers_RPLidarJNI_DATA_BUFFER_LENGTH
+#define com_team254_lib_util_drivers_RPLidarJNI_DATA_BUFFER_LENGTH 720L
 /*
  * Class:     com_team254_lib_util_drivers_RPLidarJNI
  * Method:    init
@@ -41,11 +43,11 @@ JNIEXPORT void JNICALL Java_com_team254_lib_util_drivers_RPLidarJNI_startScan
 
 /*
  * Class:     com_team254_lib_util_drivers_RPLidarJNI
- * Method:    grabScanData
- * Signature: ()Ljava/lang/String;
+ * Method:    grabRawScanData
+ * Signature: ([D[D[J)I
  */
-JNIEXPORT jstring JNICALL Java_com_team254_lib_util_drivers_RPLidarJNI_grabScanData
-  (JNIEnv *, jobject);
+JNIEXPORT jint JNICALL Java_com_team254_lib_util_drivers_RPLidarJNI_grabRawScanData
+  (JNIEnv *, jobject, jdoubleArray, jdoubleArray, jlongArray);
 
 /*
  * Class:     com_team254_lib_util_drivers_RPLidarJNI

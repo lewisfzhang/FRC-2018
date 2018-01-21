@@ -91,32 +91,35 @@ JNIEXPORT void JNICALL Java_com_team254_lib_util_drivers_RPLidarJNI_startScan
     drv->startScan();
 }
 
-JNIEXPORT jstring JNICALL Java_com_team254_lib_util_drivers_RPLidarJNI_grabScanData
-  (JNIEnv *env, jobject obj) {
-    u_result op_result;
-    rplidar_response_measurement_node_t nodes[360*2];
-    size_t count = _countof(nodes);
-    std::stringstream packet;
-    int nodes_buffered = 0;
-    op_result = drv->grabScanData(nodes, count);
+JNIEXPORT jint JNICALL Java_com_team254_lib_util_drivers_RPLidarJNI_grabRawScanData
+  (JNIEnv *env, jobject obj, jdoubleArray distancesArr, jdoubleArray anglesArr, jlongArray timestampsArr) {
+    // alias this constant to use a shorter name :P
+    constexpr size_t BUFFER_LEN = com_team254_lib_util_drivers_RPLidarJNI_DATA_BUFFER_LENGTH;
     
+    // get scan data via the SDK's driver
+    rplidar_response_measurement_node_t nodes[BUFFER_LEN];
+    size_t count = BUFFER_LEN;
+    u_result op_result = drv->grabScanData(nodes, count);
     drv->ascendScanData(nodes, count);
-    for (int pos = 0; pos < (int) count; pos++) {         
-        char buf[300];
-        sprintf(buf, "%llu,%03.2f,%08.2f\n", 
-            nodes[pos].timestamp, 
-            (nodes[pos].angle_q6_checkbit >> RPLIDAR_RESP_MEASUREMENT_ANGLE_SHIFT)/64.0f,
-            nodes[pos].distance_q2/4.0f);
-        packet << buf;
-        nodes_buffered++;
-
-        if(nodes_buffered > 50) {
-            const char* packet_str = packet.str().c_str();
-            return env->NewStringUTF(packet_str);
-        }
+    
+    // get pointers to the array data
+    jdouble* tmp_distances = (jdouble*) env->GetPrimitiveArrayCritical(distancesArr, NULL);
+    jdouble* tmp_angles = (jdouble*) env->GetPrimitiveArrayCritical(anglesArr, NULL);
+    jlong* tmp_timestamps = (jlong*) env->GetPrimitiveArrayCritical(timestampsArr, NULL);
+    
+    // extract the data into the arrays
+    for (int i = 0; i < (int) count; i++) {
+        tmp_distances[i] = static_cast<jdouble>( nodes[i].distance_q2/4.0 );
+        tmp_angles[i] = static_cast<jdouble>( (nodes[i].angle_q6_checkbit >> RPLIDAR_RESP_MEASUREMENT_ANGLE_SHIFT)/64.0 );
+        tmp_timestamps[i] = static_cast<jlong>( nodes[i].timestamp );
     }
+    
+    // copy the data into the Java arrays
+    env->ReleasePrimitiveArrayCritical(timestampsArr, tmp_timestamps, 0);
+    env->ReleasePrimitiveArrayCritical(anglesArr, tmp_angles, 0);
+    env->ReleasePrimitiveArrayCritical(distancesArr, tmp_distances, 0);
 
-    return NULL;
+    return count;
 }
 
 JNIEXPORT void JNICALL Java_com_team254_lib_util_drivers_RPLidarJNI_stop
