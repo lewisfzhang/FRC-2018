@@ -1,43 +1,9 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sstream> 
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h> 
+#include <cstdio>
+#include <cstdlib>
 
 #include "com_team254_lib_util_drivers_RPLidarJNI.h"
 #include "com_team254_lib_util_drivers_RPLidarJNI_DataPoint.h"
 #include "include/rplidar.h" //RPLIDAR standard sdk, all-in-one header
-
-/* 
- * error - wrapper for perror
- */
-void error(char *msg) {
-    perror(msg);
-    exit(0);
-}
-
-#ifndef _countof
-#define _countof(_Array) (int)(sizeof(_Array) / sizeof(_Array[0]))
-#endif
-
-#ifdef _WIN32
-#include <Windows.h>
-#define delay(x)   ::Sleep(x)
-#else
-#include <unistd.h>
-static inline void delay(_word_size_t ms){
-    while (ms>=1000){
-        usleep(1000*1000);
-        ms-=1000;
-    };
-    if (ms!=0)
-        usleep(ms*1000);
-}
-#endif
 
 using namespace rp::standalone::rplidar;
 
@@ -62,10 +28,9 @@ JNIEXPORT void JNICALL Java_com_team254_lib_util_drivers_RPLidarJNI_init
 
 JNIEXPORT jboolean JNICALL Java_com_team254_lib_util_drivers_RPLidarJNI_checkHealth
   (JNIEnv *env, jobject obj) {
-    u_result op_result;
     rplidar_response_device_health_t healthinfo;
 
-    op_result = drv->getHealth(healthinfo);
+    u_result op_result = drv->getHealth(healthinfo);
     if (IS_OK(op_result)) {
         printf("RPLidar health status : %d\n", healthinfo.status);
         if (healthinfo.status == RPLIDAR_STATUS_ERROR) {
@@ -99,27 +64,36 @@ JNIEXPORT jint JNICALL Java_com_team254_lib_util_drivers_RPLidarJNI_grabRawScanD
     // get scan data via the SDK's driver
     rplidar_response_measurement_node_t nodes[BUFFER_LEN];
     size_t count = BUFFER_LEN;
-    u_result op_result = drv->grabScanData(nodes, count);
-    drv->ascendScanData(nodes, count);
+    u_result op_result = drv->grabScanData(nodes, count); // get the data
+    if (IS_FAIL(op_result)) return -1;
+    op_result = drv->ascendScanData(nodes, count); // sort by angle
+    if (IS_FAIL(op_result)) return -1;
+    
+    jint returnVal = (jint) count;
     
     // get pointers to the array data
     jdouble* tmp_distances = (jdouble*) env->GetPrimitiveArrayCritical(distancesArr, NULL);
     jdouble* tmp_angles = (jdouble*) env->GetPrimitiveArrayCritical(anglesArr, NULL);
     jlong* tmp_timestamps = (jlong*) env->GetPrimitiveArrayCritical(timestampsArr, NULL);
     
-    // extract the data into the arrays
-    for (int i = 0; i < (int) count; i++) {
-        tmp_distances[i] = static_cast<jdouble>( nodes[i].distance_q2/4.0 );
-        tmp_angles[i] = static_cast<jdouble>( (nodes[i].angle_q6_checkbit >> RPLIDAR_RESP_MEASUREMENT_ANGLE_SHIFT)/64.0 );
-        tmp_timestamps[i] = static_cast<jlong>( nodes[i].timestamp );
+    if (tmp_distances==NULL || tmp_angles==NULL || tmp_timestamps==NULL) {
+        // out of memory exception thrown (do we need to deal with that?)
+        returnVal = -1;
+    } else {
+        // extract the data into the arrays
+        for (int i = 0; i < (int) count; i++) {
+            tmp_distances[i] = static_cast<jdouble>( nodes[i].distance_q2/4.0 );
+            tmp_angles[i] = static_cast<jdouble>( (nodes[i].angle_q6_checkbit >> RPLIDAR_RESP_MEASUREMENT_ANGLE_SHIFT)/64.0 );
+            tmp_timestamps[i] = static_cast<jlong>( nodes[i].timestamp );
+        }
     }
     
-    // copy the data into the Java arrays
-    env->ReleasePrimitiveArrayCritical(timestampsArr, tmp_timestamps, 0);
-    env->ReleasePrimitiveArrayCritical(anglesArr, tmp_angles, 0);
-    env->ReleasePrimitiveArrayCritical(distancesArr, tmp_distances, 0);
-
-    return count;
+    // release the pointers we got, and copy the data back if necessary
+    if (tmp_timestamps) env->ReleasePrimitiveArrayCritical(timestampsArr, tmp_timestamps, 0);
+    if (tmp_angles)     env->ReleasePrimitiveArrayCritical(anglesArr, tmp_angles, 0);
+    if (tmp_distances)  env->ReleasePrimitiveArrayCritical(distancesArr, tmp_distances, 0);
+    
+    return returnVal;
 }
 
 JNIEXPORT void JNICALL Java_com_team254_lib_util_drivers_RPLidarJNI_stop

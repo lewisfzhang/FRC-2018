@@ -38,9 +38,9 @@ public class RPLidarJNI {
     /**
      * Native method to get one revolution's worth of scan data
      * via the RPLIDAR SDK. Returns the number of data points
-     * retrieved; the data itself is put into the three arrays
-     * passed as parameters. The measurements are sorted in ascending
-     * order by angle.
+     * retrieved, or -1 on failure; the data itself is put into
+     * the three arrays passed as parameters. The measurements
+     * are sorted in ascending order by angle.
      * 
      * This method may block for a short period of time to wait
      * for a full revolution of data to be available.
