@@ -15,7 +15,7 @@ var cacheSlider;
 
 // field and point size
 // var actualWidth = 24993.6; // 82 ft --> mm
-var actualWidth = 22511.76412776413;
+var actualWidth = 22511.764; // directly scaled from image size
 var actualHeight = 9144; // 30 ft --> mm
 var pointSize = 6; // px
 
@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function(event) {
         dateString = (date.getMonth() + 1) + "/" 
             + date.getDate() + "/" 
             + date.getFullYear() + ", " 
-            + (date.getHours() % 12) + ":" 
+            + (hours % 12) + ":" 
             + ("00" + date.getMinutes()).slice(-2) + ":" 
             + ("00" + (date.getSeconds() + (date.getMilliseconds() / 1000).toFixed(3).slice(1))).slice(-6) + " "
             + ((hours > 12) ? "PM" : "AM");
@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', function(event) {
         var data = JSON.parse(event.data);
         cache.push(data);
 
-        document.getElementById("title").innerHTML = 'Timestamp: ' + parseTimestamp(data.timestamp);
+        document.getElementById("title").innerHTML = 'Time: ' + parseTimestamp(data.timestamp);
         cacheSlider.max = cache.length - 1;
         cacheSlider.value = cache.length - 1;
         cacheSlider.style = "display: block";
@@ -152,9 +152,11 @@ document.addEventListener('DOMContentLoaded', function(event) {
         multiplier = zoom < previousZoom ? multiplier : 1 / multiplier;
         backgroundPositionX *= multiplier;
         backgroundPositionY *= multiplier;
+
         // make sure backgroundPositionX and backgroundPositionY don't go above the limit
         backgroundPositionX = backgroundPositionX > getMaxMove().x ? getMaxMove().x : backgroundPositionX;
         backgroundPositionY = backgroundPositionY > getMaxMove().y ? getMaxMove().y : backgroundPositionY;
+
         updateCanvasStyle();
 
         plotData(lastData);
@@ -163,8 +165,10 @@ document.addEventListener('DOMContentLoaded', function(event) {
     });
 
     cacheSlider.addEventListener('input', function (evt) {
-        document.getElementById('title').innerHTML = 'Timestamp: ' + parseDate(cache[parseInt(this.value)].timestamp);
-        plotData(cache[parseInt(this.value)]);
+        var data = cache[parseInt(this.value)];
+        document.getElementById('title').innerHTML = 'Time: ' + parseTimestamp(data.timestamp);
+        plotData(data)
+        lastData = data;
     });
 
     function getMaxMove() {
