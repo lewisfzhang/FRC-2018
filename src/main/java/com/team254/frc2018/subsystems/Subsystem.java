@@ -16,7 +16,7 @@ public abstract class Subsystem {
     public void writeToLog() {
     };
 
-    public abstract boolean checkSystem();
+    public boolean checkSystem() { return true; }
 
     public abstract void outputToSmartDashboard();
 
