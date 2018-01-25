@@ -2,6 +2,7 @@ package com.team254.frc2018;
 
 import com.team254.frc2018.lidar.UDPLidar;
 import edu.wpi.first.wpilibj.IterativeRobot;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 
 public class Robot extends IterativeRobot {
@@ -16,7 +17,7 @@ public class Robot extends IterativeRobot {
 
         try {
             mChezyLidar = mRuntime.exec("/home/root/chezy_lidar");
-            mChezyLidar.waitFor();
+            // mChezyLidar.waitFor();
         } catch (Exception e) {
             e.printStackTrace();
         }

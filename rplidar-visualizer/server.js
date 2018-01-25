@@ -6,28 +6,12 @@ const ntClient = require('wpilib-nt-client');
 const client = new ntClient.Client();
 
 client.start((connected, error) => {
-    console.log('connected to robot: ' + connected);
+    // console.log('connected to robot: ' + connected);
 }, 'roborio-254-frc.local');
 
 client.addListener((key, value, type, id) => {
-    console.log({key, value, type, id});
-
-    switch (key) {
-        case "distance":
-            console.log("distance: " + value);
-            break;
-        case "angle":
-            console.log("angle: " + value);      
-            break;
-        case "timestamp":
-            var timestamp = parseInt(value);
-            console.log(timestamp);
-            break;
-    }
-    
-    // Distance (mm)
-    // Angles (degrees)
-    // Timestamp
+    console.log(key);
+    console.log(value);
 })
 
 var server = http.createServer(function(request, response) {});
