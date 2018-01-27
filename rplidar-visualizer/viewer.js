@@ -14,9 +14,8 @@ var zoomSlider;
 var cacheSlider;
 
 // field and point size
-// var actualWidth = 24993.6; // 82 ft --> mm
-var actualWidth = 22511.764; // directly scaled from image size
-var actualHeight = 9144; // 30 ft --> mm
+var actualWidth = 22504.4; // 886 in --> mm
+var actualHeight = 9144; // 360 in (30 ft) --> mm
 var pointSize = 6; // px
 
 document.addEventListener('DOMContentLoaded', function(event) {
@@ -64,10 +63,11 @@ document.addEventListener('DOMContentLoaded', function(event) {
         cacheSlider.value = cache.length - 1;
         cacheSlider.style = "display: block";
 
-        console.log('message ' + ++count + ' received');
         plotData(data);
 
         lastData = data;
+
+        console.log(data.timestamp + ", " + Date.now());
     });
 
     // connection closed
@@ -94,21 +94,22 @@ document.addEventListener('DOMContentLoaded', function(event) {
         for (var i = 0; i < data.length; i++) {
 	    var actualX = (data[i].x / actualWidth) * width;
 	    var actualY = (data[i].y / actualHeight) * height;
-            context.fillRect(actualX - (pointSize / 2), actualY - (pointSize / 2), pointSize, pointSize);
+            // context.fillRect(actualX - (pointSize / 2), actualY - (pointSize / 2), pointSize, pointSize);
+            context.fillRect(actualX - (pointSize / 2) + (width / 2), actualY - (pointSize / 2) + (height / 2), pointSize, pointSize);
         }
     }
 
     function parseData(data) {
         var points = [];
+        var scan = JSON.parse(data.value).scan;
 
-        for (var i = 0; i < data.scan.length; i++) {
+        for (var i = 0; i < scan.length; i++) {
             points[i] = {
-                'x': data.scan[i].x,
-                'y': data.scan[i].y
+                'x': scan[i].x,
+                'y': scan[i].y
             }
         }
         
-        console.log(points);
         return points;
     }
 
