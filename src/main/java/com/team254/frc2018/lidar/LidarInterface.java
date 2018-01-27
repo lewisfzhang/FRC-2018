@@ -1,37 +1,52 @@
 package com.team254.frc2018.lidar;
 
-import com.team254.lib.util.CircularBufferGeneric;
-import com.team254.lib.util.math.RigidTransform2d;
-import com.team254.lib.util.math.Rotation2d;
-import com.team254.lib.util.math.Translation2d;
+import com.team254.frc2018.Constants;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
+import java.util.LinkedList;
 
 /**
-receives polar coordinates from the lidar scan and changes it into x,y coordinates,
-also using the position and angle of the robot.
-Stores Translation2d(basically a vector) in a Circular Buffer of Translation2d's.*/
-public class LidarInterface {
-	public  CircularBufferGeneric<Translation2d> lidarStorage = new CircularBufferGeneric<Translation2d>(400);
-/**
- * @param scan the LidarScan with the data about the polar coordinates
- * @param pose the position and angle of the robot
- * Adds the scan to the array
+ * Stores a set amount of lidar scans.  All interfacing with the lidar should be done through this class.
  */
-	public void addScan(LidarScan scan, RigidTransform2d pose) {
-		double bXPos, bYPos, distance, xPos, yPos;
-		bXPos = pose.getTranslation().x();
-		bYPos = pose.getTranslation().y();
-		Rotation2d lidarAngle = Rotation2d.fromDegrees(scan.angle);
-		distance = scan.distance;
-		Rotation2d compositeAngle = pose.getRotation().rotateBy(lidarAngle);
-		xPos= (compositeAngle.cos()*distance)+bXPos;
-		yPos= (compositeAngle.sin()*distance)+bYPos;
-		//rounds to four decimal places
-		xPos=Math.floor(xPos*10000)/10000;
-		yPos=Math.floor(yPos*10000)/10000;
-		Translation2d lidarPosition = new Translation2d(xPos,yPos);
-		lidarStorage.addValue(lidarPosition);
-	}
-	public Translation2d[] getData() {
-		return  lidarStorage.getLinkedList().toArray(new Translation2d[lidarStorage.getLinkedList().size()]);
-	}
+public class LidarInterface {
+    private static LidarInterface mInstance = null;
+
+    private LinkedList<LidarScan> mScans = new LinkedList<>();
+    private double prevAngle = 0.0;
+
+    public static LidarInterface getInstance() {
+        if(mInstance == null) {
+            mInstance = new LidarInterface();
+        }
+        return mInstance;
+    }
+
+    public LidarInterface() {
+        mScans.add(new LidarScan());
+    }
+
+    public void addPoint(LidarPoint point) {
+        if(point.angle < prevAngle) { //crosses the 360-0 threshold.  start a new scan
+            SmartDashboard.putString("lidarScan", mScans.getLast().toJsonString()); //output to lidar visualizer
+            mScans.add(new LidarScan());
+            if(mScans.size() > Constants.kNumScansToStore) {
+                mScans.removeFirst();
+            }
+        }
+        mScans.getLast().addPoint(point);
+        prevAngle = point.angle;
+    }
+
+    public LinkedList<LidarScan> getAllScans() {
+        return mScans;
+    }
+
+    public LidarScan getCurrentScan() {
+        return mScans.getLast();
+    }
+
+    public LidarScan getLatestCompleteScan() {
+        return mScans.get(mScans.size() > 1 ? mScans.size() - 2 : 0);
+    }
+
 }

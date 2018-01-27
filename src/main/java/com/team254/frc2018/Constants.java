@@ -13,6 +13,11 @@ import java.util.Enumeration;
 public class Constants {
     public static double kLooperDt = 0.005;
 
+    // LidarInterface Stuff
+    public static int kLidarUDPPort = 9254;
+    public static int kScanSize = 400;
+    public static int kNumScansToStore = 10;
+    public static String kChezyLidarPath = "/home/root/chezy_lidar";
 
     /* ROBOT PHYSICAL CONSTANTS */
 

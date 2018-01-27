@@ -1,23 +1,27 @@
 package com.team254.frc2018;
 
+import com.team254.frc2018.lidar.LidarInterface;
+import com.team254.frc2018.lidar.LidarServer;
 import edu.wpi.first.wpilibj.IterativeRobot;
 
 public class Robot extends IterativeRobot {
+    private LidarInterface mLidar = LidarInterface.getInstance();
+    private LidarServer mLidarServer = LidarServer.getInstance();
+
     @Override
     public void robotInit() { }
 
     @Override
-    public void disabledInit() { }
+    public void disabledInit() { mLidarServer.stop(); }
 
     @Override
     public void autonomousInit() { }
 
     @Override
-    public void teleopInit() { }
+    public void teleopInit() { mLidarServer.start(); }
 
     @Override
     public void testInit() { }
-
 
     @Override
     public void disabledPeriodic() { }
@@ -30,4 +34,5 @@ public class Robot extends IterativeRobot {
 
     @Override
     public void testPeriodic() { }
+
 }
