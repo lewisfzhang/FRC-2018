@@ -27,7 +27,7 @@ public class LidarInterface {
 
     public void addPoint(LidarPoint point) {
         if(point.angle < prevAngle) { //crosses the 360-0 threshold.  start a new scan
-            SmartDashboard.putString("lidarScan", mScans.getLast().toJsonString()); //output to lidar visualizer
+            //SmartDashboard.putString("lidarScan", mScans.getLast().toJsonString()); //output to lidar visualizer
             mScans.add(new LidarScan());
             if(mScans.size() > Constants.kNumScansToStore) {
                 mScans.removeFirst();

@@ -9,16 +9,20 @@ public class Robot extends IterativeRobot {
     private LidarServer mLidarServer = LidarServer.getInstance();
 
     @Override
-    public void robotInit() { }
+    public void robotInit() {
+    }
 
     @Override
-    public void disabledInit() { mLidarServer.stop(); }
+    public void disabledInit() {
+        mLidarServer.start();
+    }
 
     @Override
     public void autonomousInit() { }
 
     @Override
-    public void teleopInit() { mLidarServer.start(); }
+    public void teleopInit() {
+    }
 
     @Override
     public void testInit() { }

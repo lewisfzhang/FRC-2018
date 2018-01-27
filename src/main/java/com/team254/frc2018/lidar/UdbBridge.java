@@ -2,34 +2,38 @@ package com.team254.frc2018.lidar;
 
 import com.team254.frc2018.Constants;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+
 public class UdbBridge {
     private static Process chezyLidar = null;
+    public static BufferedReader bufferedReader;
 
-    public boolean start() {
+
+
+    public BufferedReader start() {
         if(chezyLidar == null) {
             System.out.println("Starting lidar");
-            Runtime r = Runtime.getRuntime();
 
             try {
-                chezyLidar = r.exec(Constants.kChezyLidarPath);
-                chezyLidar.waitFor();
+                chezyLidar = new ProcessBuilder().command(Constants.kChezyLidarPath).start();
+                InputStreamReader reader = new InputStreamReader( chezyLidar.getInputStream());
+                return new BufferedReader(reader);
             } catch (Exception e) {
                 System.err.println("Error: Could not start bridge");
                 e.printStackTrace();
-                return false;
+                return null;
             }
-            return true;
         } else {
             System.out.println("Error: bridge has already been started");
-            return false;
+            return null;
         }
     }
 
     public boolean stop() {
         if(chezyLidar != null) {
             System.out.println("Stopping bridge");
-            chezyLidar.destroy();
-            chezyLidar = null;
+            chezyLidar.destroyForcibly();
             return true;
         }
         System.out.println("Error: bridge not running");
@@ -37,3 +41,4 @@ public class UdbBridge {
     }
 
 }
+

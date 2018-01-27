@@ -3,6 +3,7 @@ package com.team254.frc2018.lidar;
 import com.team254.frc2018.Constants;
 import edu.wpi.first.wpilibj.Timer;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -11,32 +12,28 @@ import java.net.SocketException;
 public class LidarServer {
     private static LidarServer mInstance = null;
     private LidarInterface mLidarInterface = LidarInterface.getInstance();
-    private UdbBridge mBridge = new UdbBridge();
-    private DatagramSocket mSocketServer;
+    private UdbBridge mBridge;
+    private static BufferedReader mBufferedReader;
     private boolean mRunning = false;
     private Thread mThread;
 
     public static LidarServer getInstance() {
         if (mInstance == null) {
-            mInstance = new LidarServer(Constants.kLidarUDPPort);
+            mInstance = new LidarServer();
         }
         return mInstance;
     }
 
-    public LidarServer(int port) {
-        try {
-            mSocketServer = new DatagramSocket(port);
-            mThread = new Thread(new SocketThread());
-        } catch (SocketException e) {
-            e.printStackTrace();
-        }
+    public LidarServer() {
+        mBridge = new UdbBridge();
+        mThread = new Thread(new SocketThread());
     }
 
     public boolean start() {
         if(!mRunning) {
-            if(mBridge.start()) {
+            if((mBufferedReader = mBridge.start()) != null) {
                 mRunning = true;
-                mThread.run();
+                mThread.start();
                 return true;
             }
         } else {
@@ -48,6 +45,12 @@ public class LidarServer {
     public boolean stop() {
         if(mRunning) {
             mRunning = false;
+            try {
+                System.out.println("About to join");
+                mThread.join();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             return mBridge.stop();
         } else {
             System.out.println("Error: Server not running");
@@ -55,10 +58,8 @@ public class LidarServer {
         return false;
     }
 
-    private void handleUpdate(byte[] update) {
-        String packet = new String(update);
-        String[] lines = packet.split("\n");
-
+    private void handleUpdate(String packet) {
+        String[] lines = packet.split("-");
         long curSystemTime = System.currentTimeMillis();
         double curFPGATime = Timer.getFPGATimestamp();
 
@@ -82,21 +83,17 @@ public class LidarServer {
     private class SocketThread implements Runnable {
         @Override
         public void run() {
-            byte[] receiveData = new byte[200000];
-            
             while(mRunning) {
-                DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
-                System.out.println(receivePacket.getLength());
-
+                String line;
                 try {
-                	// gets stuck on the next line after 42 loops (2162 or 2163 messages)
-                    mSocketServer.receive(receivePacket);
-                } catch (IOException e) {
+                    while ((line = mBufferedReader.readLine()) != null) {
+                        handleUpdate(line);
+                    }
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
-
-                handleUpdate(receivePacket.getData());
             }
+            System.out.println("Thread ending");
         }
     }
 
