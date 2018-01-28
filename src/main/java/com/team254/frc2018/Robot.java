@@ -1,20 +1,25 @@
 package com.team254.frc2018;
 
-import com.team254.frc2018.lidar.LidarInterface;
+import com.team254.frc2018.lidar.LidarProcessor;
 import com.team254.frc2018.lidar.LidarServer;
+import com.team254.frc2018.loops.Looper;
 import edu.wpi.first.wpilibj.IterativeRobot;
 
 public class Robot extends IterativeRobot {
-    private LidarInterface mLidar = LidarInterface.getInstance();
+    private LidarProcessor mLidar = LidarProcessor.getInstance();
     private LidarServer mLidarServer = LidarServer.getInstance();
+
+    private Looper mEnabledLooper = new Looper();
 
     @Override
     public void robotInit() {
+        mEnabledLooper.register(LidarProcessor.getInstance());
     }
 
     @Override
     public void disabledInit() {
-        mLidarServer.start();
+        mLidarServer.stop();
+        mEnabledLooper.stop();
     }
 
     @Override
@@ -22,6 +27,8 @@ public class Robot extends IterativeRobot {
 
     @Override
     public void teleopInit() {
+        mLidarServer.start();
+        mEnabledLooper.start();
     }
 
     @Override
@@ -34,7 +41,9 @@ public class Robot extends IterativeRobot {
     public void autonomousPeriodic() { }
 
     @Override
-    public void teleopPeriodic() { }
+    public void teleopPeriodic() {
+//        System.out.println(mLidarServer.isLidarConnected());
+    }
 
     @Override
     public void testPeriodic() { }

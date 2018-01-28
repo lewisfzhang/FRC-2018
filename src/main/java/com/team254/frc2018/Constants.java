@@ -13,11 +13,11 @@ import java.util.Enumeration;
 public class Constants {
     public static double kLooperDt = 0.005;
 
-    // LidarInterface Stuff
-    public static int kLidarUDPPort = 9254;
+    // LidarProcessor Stuff
     public static int kScanSize = 400;
     public static int kNumScansToStore = 10;
     public static String kChezyLidarPath = "/home/root/chezy_lidar";
+    public static double kLidarRestartTime = 2.5;
 
     /* ROBOT PHYSICAL CONSTANTS */
 
@@ -31,6 +31,7 @@ public class Constants {
     public static double kCenterToIntakeDistance = 23.11;
     public static double kCenterToRearBumperDistance = 16.99;
     public static double kCenterToSideBumperDistance = 17.225;
+    public static double kCenterToBackFollowerWheel = 16.99; // Tune me!
 
     /* CONTROL LOOP GAINS */
 

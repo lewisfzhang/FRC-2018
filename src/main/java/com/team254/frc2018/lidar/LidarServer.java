@@ -5,17 +5,15 @@ import edu.wpi.first.wpilibj.Timer;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.SocketException;
+import java.io.InputStreamReader;
 
 public class LidarServer {
     private static LidarServer mInstance = null;
-    private LidarInterface mLidarInterface = LidarInterface.getInstance();
-    private UdbBridge mBridge;
+    private LidarProcessor mLidarProcessor = LidarProcessor.getInstance();
     private static BufferedReader mBufferedReader;
-    private boolean mRunning = false;
+    public boolean mRunning = false;
     private Thread mThread;
+    public boolean thread_ending = false;
 
     public static LidarServer getInstance() {
         if (mInstance == null) {
@@ -25,75 +23,113 @@ public class LidarServer {
     }
 
     public LidarServer() {
-        mBridge = new UdbBridge();
-        mThread = new Thread(new SocketThread());
+    }
+
+    public boolean isLidarConnected() {
+        try {
+            Runtime r = Runtime.getRuntime();
+            Process p = r.exec("/bin/ls /dev/serial/by-id/");
+            InputStreamReader reader = new InputStreamReader(p.getInputStream());
+            BufferedReader response = new BufferedReader(reader);
+            String s;
+            while ((s = response.readLine()) != null) {
+                if (s.equals("usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0")) return true;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     public boolean start() {
-        if(!mRunning) {
-            if((mBufferedReader = mBridge.start()) != null) {
-                mRunning = true;
-                mThread.start();
-                return true;
-            }
-        } else {
-            System.out.println("Error: Server already running");
+        if(!isLidarConnected()) {
+            return false;
         }
-        return false;
+        System.out.println("Starting lidar");
+        try {
+            Process p = new ProcessBuilder().command(Constants.kChezyLidarPath).start();
+            mRunning = true;
+            mThread = new Thread(new ReaderThread());
+            mThread.start();
+            InputStreamReader reader = new InputStreamReader(p.getInputStream());
+            mBufferedReader = new BufferedReader(reader);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return true;
     }
 
     public boolean stop() {
-        if(mRunning) {
-            mRunning = false;
-            try {
-                System.out.println("About to join");
-                mThread.join();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return mBridge.stop();
-        } else {
-            System.out.println("Error: Server not running");
+        if(!mRunning) {
+            return false;
         }
-        return false;
+
+        System.out.print("Stopping Lidar... ");
+
+        mRunning = false;
+        thread_ending = true;
+
+        try {
+            Runtime r = Runtime.getRuntime();
+            r.exec("/usr/bin/killall chezy_lidar");
+        } catch (IOException e) {
+            System.out.println("Error: couldn't kill process");
+            e.printStackTrace();
+            thread_ending = false;
+            return false;
+        }
+
+        try {
+            mThread.join();
+        } catch (InterruptedException e) {
+            System.out.println("Error: Couldn't join thread");
+            e.printStackTrace();
+            thread_ending = false;
+            return false;
+        }
+        System.out.println("Stopped");
+        thread_ending = false;
+        return true;
     }
 
-    private void handleUpdate(String packet) {
-        String[] lines = packet.split("-");
+    private void handleLine(String line) {
+        boolean isNewScan = line.substring(line.length() - 1).equals("s");
+        if(isNewScan) {
+            line  = line.substring(0, line.length() - 1);
+        }
+
         long curSystemTime = System.currentTimeMillis();
         double curFPGATime = Timer.getFPGATimestamp();
 
-        for (String line : lines) {
-            String[] parts = line.split(",");
-            if (parts.length == 3) {
-                try {
-                    long ts = Long.parseLong(parts[0]);
-                    long ms_ago = curSystemTime - ts;
-                    double normalizedTs = curFPGATime - (ms_ago / 1000.0f);
-                    double angle = Double.parseDouble(parts[1]);
-                    double distance = Double.parseDouble(parts[2]);
-                    mLidarInterface.addPoint(new LidarPoint(normalizedTs, angle, distance));
-                } catch (java.lang.NumberFormatException e) {
-                    e.printStackTrace();
-                }
+        String[] parts = line.split(",");
+        if (parts.length == 3) {
+            try {
+                long ts = Long.parseLong(parts[0]);
+                long ms_ago = curSystemTime - ts;
+                double normalizedTs = curFPGATime - (ms_ago / 1000.0f);
+                double angle = Double.parseDouble(parts[1]);
+                double distance = Double.parseDouble(parts[2]);
+                mLidarProcessor.addPoint(new LidarPoint(normalizedTs, angle, distance), isNewScan);
+            } catch (java.lang.NumberFormatException e) {
+                e.printStackTrace();
             }
         }
     }
 
-    private class SocketThread implements Runnable {
+    private class ReaderThread implements Runnable {
         @Override
         public void run() {
             while(mRunning) {
                 String line;
                 try {
-                    while ((line = mBufferedReader.readLine()) != null) {
-                        handleUpdate(line);
+                    while (mRunning && mBufferedReader.ready() && (line = mBufferedReader.readLine()) != null) {
+                        handleLine(line);
                     }
-                } catch (Exception e) {
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
-            System.out.println("Thread ending");
         }
     }
 

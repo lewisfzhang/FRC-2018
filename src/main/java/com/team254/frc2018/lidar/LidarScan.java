@@ -9,10 +9,11 @@ import java.util.ArrayList;
  * Holds a single 360 degree scan from the lidar
  */
 public class LidarScan {
-    public ArrayList<Translation2d> points = new ArrayList<>(Constants.kScanSize);
+    private ArrayList<Translation2d> points = new ArrayList<>(Constants.kScanSize);
+    private double timestamp;
 
     public String toJsonString() {
-        String json = "{\"scan\": [";
+        String json = "{\"timestamp\": " + timestamp + ", \"scan\": [";
         for(Translation2d point : points) {
             json += "{\"x\":" + point.x() + ", \"y\":" + point.y() + "},";
         }
@@ -29,7 +30,18 @@ public class LidarScan {
         return s;
     }
 
+    public ArrayList<Translation2d> getPoints() {
+        return points;
+    }
+
+    public double getTimestamp() {
+        return timestamp;
+    }
+
     public void addPoint(LidarPoint point) {
+        if(timestamp == 0) {
+            timestamp = point.timestamp;
+        }
         points.add(point.toCartesian());
     }
 }
