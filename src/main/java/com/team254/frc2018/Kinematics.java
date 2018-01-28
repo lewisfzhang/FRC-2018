@@ -40,10 +40,40 @@ public class Kinematics {
                 prev_heading.inverse().rotateBy(current_heading).getRadians());
     }
 
+    /**
+     * For convenience, forward kinematic with an absolute rotation and previous rotation.
+     */
+    public static Twist2d forwardKinematics(Rotation2d prev_heading, double left_wheel_delta, double right_wheel_delta,
+                                            double back_wheel_delta, Rotation2d current_heading) {
+        return forwardKinematics(left_wheel_delta, right_wheel_delta, back_wheel_delta,
+                prev_heading.inverse().rotateBy(current_heading).getRadians());
+    }
+
+
+    /**
+     * Forward kinematics using follower wheel encoders and explicitly measured rotation (ex. from gyro)
+     */
+    public static Twist2d forwardKinematics(double left_wheel_delta, double right_wheel_delta,
+                                            double back_wheel_delta, double delta_rotation_rads) {
+        final double dx = (left_wheel_delta + right_wheel_delta) / 2.0;
+        final double dy = (back_wheel_delta) - Constants.kCenterToBackFollowerWheel * delta_rotation_rads;
+        return new Twist2d(dx, dy, delta_rotation_rads);
+    }
+
+
     /** Append the result of forward kinematics to a previous pose. */
     public static RigidTransform2d integrateForwardKinematics(RigidTransform2d current_pose, double left_wheel_delta,
             double right_wheel_delta, Rotation2d current_heading) {
         Twist2d with_gyro = forwardKinematics(current_pose.getRotation(), left_wheel_delta, right_wheel_delta,
+                current_heading);
+        return integrateForwardKinematics(current_pose, with_gyro);
+    }
+
+    /** Append the result of forward kinematics to a previous pose. */
+    public static RigidTransform2d integrateForwardKinematics(RigidTransform2d current_pose, double left_wheel_delta,
+                                                              double right_wheel_delta, double back_wheel_delta,
+                                                              Rotation2d current_heading) {
+        Twist2d with_gyro = forwardKinematics(current_pose.getRotation(), left_wheel_delta, right_wheel_delta, back_wheel_delta,
                 current_heading);
         return integrateForwardKinematics(current_pose, with_gyro);
     }
