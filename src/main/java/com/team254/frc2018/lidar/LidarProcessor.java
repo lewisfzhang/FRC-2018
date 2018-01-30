@@ -12,6 +12,7 @@ import java.util.LinkedList;
  */
 public class LidarProcessor implements Loop {
     private static LidarProcessor mInstance = null;
+    private LidarServer mLidarServer = LidarServer.getInstance();
     private LinkedList<LidarScan> mScans = new LinkedList<>();
     private double prev_timestamp = Double.MAX_VALUE;
 
@@ -64,12 +65,12 @@ public class LidarProcessor implements Loop {
     @Override
     public void onLoop(double timestamp) {
         if(Timer.getFPGATimestamp() - prev_timestamp > Constants.kLidarRestartTime) {
-            if(LidarServer.getInstance().mRunning) {
+            if(mLidarServer.isRunning()) {
                 System.out.println("Lidar timed out. Restarting");
-                LidarServer.getInstance().stop();
+                mLidarServer.stop();
             } else {
-                if(!LidarServer.getInstance().thread_ending) {
-                    if(LidarServer.getInstance().start()) {
+                if (!mLidarServer.isEnding()) {
+                    if (mLidarServer.start()) {
                         prev_timestamp = Timer.getFPGATimestamp();
                     }
                 }

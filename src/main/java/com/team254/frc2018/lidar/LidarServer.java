@@ -11,9 +11,9 @@ public class LidarServer {
     private static LidarServer mInstance = null;
     private LidarProcessor mLidarProcessor = LidarProcessor.getInstance();
     private static BufferedReader mBufferedReader;
-    public boolean mRunning = false;
+    private boolean mRunning = false;
     private Thread mThread;
-    public boolean thread_ending = false;
+    private boolean thread_ending = false;
 
     public static LidarServer getInstance() {
         if (mInstance == null) {
@@ -42,13 +42,16 @@ public class LidarServer {
     }
 
     public boolean start() {
-        if(!isLidarConnected()) {
-            return false;
+        synchronized (LidarServer.this) {
+            if (!isLidarConnected() || mRunning) {
+                return false;
+            }
+            mRunning = true;
         }
+
         System.out.println("Starting lidar");
         try {
             Process p = new ProcessBuilder().command(Constants.kChezyLidarPath).start();
-            mRunning = true;
             mThread = new Thread(new ReaderThread());
             mThread.start();
             InputStreamReader reader = new InputStreamReader(p.getInputStream());
@@ -61,14 +64,16 @@ public class LidarServer {
     }
 
     public boolean stop() {
-        if(!mRunning) {
-            return false;
+        synchronized (LidarServer.this) {
+            if (!mRunning) {
+                return false;
+            }
+
+            System.out.print("Stopping Lidar... ");
+
+            mRunning = false;
+            thread_ending = true;
         }
-
-        System.out.print("Stopping Lidar... ");
-
-        mRunning = false;
-        thread_ending = true;
 
         try {
             Runtime r = Runtime.getRuntime();
@@ -115,6 +120,14 @@ public class LidarServer {
                 e.printStackTrace();
             }
         }
+    }
+
+    public boolean isRunning() {
+        return mRunning;
+    }
+
+    public boolean isEnding() {
+        return thread_ending;
     }
 
     private class ReaderThread implements Runnable {
