@@ -1,7 +1,7 @@
 package com.team254.frc2018.lidar;
 
 import com.team254.frc2018.Constants;
-import com.team254.lib.util.math.Translation2d;
+import com.team254.lib.geometry.Translation2d;
 
 import java.util.ArrayList;
 

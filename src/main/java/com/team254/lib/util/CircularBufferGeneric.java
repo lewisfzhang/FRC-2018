@@ -3,7 +3,7 @@ package com.team254.lib.util;
 import java.util.Collection;
 import java.util.LinkedList;
 
-import com.team254.lib.util.math.Translation2d;
+import com.team254.lib.geometry.Translation2d;
 
 /**
  * Implements a simple circular buffer.

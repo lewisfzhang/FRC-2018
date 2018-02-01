@@ -1,24 +1,22 @@
-package com.team254.lib.util.math;
+package com.team254.lib.geometry;
 
-import static com.team254.lib.util.Util.epsilonEquals;
-
-import com.team254.lib.util.Interpolable;
+import com.team254.lib.util.Util;
 
 import java.text.DecimalFormat;
+
+import static com.team254.lib.util.Util.kEpsilon;
 
 /**
  * A rotation in a 2d coordinate frame represented a point on the unit circle (cosine and sine).
  * 
  * Inspired by Sophus (https://github.com/strasdat/Sophus/tree/master/sophus)
  */
-public class Rotation2d implements Interpolable<Rotation2d> {
+public class Rotation2d implements IRotation2d<Rotation2d> {
     protected static final Rotation2d kIdentity = new Rotation2d();
 
     public static final Rotation2d identity() {
         return kIdentity;
     }
-
-    protected static final double kEpsilon = 1E-9;
 
     protected double cos_angle_;
     protected double sin_angle_;
@@ -35,12 +33,12 @@ public class Rotation2d implements Interpolable<Rotation2d> {
         }
     }
 
-    public Rotation2d(Rotation2d other) {
+    public Rotation2d(final Rotation2d other) {
         cos_angle_ = other.cos_angle_;
         sin_angle_ = other.sin_angle_;
     }
 
-    public Rotation2d(Translation2d direction, boolean normalize) {
+    public Rotation2d(final Translation2d direction, boolean normalize) {
         this(direction.x(), direction.y(), normalize);
     }
 
@@ -101,7 +99,7 @@ public class Rotation2d implements Interpolable<Rotation2d> {
      *            The other rotation. See: https://en.wikipedia.org/wiki/Rotation_matrix
      * @return This rotation rotated by other.
      */
-    public Rotation2d rotateBy(Rotation2d other) {
+    public Rotation2d rotateBy(final Rotation2d other) {
         return new Rotation2d(cos_angle_ * other.cos_angle_ - sin_angle_ * other.sin_angle_,
                 cos_angle_ * other.sin_angle_ + sin_angle_ * other.cos_angle_, true);
     }
@@ -119,8 +117,8 @@ public class Rotation2d implements Interpolable<Rotation2d> {
         return new Rotation2d(cos_angle_, -sin_angle_, false);
     }
 
-    public boolean isParallel(Rotation2d other) {
-        return epsilonEquals(Translation2d.cross(toTranslation(), other.toTranslation()), 0.0, kEpsilon);
+    public boolean isParallel(final Rotation2d other) {
+        return Util.epsilonEquals(Translation2d.cross(toTranslation(), other.toTranslation()), 0.0);
     }
 
     public Translation2d toTranslation() {
@@ -128,7 +126,7 @@ public class Rotation2d implements Interpolable<Rotation2d> {
     }
 
     @Override
-    public Rotation2d interpolate(Rotation2d other, double x) {
+    public Rotation2d interpolate(final Rotation2d other, double x) {
         if (x <= 0) {
             return new Rotation2d(this);
         } else if (x >= 1) {
@@ -142,5 +140,26 @@ public class Rotation2d implements Interpolable<Rotation2d> {
     public String toString() {
         final DecimalFormat fmt = new DecimalFormat("#0.000");
         return "(" + fmt.format(getDegrees()) + " deg)";
+    }
+
+    @Override
+    public String toCSV() {
+        final DecimalFormat fmt = new DecimalFormat("#0.000");
+        return fmt.format(getDegrees());
+    }
+
+    @Override
+    public double distance(final Rotation2d other) {
+        return inverse().rotateBy(other).getRadians();
+    }
+
+    @Override
+    public boolean isEqual(final Rotation2d other) {
+        return distance(other) < Util.kEpsilon;
+    }
+
+    @Override
+    public Rotation2d getRotation() {
+        return this;
     }
 }
