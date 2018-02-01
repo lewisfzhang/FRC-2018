@@ -1,13 +1,13 @@
 package com.team254.lib.trajectory;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-
 import com.team254.lib.geometry.Pose2dWithCurvature;
 import com.team254.lib.geometry.Translation2d;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class IntegrationTest {
 

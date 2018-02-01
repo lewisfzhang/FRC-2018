@@ -1,9 +1,5 @@
 package com.team254.lib.trajectory.timing;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-
 import com.team254.lib.geometry.ITranslation2d;
 import com.team254.lib.geometry.State;
 import com.team254.lib.geometry.Translation2d;
@@ -16,6 +12,8 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TimingUtilTest {
 

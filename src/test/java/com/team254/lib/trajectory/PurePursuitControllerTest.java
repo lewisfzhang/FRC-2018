@@ -1,7 +1,5 @@
 package com.team254.lib.trajectory;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import com.team254.lib.geometry.Pose2d;
 import com.team254.lib.geometry.Rotation2d;
 import com.team254.lib.geometry.Translation2d;
@@ -10,6 +8,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class PurePursuitControllerTest {
 

@@ -1,10 +1,9 @@
 package com.team254.frc2018.subsystems;
 
-import edu.wpi.first.wpilibj.Timer;
-
 import com.team254.frc2018.Robot;
 import com.team254.frc2018.loops.Loop;
 import com.team254.frc2018.loops.Looper;
+import edu.wpi.first.wpilibj.Timer;
 
 /**
  * The superstructure subsystem is the overarching superclass containing all components of the superstructure: the

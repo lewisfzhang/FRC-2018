@@ -3,7 +3,6 @@ package com.team254.frc2018.lidar;
 import com.team254.frc2018.Constants;
 import com.team254.frc2018.loops.Loop;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import java.util.LinkedList;
 

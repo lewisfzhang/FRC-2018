@@ -1,14 +1,14 @@
 package com.team254.lib.trajectory;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import com.team254.lib.geometry.Translation2d;
 import com.team254.lib.util.Util;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DistanceViewTest {
     public static final double kTestEpsilon = Util.kEpsilon;

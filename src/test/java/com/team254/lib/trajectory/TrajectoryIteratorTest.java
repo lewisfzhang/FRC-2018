@@ -1,15 +1,13 @@
 package com.team254.lib.trajectory;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import com.team254.lib.geometry.Translation2d;
 import com.team254.lib.util.Util;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TrajectoryIteratorTest {
     public static final double kTestEpsilon = Util.kEpsilon;
