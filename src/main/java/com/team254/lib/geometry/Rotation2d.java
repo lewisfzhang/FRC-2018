@@ -8,7 +8,7 @@ import static com.team254.lib.util.Util.kEpsilon;
 
 /**
  * A rotation in a 2d coordinate frame represented a point on the unit circle (cosine and sine).
- * 
+ * <p>
  * Inspired by Sophus (https://github.com/strasdat/Sophus/tree/master/sophus)
  */
 public class Rotation2d implements IRotation2d<Rotation2d> {
@@ -94,9 +94,8 @@ public class Rotation2d implements IRotation2d<Rotation2d> {
 
     /**
      * We can rotate this Rotation2d by adding together the effects of it and another rotation.
-     * 
-     * @param other
-     *            The other rotation. See: https://en.wikipedia.org/wiki/Rotation_matrix
+     *
+     * @param other The other rotation. See: https://en.wikipedia.org/wiki/Rotation_matrix
      * @return This rotation rotated by other.
      */
     public Rotation2d rotateBy(final Rotation2d other) {
@@ -110,7 +109,7 @@ public class Rotation2d implements IRotation2d<Rotation2d> {
 
     /**
      * The inverse of a Rotation2d "undoes" the effect of this rotation.
-     * 
+     *
      * @return The opposite of this rotation.
      */
     public Rotation2d inverse() {

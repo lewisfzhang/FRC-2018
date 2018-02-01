@@ -100,8 +100,8 @@ public class LidarServer {
 
     private void handleLine(String line) {
         boolean isNewScan = line.substring(line.length() - 1).equals("s");
-        if(isNewScan) {
-            line  = line.substring(0, line.length() - 1);
+        if (isNewScan) {
+            line = line.substring(0, line.length() - 1);
         }
 
         long curSystemTime = System.currentTimeMillis();
@@ -133,7 +133,7 @@ public class LidarServer {
     private class ReaderThread implements Runnable {
         @Override
         public void run() {
-            while(mRunning) {
+            while (mRunning) {
                 String line;
                 try {
                     while (mRunning && mBufferedReader.ready() && (line = mBufferedReader.readLine()) != null) {
@@ -145,7 +145,6 @@ public class LidarServer {
             }
         }
     }
-
 
 
 }

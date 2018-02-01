@@ -58,7 +58,7 @@ public class PurePursuitController<S extends ITranslation2d<S>> implements IPath
     protected boolean done_ = false;
 
     public PurePursuitController(final DistanceView<S> path, double sampling_dist, double lookahead,
-            double goal_tolerance) {
+                                 double goal_tolerance) {
         sampling_dist_ = sampling_dist;
         lookahead_ = lookahead;
         goal_tolerance_ = goal_tolerance;

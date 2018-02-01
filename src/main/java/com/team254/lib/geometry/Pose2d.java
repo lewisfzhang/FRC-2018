@@ -4,7 +4,7 @@ import com.team254.lib.util.Util;
 
 /**
  * Represents a 2d pose (rigid transform) containing translational and rotational elements.
- * 
+ * <p>
  * Inspired by Sophus (https://github.com/strasdat/Sophus/tree/master/sophus)
  */
 public class Pose2d implements IPose2d<Pose2d> {
@@ -100,9 +100,8 @@ public class Pose2d implements IPose2d<Pose2d> {
     /**
      * Transforming this RigidTransform2d means first translating by other.translation and then rotating by
      * other.rotation
-     * 
-     * @param other
-     *            The other transform.
+     *
+     * @param other The other transform.
      * @return This transform * other
      */
     public Pose2d transformBy(final Pose2d other) {
@@ -112,7 +111,7 @@ public class Pose2d implements IPose2d<Pose2d> {
 
     /**
      * The inverse of this transform "undoes" the effect of translating by this transform.
-     * 
+     *
      * @return The opposite of this transform.
      */
     public Pose2d inverse() {

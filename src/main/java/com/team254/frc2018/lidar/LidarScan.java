@@ -14,17 +14,17 @@ public class LidarScan {
 
     public String toJsonString() {
         String json = "{\"timestamp\": " + timestamp + ", \"scan\": [";
-        for(Translation2d point : points) {
+        for (Translation2d point : points) {
             json += "{\"x\":" + point.x() + ", \"y\":" + point.y() + "},";
         }
-        json = json.substring(0, json.length()-1);
+        json = json.substring(0, json.length() - 1);
         json += "]}";
         return json;
     }
 
     public String toString() {
         String s = "";
-        for(Translation2d point : points) {
+        for (Translation2d point : points) {
             s += "x: " + point.x() + ", y: " + point.y() + "\n";
         }
         return s;
@@ -39,7 +39,7 @@ public class LidarScan {
     }
 
     public void addPoint(LidarPoint point) {
-        if(timestamp == 0) {
+        if (timestamp == 0) {
             timestamp = point.timestamp;
         }
         points.add(point.toCartesian());

@@ -34,7 +34,7 @@ public class CheesyDriveHelper {
     private double mNegInertiaAccumlator = 0.0;
 
     public DriveSignal cheesyDrive(double throttle, double wheel, boolean isQuickTurn,
-            boolean isHighGear) {
+                                   boolean isHighGear) {
 
         wheel = handleDeadband(wheel, kWheelDeadband);
         throttle = handleDeadband(throttle, kThrottleDeadband);

@@ -20,7 +20,7 @@ import edu.wpi.first.wpilibj.Solenoid;
  * and a navX board. The Drive subsystem has several control methods including open loop, velocity control, and position
  * control. The Drive subsystem also has several methods that handle automatic aiming, autonomous path driving, and
  * manual control.
- * 
+ *
  * @see Subsystem
  */
 public class Drive extends Subsystem {
@@ -73,13 +73,13 @@ public class Drive extends Subsystem {
         public void onLoop(double timestamp) {
             synchronized (Drive.this) {
                 switch (mDriveControlState) {
-                case OPEN_LOOP:
-                    return;
-                case VELOCITY_SETPOINT:
-                    return;
-                default:
-                    System.out.println("Unexpected drive control state: " + mDriveControlState);
-                    break;
+                    case OPEN_LOOP:
+                        return;
+                    case VELOCITY_SETPOINT:
+                        return;
+                    default:
+                        System.out.println("Unexpected drive control state: " + mDriveControlState);
+                        break;
                 }
             }
         }
@@ -158,7 +158,7 @@ public class Drive extends Subsystem {
         }
         // Right side is reversed, but reverseOutput doesn't invert PercentVBus.
         // So set negative on the right master.
-        mLeftMaster.set (ControlMode.PercentOutput, -signal.getRight());
+        mLeftMaster.set(ControlMode.PercentOutput, -signal.getRight());
         mRightMaster.set(ControlMode.PercentOutput, signal.getLeft());
     }
 

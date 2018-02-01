@@ -6,7 +6,7 @@ import com.team254.lib.geometry.IPose2d;
 public class DifferentialDriveDynamicsConstraint<S extends IPose2d<S> & ICurvature<S>> implements TimingConstraint<S> {
 
     // TODO: Implement constraints based on a differential drive (ensuring that we don't exceed voltage/current limits when following a trajectory).
-    
+
     public DifferentialDriveDynamicsConstraint() {
 
     }
@@ -19,7 +19,7 @@ public class DifferentialDriveDynamicsConstraint<S extends IPose2d<S> & ICurvatu
 
     @Override
     public com.team254.lib.trajectory.timing.TimingConstraint.MinMaxAcceleration getMinMaxAcceleration(S state,
-            double velocity) {
+                                                                                                       double velocity) {
         // TODO Auto-generated method stub
         return null;
     }

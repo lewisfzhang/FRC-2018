@@ -39,8 +39,8 @@ public class Translation2d implements ITranslation2d<Translation2d> {
 
     /**
      * The "norm" of a transform is the Euclidean distance in x and y.
-     * 
-     * @return sqrt(x^2 + y^2)
+     *
+     * @return sqrt(x ^ 2 + y ^ 2)
      */
     public double norm() {
         return Math.hypot(x_, y_);
@@ -68,9 +68,8 @@ public class Translation2d implements ITranslation2d<Translation2d> {
 
     /**
      * We can compose Translation2d's by adding together the x and y shifts.
-     * 
-     * @param other
-     *            The other translation to add.
+     *
+     * @param other The other translation to add.
      * @return The combined effect of translating by this object and the other.
      */
     public Translation2d translateBy(final Translation2d other) {
@@ -79,9 +78,8 @@ public class Translation2d implements ITranslation2d<Translation2d> {
 
     /**
      * We can also rotate Translation2d's. See: https://en.wikipedia.org/wiki/Rotation_matrix
-     * 
-     * @param rotation
-     *            The rotation to apply.
+     *
+     * @param rotation The rotation to apply.
      * @return This translation rotated by rotation.
      */
     public Translation2d rotateBy(final Rotation2d rotation) {
@@ -94,7 +92,7 @@ public class Translation2d implements ITranslation2d<Translation2d> {
 
     /**
      * The inverse simply means a Translation2d that "undoes" this object.
-     * 
+     *
      * @return Translation by -x and -y.
      */
     public Translation2d inverse() {

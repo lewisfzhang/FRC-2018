@@ -57,9 +57,9 @@ public class Constants {
     public static double kDriveLowGearPositionRampRate = 240.0; // V/s
     public static double kDriveLowGearNominalOutput = 0.5; // V
     public static double kDriveLowGearMaxVelocity = 6.0 * 12.0 * 60.0 / (Math.PI * kDriveWheelDiameterInches); // 6 fps
-                                                                                                               // in RPM
+    // in RPM
     public static double kDriveLowGearMaxAccel = 18.0 * 12.0 * 60.0 / (Math.PI * kDriveWheelDiameterInches); // 18 fps/s
-                                                                                                             // in RPM/s
+    // in RPM/s
 
     public static double kDriveVoltageCompensationRampRate = 0.0;
 
@@ -105,9 +105,8 @@ public class Constants {
 
     /**
      * Make an {@link Solenoid} instance for the single-number ID of the solenoid
-     * 
-     * @param solenoidId
-     *            One of the kXyzSolenoidId constants
+     *
+     * @param solenoidId One of the kXyzSolenoidId constants
      */
     public static Solenoid makeSolenoidForId(int solenoidId) {
         return new Solenoid(solenoidId / 8, solenoidId % 8);

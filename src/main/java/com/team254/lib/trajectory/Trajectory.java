@@ -35,9 +35,8 @@ public class Trajectory<S extends State<S>> {
 
     /**
      * Create a trajectory from the given states and transforms.
-     * 
-     * @param states
-     *            The states of the trajectory.
+     *
+     * @param states The states of the trajectory.
      * @throws InvalidTrajectoryException
      */
     public Trajectory(final List<S> states) {

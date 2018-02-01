@@ -12,7 +12,7 @@ import java.util.List;
 public class TrajectoryUtil {
     /**
      * Creates a Trajectory by sampling a TrajectoryView at a regular interval.
-     * 
+     *
      * @param trajectory_view
      * @param interval
      * @return
@@ -33,7 +33,7 @@ public class TrajectoryUtil {
     }
 
     public static Trajectory<Pose2dWithCurvature> trajectoryFromPathFollower(IPathFollower path_follower,
-            Pose2dWithCurvature start_state, double step_size, double dcurvature_limit) {
+                                                                             Pose2dWithCurvature start_state, double step_size, double dcurvature_limit) {
         List<Pose2dWithCurvature> samples = new ArrayList<Pose2dWithCurvature>();
         samples.add(start_state);
         Pose2dWithCurvature current_state = start_state;
@@ -67,8 +67,8 @@ public class TrajectoryUtil {
             final Twist2d average_steering_command = !curvature_valid
                     ? steering_command
                     : new Twist2d(steering_command.dx, steering_command.dy,
-                            (current_state.getCurvature() + 0.5 * dcurvature * steering_command.norm())
-                                    * steering_command.norm());
+                    (current_state.getCurvature() + 0.5 * dcurvature * steering_command.norm())
+                            * steering_command.norm());
             current_state = new Pose2dWithCurvature(
                     current_state.getPose().transformBy(Pose2d.exp(average_steering_command)),
                     steering_command.curvature());

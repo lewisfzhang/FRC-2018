@@ -9,7 +9,9 @@ public class Util {
 
     public static final double kEpsilon = 1e-12;
 
-    /** Prevent this class from being instantiated. */
+    /**
+     * Prevent this class from being instantiated.
+     */
     private Util() {
     }
 

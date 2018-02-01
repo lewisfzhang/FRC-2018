@@ -1,10 +1,10 @@
 buildscript {
-	repositories {
-		mavenCentral()
-	}
-	dependencies {
-		classpath 'org.junit.platform:junit-platform-gradle-plugin:1.0.3'
-	}
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.junit.platform:junit-platform-gradle-plugin:1.0.3'
+    }
 }
 
 plugins {
@@ -15,7 +15,7 @@ plugins {
 }
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 apply plugin: 'org.junit.platform.gradle.plugin'
 
@@ -56,19 +56,19 @@ jar {
 }
 
 compileTestJava {
-	sourceCompatibility = 1.8
-	targetCompatibility = 1.8
-	options.compilerArgs += '-parameters'
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+    options.compilerArgs += '-parameters'
 }
 
 junitPlatform {
-	filters {
-		engines {
-		}
-		tags {
-			exclude 'slow'
-		}
-	}
+    filters {
+        engines {
+        }
+        tags {
+            exclude 'slow'
+        }
+    }
 }
 
 task wrapper(type: Wrapper) {

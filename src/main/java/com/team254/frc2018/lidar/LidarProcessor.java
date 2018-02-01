@@ -16,7 +16,7 @@ public class LidarProcessor implements Loop {
     private double prev_timestamp = Double.MAX_VALUE;
 
     public static LidarProcessor getInstance() {
-        if(mInstance == null) {
+        if (mInstance == null) {
             mInstance = new LidarProcessor();
         }
         return mInstance;
@@ -27,17 +27,18 @@ public class LidarProcessor implements Loop {
     }
 
     int count = 0;
+
     public void addPoint(LidarPoint point, boolean newScan) {
-        if(newScan) { //crosses the 360-0 threshold.  start a new scan
+        if (newScan) { //crosses the 360-0 threshold.  start a new scan
             prev_timestamp = Timer.getFPGATimestamp();
             count++;
-            if(count > 10) {
+            if (count > 10) {
                 count = 0;
 //                SmartDashboard.putString("lidarScan", mScans.getLast().toJsonString()); //output to lidar visualizer
             }
 
             mScans.add(new LidarScan());
-            if(mScans.size() > Constants.kNumScansToStore) {
+            if (mScans.size() > Constants.kNumScansToStore) {
                 mScans.removeFirst();
             }
         }
@@ -63,8 +64,8 @@ public class LidarProcessor implements Loop {
 
     @Override
     public void onLoop(double timestamp) {
-        if(Timer.getFPGATimestamp() - prev_timestamp > Constants.kLidarRestartTime) {
-            if(mLidarServer.isRunning()) {
+        if (Timer.getFPGATimestamp() - prev_timestamp > Constants.kLidarRestartTime) {
+            if (mLidarServer.isRunning()) {
                 System.out.println("Lidar timed out. Restarting");
                 mLidarServer.stop();
             } else {
@@ -80,7 +81,6 @@ public class LidarProcessor implements Loop {
     @Override
     public void onStop(double timestamp) {
     }
-
 
 
 }
