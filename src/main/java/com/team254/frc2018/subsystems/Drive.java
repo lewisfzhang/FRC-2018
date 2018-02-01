@@ -7,6 +7,8 @@ import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 
+import com.ctre.phoenix.sensors.PigeonIMU;
+import com.team254.lib.util.math.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Solenoid;
 
@@ -26,9 +28,6 @@ import com.team254.lib.util.DriveSignal;
 public class Drive extends Subsystem {
 
     private static Drive mInstance = new Drive();
-
-    private static final int kLowGearPositionControlSlot = 0;
-    private static final int kHighGearVelocityControlSlot = 1;
 
     public static Drive getInstance() {
         return mInstance;
@@ -56,6 +55,7 @@ public class Drive extends Subsystem {
     // Hardware
     private final TalonSRX mLeftMaster, mRightMaster, mLeftSlave, mRightSlave;
     private final Solenoid mShifter;
+    private PigeonIMU mPigeon;
 
     // Hardware states
     private boolean mIsHighGear;
@@ -67,6 +67,7 @@ public class Drive extends Subsystem {
             synchronized (Drive.this) {
                 setOpenLoop(DriveSignal.NEUTRAL);
                 setBrakeMode(false);
+
             }
         }
 
@@ -102,8 +103,6 @@ public class Drive extends Subsystem {
         }
         mLeftMaster.setSensorPhase(true);
 
-
-
         mLeftSlave = new TalonSRX(Constants.kLeftDriveSlaveId);
         mLeftSlave.set(ControlMode.Follower, Constants.kLeftDriveMasterId);
         mLeftSlave.setInverted(false);
@@ -111,7 +110,6 @@ public class Drive extends Subsystem {
         if (leftTalonFramePeriod != ErrorCode.OK) {
             DriverStation.reportError("Could not set left frame period: " + leftTalonFramePeriod, false);
         }
-
 
         mRightMaster = new TalonSRX(Constants.kRightDriveMasterId);
         mRightMaster.set(ControlMode.PercentOutput, 0);
@@ -121,8 +119,6 @@ public class Drive extends Subsystem {
             DriverStation.reportError("Could not detect left encoder: " + leftSensorPresent, false);
         }
         mRightMaster.setSensorPhase(true);
-
-
 
         mRightSlave = new TalonSRX(Constants.kRightDriverSlaveId);
         mRightSlave.set(ControlMode.Follower, Constants.kRightDriveMasterId);
@@ -183,6 +179,16 @@ public class Drive extends Subsystem {
         return mIsBrakeMode;
     }
 
+    public Rotation2d getHeading() {
+        double[] ypr = new double[3];
+        mPigeon.getYawPitchRoll(ypr);
+        return Rotation2d.fromDegrees(ypr[0]);
+    }
+
+    public void setHeading(Rotation2d heading) {
+        mPigeon.setYaw(heading.getDegrees(), 0);
+    }
+
     public synchronized void setBrakeMode(boolean on) {
         if (mIsBrakeMode != on) {
             mIsBrakeMode = on;
@@ -233,24 +239,35 @@ public class Drive extends Subsystem {
         return inchesToRotations(inches_per_second) * 60;
     }
 
-    public double getLeftDistanceInches() {
-        return rotationsToInches(mLeftMaster.getSelectedSensorPosition(0));
+    /**
+     * Follower wheel getters
+     **/
+    public double getLeftFollowerDistance() {
+        return rotationsToInches(0); // todo: figure out where encoders are plugged in
     }
 
-    public double getRightDistanceInches() {
-        return rotationsToInches(mRightMaster.getSelectedSensorPosition(0));
+    public double getRightFollowerDistance() {
+        return rotationsToInches(0); // todo: figure out where encoders are plugged in
     }
 
-    public double getLeftVelocityInchesPerSec() {
-        return rpmToInchesPerSecond(mLeftMaster.getSelectedSensorVelocity(0));
+    public double getBackFollowerDistance() {
+        return rotationsToInches(0); // todo: figure out where encoders are plugged in
     }
 
-    public double getRightVelocityInchesPerSec() {
-        return rpmToInchesPerSecond(mRightMaster.getSelectedSensorVelocity(0));
+    public double getLeftFollowerVelocity() {
+        return rpmToInchesPerSecond(0); // todo: figure out where encoders are plugged in
+    }
+
+    public double getRightFollowerVelocity() {
+        return rpmToInchesPerSecond(0); // todo: figure out where encoders are plugged in
+    }
+
+    public double getBackFollowerVelocity() {
+        return rpmToInchesPerSecond(0); // todo: figure out where encoders are plugged in
     }
 
     public synchronized void reloadGains() {
-
+        //todo: implement this
     }
 
     @Override

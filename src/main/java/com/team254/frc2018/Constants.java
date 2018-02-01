@@ -31,6 +31,7 @@ public class Constants {
     public static double kCenterToIntakeDistance = 23.11;
     public static double kCenterToRearBumperDistance = 16.99;
     public static double kCenterToSideBumperDistance = 17.225;
+
     public static double kCenterToBackFollowerWheel = 16.99; // Tune me!
 
     /* CONTROL LOOP GAINS */
