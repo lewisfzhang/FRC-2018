@@ -65,6 +65,7 @@ public class Robot extends IterativeRobot {
 
         mDrive.setOpenLoop(mCheesyDriveHelper.cheesyDrive(throttle, turn, mControlBoard.getQuickTurn(),
                 !mControlBoard.getLowGear()));
+        mDrive.setHighGear(!mControlBoard.getLowGear());
     }
 
     @Override
