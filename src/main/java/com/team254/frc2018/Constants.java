@@ -87,7 +87,7 @@ public class Constants {
     public static final int kRightDriveSlave1Id = 14;
 
     // Solenoids
-    public static final int kShifterSolenoidId = 0; // PCM 0, Solenoid 0
+    public static final int kShifterSolenoidId = 12; // PCM 0, Solenoid 4
     public static final int kIntakeDeploySolenoidId = 1; // PCM 0, Solenoid 1
     public static final int kHopperSolenoidId = 2; // PCM 0, Solenoid 2
     public static final int kGearWristSolenoid = 7; // PCM 0, Solenoid 7
@@ -113,10 +113,26 @@ public class Constants {
     /**
      * Make an {@link Solenoid} instance for the single-number ID of the solenoid
      *
+     * Solenoids were wired in an inane method and also not labeled zero indexed.
+     *
+     * Solenoids 1-4 are on PCM 1, Solenoids 7-4.
+     * Solenoids 5-8 are on PCM 0, Solenoids 0-3.
+     * Solenoids 9-12 are on PCM 0, Solenoids 7-4.
+     *
      * @param solenoidId One of the kXyzSolenoidId constants
      */
     public static Solenoid makeSolenoidForId(int solenoidId) {
-        return new Solenoid(solenoidId / 8, solenoidId % 8);
+        if (solenoidId <= 4) {
+            // These solenoids are on PCM 1, wired 1-4 to 7-4.
+            return new Solenoid(1, 8 - solenoidId);
+        } else if (solenoidId <= 8) {
+            // These solenoids are on PCM 0, wired 5-8 to 0-3.
+            return new Solenoid(0, solenoidId - 5);
+        } else if (solenoidId <= 12) {
+            // These solenoids are on PCM 0, wired 9-12 to 7-4.
+            return new Solenoid(0,  16 - solenoidId);
+        }
+        throw new IllegalArgumentException("Solenoid ID not valiid: " + solenoidId);
     }
 
     /**
