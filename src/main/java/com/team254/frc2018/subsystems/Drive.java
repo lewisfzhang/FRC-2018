@@ -9,6 +9,7 @@ import com.ctre.phoenix.sensors.PigeonIMU;
 import com.team254.frc2018.Constants;
 import com.team254.frc2018.loops.Loop;
 import com.team254.frc2018.loops.Looper;
+import com.team254.lib.drivers.TalonSRXFactory;
 import com.team254.lib.geometry.Rotation2d;
 import com.team254.lib.util.DriveSignal;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -92,55 +93,37 @@ public class Drive extends Subsystem {
 
     private Drive() {
         // Start all Talons in open loop mode.
-        mLeftMaster = new TalonSRX(Constants.kLeftDriveMasterId);
-        mLeftMaster.set(ControlMode.PercentOutput, 0);
-        mLeftMaster.setInverted(false);
+        mLeftMaster = TalonSRXFactory.createDefaultTalon(Constants.kLeftDriveMasterId);
         ErrorCode leftSensorPresent = mLeftMaster.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 100); //primary closed-loop, 100 ms timeout
         if (leftSensorPresent != ErrorCode.OK) {
             DriverStation.reportError("Could not detect left encoder: " + leftSensorPresent, false);
         }
+        mLeftMaster.setInverted(false);
         mLeftMaster.setSensorPhase(true);
 
-        mLeftSlave = new TalonSRX(Constants.kLeftDriveSlaveId);
-        mLeftSlave.set(ControlMode.Follower, Constants.kLeftDriveMasterId);
+        mLeftSlave = TalonSRXFactory.createPermanentSlaveTalon(Constants.kLeftDriveSlaveId,
+                Constants.kLeftDriveMasterId);
         mLeftSlave.setInverted(false);
-//        ErrorCode leftTalonFramePeriod = mLeftMaster.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 5, 100);
-//        if (leftTalonFramePeriod != ErrorCode.OK) {
-//            DriverStation.reportError("Could not set left frame period: " + leftTalonFramePeriod, false);
-//        }
 
-        mLeftSlave1 = new TalonSRX(Constants.kLeftDriveSlave1Id);
-        mLeftSlave1.set(ControlMode.Follower, Constants.kLeftDriveMasterId);
+        mLeftSlave1 = TalonSRXFactory.createPermanentSlaveTalon(Constants.kLeftDriveSlave1Id,
+                Constants.kLeftDriveMasterId);
         mLeftSlave1.setInverted(false);
-//        ErrorCode leftTalonFramePeriod1 = mLeftMaster.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 5, 100);
-//        if (leftTalonFramePeriod1 != ErrorCode.OK) {
-//            DriverStation.reportError("Could not set left frame period: " + leftTalonFramePeriod1, false);
-//        }
 
-        mRightMaster = new TalonSRX(Constants.kRightDriveMasterId);//new TalonSRX(Constants.kRightDriveMasterId);
-        mRightMaster.set(ControlMode.PercentOutput, 0);
-        mRightMaster.setInverted(true);
+        mRightMaster = TalonSRXFactory.createDefaultTalon(Constants.kRightDriveMasterId);
         ErrorCode rightSensorPresent = mRightMaster.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 100); //primary closed-loop, 100 ms timeout
         if (rightSensorPresent != ErrorCode.OK) {
             DriverStation.reportError("Could not detect left encoder: " + rightSensorPresent, false);
         }
+        mRightMaster.setInverted(true);
         mRightMaster.setSensorPhase(true);
 
-        mRightSlave = new TalonSRX(Constants.kRightDriveSlaveId);
-        mRightSlave.set(ControlMode.Follower, Constants.kRightDriveMasterId);
+        mRightSlave = TalonSRXFactory.createPermanentSlaveTalon(Constants.kRightDriveSlaveId,
+                Constants.kRightDriveMasterId);
         mRightSlave.setInverted(true);
-//        ErrorCode rightTalonFramePeriod = mRightMaster.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 5, 100);
-//        if (rightTalonFramePeriod != ErrorCode.OK) {
-//            DriverStation.reportError("Could not set left frame period: " + rightTalonFramePeriod, false);
-//        }
 
-        mRightSlave1 = new TalonSRX(Constants.kRightDriveSlave1Id);
-        mRightSlave1.set(ControlMode.Follower, Constants.kRightDriveMasterId);
+        mRightSlave1 = TalonSRXFactory.createPermanentSlaveTalon(Constants.kRightDriveSlave1Id,
+                Constants.kRightDriveMasterId);
         mRightSlave1.setInverted(true);
-//        ErrorCode rightTalonFramePeriod1 = mRightMaster.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 5, 100);
-//        if (rightTalonFramePeriod1 != ErrorCode.OK) {
-//            DriverStation.reportError("Could not set left frame period: " + rightTalonFramePeriod1, false);
-//        }
 
         mShifter = Constants.makeSolenoidForId(Constants.kShifterSolenoidId);
 
