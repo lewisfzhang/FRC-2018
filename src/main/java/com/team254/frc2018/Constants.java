@@ -13,11 +13,16 @@ import java.util.Enumeration;
 public class Constants {
     public static double kLooperDt = 0.005;
 
-    // LidarProcessor Stuff
+    /* LIDAR CONSTANTS */
     public static int kScanSize = 400;
     public static int kNumScansToStore = 10;
     public static String kChezyLidarPath = "/home/root/chezy_lidar";
     public static double kLidarRestartTime = 2.5;
+    //define a rectangle around the LIDAR at which points should be ignored
+    public static double kIgnorePointXMin = -20.0;
+    public static double kIgnorePointXMax = 20.0;
+    public static double kIgnorePointYMin = -25.0;
+    public static double kIgnorePointYMax = 25.0;
 
     /* ROBOT PHYSICAL CONSTANTS */
 
@@ -74,10 +79,12 @@ public class Constants {
     // are attached to the master)
 
     // Drive
-    public static final int kLeftDriveMasterId = 12;
-    public static final int kLeftDriveSlaveId = 11;
-    public static final int kRightDriveMasterId = 3;
-    public static final int kRightDriverSlaveId = 4;
+    public static final int kLeftDriveMasterId = 5;
+    public static final int kLeftDriveSlaveId = 6;
+    public static final int kLeftDriveSlave1Id = 7;
+    public static final int kRightDriveMasterId = 11;
+    public static final int kRightDriveSlaveId = 13;
+    public static final int kRightDriveSlave1Id = 14;
 
     // Solenoids
     public static final int kShifterSolenoidId = 0; // PCM 0, Solenoid 0
