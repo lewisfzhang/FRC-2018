@@ -10,7 +10,7 @@ import edu.wpi.first.wpilibj.Talon;
  */
 public class TalonSRXFactory {
 
-    private final static int kTimeoutMs = 10;
+    private final static int kTimeoutMs = 100;
 
     public static class Configuration {
         public NeutralMode NEUTRAL_MODE = NeutralMode.Coast;
