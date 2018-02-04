@@ -44,7 +44,9 @@ public class TalonSRXFactory {
     private static final Configuration kSlaveConfiguration = new Configuration();
 
     static {
-        kSlaveConfiguration.CONTROL_FRAME_PERIOD_MS = 1000;
+        // This control frame value seems to need to be something reasonable to avoid the Talon's
+        // LEDs behaving erratically.  Potentially try to increase as much as possible.
+        kSlaveConfiguration.CONTROL_FRAME_PERIOD_MS = 100;
         kSlaveConfiguration.MOTION_CONTROL_FRAME_PERIOD_MS = 1000;
         kSlaveConfiguration.GENERAL_STATUS_FRAME_RATE_MS = 1000;
         kSlaveConfiguration.FEEDBACK_STATUS_FRAME_RATE_MS = 1000;
@@ -65,7 +67,7 @@ public class TalonSRXFactory {
     }
 
     public static TalonSRX createTalon(int id, Configuration config) {
-        TalonSRX talon = new TalonSRX(id);
+        TalonSRX talon = new LazyTalonSRX(id);
         talon.set(ControlMode.PercentOutput, 0.0);
 
         talon.changeMotionControlFramePeriod(config.MOTION_CONTROL_FRAME_PERIOD_MS);
@@ -108,6 +110,7 @@ public class TalonSRXFactory {
         talon.configOpenloopRamp(config.OPEN_LOOP_RAMP_RATE, kTimeoutMs);
         talon.configClosedloopRamp(config.CLOSED_LOOP_RAMP_RATE, kTimeoutMs);
 
+
         talon.configVoltageCompSaturation(0.0, kTimeoutMs);
         talon.configVoltageMeasurementFilter(32, kTimeoutMs);
         talon.enableVoltageCompensation(false);
@@ -116,6 +119,7 @@ public class TalonSRXFactory {
                 config.GENERAL_STATUS_FRAME_RATE_MS, kTimeoutMs);
         talon.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0,
                 config.FEEDBACK_STATUS_FRAME_RATE_MS, kTimeoutMs);
+
         talon.setStatusFramePeriod(StatusFrameEnhanced.Status_3_Quadrature,
                 config.QUAD_ENCODER_STATUS_FRAME_RATE_MS, kTimeoutMs);
         talon.setStatusFramePeriod(StatusFrameEnhanced.Status_4_AinTempVbat,
