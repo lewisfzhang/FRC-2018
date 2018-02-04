@@ -15,6 +15,10 @@ public class LazyTalonSRX extends TalonSRX {
         super(deviceNumber);
     }
 
+    public double getLastSet() {
+        return mLastSet;
+    }
+
     @Override
     public void set(ControlMode mode, double value) {
         if (value != mLastSet || mode != mLastControlMode) {

@@ -8,6 +8,7 @@ import com.team254.lib.util.CheesyDriveHelper;
 import edu.wpi.first.wpilibj.IterativeRobot;
 
 import java.util.Arrays;
+import java.util.concurrent.ExecutionException;
 
 public class Robot extends IterativeRobot {
 //    private LidarProcessor mLidar = LidarProcessor.getInstance();
@@ -48,6 +49,12 @@ public class Robot extends IterativeRobot {
 
     @Override
     public void testInit() {
+        try {
+            System.out.println("Starting check systems.");
+            mDrive.checkSystem();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

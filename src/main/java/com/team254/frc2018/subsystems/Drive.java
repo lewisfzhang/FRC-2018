@@ -12,9 +12,12 @@ import com.team254.frc2018.loops.Looper;
 import com.team254.lib.drivers.TalonSRXFactory;
 import com.team254.lib.geometry.Rotation2d;
 import com.team254.lib.util.DriveSignal;
+import com.team254.lib.util.TalonSRXChecker;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
+import java.util.ArrayList;
 
 /**
  * This subsystem consists of the robot's drivetrain: 4 CIM motors, 4 talons, one solenoid and 2 pistons to shift gears,
@@ -278,6 +281,38 @@ public class Drive extends Subsystem {
 
     @Override
     public boolean checkSystem() {
-        return true;
+         boolean leftSide =  TalonSRXChecker.CheckTalons(this,
+                new ArrayList<TalonSRXChecker.TalonSRXConfig>(){
+                    {
+                        add(new TalonSRXChecker.TalonSRXConfig("left_master", mLeftMaster));
+                        add(new TalonSRXChecker.TalonSRXConfig("left_slave", mLeftSlave));
+                        add(new TalonSRXChecker.TalonSRXConfig("left_slave1", mLeftSlave1));
+                    }
+                }, new TalonSRXChecker.CheckerConfig() {
+                    {
+                        mCurrentFloor = 2;
+                        mRPMFloor = 1500;
+                        mCurrentEpsilon = 2.0;
+                        mRPMEpsilon = 250;
+                        mRPMSupplier = () -> mLeftMaster.getSelectedSensorVelocity(0);
+                    }
+                 });
+        boolean rightSide =  TalonSRXChecker.CheckTalons(this,
+                new ArrayList<TalonSRXChecker.TalonSRXConfig>(){
+                    {
+                        add(new TalonSRXChecker.TalonSRXConfig("right_master", mRightMaster));
+                        add(new TalonSRXChecker.TalonSRXConfig("right_slave", mRightSlave));
+                        add(new TalonSRXChecker.TalonSRXConfig("right_slave1", mRightSlave1));
+                    }
+                }, new TalonSRXChecker.CheckerConfig() {
+                    {
+                        mCurrentFloor = 2;
+                        mRPMFloor = 1500;
+                        mCurrentEpsilon = 2.0;
+                        mRPMEpsilon = 250;
+                        mRPMSupplier = () -> mRightMaster.getSelectedSensorVelocity(0);
+                    }
+                });
+        return leftSide && rightSide;
     }
 }
