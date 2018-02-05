@@ -105,7 +105,7 @@ public class TalonSRXChecker {
             Double average = currents.stream().mapToDouble(val -> val).average().getAsDouble();
 
             if (!Util.allCloseTo(currents, average, checkerConfig.mCurrentEpsilon)) {
-                System.out.println("Currents vaired!!!!!!!!!!!");
+                System.out.println("Currents varied!!!!!!!!!!!");
                 failure = true;
             }
         }
@@ -114,7 +114,7 @@ public class TalonSRXChecker {
             Double average = rpms.stream().mapToDouble(val -> val).average().getAsDouble();
 
             if (!Util.allCloseTo(rpms, average, checkerConfig.mRPMEpsilon)) {
-                System.out.println("RPMS varied!!!!!!!!");
+                System.out.println("RPMs varied!!!!!!!!");
                 failure = true;
             }
         }
