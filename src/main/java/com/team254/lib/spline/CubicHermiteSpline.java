@@ -4,11 +4,14 @@ import com.team254.lib.geometry.Pose2d;
 import com.team254.lib.geometry.Rotation2d;
 import com.team254.lib.geometry.Translation2d;
 
+/**
+ * Temporary spline for testing
+ */
 public class CubicHermiteSpline implements Spline {
-    double x0, x1, dx0, dx1, y0, y1, dy0, dy1;
     double ax, bx, cx, dx, ay, by, cy, dy;
 
     public CubicHermiteSpline(Pose2d p0, Pose2d p1) {
+        double x0, x1, dx0, dx1, y0, y1, dy0, dy1;
         double scale = 2 * p0.getTranslation().distance(p1.getTranslation());
         x0 = p0.getTranslation().x();
         x1 = p1.getTranslation().x();
@@ -32,17 +35,13 @@ public class CubicHermiteSpline implements Spline {
     public Translation2d getPoint(double t) {
         double x = t*t*t * ax + t*t * bx + t * cx + dx;
         double y = t*t*t * ay + t*t * by + t * cy + dy;
-
         return new Translation2d(x, y);
     }
 
     @Override
     public Rotation2d getHeading(double t) {
-        return null;
-    }
-
-    @Override
-    public String toString() {
-        return "x0: " + x0 + ", y0: " + y0 + ", x1: " + x1 + ", y1: " + y1 + ", dx0: " + dx0 + ", dy0: " + dy0 + ", dx1: " + dx1 + ", dy1: " + dy1;
+        double dx = 3*t*t * ax + 2*t * bx + cx;
+        double dy = 3*t*t * ay + 2*t * by + cy;
+        return new Rotation2d(dx, dy, true);
     }
 }
