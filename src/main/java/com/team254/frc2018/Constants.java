@@ -82,7 +82,7 @@ public class Constants {
     public static final int kLeftDriveMasterId = 5;
     public static final int kLeftDriveSlaveId = 6;
     public static final int kLeftDriveSlave1Id = 7;
-    public static final int kRightDriveMasterId = 11;
+    public static final int kRightDriveMasterId = 12;
     public static final int kRightDriveSlaveId = 13;
     public static final int kRightDriveSlave1Id = 14;
 
