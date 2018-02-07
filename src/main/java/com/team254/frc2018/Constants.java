@@ -132,7 +132,7 @@ public class Constants {
             // These solenoids are on PCM 0, wired 9-12 to 7-4.
             return new Solenoid(0,  16 - solenoidId);
         }
-        throw new IllegalArgumentException("Solenoid ID not valiid: " + solenoidId);
+        throw new IllegalArgumentException("Solenoid ID not valid: " + solenoidId);
     }
 
     /**
