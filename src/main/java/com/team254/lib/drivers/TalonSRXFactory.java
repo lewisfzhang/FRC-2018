@@ -17,6 +17,7 @@ public class TalonSRXFactory {
         // This is factory default.
         public double NEUTRAL_DEADBAND = 0.04;
 
+        public boolean ENABLE_CURRENT_LIMIT = false;
         public boolean ENABLE_SOFT_LIMIT = false;
         public boolean ENABLE_LIMIT_SWITCH = false;
         public int FORWARD_SOFT_LIMIT = 0;
@@ -114,6 +115,8 @@ public class TalonSRXFactory {
         talon.configVoltageCompSaturation(0.0, kTimeoutMs);
         talon.configVoltageMeasurementFilter(32, kTimeoutMs);
         talon.enableVoltageCompensation(false);
+
+        talon.enableCurrentLimit(config.ENABLE_CURRENT_LIMIT);
 
         talon.setStatusFramePeriod(StatusFrameEnhanced.Status_1_General,
                 config.GENERAL_STATUS_FRAME_RATE_MS, kTimeoutMs);
