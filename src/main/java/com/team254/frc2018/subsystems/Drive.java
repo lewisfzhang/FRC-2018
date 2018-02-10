@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 
 /**
  * This subsystem consists of the robot's drivetrain: 4 CIM motors, 4 talons, one solenoid and 2 pistons to shift gears,
@@ -31,6 +32,9 @@ public class Drive extends Subsystem {
 
     private static Drive mInstance = new Drive();
 
+    private static final int kLowGearPositionControlSlot = 0;
+    private static final int kHighGearVelocityControlSlot = 1;
+
     public static Drive getInstance() {
         return mInstance;
     }
@@ -38,24 +42,14 @@ public class Drive extends Subsystem {
     // The robot drivetrain's various states.
     public enum DriveControlState {
         OPEN_LOOP, // open loop voltage control
-        VELOCITY_SETPOINT, // velocity PID control
-    }
-
-    /**
-     * Check if the drive talons are configured for velocity control
-     */
-    protected static boolean usesTalonVelocityControl(DriveControlState state) {
-        if (state == DriveControlState.VELOCITY_SETPOINT) {
-            return true;
-        }
-        return false;
+        PATH_FOLLOWING, // velocity PID control
     }
 
     // Control states
     private DriveControlState mDriveControlState;
 
     // Hardware
-    private final TalonSRX mLeftMaster, mRightMaster, mLeftSlave, mRightSlave, mLeftSlave1, mRightSlave1;
+    private final TalonSRX mLeftMaster, mRightMaster, mLeftSlaveA, mRightSlaveA, mLeftSlaveB, mRightSlaveB;
     private final Solenoid mShifter;
     private PigeonIMU mPigeon;
 
@@ -67,9 +61,9 @@ public class Drive extends Subsystem {
         @Override
         public void onStart(double timestamp) {
             synchronized (Drive.this) {
+                zeroSensors();
                 setOpenLoop(DriveSignal.NEUTRAL);
                 setBrakeMode(false);
-
             }
         }
 
@@ -79,7 +73,8 @@ public class Drive extends Subsystem {
                 switch (mDriveControlState) {
                     case OPEN_LOOP:
                         return;
-                    case VELOCITY_SETPOINT:
+                    case PATH_FOLLOWING:
+                        updatePathFollower();
                         return;
                     default:
                         System.out.println("Unexpected drive control state: " + mDriveControlState);
@@ -104,13 +99,13 @@ public class Drive extends Subsystem {
         mLeftMaster.setInverted(false);
         mLeftMaster.setSensorPhase(true);
 
-        mLeftSlave = TalonSRXFactory.createPermanentSlaveTalon(Constants.kLeftDriveSlaveId,
+        mLeftSlaveA = TalonSRXFactory.createPermanentSlaveTalon(Constants.kLeftDriveSlaveId,
                 Constants.kLeftDriveMasterId);
-        mLeftSlave.setInverted(false);
+        mLeftSlaveA.setInverted(false);
 
-        mLeftSlave1 = TalonSRXFactory.createPermanentSlaveTalon(Constants.kLeftDriveSlave1Id,
+        mLeftSlaveB = TalonSRXFactory.createPermanentSlaveTalon(Constants.kLeftDriveSlave1Id,
                 Constants.kLeftDriveMasterId);
-        mLeftSlave1.setInverted(false);
+        mLeftSlaveB.setInverted(false);
 
         mRightMaster = TalonSRXFactory.createDefaultTalon(Constants.kRightDriveMasterId);
         ErrorCode rightSensorPresent = mRightMaster.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 100); //primary closed-loop, 100 ms timeout
@@ -120,17 +115,19 @@ public class Drive extends Subsystem {
         mRightMaster.setInverted(true);
         mRightMaster.setSensorPhase(true);
 
-        mRightSlave = TalonSRXFactory.createPermanentSlaveTalon(Constants.kRightDriveSlaveId,
+        mRightSlaveA = TalonSRXFactory.createPermanentSlaveTalon(Constants.kRightDriveSlaveId,
                 Constants.kRightDriveMasterId);
-        mRightSlave.setInverted(true);
+        mRightSlaveA.setInverted(true);
 
-        mRightSlave1 = TalonSRXFactory.createPermanentSlaveTalon(Constants.kRightDriveSlave1Id,
+        mRightSlaveB = TalonSRXFactory.createPermanentSlaveTalon(Constants.kRightDriveSlave1Id,
                 Constants.kRightDriveMasterId);
-        mRightSlave1.setInverted(true);
+        mRightSlaveB.setInverted(true);
 
         mShifter = Constants.makeSolenoidForId(Constants.kShifterSolenoidId);
 
         reloadGains();
+
+        mPigeon = new PigeonIMU(mLeftSlaveB);
 
         mIsHighGear = false;
         setHighGear(true);
@@ -155,13 +152,38 @@ public class Drive extends Subsystem {
             mLeftMaster.configNominalOutputReverse(0.0, 0);
             mRightMaster.configNominalOutputForward(0.0, 0);
             mRightMaster.configNominalOutputReverse(0.0, 0);
-            mDriveControlState = DriveControlState.OPEN_LOOP;
             setBrakeMode(false);
+
+            mDriveControlState = DriveControlState.OPEN_LOOP;
         }
-        // Right side is reversed, but reverseOutput doesn't invert PercentVBus.
-        // So set negative on the right master.
         mLeftMaster.set(ControlMode.PercentOutput, signal.getRight());
         mRightMaster.set(ControlMode.PercentOutput, signal.getLeft());
+    }
+
+    /**
+     * Configures talons for velocity control
+     */
+    private synchronized void setVelocity(DriveSignal signal) {
+        if (mDriveControlState != DriveControlState.PATH_FOLLOWING) {
+            // We entered a velocity control state.
+            mLeftMaster.enableVoltageCompensation(true);
+            mLeftMaster.configVoltageCompSaturation(12.0, 0);
+            mLeftMaster.selectProfileSlot(kHighGearVelocityControlSlot, 0);
+            mLeftMaster.configNominalOutputForward(Constants.kDriveHighGearNominalOutput, 0);
+            mLeftMaster.configNominalOutputReverse(-Constants.kDriveHighGearNominalOutput, 0);
+
+            mRightMaster.enableVoltageCompensation(true);
+            mRightMaster.configVoltageCompSaturation(12.0, 0);
+            mRightMaster.selectProfileSlot(kHighGearVelocityControlSlot, 0);
+            mRightMaster.configNominalOutputForward(Constants.kDriveHighGearNominalOutput, 0);
+            mRightMaster.configNominalOutputReverse(-Constants.kDriveHighGearNominalOutput, 0);
+            setBrakeMode(true);
+
+            mDriveControlState = DriveControlState.PATH_FOLLOWING;
+        }
+
+        mLeftMaster.set(ControlMode.Velocity, signal.getLeft());
+        mRightMaster.set(ControlMode.Velocity, signal.getRight());
     }
 
     public boolean isHighGear() {
@@ -180,13 +202,11 @@ public class Drive extends Subsystem {
     }
 
     public Rotation2d getHeading() {
-        double[] ypr = new double[3];
-        mPigeon.getYawPitchRoll(ypr);
-        return Rotation2d.fromDegrees(ypr[0]);
+        return Rotation2d.fromDegrees(mPigeon.getFusedHeading());
     }
 
     public void setHeading(Rotation2d heading) {
-        mPigeon.setYaw(heading.getDegrees(), 0);
+        mPigeon.setFusedHeading(0, 0);
     }
 
     public synchronized void setBrakeMode(boolean on) {
@@ -194,12 +214,12 @@ public class Drive extends Subsystem {
             mIsBrakeMode = on;
             NeutralMode mode = on ? NeutralMode.Brake : NeutralMode.Coast;
             mRightMaster.setNeutralMode(mode);
-            mRightSlave.setNeutralMode(mode);
-            mRightSlave1.setNeutralMode(mode);
+            mRightSlaveA.setNeutralMode(mode);
+            mRightSlaveB.setNeutralMode(mode);
 
             mLeftMaster.setNeutralMode(mode);
-            mLeftSlave.setNeutralMode(mode);
-            mLeftSlave1.setNeutralMode(mode);
+            mLeftSlaveA.setNeutralMode(mode);
+            mLeftSlaveB.setNeutralMode(mode);
         }
     }
 
@@ -212,6 +232,7 @@ public class Drive extends Subsystem {
     public void outputToSmartDashboard() {
         SmartDashboard.putNumber("Left speed: ", mLeftMaster.getSelectedSensorVelocity(0));
         SmartDashboard.putNumber("Right speed: ", mRightMaster.getSelectedSensorVelocity(0));
+        SmartDashboard.putNumber("Heading: ", getHeading().getDegrees());
     }
 
     public synchronized void resetEncoders() {
@@ -219,12 +240,13 @@ public class Drive extends Subsystem {
         mLeftMaster.setSelectedSensorPosition(0, 0, 0);
         mRightMaster.getSensorCollection().setQuadraturePosition(0, 0);
         mRightMaster.setSelectedSensorPosition(0, 0, 0);
-        mLeftSlave.setSelectedSensorPosition(0, 0, 0);
-        mRightSlave.setSelectedSensorPosition(0, 0, 0);
+        mLeftSlaveA.setSelectedSensorPosition(0, 0, 0);
+        mRightSlaveA.setSelectedSensorPosition(0, 0, 0);
     }
 
     @Override
     public void zeroSensors() {
+        setHeading(new Rotation2d());
         resetEncoders();
     }
 
@@ -242,6 +264,11 @@ public class Drive extends Subsystem {
 
     private static double inchesPerSecondToRpm(double inches_per_second) {
         return inchesToRotations(inches_per_second) * 60;
+    }
+
+    private void updatePathFollower() {
+        DriveSignal signal = new DriveSignal(0, 0); //get this from path follower
+        setVelocity(signal);
     }
 
     /**
@@ -285,8 +312,8 @@ public class Drive extends Subsystem {
                 new ArrayList<TalonSRXChecker.TalonSRXConfig>(){
                     {
                         add(new TalonSRXChecker.TalonSRXConfig("left_master", mLeftMaster));
-                        add(new TalonSRXChecker.TalonSRXConfig("left_slave", mLeftSlave));
-                        add(new TalonSRXChecker.TalonSRXConfig("left_slave1", mLeftSlave1));
+                        add(new TalonSRXChecker.TalonSRXConfig("left_slave", mLeftSlaveA));
+                        add(new TalonSRXChecker.TalonSRXConfig("left_slave1", mLeftSlaveB));
                     }
                 }, new TalonSRXChecker.CheckerConfig() {
                     {
@@ -301,8 +328,8 @@ public class Drive extends Subsystem {
                 new ArrayList<TalonSRXChecker.TalonSRXConfig>(){
                     {
                         add(new TalonSRXChecker.TalonSRXConfig("right_master", mRightMaster));
-                        add(new TalonSRXChecker.TalonSRXConfig("right_slave", mRightSlave));
-                        add(new TalonSRXChecker.TalonSRXConfig("right_slave1", mRightSlave1));
+                        add(new TalonSRXChecker.TalonSRXConfig("right_slave", mRightSlaveA));
+                        add(new TalonSRXChecker.TalonSRXConfig("right_slave1", mRightSlaveB));
                     }
                 }, new TalonSRXChecker.CheckerConfig() {
                     {
