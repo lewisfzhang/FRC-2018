@@ -18,11 +18,6 @@ public class Constants {
     public static int kNumScansToStore = 10;
     public static String kChezyLidarPath = "/home/root/chezy_lidar";
     public static double kLidarRestartTime = 2.5;
-    //define a rectangle around the LIDAR at which points should be ignored
-    public static double kIgnorePointXMin = -20.0;
-    public static double kIgnorePointXMax = 20.0;
-    public static double kIgnorePointYMin = -25.0;
-    public static double kIgnorePointYMax = 25.0;
 
     /* ROBOT PHYSICAL CONSTANTS */
 
@@ -86,11 +81,15 @@ public class Constants {
     public static final int kRightDriveSlaveId = 13;
     public static final int kRightDriveSlave1Id = 14;
 
+    // Intake
+    public static int kIntakeLeftMasterId = 1; //todo: get actual value
+    public static int kIntakeRightMasterId = 2; //todo: get actual value
+
+
     // Solenoids
     public static final int kShifterSolenoidId = 12; // PCM 0, Solenoid 4
-    public static final int kIntakeDeploySolenoidId = 1; // PCM 0, Solenoid 1
-    public static final int kHopperSolenoidId = 2; // PCM 0, Solenoid 2
-    public static final int kGearWristSolenoid = 7; // PCM 0, Solenoid 7
+    public static int kIntakeCloseSolenoid = 1; //todo: get actual value
+    public static int kIntakeClampSolenoid = 2; //todo: get actual value
 
     // Phone
     public static int kAndroidAppTcpPort = 8254;
@@ -109,6 +108,11 @@ public class Constants {
     public static double kCameraPitchAngleDegrees = 29.56; // Measured on 4/26
     public static double kCameraYawAngleDegrees = 0.0;
     public static double kCameraDeadband = 0.0;
+
+
+    public static int kIntakeLeftBannerId = 1; //todo: get actual value
+    public static int kIntakeRightBannerId = 2; //todo: get actual value
+
 
     /**
      * Make an {@link Solenoid} instance for the single-number ID of the solenoid
