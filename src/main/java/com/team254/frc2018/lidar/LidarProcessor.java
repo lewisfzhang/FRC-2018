@@ -7,7 +7,8 @@ import edu.wpi.first.wpilibj.Timer;
 import java.util.LinkedList;
 
 /**
- * Stores a set amount of lidar scans.  All interfacing with the lidar should be done through this class.
+ * Stores a set amount of lidar scans. All interfacing with the lidar should be
+ * done through this class.
  */
 public class LidarProcessor implements Loop {
     private static LidarProcessor mInstance = null;
@@ -29,12 +30,13 @@ public class LidarProcessor implements Loop {
     int count = 0;
 
     public void addPoint(LidarPoint point, boolean newScan) {
-        if (newScan) { //crosses the 360-0 threshold.  start a new scan
+        if (newScan) { // crosses the 360-0 threshold. start a new scan
             prev_timestamp = Timer.getFPGATimestamp();
             count++;
             if (count > 10) {
                 count = 0;
-//                SmartDashboard.putString("lidarScan", mScans.getLast().toJsonString()); //output to lidar visualizer
+                // SmartDashboard.putString("lidarScan", mScans.getLast().toJsonString());
+                // //output to lidar visualizer
             }
 
             mScans.add(new LidarScan());
@@ -42,7 +44,10 @@ public class LidarProcessor implements Loop {
                 mScans.removeFirst();
             }
         }
-        mScans.getLast().addPoint(point);
+
+        if (point.toCartesian() != null) {
+            mScans.getLast().addPoint(point);
+        }
     }
 
     public LinkedList<LidarScan> getAllScans() {
@@ -81,6 +86,4 @@ public class LidarProcessor implements Loop {
     @Override
     public void onStop(double timestamp) {
     }
-
-
 }
