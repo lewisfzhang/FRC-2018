@@ -18,7 +18,6 @@ import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 
 /**
  * This subsystem consists of the robot's drivetrain: 4 CIM motors, 4 talons, one solenoid and 2 pistons to shift gears,

@@ -19,7 +19,7 @@ class LidarPoint {
     private final static int MAX_ENTRIES = 10;
     private final static LinkedHashMap<Double, Pose2d> mRobotPoseMap = new LinkedHashMap<Double, Pose2d>() {
         @Override
-        protected boolean removeEldestEntry(Map.Entry eldest) {
+        protected boolean removeEldestEntry(Map.Entry<Double, Pose2d> eldest) {
             return this.size() > MAX_ENTRIES;
         }
     };
