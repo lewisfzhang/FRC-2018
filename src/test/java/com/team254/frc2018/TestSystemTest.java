@@ -1,6 +1,10 @@
-import org.junit.jupiter.api.Test;
+package com.team254.frc2018;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+
+import org.junit.jupiter.api.Test;
+
 
 public class TestSystemTest {
 
