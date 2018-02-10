@@ -11,6 +11,10 @@ public class CubicHermiteSpline implements Spline {
     double ax, bx, cx, dx, ay, by, cy, dy;
     ReferenceFrame mReferenceFrame;
 
+    public CubicHermiteSpline(Pose2d p0, Pose2d p1) {
+        this(p0, p1, ReferenceFrame.NONE);
+    }
+
     public CubicHermiteSpline(Pose2d p0, Pose2d p1, ReferenceFrame mReferenceFrame) {
         double x0, x1, dx0, dx1, y0, y1, dy0, dy1;
         double scale = 2 * p0.getTranslation().distance(p1.getTranslation());
