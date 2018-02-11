@@ -90,6 +90,7 @@ public class Constants {
     public static final int kShifterSolenoidId = 12; // PCM 0, Solenoid 4
     public static int kIntakeCloseSolenoid = 1; //todo: get actual value
     public static int kIntakeClampSolenoid = 2; //todo: get actual value
+    public static int kForkliftDeploySolenoid = 3; //todo: get actual value
 
     // Phone
     public static int kAndroidAppTcpPort = 8254;
