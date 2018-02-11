@@ -1,50 +1,71 @@
 package com.team254.frc2018;
 
-import com.team254.frc2018.lidar.LidarProcessor;
-import com.team254.frc2018.lidar.LidarServer;
 import com.team254.frc2018.loops.Looper;
 import com.team254.frc2018.subsystems.Drive;
 import com.team254.lib.util.CheesyDriveHelper;
+import com.team254.lib.util.CrashTracker;
 import edu.wpi.first.wpilibj.IterativeRobot;
 
 import java.util.Arrays;
-import java.util.concurrent.ExecutionException;
 
 public class Robot extends IterativeRobot {
-//    private LidarProcessor mLidar = LidarProcessor.getInstance();
-//    private LidarServer mLidarServer = LidarServer.getInstance();
-
     private Looper mEnabledLooper = new Looper();
     private CheesyDriveHelper mCheesyDriveHelper = new CheesyDriveHelper();
     private IControlBoard mControlBoard = ControlBoard.getInstance();
-//
+
     private final SubsystemManager mSubsystemManager = new SubsystemManager(
             Arrays.asList(Drive.getInstance()));
-//
+
     private Drive mDrive = Drive.getInstance();
 
-
+    public Robot() {
+        CrashTracker.logRobotConstruction();
+    }
 
     @Override
     public void robotInit() {
-        mSubsystemManager.registerEnabledLoops(mEnabledLooper);
-//        mEnabledLooper.register(LidarProcessor.getInstance());
+        try {
+            CrashTracker.logRobotInit();
+
+            mSubsystemManager.registerEnabledLoops(mEnabledLooper);
+        } catch (Throwable t) {
+            CrashTracker.logThrowableCrash(t);
+            throw t;
+        }
     }
 
     @Override
     public void disabledInit() {
-//        mLidarServer.stop();
-        mEnabledLooper.stop();
+        try {
+            CrashTracker.logDisabledInit();
+
+            mEnabledLooper.stop();
+        } catch (Throwable t) {
+            CrashTracker.logThrowableCrash(t);
+            throw t;
+        }
     }
 
     @Override
     public void autonomousInit() {
+        try {
+            CrashTracker.logAutoInit();
+        } catch (Throwable t) {
+            CrashTracker.logThrowableCrash(t);
+            throw t;
+        }
     }
 
     @Override
     public void teleopInit() {
-//        mLidarServer.start();
-        mEnabledLooper.start();
+        try {
+            CrashTracker.logTeleopInit();
+
+            mEnabledLooper.start();
+        } catch (Throwable t) {
+            CrashTracker.logThrowableCrash(t);
+            throw t;
+        }
     }
 
     @Override
@@ -52,27 +73,45 @@ public class Robot extends IterativeRobot {
         try {
             System.out.println("Starting check systems.");
             mDrive.checkSystem();
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Throwable t) {
+            CrashTracker.logThrowableCrash(t);
+            throw t;
         }
     }
 
     @Override
     public void disabledPeriodic() {
+        try {
+
+        } catch (Throwable t) {
+            CrashTracker.logThrowableCrash(t);
+            throw t;
+        }
     }
 
     @Override
     public void autonomousPeriodic() {
+        try {
+
+        } catch (Throwable t) {
+            CrashTracker.logThrowableCrash(t);
+            throw t;
+        }
     }
 
     @Override
     public void teleopPeriodic() {
-        double throttle = mControlBoard.getThrottle();
-        double turn = mControlBoard.getTurn();
+        try {
+            double throttle = mControlBoard.getThrottle();
+            double turn = mControlBoard.getTurn();
 
-        mDrive.setOpenLoop(mCheesyDriveHelper.cheesyDrive(throttle, turn, mControlBoard.getQuickTurn(),
-                !mControlBoard.getLowGear()));
-        mDrive.setHighGear(!mControlBoard.getLowGear());
+            mDrive.setOpenLoop(mCheesyDriveHelper.cheesyDrive(throttle, turn, mControlBoard.getQuickTurn(),
+                    !mControlBoard.getLowGear()));
+            mDrive.setHighGear(!mControlBoard.getLowGear());
+        } catch (Throwable t){
+            CrashTracker.logThrowableCrash(t);
+            throw t;
+        }
     }
 
     @Override
