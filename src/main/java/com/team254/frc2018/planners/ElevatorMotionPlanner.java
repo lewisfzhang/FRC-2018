@@ -26,8 +26,6 @@ public class ElevatorMotionPlanner {
     protected LinkedList<SubCommand> mCommandQueue = new LinkedList<>();
     protected Optional<SubCommand> mCurrentCommand = Optional.empty();
 
-    double mLastTimestamp = 0;
-
     public boolean setDesiredState(ElevatorState desiredStateIn, ElevatorState currentState) {
         ElevatorState desiredState = new ElevatorState(desiredStateIn);
 
@@ -98,7 +96,7 @@ public class ElevatorMotionPlanner {
         mCurrentCommand = Optional.empty();
     }
 
-    ElevatorState update(double timestamp, ElevatorState currentState) {
+    ElevatorState update(ElevatorState currentState) {
         if (!mCurrentCommand.isPresent() && !mCommandQueue.isEmpty()) {
             mCurrentCommand = Optional.of(mCommandQueue.remove());
         }
@@ -117,7 +115,6 @@ public class ElevatorMotionPlanner {
         mCommandedState.angle = Util.limit(mIntermediateCommandState.angle, SuperstructureConstants.kWristMinAngle, SuperstructureConstants.kWristMaxAngle);
         mCommandedState.height = Util.limit(mIntermediateCommandState.height, SuperstructureConstants.kElevatorMinHeight, SuperstructureConstants.kElevatorMaxHeight);
 
-        mLastTimestamp = timestamp;
         return mCommandedState;
     }
 }

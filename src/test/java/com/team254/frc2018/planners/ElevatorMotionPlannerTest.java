@@ -30,7 +30,7 @@ public class ElevatorMotionPlannerTest {
     @Test
     public void testPlannerBootsToHome() {
         planner.setDesiredState(desiredState, simulatedState);
-        ElevatorState commandedState = planner.update(0, new ElevatorState());
+        ElevatorState commandedState = planner.update( new ElevatorState());
         assertEquals(ELEVATOR_MIN_HEIGHT, commandedState.height, EPSILON,"height must not go lower than low limit");
     }
 
@@ -42,7 +42,7 @@ public class ElevatorMotionPlannerTest {
         simulatedState.angle = 0;
         planner.reset(simulatedState);
         planner.setDesiredState(desiredState, simulatedState);
-        ElevatorState commandedState = planner.update(0, simulatedState);
+        ElevatorState commandedState = planner.update( simulatedState);
         assertEquals(PIVOT_MIN_ANGLE, commandedState.angle, EPSILON,"angle must be homed");
         assertEquals(ELEVATOR_MIN_HEIGHT, commandedState.height, EPSILON,"height must be homed");
     }
@@ -55,7 +55,7 @@ public class ElevatorMotionPlannerTest {
         simulatedState.height = ELEVATOR_MIN_HEIGHT;
         simulatedState.angle = 0;
         planner.setDesiredState(desiredState, simulatedState);
-        ElevatorState commandedState = planner.update(0, simulatedState);
+        ElevatorState commandedState = planner.update( simulatedState);
         assertEquals(180, commandedState.angle, EPSILON, "angle must be correct");
         assertEquals(ELEVATOR_MIN_HEIGHT, commandedState.height, EPSILON,"height must be correct");
 
@@ -65,7 +65,7 @@ public class ElevatorMotionPlannerTest {
         simulatedState.height = ELEVATOR_MIN_HEIGHT;
         simulatedState.angle = 180;
         planner.setDesiredState(desiredState, simulatedState);
-        commandedState = planner.update(0, simulatedState);
+        commandedState = planner.update( simulatedState);
         assertEquals(0, commandedState.angle, EPSILON,"angle must be correct");
         assertEquals(ELEVATOR_MIN_HEIGHT, commandedState.height, EPSILON, "height must be correct");
 
@@ -75,7 +75,7 @@ public class ElevatorMotionPlannerTest {
         simulatedState.height = ELEVATOR_MIN_HEIGHT;
         simulatedState.angle = 0;
         planner.setDesiredState(desiredState, simulatedState);
-        commandedState = planner.update(0, simulatedState);
+        commandedState = planner.update( simulatedState);
         assertEquals(90, commandedState.angle, EPSILON, "angle must be correct");
         assertEquals(ELEVATOR_MIN_HEIGHT, commandedState.height, EPSILON, "height must be correct");
     }
@@ -92,7 +92,7 @@ public class ElevatorMotionPlannerTest {
         planner.setDesiredState(desiredState, simulatedState);
 
         for (double ts = 0; ts < 3.0; ts += DELTA_T) {
-            ElevatorState command = planner.update(ts, currentState);
+            ElevatorState command = planner.update(currentState);
             pivotSim.setCommandedPosition(command.angle);
             double pivotAngle = pivotSim.update(DELTA_T);
             double raw = (ts + DELTA_T) * PIVOT_MAX_ANGLE;
@@ -118,7 +118,7 @@ public class ElevatorMotionPlannerTest {
             desiredState.height = height;
             simulatedState.height = height;
             planner.setDesiredState(desiredState, simulatedState);
-            ElevatorState command = planner.update(0, currentState);
+            ElevatorState command = planner.update(currentState);
             assertEquals(PIVOT_MAX_ANGLE, command.angle, EPSILON, "wrist must not go past max limit");
         }
     }
@@ -140,7 +140,7 @@ public class ElevatorMotionPlannerTest {
 
         // Test that wrist is never outside vertical when elevator is "moving"
         for (double ts = 0; ts < 5; ts += DELTA_T) {
-            ElevatorState command = planner.update(ts, simulatedState);
+            ElevatorState command = planner.update( simulatedState);
             pivotSim.setCommandedPosition(command.angle);
             simulatedState.angle = pivotSim.update(DELTA_T);
             elevatorSim.setCommandedPosition(command.height);
@@ -177,7 +177,7 @@ public class ElevatorMotionPlannerTest {
 
         // Test that wrist is never outside vertical when elevator is "moving"
         for (double ts = 0; ts < 5; ts += DELTA_T) {
-            ElevatorState command = planner.update(ts, simulatedState);
+            ElevatorState command = planner.update( simulatedState);
             pivotSim.setCommandedPosition(command.angle);
             simulatedState.angle = pivotSim.update(DELTA_T);
             elevatorSim.setCommandedPosition(command.height);
@@ -206,7 +206,7 @@ public class ElevatorMotionPlannerTest {
 
         // Test that wrist is never outside vertical when elevator is "moving"
         for (double ts = 0; ts < 10; ts += DELTA_T) {
-            ElevatorState command = planner.update(ts, simulatedState);
+            ElevatorState command = planner.update(simulatedState);
             pivotSim.setCommandedPosition(command.angle);
             simulatedState.angle = pivotSim.update(DELTA_T);
             elevatorSim.setCommandedPosition(command.height);
@@ -239,7 +239,7 @@ public class ElevatorMotionPlannerTest {
             }
 
             for (double ts = 0; ts < 7; ts += DELTA_T) {
-                ElevatorState command = planner.update(ts, simulatedState);
+                ElevatorState command = planner.update( simulatedState);
                 pivotSim.setCommandedPosition(command.angle);
                 simulatedState.angle = pivotSim.update(DELTA_T);
                 elevatorSim.setCommandedPosition(command.height);
