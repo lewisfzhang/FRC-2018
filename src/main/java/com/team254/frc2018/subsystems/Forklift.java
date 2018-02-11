@@ -5,28 +5,42 @@ import com.team254.frc2018.loops.Looper;
 import edu.wpi.first.wpilibj.Solenoid;
 
 public class Forklift extends Subsystem {
+    private static final boolean kDeploySolenoidState = true;
+
     private static Forklift mInstance = null;
 
-    public static Forklift getInstance() {
+    private Solenoid mDeploySolenoid;
+    private boolean mDeployed;
+
+    public synchronized static Forklift getInstance() {
         if (mInstance == null) {
             mInstance = new Forklift();
         }
-
         return mInstance;
     }
 
-    private Solenoid mDeploySolenoid;
-
     private Forklift() {
-        mDeploySolenoid = new Solenoid(Constants.kForkliftDeploySolenoid);
+        mDeploySolenoid = Constants.makeSolenoidForId(Constants.kForkliftDeploySolenoid);
+
+        // Start the forklift in the retracted position.  Set true to force a state change.
+        mDeployed = true;
+        retract();
     }
 
     public synchronized void deploy() {
-        mDeploySolenoid.set(true);
+        // Try to avoid hitting CAN/JNI wrapper.
+        if (!mDeployed) {
+            mDeploySolenoid.set(kDeploySolenoidState);
+            mDeployed = true;
+        }
     }
 
     public synchronized void retract() {
-        mDeploySolenoid.set(false);
+        // Try to avoid hitting CAN/JNI wrapper.
+        if (mDeployed) {
+            mDeploySolenoid.set(!kDeploySolenoidState);
+            mDeployed = false;
+        }
     }
 
     @Override
