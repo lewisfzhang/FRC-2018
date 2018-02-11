@@ -11,7 +11,6 @@ import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
 
 public class Intake extends Subsystem {
-
     private final static boolean kClosed = true;
     private final static boolean kClamped = true;
     private final static double kActuationTime = 0.25;
@@ -45,10 +44,10 @@ public class Intake extends Subsystem {
         PLACING
     }
 
-    private enum JawState {
+    public enum JawState {
         OPEN,
-        CLOSE,
-        CLAMP
+        CLOSED,
+        CLAMPED
     }
 
     private final Solenoid mCloseSolenoid, mClampSolenoid;//open->false, false; close->true, false; clamp->true, true;
@@ -57,6 +56,7 @@ public class Intake extends Subsystem {
 
     private WantedState mWantedState;
     private SystemState mSystemState;
+    private JawState mJawState;
 
     private Intake() {
         mCloseSolenoid = Constants.makeSolenoidForId(Constants.kIntakeCloseSolenoid);
@@ -96,6 +96,7 @@ public class Intake extends Subsystem {
                 synchronized (Intake.this) {
                     mSystemState = SystemState.IDLE;
                     mWantedState = WantedState.IDLE;
+                    mJawState = JawState.CLOSED;
                 }
                 mCurrentStateStartTime = Timer.getFPGATimestamp();
             }
@@ -126,7 +127,7 @@ public class Intake extends Subsystem {
                             newState = handlePlacing(timeInState);
                             break;
                         default:
-                            System.out.println("Unexpected gear grabber system state: " + mSystemState);
+                            System.out.println("Unexpected intake system state: " + mSystemState);
                             newState = mSystemState;
                             break;
                     }
@@ -153,7 +154,7 @@ public class Intake extends Subsystem {
 
     private synchronized SystemState handleIdle() {
         setPower(0);
-        setJaw(JawState.CLOSE);
+        setJaw(JawState.CLOSED);
 
         switch (mWantedState) {
             case INTAKE:
@@ -165,7 +166,7 @@ public class Intake extends Subsystem {
 
     private synchronized SystemState handleIntaking() {
         setPower(kIntakeSetpoint);
-        setJaw(JawState.CLOSE);
+        setJaw(JawState.CLOSED);
 
         if(seesCube()) {
             return SystemState.CLAMPING;
@@ -181,7 +182,7 @@ public class Intake extends Subsystem {
 
     private synchronized SystemState handleClamping(double timeInState) {
         setPower(kIntakeSetpoint);
-        setJaw(JawState.CLAMP);
+        setJaw(JawState.CLAMPED);
 
         if(seesCube()) {
             if(timeInState > kActuationTime) {
@@ -196,7 +197,7 @@ public class Intake extends Subsystem {
 
     private synchronized SystemState handleHolding() {
         setPower(kHoldSetpoint);
-        setJaw(JawState.CLAMP);
+        setJaw(JawState.CLAMPED);
 
         if(!seesCube()) {
             return SystemState.IDLE;
@@ -214,7 +215,7 @@ public class Intake extends Subsystem {
 
     private synchronized SystemState handleShooting(double timeInState) {
         setPower(kShootSetpoint);
-        setJaw(JawState.CLAMP);
+        setJaw(JawState.CLAMPED);
 
         if(timeInState > kShootTime) {
             return SystemState.IDLE;
@@ -240,16 +241,17 @@ public class Intake extends Subsystem {
     }
 
     private void setJaw(JawState state) {
-        switch (state) {
+        mJawState = state;
+        switch (mJawState) {
             case OPEN:
                 mCloseSolenoid.set(!kClosed);
                 mClampSolenoid.set(!kClamped);
                 break;
-            case CLOSE:
+            case CLOSED:
                 mCloseSolenoid.set(kClosed);
                 mClampSolenoid.set(!kClamped);
                 break;
-            case CLAMP:
+            case CLAMPED:
                 mCloseSolenoid.set(kClosed);
                 mClampSolenoid.set(kClamped);
                 break;
@@ -262,6 +264,10 @@ public class Intake extends Subsystem {
 
     public boolean hasCube() {
         return mSystemState == SystemState.HOLDING;
+    }
+
+    public JawState getJawState() {
+        return mJawState;
     }
 
     public void setState(WantedState wantedState) {
