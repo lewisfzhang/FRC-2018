@@ -98,11 +98,11 @@ public class Drive extends Subsystem {
         mLeftMaster.setInverted(false);
         mLeftMaster.setSensorPhase(true);
 
-        mLeftSlaveA = TalonSRXFactory.createPermanentSlaveTalon(Constants.kLeftDriveSlaveId,
+        mLeftSlaveA = TalonSRXFactory.createPermanentSlaveTalon(Constants.kLeftDriveSlaveAId,
                 Constants.kLeftDriveMasterId);
         mLeftSlaveA.setInverted(false);
 
-        mLeftSlaveB = TalonSRXFactory.createPermanentSlaveTalon(Constants.kLeftDriveSlave1Id,
+        mLeftSlaveB = TalonSRXFactory.createPermanentSlaveTalon(Constants.kLeftDriveSlaveBId,
                 Constants.kLeftDriveMasterId);
         mLeftSlaveB.setInverted(false);
 
@@ -114,11 +114,11 @@ public class Drive extends Subsystem {
         mRightMaster.setInverted(true);
         mRightMaster.setSensorPhase(true);
 
-        mRightSlaveA = TalonSRXFactory.createPermanentSlaveTalon(Constants.kRightDriveSlaveId,
+        mRightSlaveA = TalonSRXFactory.createPermanentSlaveTalon(Constants.kRightDriveSlaveAId,
                 Constants.kRightDriveMasterId);
         mRightSlaveA.setInverted(true);
 
-        mRightSlaveB = TalonSRXFactory.createPermanentSlaveTalon(Constants.kRightDriveSlave1Id,
+        mRightSlaveB = TalonSRXFactory.createPermanentSlaveTalon(Constants.kRightDriveSlaveBId,
                 Constants.kRightDriveMasterId);
         mRightSlaveB.setInverted(true);
 

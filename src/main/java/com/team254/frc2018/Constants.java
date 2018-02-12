@@ -75,11 +75,11 @@ public class Constants {
 
     // Drive
     public static final int kLeftDriveMasterId = 5;
-    public static final int kLeftDriveSlaveId = 6;
-    public static final int kLeftDriveSlave1Id = 7;
+    public static final int kLeftDriveSlaveAId = 6;
+    public static final int kLeftDriveSlaveBId = 7;
     public static final int kRightDriveMasterId = 12;
-    public static final int kRightDriveSlaveId = 13;
-    public static final int kRightDriveSlave1Id = 14;
+    public static final int kRightDriveSlaveAId = 13;
+    public static final int kRightDriveSlaveBId = 14;
 
     // Intake
     public static int kIntakeLeftMasterId = 1; //todo: get actual value
