@@ -61,8 +61,18 @@ public class Constants {
     public static double kDriveLowGearMaxAccel = 18.0 * 12.0 * 60.0 / (Math.PI * kDriveWheelDiameterInches); // 18 fps/s
     // in RPM/s
 
-    public static double kDriveVoltageCompensationRampRate = 0.0;
+    // PID gains for elevator velocity loop (HIGH GEAR)
+    // Units: setpoint, error, and output are in native units per 100ms.
+    // Elevator encoder is CTRE mag encoder which is 4096 native units per revolution.
+    public static double kElevatorHighGearKp = 0.0;
+    public static double kElevatorHighGearKi = 0.0;
+    public static double kElevatorHighGearKd = 0.0;
+    public static double kElevatorHighGearKf = 0.0;
+    public static int kElevatorHighGearIZone = 0;
+    public static double kElevatorHighGearCruiseVelocity = 0.0;
+    public static double kElevatorHighGearAcceleration = 0.0;
 
+    public static double kDriveVoltageCompensationRampRate = 0.0;
 
     // Do not change anything after this line unless you rewire the robot and
     // update the spreadsheet!
