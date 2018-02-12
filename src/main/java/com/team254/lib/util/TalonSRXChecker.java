@@ -17,6 +17,10 @@ public class TalonSRXChecker {
         public double mCurrentEpsilon = 5.0;
         public double mRPMEpsilon = 500;
         public DoubleSupplier mRPMSupplier = null;
+
+        public double mRunTimeSec = 4.0;
+        public double mWaitTimeSec = 2.0;
+        public double mRunOutputPercentage = 0.5;
     }
 
     public static class TalonSRXConfig {
@@ -63,9 +67,8 @@ public class TalonSRXChecker {
         for (TalonSRXConfig config : talonsToCheck) {
             System.out.println("Checking: " + config.mName);
 
-            // Now run for 4 seconds at 0.5 output.
-            config.mTalon.set(ControlMode.PercentOutput, 0.5);
-            Timer.delay(4);
+            config.mTalon.set(ControlMode.PercentOutput, checkerConfig.mRunOutputPercentage);
+            Timer.delay(checkerConfig.mRunTimeSec);
 
             // Now poll the interesting information.
             double current = config.mTalon.getOutputCurrent();
@@ -96,7 +99,7 @@ public class TalonSRXChecker {
                 }
             }
 
-            Timer.delay(2);
+            Timer.delay(checkerConfig.mWaitTimeSec);
         }
 
         // Now run aggregate checks.
