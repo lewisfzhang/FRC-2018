@@ -85,6 +85,11 @@ public class Constants {
     public static int kIntakeLeftMasterId = 1; //todo: get actual value
     public static int kIntakeRightMasterId = 2; //todo: get actual value
 
+    // Elevator
+    public static final int kElevatorMasterId = 11;
+    public static final int kElevatorRightSlaveId = 8;
+    public static final int kElevatorLeftSlaveAId = 1;
+    public static final int kElevatorLeftSlaveBId = 2;
 
     // Solenoids
     public static final int kShifterSolenoidId = 12; // PCM 0, Solenoid 4
