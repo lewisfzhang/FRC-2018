@@ -34,8 +34,6 @@ public class Superstructure extends Subsystem {
         IDLE
     }
 
-    ;
-
     // Desired function from user
     public enum WantedState {
         IDLE
