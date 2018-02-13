@@ -14,6 +14,7 @@ import com.team254.lib.geometry.Rotation2d;
 import com.team254.lib.util.DriveSignal;
 import com.team254.lib.util.TalonSRXChecker;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -268,33 +269,6 @@ public class Drive extends Subsystem {
     private void updatePathFollower() {
         DriveSignal signal = new DriveSignal(0, 0); //get this from path follower
         setVelocity(signal);
-    }
-
-    /**
-     * Follower wheel getters
-     **/
-    public double getLeftFollowerDistance() {
-        return rotationsToInches(0); // todo: figure out where encoders are plugged in
-    }
-
-    public double getRightFollowerDistance() {
-        return rotationsToInches(0); // todo: figure out where encoders are plugged in
-    }
-
-    public double getBackFollowerDistance() {
-        return rotationsToInches(0); // todo: figure out where encoders are plugged in
-    }
-
-    public double getLeftFollowerVelocity() {
-        return rpmToInchesPerSecond(0); // todo: figure out where encoders are plugged in
-    }
-
-    public double getRightFollowerVelocity() {
-        return rpmToInchesPerSecond(0); // todo: figure out where encoders are plugged in
-    }
-
-    public double getBackFollowerVelocity() {
-        return rpmToInchesPerSecond(0); // todo: figure out where encoders are plugged in
     }
 
     public synchronized void reloadGains() {

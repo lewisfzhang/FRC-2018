@@ -25,6 +25,7 @@ public class Constants {
     public static double kDriveWheelDiameterInches = 3.419;
     public static double kTrackWidthInches = 26.655;
     public static double kTrackScrubFactor = 0.924;
+    public static double kFollowWheelsDiameterInches = 3.0; //?
 
     // Geometry
     public static double kCenterToFrontBumperDistance = 16.33;
@@ -90,6 +91,15 @@ public class Constants {
     public static final int kRightDriveMasterId = 12;
     public static final int kRightDriveSlaveAId = 13;
     public static final int kRightDriveSlaveBId = 14;
+
+    // Followers
+    public static final int kFollowerLeftAChannelId = 0;
+    public static final int kFollowerLeftBChannelId = 1;
+    public static final int kFollowerRightAChannelId = 2;
+    public static final int kFollowerRightBChannelId = 3;
+    public static final int kFollowerRearAChannelId = 4;
+    public static final int kFollowerRearBChannelId = 5;
+
 
     // Intake
     public static int kIntakeLeftMasterId = 1; //todo: get actual value
