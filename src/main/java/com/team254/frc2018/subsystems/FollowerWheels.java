@@ -2,7 +2,9 @@ package com.team254.frc2018.subsystems;
 
 import com.team254.frc2018.Constants;
 import com.team254.frc2018.loops.Looper;
+import edu.wpi.first.wpilibj.CounterBase;
 import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class FollowerWheels extends Subsystem {
     private final Encoder mLeftFollower, mRightFollower, mRearFollower;
@@ -15,13 +17,16 @@ public class FollowerWheels extends Subsystem {
     }
 
     private FollowerWheels() {
-        mLeftFollower = new Encoder(Constants.kFollowerLeftAChannelId, Constants.kFollowerLeftBChannelId);
-        mRightFollower = new Encoder(Constants.kFollowerRightAChannelId, Constants.kFollowerRightBChannelId);
-        mRearFollower = new Encoder(Constants.kFollowerRearAChannelId, Constants.kFollowerRearBChannelId);
+        mLeftFollower = new Encoder(Constants.kFollowerLeftAChannelId, Constants.kFollowerLeftBChannelId, true, CounterBase.EncodingType.k4X);
+        mRightFollower = new Encoder(Constants.kFollowerRightAChannelId, Constants.kFollowerRightBChannelId, false, CounterBase.EncodingType.k4X);
+        mRearFollower = new Encoder(Constants.kFollowerRearAChannelId, Constants.kFollowerRearBChannelId, true, CounterBase.EncodingType.k4X);
 
-        mLeftFollower.setDistancePerPulse(Math.PI * Constants.kFollowWheelsDiameterInches * (1.0 / kCTREEnocderCPR));
-        mRightFollower.setDistancePerPulse(Math.PI * Constants.kFollowWheelsDiameterInches * (1.0 / kCTREEnocderCPR));
-        mRearFollower.setDistancePerPulse(Math.PI * Constants.kFollowWheelsDiameterInches * (1.0 / kCTREEnocderCPR));
+
+
+        mLeftFollower.setDistancePerPulse(Math.PI * Constants.kFollowerWheelDiameterInches * (1.0 / kCTREEnocderCPR));
+        mRightFollower.setDistancePerPulse(Math.PI * Constants.kFollowerWheelDiameterInches * (1.0 / kCTREEnocderCPR));
+        mRearFollower.setDistancePerPulse(Math.PI * Constants.kFollowerWheelDiameterInches * (1.0 / kCTREEnocderCPR));
+
     }
 
     @Override
@@ -31,7 +36,10 @@ public class FollowerWheels extends Subsystem {
 
     @Override
     public void outputToSmartDashboard() {
-
+        SmartDashboard.putNumber("leftFollowerDistance", getLeftDistance());
+        SmartDashboard.putNumber("rightFollowerDistance", getRightDistance());
+        SmartDashboard.putNumber("rearFollowerDistance", getRearDistance());
+        SmartDashboard.putNumber("headingFollower", getHeading());
     }
 
     @Override
@@ -73,5 +81,9 @@ public class FollowerWheels extends Subsystem {
 
     public double getRearVelocity() {
         return mRearFollower.getRate();
+    }
+
+    public double getHeading() {
+        return Math.toDegrees((mRightFollower.getDistance() - mLeftFollower.getDistance()) / Constants.kFollowerWheelTrackWidthInches);
     }
 }

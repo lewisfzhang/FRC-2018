@@ -22,10 +22,11 @@ public class Constants {
     /* ROBOT PHYSICAL CONSTANTS */
 
     // Wheels
-    public static double kDriveWheelDiameterInches = 3.419;
-    public static double kTrackWidthInches = 26.655;
-    public static double kTrackScrubFactor = 0.924;
-    public static double kFollowWheelsDiameterInches = 3.0; //?
+    public static double kFollowerWheelTrackWidthInches = 25.624;
+    public static double kFollowerWheelBackOffset = 14.19; // Tune me!
+    public static double kFollowerWheelDiameterInches = 2.28;
+    public static double kDriveWheelDiameterInches = 4; // TODO: measure
+    public static double kTrackScrubFactor = 1.0;  // Tune me!
 
     // Geometry
     public static double kCenterToFrontBumperDistance = 16.33;
@@ -33,7 +34,6 @@ public class Constants {
     public static double kCenterToRearBumperDistance = 16.99;
     public static double kCenterToSideBumperDistance = 17.225;
 
-    public static double kCenterToBackFollowerWheel = 16.99; // Tune me!
 
     /* CONTROL LOOP GAINS */
 
@@ -93,10 +93,10 @@ public class Constants {
     public static final int kRightDriveSlaveBId = 14;
 
     // Followers
-    public static final int kFollowerLeftAChannelId = 0;
-    public static final int kFollowerLeftBChannelId = 1;
-    public static final int kFollowerRightAChannelId = 2;
-    public static final int kFollowerRightBChannelId = 3;
+    public static final int kFollowerLeftAChannelId = 2;
+    public static final int kFollowerLeftBChannelId = 3;
+    public static final int kFollowerRightAChannelId = 0;
+    public static final int kFollowerRightBChannelId = 1;
     public static final int kFollowerRearAChannelId = 4;
     public static final int kFollowerRearBChannelId = 5;
 
