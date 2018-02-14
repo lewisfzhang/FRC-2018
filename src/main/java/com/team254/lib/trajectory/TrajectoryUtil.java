@@ -33,7 +33,9 @@ public class TrajectoryUtil {
     }
 
     public static Trajectory<Pose2dWithCurvature> trajectoryFromPathFollower(IPathFollower path_follower,
-                                                                             Pose2dWithCurvature start_state, double step_size, double dcurvature_limit) {
+                                                                             Pose2dWithCurvature start_state, double
+                                                                                     step_size, double
+                                                                                     dcurvature_limit) {
         List<Pose2dWithCurvature> samples = new ArrayList<Pose2dWithCurvature>();
         samples.add(start_state);
         Pose2dWithCurvature current_state = start_state;

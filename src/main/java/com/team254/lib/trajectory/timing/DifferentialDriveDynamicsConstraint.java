@@ -5,7 +5,8 @@ import com.team254.lib.geometry.IPose2d;
 
 public class DifferentialDriveDynamicsConstraint<S extends IPose2d<S> & ICurvature<S>> implements TimingConstraint<S> {
 
-    // TODO: Implement constraints based on a differential drive (ensuring that we don't exceed voltage/current limits when following a trajectory).
+    // TODO: Implement constraints based on a differential drive (ensuring that we don't exceed voltage/current
+    // limits when following a trajectory).
 
     public DifferentialDriveDynamicsConstraint() {
 
