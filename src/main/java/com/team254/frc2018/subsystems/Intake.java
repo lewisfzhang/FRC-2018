@@ -1,12 +1,15 @@
 package com.team254.frc2018.subsystems;
 
+import com.ctre.phoenix.CANifier;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.team254.frc2018.Constants;
 import com.team254.frc2018.loops.Loop;
 import com.team254.frc2018.loops.Looper;
+import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.lib.drivers.TalonSRXFactory;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
 
@@ -21,7 +24,7 @@ public class Intake extends Subsystem {
 
     private static Intake mInstance;
 
-    public static Intake getInstance() {
+    public synchronized static Intake getInstance() {
         if (mInstance == null) {
             mInstance = new Intake();
         }
@@ -54,9 +57,12 @@ public class Intake extends Subsystem {
     private final TalonSRX mLeftMaster, mRightMaster;
     private final DigitalInput mLeftBanner, mRightBanner;
 
+    public static CANifier canifier = new CANifier(0);
+
     private WantedState mWantedState;
     private SystemState mSystemState;
     private JawState mJawState;
+    private Wrist mWrist;
 
     private Intake() {
         mCloseSolenoid = Constants.makeSolenoidForId(Constants.kIntakeCloseSolenoid);
@@ -72,6 +78,8 @@ public class Intake extends Subsystem {
 
         mLeftBanner = new DigitalInput(Constants.kIntakeLeftBannerId);
         mRightBanner = new DigitalInput(Constants.kIntakeRightBannerId);
+
+        mWrist = Wrist.getInstance();
     }
 
     @Override
@@ -96,7 +104,7 @@ public class Intake extends Subsystem {
                 synchronized (Intake.this) {
                     mSystemState = SystemState.IDLE;
                     mWantedState = WantedState.IDLE;
-                    mJawState = JawState.CLOSED;
+                    mJawState = null; //force a state change on start
                 }
                 mCurrentStateStartTime = Timer.getFPGATimestamp();
             }
@@ -207,7 +215,12 @@ public class Intake extends Subsystem {
             case SHOOT:
                 return SystemState.SHOOTING;
             case PLACE:
-                return SystemState.PLACING;
+                if(mWrist.getAngle() < SuperstructureConstants.kAlwaysNeedsJawClampMinAngle) { //don't kill the elevator
+                    DriverStation.reportError("Can't open the jaw when the wrist is at that angle", false);
+                    return SystemState.HOLDING;
+                } else {
+                    return SystemState.PLACING;
+                }
             default:
                 return SystemState.HOLDING;
         }
@@ -225,9 +238,6 @@ public class Intake extends Subsystem {
     }
 
     private synchronized SystemState handlePlacing(double timeInState) {
-        setPower(0);
-        setJaw(JawState.OPEN);
-
         if(timeInState > kActuationTime) {
             return SystemState.IDLE;
         } else {
@@ -241,6 +251,9 @@ public class Intake extends Subsystem {
     }
 
     private void setJaw(JawState state) {
+        if(mJawState == state) {
+            return;
+        }
         mJawState = state;
         switch (mJawState) {
             case OPEN:

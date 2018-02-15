@@ -75,6 +75,16 @@ public class Constants {
 
     public static double kDriveVoltageCompensationRampRate = 0.0;
 
+    public static double kWristKp = 0.1; //todo: tune me
+    public static double kWristKi = 0.001; //todo: tune me
+    public static double kWristKd = 10.0; //todo: tune me
+    public static double kWristKf = 1.0; //todo: tune me
+    public static int kWristMaxIntegralAccumulator = 500000; //todo: tune me
+    public static int kWristIZone = 500; //todo: tune me
+    public static int kWristDeadband = 25; //todo: tune me
+    public static int kWristCruiseVelocity = 400; //todo: tune me
+    public static int kWristAcceleration = 600; //todo: tune me
+
     // Do not change anything after this line unless you rewire the robot and
     // update the spreadsheet!
     // Port assignments should match up with the spreadsheet here:
@@ -83,6 +93,9 @@ public class Constants {
     /* TALONS */
     // (Note that if multiple talons are dedicated to a mechanism, any sensors
     // are attached to the master)
+
+    public static final int kCANTimeoutMs = 10; //use for on the fly updates
+    public static final int kLongCANTimeoutMs = 100; //use for constructors
 
     // Drive
     public static final int kLeftDriveMasterId = 5;
@@ -110,6 +123,9 @@ public class Constants {
     public static final int kElevatorRightSlaveId = 8;
     public static final int kElevatorLeftSlaveAId = 1;
     public static final int kElevatorLeftSlaveBId = 2;
+
+    // Wrist
+    public static int KWristMasterId = 3; //todo: get actual value
 
     // Solenoids
     public static final int kShifterSolenoidId = 12; // PCM 0, Solenoid 4
