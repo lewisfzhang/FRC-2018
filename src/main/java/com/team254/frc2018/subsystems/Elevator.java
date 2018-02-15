@@ -8,7 +8,7 @@ import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.team254.frc2018.Constants;
 import com.team254.frc2018.loops.Looper;
 import com.team254.lib.drivers.TalonSRXFactory;
-import com.team254.lib.util.TalonSRXChecker;
+import com.team254.lib.drivers.TalonSRXChecker;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 

@@ -12,9 +12,8 @@ import com.team254.frc2018.loops.Looper;
 import com.team254.lib.drivers.TalonSRXFactory;
 import com.team254.lib.geometry.Rotation2d;
 import com.team254.lib.util.DriveSignal;
-import com.team254.lib.util.TalonSRXChecker;
+import com.team254.lib.drivers.TalonSRXChecker;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 

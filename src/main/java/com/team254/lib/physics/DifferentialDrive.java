@@ -22,6 +22,8 @@ public class DifferentialDrive {
     // F_r * (s * linear_load * effective_wheelbase_width - angular_load) == F_l * (s * linear_load *
     // effective_wheelbase_width + angular_load)
     // Need to then check if the force at the stationary side breaks static friction.
+    // This is not a big deal for the main use-cases of this class (designing feasible trajectories and computing
+    // feedforward voltages).
 
     // Equivalent mass when accelerating purely linearly, in kg.
     // This is "equivalent" in that it also absorbs the effects of drivetrain inertia.
@@ -194,14 +196,15 @@ public class DifferentialDrive {
         // v = r_w*(wr + wl) / 2
         // w = r_w*(wr - wl) / (2 * r_wb)
         // Plug in max_abs_voltage for each wheel.
-        if (Double.isInfinite(curvature)) {
-            // Turn in place.
-            return Double.POSITIVE_INFINITY;
-        }
         final double left_speed_at_max_voltage = left_transmission_.free_speed_at_voltage(max_abs_voltage);
         final double right_speed_at_max_voltage = right_transmission_.free_speed_at_voltage(max_abs_voltage);
         if (Util.epsilonEquals(curvature, 0.0)) {
             return wheel_radius_ * Math.min(left_speed_at_max_voltage, right_speed_at_max_voltage);
+        }
+        if (Double.isInfinite(curvature)) {
+            // Turn in place.  Return value meaning becomes angular velocity.
+            final double wheel_speed = Math.min(left_speed_at_max_voltage, right_speed_at_max_voltage);
+            return wheel_radius_ * wheel_speed / effective_wheelbase_radius_;
         }
 
         final double right_speed_if_left_max = left_speed_at_max_voltage * (effective_wheelbase_radius_ * curvature +
@@ -220,21 +223,59 @@ public class DifferentialDrive {
         public double max;
     }
 
-    public MinMax getMinMaxAcceleration(final ChassisState chassis_velocity, double max_abs_voltage) {
+    // NOTE: curvature is redundant here in the case that chassis_velocity is non-stationary.  It is only read if the
+    // robot is stationary.
+    public MinMax getMinMaxAcceleration(final ChassisState chassis_velocity, double curvature_hint, double
+            max_abs_voltage) {
         MinMax result = new MinMax();
+        double curvature = chassis_velocity.angular / chassis_velocity.linear;
+        if (Double.isNaN(curvature)) {
+            curvature = curvature_hint;
+        }
+        final WheelState wheel_velocities = solveInverseKinematics(chassis_velocity);
+        // TODO make sure we handle infinite curvature (turn in place).
         result.min = Double.POSITIVE_INFINITY;
         result.max = Double.NEGATIVE_INFINITY;
+
+        // Math:
+        // r_w * (Tl + Tr) = m*a
+        // r_w * r_wb * (Tr - Tl) = i*alpha
+        // k = alpha/a
+
+        // 2 equations, 2 unknowns.
+        // Solve for a and (Tl|Tr)
+
+        final double linear_term = Double.isInfinite(curvature) ? 0.0 : linear_inertia_ * effective_wheelbase_radius_;
+        final double angular_term = Double.isInfinite(curvature) ? angular_inertia_ : angular_inertia_ * curvature;
+
         // Check all four cases and record the min and max valid accelerations.
         for (boolean left : Arrays.asList(false, true)) {
             for (double sign : Arrays.asList(1.0, -1.0)) {
-                final DCMotorTransmission transmission = left ? left_transmission_ : right_transmission_;
-                // Set one side of the drive to max_abs_voltage and solve for what the other side would have to be.
-                //dynamics.wheel_torque.set(left, transmission.getTorqueForVoltage(dynamics.wheel_velocity.get(left),
-                // sign * max_abs_voltage));
-                // TODO
+                final DCMotorTransmission fixed_transmission = left ? left_transmission_ : right_transmission_;
+                final DCMotorTransmission variable_transmission = left ? right_transmission_ : left_transmission_;
+                final double fixed_torque = fixed_transmission.getTorqueForVoltage(wheel_velocities.get(left), sign *
+                        max_abs_voltage);
+                double variable_torque = 0.0;
+                if (left) {
+                    variable_torque = fixed_torque * (linear_term + angular_term) / (linear_term - angular_term);
+                } else {
+                    variable_torque = fixed_torque * (linear_term - angular_term) / (linear_term + angular_term);
+                }
+                final double variable_voltage = variable_transmission.getVoltageForTorque(wheel_velocities.get(!left)
+                        , variable_torque);
+                if (Math.abs(variable_voltage) <= max_abs_voltage) {
+                    double accel = 0.0;
+                    if (Double.isInfinite(curvature)) {
+                        accel = (left ? -1.0 : 1.0) * (fixed_torque - variable_torque) / (angular_inertia_ *
+                                wheel_radius_);
+                    } else {
+                        accel = (fixed_torque + variable_torque) / (linear_inertia_ * wheel_radius_);
+                    }
+                    result.min = Math.min(result.min, accel);
+                    result.max = Math.max(result.max, accel);
+                }
             }
         }
-        // Look at the resulting voltages.
         return result;
     }
 
