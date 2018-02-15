@@ -9,11 +9,10 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 public class QuinticHermiteOptimizerTest {
-    public static final double kTestEpsilon = Util.kEpsilon;
 
     @Test
     public void test() {
@@ -25,7 +24,7 @@ public class QuinticHermiteOptimizerTest {
         splines.add(new QuinticHermiteSpline(a, b));
         splines.add(new QuinticHermiteSpline(b, c));
 
-        assertEquals(QuinticHermiteSpline.optimizeSpline(splines), 0.013045726574273941, kTestEpsilon);
+        assertTrue(QuinticHermiteSpline.optimizeSpline(splines) < 0.015);
 
         Pose2d d = new Pose2d(new Translation2d(0, 0), Rotation2d.fromDegrees(90));
         Pose2d e = new Pose2d(new Translation2d(0, 50), Rotation2d.fromDegrees(0));
@@ -37,7 +36,6 @@ public class QuinticHermiteOptimizerTest {
         splines1.add(new QuinticHermiteSpline(e, f));
         splines1.add(new QuinticHermiteSpline(f, g));
 
-        assertEquals(QuinticHermiteSpline.optimizeSpline(splines1), 0.17097652323999749, kTestEpsilon);
-
+        assertTrue(QuinticHermiteSpline.optimizeSpline(splines1) < 0.18);
     }
 }
