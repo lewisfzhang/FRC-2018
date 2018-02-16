@@ -81,9 +81,9 @@ public class Constants {
     public static final double kElevatorHighGearCruiseVelocity = 0.0;
     public static final double kElevatorHighGearAcceleration = 0.0;
 
-    public static final double kWristKp = 0.1; //todo: tune me
-    public static final double kWristKi = 0.001; //todo: tune me
-    public static final double kWristKd = 10.0; //todo: tune me
+    public static final double kWristKp = 0.0; //todo: tune me
+    public static final double kWristKi = 0.0; //todo: tune me
+    public static final double kWristKd = 0.0; //todo: tune me
     public static final double kWristKf = 1.0; //todo: tune me
     public static final int kWristMaxIntegralAccumulator = 500000; //todo: tune me
     public static final int kWristIZone = 500; //todo: tune me
@@ -121,8 +121,8 @@ public class Constants {
 
 
     // Intake
-    public static final int kIntakeLeftMasterId = 1; //todo: get actual value
-    public static final int kIntakeRightMasterId = 2; //todo: get actual value
+    public static final int kIntakeLeftMasterId = 9;
+    public static final int kIntakeRightMasterId = 10;
 
     // Elevator
     public static final int kElevatorMasterId = 11;
@@ -131,7 +131,7 @@ public class Constants {
     public static final int kElevatorLeftSlaveBId = 2;
 
     // Wrist
-    public static final int KWristMasterId = 3; //todo: get actual value
+    public static final int KWristMasterId = 15;
 
     // Solenoids
     public static final int kShifterSolenoidId = 12; // PCM 0, Solenoid 4
@@ -140,8 +140,8 @@ public class Constants {
     public static final int kForkliftDeploySolenoid = 3; //todo: get actual value
 
     // Sensors
-    public static final int kIntakeLeftBannerId = 1; //todo: get actual value
-    public static final int kIntakeRightBannerId = 2; //todo: get actual value
+    public static final int kIntakeLeftBannerId = 9; //todo: get actual value
+    public static final int kIntakeRightBannerId = 10; //todo: get actual value
 
 
     /**

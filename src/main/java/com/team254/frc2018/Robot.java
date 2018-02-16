@@ -4,6 +4,8 @@ import com.team254.frc2018.loops.Looper;
 import com.team254.frc2018.loops.RobotStateEstimator;
 import com.team254.frc2018.subsystems.Drive;
 import com.team254.frc2018.subsystems.FollowerWheels;
+import com.team254.frc2018.subsystems.Intake;
+import com.team254.frc2018.subsystems.Wrist;
 import com.team254.lib.geometry.Pose2d;
 import com.team254.lib.util.CheesyDriveHelper;
 import com.team254.lib.util.CrashTracker;
@@ -26,6 +28,8 @@ public class Robot extends IterativeRobot {
     );
 
     private Drive mDrive = Drive.getInstance();
+    private Intake mIntake = Intake.getInstance();
+    private Wrist mWrist = Wrist.getInstance();
 
     public Robot() {
         CrashTracker.logRobotConstruction();
@@ -141,7 +145,10 @@ public class Robot extends IterativeRobot {
                     !mControlBoard.getLowGear()));
             mDrive.setHighGear(!mControlBoard.getLowGear());
 
-            outputToSmartDashboard();
+            mIntake.setPower(mControlBoard.getIntakeTest() ? 1.0 : (mControlBoard.getReverseIntakeTest() ? -1.0 : 0.0));
+            mWrist.setOpenLoop(mControlBoard.getTestWristUp() ? 1 : (mControlBoard.getTestWristDown() ? -1 : 0.0));
+
+                    outputToSmartDashboard();
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
             throw t;
@@ -157,5 +164,7 @@ public class Robot extends IterativeRobot {
         RobotState.getInstance().outputToSmartDashboard();
         FollowerWheels.getInstance().outputToSmartDashboard();
         Drive.getInstance().outputToSmartDashboard();
+        Wrist.getInstance().outputToSmartDashboard();
+        Intake.getInstance().outputToSmartDashboard();
     }
 }

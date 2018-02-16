@@ -246,7 +246,7 @@ public class Intake extends Subsystem {
         }
     }
 
-    private void setPower(double output) {
+    public void setPower(double output) {
         mLeftMaster.set(ControlMode.PercentOutput, output);
         mRightMaster.set(ControlMode.PercentOutput, output);
     }

@@ -8,4 +8,12 @@ public interface IControlBoard {
     boolean getQuickTurn();
 
     boolean getLowGear();
+
+    boolean getIntakeTest();
+
+    boolean getReverseIntakeTest();
+
+    boolean getTestWristUp();
+
+    boolean getTestWristDown();
 }

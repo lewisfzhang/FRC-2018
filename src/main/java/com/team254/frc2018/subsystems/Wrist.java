@@ -7,6 +7,7 @@ import com.team254.frc2018.Constants;
 import com.team254.frc2018.loops.Looper;
 import com.team254.lib.drivers.TalonSRXFactory;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Wrist extends Subsystem {
     private static final int kMagicMotionSlot = 0;
@@ -88,6 +89,7 @@ public class Wrist extends Subsystem {
 
     @Override
     public void outputToSmartDashboard() {
+        SmartDashboard.putNumber("WristEncoder", mMaster.getSelectedSensorPosition(0));
     }
 
     @Override

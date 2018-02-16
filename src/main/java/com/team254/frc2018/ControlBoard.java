@@ -42,4 +42,18 @@ public class ControlBoard implements IControlBoard {
     public boolean getLowGear() {
         return mThrottleStick.getRawButton(2);
     }
+
+    @Override
+    public boolean getIntakeTest() { return mButtonBoard.getRawButton(11); }
+
+    @Override
+    public boolean getReverseIntakeTest() { return mButtonBoard.getRawButton(12); }
+
+    public boolean getTestWristUp() {
+        return mButtonBoard.getRawButton(7);
+    }
+
+    public boolean getTestWristDown() {
+        return mButtonBoard.getRawButton(8);
+    }
 }
