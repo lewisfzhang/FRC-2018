@@ -1,24 +1,16 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>RPLIDAR Data Viewer</title>
+<head>
+    <title>RPLIDAR Data Viewer</title>
 
-        <link rel="stylesheet" href="viewer.css" />
-        <link rel="shortcut icon" href="https://media.team254.com/homepage/icons/favicon32.png" />
+    <link rel="stylesheet" href="viewer.css">
+    <link rel="shortcut icon" href="https://media.team254.com/homepage/icons/favicon32.png"/>
 
-        <script src="viewer.js"></script>
-    </head>
-    <body>
-        <h1 id="title">Status: Loading</h1>
-        <div id="slidecontainer">
-            <input id="cache-slider" type="range" min="0" max="0" value="0" class="slider" style="display: none">
-        </div>
-
-        <canvas width="1002" height="407" id="field" style="background-size: 100%; background-position: 0px 0px;"></canvas>
-
-        <div style="width:50%; text-align:center; margin: auto;">
-            <h2 id="zoom">Zoom: 100%</h2>
-            <input type="range" min="0" max="600" value="0" class="slider" id="zoom-slider">
-        </div>
-    </body>
+    <script src="viewer.js"></script>
+</head>
+<body>
+<h1 id="status">Status: Loading</h1>
+<canvas height="407" id="field" width="1002"></canvas>
+<button onclick="updatePoints()">Update Points</button>
+</body>
 </html>

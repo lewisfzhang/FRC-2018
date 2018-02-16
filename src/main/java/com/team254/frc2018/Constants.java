@@ -11,99 +11,162 @@ import java.util.Enumeration;
  * determined through calibrations.
  */
 public class Constants {
-    public static double kLooperDt = 0.005;
-
+    public static final double kLooperDt = 0.005;
 
     /* ROBOT PHYSICAL CONSTANTS */
 
     // Wheels
-    public static double kDriveWheelDiameterInches = 3.419;
-    public static double kTrackWidthInches = 26.655;
-    public static double kTrackScrubFactor = 0.924;
+    public static final double kFollowerWheelTrackWidthInches = 25.624;
+    public static final double kFollowerWheelBackOffset = 14.19; // Tune me!
+    public static final double kFollowerWheelDiameterInches = 2.28;  // Tune me!
+    public static final double kDriveWheelDiameterInches = 4; // TODO: measure
+    public static final double kTrackScrubFactor = 1.0;  // Tune me!
 
     // Geometry
-    public static double kCenterToFrontBumperDistance = 16.33;
-    public static double kCenterToIntakeDistance = 23.11;
-    public static double kCenterToRearBumperDistance = 16.99;
-    public static double kCenterToSideBumperDistance = 17.225;
+    public static final double kCenterToFrontBumperDistance = 16.33;
+    public static final double kCenterToIntakeDistance = 23.11;
+    public static final double kCenterToRearBumperDistance = 16.99;
+    public static final double kCenterToSideBumperDistance = 17.225;
+
+    // Gearing
+    // TODO
+
+    // Pose of the LIDAR frame w.r.t. the robot frame
+    // TUNE ME
+    public static final double kLidarXOffset = -3.3211;
+    public static final double kLidarYOffset = 0.0;
+    public static final double kLidarYawAngleDegrees = 0.0;
+
+    /* LIDAR CONSTANTS */
+    public static final int kChezyLidarScanSize = 400;
+    public static final int kChezyLidarNumScansToStore = 10;
+    public static final String kChezyLidarPath = "/home/root/chezy_lidar";
+    public static final double kChezyLidarRestartTime = 2.5;
 
     /* CONTROL LOOP GAINS */
 
     // PID gains for drive velocity loop (HIGH GEAR)
     // Units: setpoint, error, and output are in inches per second.
-    public static double kDriveHighGearVelocityKp = 1.2;
-    public static double kDriveHighGearVelocityKi = 0.0;
-    public static double kDriveHighGearVelocityKd = 6.0;
-    public static double kDriveHighGearVelocityKf = .15;
-    public static int kDriveHighGearVelocityIZone = 0;
-    public static double kDriveHighGearVelocityRampRate = 240.0;
-    public static double kDriveHighGearNominalOutput = 0.5;
-    public static double kDriveHighGearMaxSetpoint = 17.0 * 12.0; // 17 fps
+    public static final double kDriveHighGearVelocityKp = 1.2;
+    public static final double kDriveHighGearVelocityKi = 0.0;
+    public static final double kDriveHighGearVelocityKd = 6.0;
+    public static final double kDriveHighGearVelocityKf = .15;
+    public static final int kDriveHighGearVelocityIZone = 0;
+    public static final double kDriveHighGearVelocityRampRate = 240.0;
+    public static final double kDriveHighGearMaxSetpoint = 17.0 * 12.0; // 17 fps
 
     // PID gains for drive velocity loop (LOW GEAR)
     // Units: setpoint, error, and output are in inches per second.
-    public static double kDriveLowGearPositionKp = 1.0;
-    public static double kDriveLowGearPositionKi = 0.002;
-    public static double kDriveLowGearPositionKd = 100.0;
-    public static double kDriveLowGearPositionKf = .45;
-    public static int kDriveLowGearPositionIZone = 700;
-    public static double kDriveLowGearPositionRampRate = 240.0; // V/s
-    public static double kDriveLowGearNominalOutput = 0.5; // V
-    public static double kDriveLowGearMaxVelocity = 6.0 * 12.0 * 60.0 / (Math.PI * kDriveWheelDiameterInches); // 6 fps
-                                                                                                               // in RPM
-    public static double kDriveLowGearMaxAccel = 18.0 * 12.0 * 60.0 / (Math.PI * kDriveWheelDiameterInches); // 18 fps/s
-                                                                                                             // in RPM/s
+    public static final double kDriveLowGearPositionKp = 1.0;
+    public static final double kDriveLowGearPositionKi = 0.002;
+    public static final double kDriveLowGearPositionKd = 100.0;
+    public static final double kDriveLowGearPositionKf = .45;
+    public static final int kDriveLowGearPositionIZone = 700;
+    public static final double kDriveLowGearPositionRampRate = 240.0; // V/s
+    public static final double kDriveLowGearMaxVelocity = 6.0 * 12.0 * 60.0 / (Math.PI * kDriveWheelDiameterInches);
+    // 6 fps
+    // in RPM
+    public static final double kDriveLowGearMaxAccel = 18.0 * 12.0 * 60.0 / (Math.PI * kDriveWheelDiameterInches); //
+    // 18 fps/s
+    // in RPM/s
 
-    public static double kDriveVoltageCompensationRampRate = 0.0;
+    // PID gains for elevator velocity loop (HIGH GEAR)
+    // Units: setpoint, error, and output are in native units per 100ms.
+    // Elevator encoder is CTRE mag encoder which is 4096 native units per revolution.
+    public static final double kElevatorHighGearKp = 0.0;
+    public static final double kElevatorHighGearKi = 0.0;
+    public static final double kElevatorHighGearKd = 0.0;
+    public static final double kElevatorHighGearKf = 0.0;
+    public static final int kElevatorHighGearIZone = 0;
+    public static final double kElevatorHighGearCruiseVelocity = 0.0;
+    public static final double kElevatorHighGearAcceleration = 0.0;
 
+    public static final double kWristKp = 0.0; //todo: tune me
+    public static final double kWristKi = 0.0; //todo: tune me
+    public static final double kWristKd = 0.0; //todo: tune me
+    public static final double kWristKf = 1.0; //todo: tune me
+    public static final int kWristMaxIntegralAccumulator = 500000; //todo: tune me
+    public static final int kWristIZone = 500; //todo: tune me
+    public static final int kWristDeadband = 25; //todo: tune me
+    public static final int kWristCruiseVelocity = 400; //todo: tune me
+    public static final int kWristAcceleration = 600; //todo: tune me
 
     // Do not change anything after this line unless you rewire the robot and
     // update the spreadsheet!
     // Port assignments should match up with the spreadsheet here:
     // https://docs.google.com/spreadsheets/d/12_Mrd6xKmxCjKtsWNpWZDqT7ukrB9-1KKFCuRrO4aPM/edit#gid=0
 
-    /* TALONS */
+    /* I/O */
     // (Note that if multiple talons are dedicated to a mechanism, any sensors
     // are attached to the master)
 
+    public static final int kCANTimeoutMs = 10; //use for on the fly updates
+    public static final int kLongCANTimeoutMs = 100; //use for constructors
+
     // Drive
-    public static final int kLeftDriveMasterId = 12;
-    public static final int kLeftDriveSlaveId = 11;
-    public static final int kRightDriveMasterId = 3;
-    public static final int kRightDriverSlaveId = 4;
+    public static final int kLeftDriveMasterId = 5;
+    public static final int kLeftDriveSlaveAId = 6;
+    public static final int kLeftDriveSlaveBId = 7;
+    public static final int kRightDriveMasterId = 12;
+    public static final int kRightDriveSlaveAId = 13;
+    public static final int kRightDriveSlaveBId = 14;
+
+    // Followers
+    public static final int kFollowerLeftAChannelId = 2;
+    public static final int kFollowerLeftBChannelId = 3;
+    public static final int kFollowerRightAChannelId = 0;
+    public static final int kFollowerRightBChannelId = 1;
+    public static final int kFollowerRearAChannelId = 4;
+    public static final int kFollowerRearBChannelId = 5;
+
+
+    // Intake
+    public static final int kIntakeLeftMasterId = 9;
+    public static final int kIntakeRightMasterId = 10;
+
+    // Elevator
+    public static final int kElevatorMasterId = 11;
+    public static final int kElevatorRightSlaveId = 8;
+    public static final int kElevatorLeftSlaveAId = 1;
+    public static final int kElevatorLeftSlaveBId = 2;
+
+    // Wrist
+    public static final int KWristMasterId = 15;
 
     // Solenoids
-    public static final int kShifterSolenoidId = 0; // PCM 0, Solenoid 0
-    public static final int kIntakeDeploySolenoidId = 1; // PCM 0, Solenoid 1
-    public static final int kHopperSolenoidId = 2; // PCM 0, Solenoid 2
-    public static final int kGearWristSolenoid = 7; // PCM 0, Solenoid 7
+    public static final int kShifterSolenoidId = 12; // PCM 0, Solenoid 4
+    public static final int kIntakeCloseSolenoid = 1; //todo: get actual value
+    public static final int kIntakeClampSolenoid = 2; //todo: get actual value
+    public static final int kForkliftDeploySolenoid = 3; //todo: get actual value
 
-    // Phone
-    public static int kAndroidAppTcpPort = 8254;
+    // Sensors
+    public static final int kIntakeLeftBannerId = 9; //todo: get actual value
+    public static final int kIntakeRightBannerId = 10; //todo: get actual value
 
-    // Goal tracker constants
-    public static double kMaxGoalTrackAge = 1.0;
-    public static double kMaxTrackerDistance = 18.0;
-    public static double kCameraFrameRate = 30.0;
-    public static double kTrackReportComparatorStablityWeight = 1.0;
-    public static double kTrackReportComparatorAgeWeight = 1.0;
-
-    // Pose of the camera frame w.r.t. the robot frame
-    public static double kCameraXOffset = -3.3211;
-    public static double kCameraYOffset = 0.0;
-    public static double kCameraZOffset = 20.9;
-    public static double kCameraPitchAngleDegrees = 29.56; // Measured on 4/26
-    public static double kCameraYawAngleDegrees = 0.0;
-    public static double kCameraDeadband = 0.0;
 
     /**
      * Make an {@link Solenoid} instance for the single-number ID of the solenoid
-     * 
-     * @param solenoidId
-     *            One of the kXyzSolenoidId constants
+     * <p>
+     * Solenoids were wired in an inane method and also not labeled zero indexed.
+     * <p>
+     * Solenoids 1-4 are on PCM 1, Solenoids 7-4.
+     * Solenoids 5-8 are on PCM 0, Solenoids 0-3.
+     * Solenoids 9-12 are on PCM 0, Solenoids 7-4.
+     *
+     * @param solenoidId One of the kXyzSolenoidId constants
      */
     public static Solenoid makeSolenoidForId(int solenoidId) {
-        return new Solenoid(solenoidId / 8, solenoidId % 8);
+        if (solenoidId <= 4) {
+            // These solenoids are on PCM 1, wired 1-4 to 7-4.
+            return new Solenoid(1, 8 - solenoidId);
+        } else if (solenoidId <= 8) {
+            // These solenoids are on PCM 0, wired 5-8 to 0-3.
+            return new Solenoid(0, solenoidId - 5);
+        } else if (solenoidId <= 12) {
+            // These solenoids are on PCM 0, wired 9-12 to 7-4.
+            return new Solenoid(0, 16 - solenoidId);
+        }
+        throw new IllegalArgumentException("Solenoid ID not valid: " + solenoidId);
     }
 
     /**

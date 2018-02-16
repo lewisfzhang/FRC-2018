@@ -1,45 +1,170 @@
 package com.team254.frc2018;
 
-import com.team254.frc2018.lidar.UDPLidar;
+import com.team254.frc2018.loops.Looper;
+import com.team254.frc2018.loops.RobotStateEstimator;
+import com.team254.frc2018.subsystems.Drive;
+import com.team254.frc2018.subsystems.FollowerWheels;
+import com.team254.frc2018.subsystems.Intake;
+import com.team254.frc2018.subsystems.Wrist;
+import com.team254.lib.geometry.Pose2d;
+import com.team254.lib.util.CheesyDriveHelper;
+import com.team254.lib.util.CrashTracker;
 import edu.wpi.first.wpilibj.IterativeRobot;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
+import java.util.Arrays;
 
 public class Robot extends IterativeRobot {
+    private Looper mEnabledLooper = new Looper();
+    private CheesyDriveHelper mCheesyDriveHelper = new CheesyDriveHelper();
+    private IControlBoard mControlBoard = ControlBoard.getInstance();
 
-    private UDPLidar mUDPLidar;
-    private Runtime mRuntime;
-    private Process mChezyLidar;
+    private final SubsystemManager mSubsystemManager = new SubsystemManager(
+            Arrays.asList(
+                    Drive.getInstance(),
+                    FollowerWheels.getInstance()
+            )
+    );
+
+    private Drive mDrive = Drive.getInstance();
+    private Intake mIntake = Intake.getInstance();
+    private Wrist mWrist = Wrist.getInstance();
+
+    public Robot() {
+        CrashTracker.logRobotConstruction();
+    }
 
     @Override
     public void robotInit() {
-        mRuntime = Runtime.getRuntime();
-
         try {
-            mChezyLidar = mRuntime.exec("/home/root/chezy_lidar");
-            // mChezyLidar.waitFor();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+            CrashTracker.logRobotInit();
 
-        mUDPLidar = new UDPLidar();
+            mSubsystemManager.registerEnabledLoops(mEnabledLooper);
+            mEnabledLooper.register(RobotStateEstimator.getInstance());
+        } catch (Throwable t) {
+            CrashTracker.logThrowableCrash(t);
+            throw t;
+        }
     }
 
     @Override
     public void disabledInit() {
-        mChezyLidar.destroy();
+        SmartDashboard.putString("Match Cycle", "DISABLED");
+
+        try {
+            CrashTracker.logDisabledInit();
+
+            Drive.getInstance().zeroSensors();
+            FollowerWheels.getInstance().zeroSensors();
+            RobotState.getInstance().reset(Timer.getFPGATimestamp(), Pose2d.identity());
+
+            mEnabledLooper.stop();
+        } catch (Throwable t) {
+            CrashTracker.logThrowableCrash(t);
+            throw t;
+        }
     }
 
     @Override
-    public void autonomousInit() { }
+    public void autonomousInit() {
+        SmartDashboard.putString("Match Cycle", "AUTONOMOUS");
+
+        try {
+            CrashTracker.logAutoInit();
+
+            RobotState.getInstance().reset(Timer.getFPGATimestamp(), Pose2d.identity());
+        } catch (Throwable t) {
+            CrashTracker.logThrowableCrash(t);
+            throw t;
+        }
+    }
 
     @Override
     public void teleopInit() {
+        SmartDashboard.putString("Match Cycle", "TELEOP");
+
         try {
-            mChezyLidar = mRuntime.exec("/home/root/chezy_lidar");
-            mChezyLidar.waitFor();
-        } catch (Exception e) {
-            e.printStackTrace();
+            CrashTracker.logTeleopInit();
+            FollowerWheels.getInstance().zeroSensors();
+
+            RobotState.getInstance().reset(Timer.getFPGATimestamp(), Pose2d.identity());
+            mEnabledLooper.start();
+        } catch (Throwable t) {
+            CrashTracker.logThrowableCrash(t);
+            throw t;
         }
+    }
+
+    @Override
+    public void testInit() {
+        SmartDashboard.putString("Match Cycle", "TEST");
+
+        try {
+            System.out.println("Starting check systems.");
+            mDrive.checkSystem();
+        } catch (Throwable t) {
+            CrashTracker.logThrowableCrash(t);
+            throw t;
+        }
+    }
+
+    @Override
+    public void disabledPeriodic() {
+        SmartDashboard.putString("Match Cycle", "DISABLED");
+
+        try {
+            outputToSmartDashboard();
+        } catch (Throwable t) {
+            CrashTracker.logThrowableCrash(t);
+            throw t;
+        }
+    }
+
+    @Override
+    public void autonomousPeriodic() {
+        SmartDashboard.putString("Match Cycle", "AUTONOMOUS");
+
+        try {
+
+        } catch (Throwable t) {
+            CrashTracker.logThrowableCrash(t);
+            throw t;
+        }
+    }
+
+    @Override
+    public void teleopPeriodic() {
+        SmartDashboard.putString("Match Cycle", "TELEOP");
+
+        try {
+            double throttle = mControlBoard.getThrottle();
+            double turn = mControlBoard.getTurn();
+
+            mDrive.setOpenLoop(mCheesyDriveHelper.cheesyDrive(throttle, turn, mControlBoard.getQuickTurn(),
+                    !mControlBoard.getLowGear()));
+            mDrive.setHighGear(!mControlBoard.getLowGear());
+
+            mIntake.setPower(mControlBoard.getIntakeTest() ? 1.0 : (mControlBoard.getReverseIntakeTest() ? -1.0 : 0.0));
+            mWrist.setOpenLoop(mControlBoard.getTestWristUp() ? 1 : (mControlBoard.getTestWristDown() ? -1 : 0.0));
+
+                    outputToSmartDashboard();
+        } catch (Throwable t) {
+            CrashTracker.logThrowableCrash(t);
+            throw t;
+        }
+    }
+
+    @Override
+    public void testPeriodic() {
+        SmartDashboard.putString("Match Cycle", "TEST");
+    }
+
+    public void outputToSmartDashboard() {
+        RobotState.getInstance().outputToSmartDashboard();
+        FollowerWheels.getInstance().outputToSmartDashboard();
+        Drive.getInstance().outputToSmartDashboard();
+        Wrist.getInstance().outputToSmartDashboard();
+        Intake.getInstance().outputToSmartDashboard();
     }
 }

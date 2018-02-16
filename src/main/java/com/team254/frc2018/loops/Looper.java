@@ -1,11 +1,10 @@
 package com.team254.frc2018.loops;
 
+import com.team254.frc2018.Constants;
+import com.team254.lib.util.CrashTrackingRunnable;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
-import com.team254.frc2018.Constants;
-import com.team254.lib.util.CrashTrackingRunnable;
 
 import java.util.ArrayList;
 import java.util.List;

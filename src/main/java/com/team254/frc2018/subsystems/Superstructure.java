@@ -1,20 +1,19 @@
 package com.team254.frc2018.subsystems;
 
-import edu.wpi.first.wpilibj.Timer;
-
 import com.team254.frc2018.Robot;
 import com.team254.frc2018.loops.Loop;
 import com.team254.frc2018.loops.Looper;
+import edu.wpi.first.wpilibj.Timer;
 
 /**
  * The superstructure subsystem is the overarching superclass containing all components of the superstructure: the
  * intake, hopper, feeder, shooter and LEDs. The superstructure subsystem also contains some miscellaneous hardware that
  * is located in the superstructure but isn't part of any other subsystems like the compressor, pressure sensor, and
  * hopper wall pistons.
- * 
+ * <p>
  * Instead of interacting with subsystems like the feeder and intake directly, the {@link Robot} class interacts with
  * the superstructure, which passes on the commands to the correct subsystem.
- * 
+ * <p>
  * The superstructure also coordinates actions between different subsystems like the feeder and shooter.
  *
  * @see Subsystem
@@ -33,7 +32,7 @@ public class Superstructure extends Subsystem {
     // Intenal state of the system
     public enum SystemState {
         IDLE
-    };
+    }
 
     // Desired function from user
     public enum WantedState {
@@ -68,11 +67,11 @@ public class Superstructure extends Subsystem {
             synchronized (Superstructure.this) {
                 SystemState newState = mSystemState;
                 switch (mSystemState) {
-                case IDLE:
-                    newState = handleIdle(mStateChanged);
-                    break;
-                default:
-                    newState = SystemState.IDLE;
+                    case IDLE:
+                        newState = handleIdle(mStateChanged);
+                        break;
+                    default:
+                        newState = SystemState.IDLE;
                 }
 
                 if (newState != mSystemState) {
@@ -99,8 +98,8 @@ public class Superstructure extends Subsystem {
         }
 
         switch (mWantedState) {
-        default:
-            return SystemState.IDLE;
+            default:
+                return SystemState.IDLE;
         }
     }
 

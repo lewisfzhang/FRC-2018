@@ -1,9 +1,23 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.junit.platform:junit-platform-gradle-plugin:1.0.3'
+    }
+}
+
 plugins {
     id "java"
     id "eclipse"
     id "idea"
-    id "jaci.openrio.gradle.GradleRIO" version "2018.01.06b"
+    id "jaci.openrio.gradle.GradleRIO" version "2018.01.22"
 }
+
+repositories {
+    mavenCentral()
+}
+apply plugin: 'org.junit.platform.gradle.plugin'
 
 def TEAM = 254
 def ROBOT_CLASS = "com.team254.frc2018.Robot"
@@ -29,6 +43,8 @@ dependencies {
     compile wpilib()
     compile ctre()
     compile navx()
+    testCompile("org.junit.jupiter:junit-jupiter-api:5.0.3")
+    testRuntime("org.junit.jupiter:junit-jupiter-engine:5.0.3")
 }
 
 // Setting up my Jar File. In this case, adding all libraries into the main jar ('fat jar')
@@ -37,6 +53,22 @@ dependencies {
 jar {
     from configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
     manifest jaci.openrio.gradle.GradleRIOPlugin.javaManifest(ROBOT_CLASS)
+}
+
+compileTestJava {
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+    options.compilerArgs += '-parameters'
+}
+
+junitPlatform {
+    filters {
+        engines {
+        }
+        tags {
+            exclude 'slow'
+        }
+    }
 }
 
 task wrapper(type: Wrapper) {
