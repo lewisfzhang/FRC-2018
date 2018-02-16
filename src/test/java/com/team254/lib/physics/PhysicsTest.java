@@ -115,7 +115,7 @@ public class PhysicsTest {
         assertEquals(11.0 * .35, dynamics.wheel_torque.right);
         assertTrue(0.0 < dynamics.wheel_acceleration.left);
         assertTrue(0.0 < dynamics.wheel_acceleration.right);
-        assertTrue(0.0 < dynamics.chassis_acceleration.linear);
+        assertEquals(2.0, dynamics.chassis_acceleration.linear, 1.0);
         assertEquals(0.0, dynamics.chassis_acceleration.angular);
         dynamics = drive.solveForwardDynamics(
                 new DifferentialDrive.ChassisState(0.0, 0.0),
@@ -180,5 +180,24 @@ public class PhysicsTest {
                 6.0), 1.0);
         assertEquals(Units.feet_to_meters(3.0), drive.getMaxAbsVelocity(-1.0 / drive.effective_wheelbase_radius(),
                 6.0), 1.0);
+        assertEquals(Units.rpm_to_rads_per_sec(50.0), drive.getMaxAbsVelocity(Double.POSITIVE_INFINITY,
+                6.0), 1.0);
+        assertEquals(Units.rpm_to_rads_per_sec(-50.0), drive.getMaxAbsVelocity(Double.NEGATIVE_INFINITY,
+                6.0), 1.0);
+
+        // Max acceleration.
+        DifferentialDrive.MinMax min_max_accel;
+        min_max_accel = drive.getMinMaxAcceleration(new DifferentialDrive.ChassisState(0.0, 0.0), 0.0, 12.0);
+        assertEquals(2.0, min_max_accel.max, 1.0);
+        assertEquals(-2.0, min_max_accel.min, 1.0);
+        min_max_accel = drive.getMinMaxAcceleration(new DifferentialDrive.ChassisState(0.0, 0.0), 0.0, 6.0);
+        assertEquals(1.0, min_max_accel.max, 0.5);
+        assertEquals(-1.0, min_max_accel.min, 0.5);
+        min_max_accel = drive.getMinMaxAcceleration(new DifferentialDrive.ChassisState(Units.feet_to_meters(8.0), 0.0), 0.0, 12.0);
+        assertEquals(1.0, min_max_accel.max, 1.0);
+        assertEquals(-4.0, min_max_accel.min, 1.0);
+        min_max_accel = drive.getMinMaxAcceleration(new DifferentialDrive.ChassisState(0.0, 0.0), Double.POSITIVE_INFINITY, 6.0);
+        assertEquals(1.0, min_max_accel.max, 0.5);
+        assertEquals(-1.0, min_max_accel.min, 0.5);
     }
 }

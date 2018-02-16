@@ -204,17 +204,17 @@ public class DifferentialDrive {
         if (Double.isInfinite(curvature)) {
             // Turn in place.  Return value meaning becomes angular velocity.
             final double wheel_speed = Math.min(left_speed_at_max_voltage, right_speed_at_max_voltage);
-            return wheel_radius_ * wheel_speed / effective_wheelbase_radius_;
+            return Math.signum(curvature) * wheel_radius_ * wheel_speed / effective_wheelbase_radius_;
         }
 
         final double right_speed_if_left_max = left_speed_at_max_voltage * (effective_wheelbase_radius_ * curvature +
                 1.0) / (1.0 - effective_wheelbase_radius_ * curvature);
-        if (Math.abs(right_speed_if_left_max) <= right_speed_at_max_voltage) {
+        if (Math.abs(right_speed_if_left_max) <= right_speed_at_max_voltage + Util.kEpsilon) {
             return wheel_radius_ * (left_speed_at_max_voltage + right_speed_if_left_max) / 2.0;
         }
         final double left_speed_if_right_max = right_speed_at_max_voltage * (1.0 - effective_wheelbase_radius_ *
                 curvature) / (1.0 + effective_wheelbase_radius_ * curvature);
-        assert Math.abs(left_speed_if_right_max) <= left_speed_at_max_voltage;
+        // assert Math.abs(left_speed_if_right_max) <= left_speed_at_max_voltage + Util.kEpsilon;
         return wheel_radius_ * (right_speed_at_max_voltage + left_speed_if_right_max) / 2.0;
     }
 
@@ -233,7 +233,6 @@ public class DifferentialDrive {
             curvature = curvature_hint;
         }
         final WheelState wheel_velocities = solveInverseKinematics(chassis_velocity);
-        // TODO make sure we handle infinite curvature (turn in place).
         result.min = Double.POSITIVE_INFINITY;
         result.max = Double.NEGATIVE_INFINITY;
 
@@ -263,7 +262,7 @@ public class DifferentialDrive {
                 }
                 final double variable_voltage = variable_transmission.getVoltageForTorque(wheel_velocities.get(!left)
                         , variable_torque);
-                if (Math.abs(variable_voltage) <= max_abs_voltage) {
+                if (Math.abs(variable_voltage) <= max_abs_voltage + Util.kEpsilon) {
                     double accel = 0.0;
                     if (Double.isInfinite(curvature)) {
                         accel = (left ? -1.0 : 1.0) * (fixed_torque - variable_torque) / (angular_inertia_ *
