@@ -4,12 +4,14 @@ import com.team254.lib.geometry.Pose2d;
 import com.team254.lib.geometry.Rotation2d;
 import com.team254.lib.geometry.Translation2d;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class QuinticHermiteSpline implements Spline {
     private static final double kEpsilon = 1e-5;
-    private static final double kStepSize = 15;
-    private static final int kSamples = 100;
+    private static final double kStepSize = 1;
+    private static final double kMinDelta = 0.005;
+    private static final int kSamples = 50;
     private static final int kMaxIterations = 100;
 
     private double x0, x1, dx0, dx1, ddx0, ddx1, y0, y1, dy0, dy1, ddy0, ddy1;
@@ -159,10 +161,11 @@ public class QuinticHermiteSpline implements Spline {
         while(count < kMaxIterations) {
             runOptimizationIteration(splines);
             double current = sumDCurvature2(splines);
-            if(prev - current < 0)
+            if(prev - current < kMinDelta)
                 return current;
             prev = current;
             count++;
+            System.out.println(count);
         }
         return prev;
     }
@@ -172,7 +175,7 @@ public class QuinticHermiteSpline implements Spline {
      * Runs a single optimization iteration
      */
     private static void runOptimizationIteration(List<QuinticHermiteSpline> splines) {
-        //can't optimize andthing with less than 2 splines
+        //can't optimize anything with less than 2 splines
         if(splines.size() <= 1) {
             return;
         }
@@ -203,7 +206,12 @@ public class QuinticHermiteSpline implements Spline {
 
         magnitude = Math.sqrt(magnitude);
 
-        for(int i = 0; i < splines.size()-1; ++i) { //todo: use newton's method or something faster to find minimum
+        //minimize along the direction of the gradient
+        //first calculate 3 points along the direction of the gradient
+        Translation2d p1, p2, p3;
+        p2 = new Translation2d(0, sumDCurvature2(splines)); //middle point is at the current location
+
+        for(int i = 0; i < splines.size()-1; ++i) { //first point is offset from the middle location by -stepSize
             //normalize to step size
             controlPoints[i].ddx *= kStepSize/magnitude;
             controlPoints[i].ddy *= kStepSize/magnitude;
@@ -218,6 +226,47 @@ public class QuinticHermiteSpline implements Spline {
             splines.get(i).computeCoefficients();
             splines.get(i+1).computeCoefficients();
         }
+        p1 = new Translation2d(-kStepSize, sumDCurvature2(splines));
 
+        for(int i = 0; i < splines.size()-1; ++i) { //last point is offset from the middle location by +stepSize
+            //move along the gradient by 2 times the step size amount (to return to original location and move by 1 step)
+            splines.get(i).ddx1 += 2*controlPoints[i].ddx;
+            splines.get(i).ddy1 += 2*controlPoints[i].ddy;
+            splines.get(i+1).ddx0 += 2*controlPoints[i].ddx;
+            splines.get(i+1).ddy0 += 2*controlPoints[i].ddy;
+
+            //recompute the spline's coefficients to account for new second derivatives
+            splines.get(i).computeCoefficients();
+            splines.get(i+1).computeCoefficients();
+        }
+
+        p3 = new Translation2d(kStepSize, sumDCurvature2(splines));
+
+        double stepSize = fitParabola(p1, p2, p3); //approximate step size to minimize sumDCurvature2 along the gradient
+
+        for(int i = 0; i < splines.size()-1; ++i) {
+            //move by the step size calculated by the parabola fit (+1 to offset for the final transformation to find p3)
+            controlPoints[i].ddx *= 1 + stepSize/kStepSize;
+            controlPoints[i].ddy *= 1 + stepSize/kStepSize;
+
+            splines.get(i).ddx1 += controlPoints[i].ddx;
+            splines.get(i).ddy1 += controlPoints[i].ddy;
+            splines.get(i+1).ddx0 += controlPoints[i].ddx;
+            splines.get(i+1).ddy0 += controlPoints[i].ddy;
+
+            //recompute the spline's coefficients to account for new second derivatives
+            splines.get(i).computeCoefficients();
+            splines.get(i+1).computeCoefficients();
+        }
+    }
+
+    /**
+     * fits a parabola to 3 points
+     * @return the x coordinate of the vertex of the parabola
+     */
+    private static double fitParabola(Translation2d p1, Translation2d p2, Translation2d p3) {
+        double A = (p3.x() * (p2.y() - p1.y()) + p2.x() * (p1.y() - p3.y()) + p1.x() * (p3.y() - p2.y()));
+        double B = (p3.x()*p3.x() * (p1.y() - p2.y()) + p2.x()*p2.x() * (p3.y() - p1.y()) + p1.x()*p1.x() * (p2.y() - p3.y()));
+        return -B/(2*A);
     }
 }
