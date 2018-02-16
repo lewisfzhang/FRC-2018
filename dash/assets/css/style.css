@@ -1,0 +1,87 @@
+* {
+	font-family: 'Open Sans', sans-serif;
+}
+
+html {
+	margin: none;
+}
+
+h1 {
+	text-align: center;
+	margin: 5% auto;
+}
+
+.slider {
+	-webkit-appearance: none;
+	width: 60%;
+	height: 15px;
+	border-radius: 5px;
+	background: #d3d3d3;
+	outline: none;
+	opacity: 0.7;
+	-webkit-transition: .2s;
+	transition: opacity .2s;
+	display: block;
+	margin: 15px auto;
+}
+
+.slider:hover {
+	opacity: 1;
+}
+
+.slider::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 25px;
+	height: 25px;
+	border-radius: 50%;
+	background: #0070FF;
+	cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+	width: 25px;
+	height: 25px;
+	border-radius: 50%;
+	background: #0070FF;
+	cursor: pointer;
+}
+
+table {
+	width: 90%;
+	margin: auto;
+	border-collapse: collapse;
+	box-shadow: 0px 3px 5px rgba(128, 128, 128, 0.4);
+}
+
+thead {
+	background-color: #0070FF;
+	color: #fff;
+}
+
+thead>tr>th {
+	padding: 8px 0;
+}
+
+tbody:before, tbody:after {
+	content: '';
+	display: block;
+	height: 5px;
+}
+
+td {
+	text-align: center;
+	padding: 3px 0;
+}
+
+#TELEOP>div {
+	height: 100vh; 
+	width: 49%; 
+	display: inline-block;
+}
+
+#TELEOP>div>* {
+	position: relative;
+  	top: 50%;
+  	transform: translateY(-50%);
+}
