@@ -91,13 +91,15 @@ public class Drive extends Subsystem {
     private Drive() {
         // Start all Talons in open loop mode.
         mLeftMaster = TalonSRXFactory.createDefaultTalon(Constants.kLeftDriveMasterId);
-        ErrorCode leftSensorPresent = mLeftMaster.configSelectedFeedbackSensor(FeedbackDevice
+        final ErrorCode leftSensorPresent = mLeftMaster.configSelectedFeedbackSensor(FeedbackDevice
                 .CTRE_MagEncoder_Relative, 0, 100); //primary closed-loop, 100 ms timeout
         if (leftSensorPresent != ErrorCode.OK) {
             DriverStation.reportError("Could not detect left encoder: " + leftSensorPresent, false);
         }
         mLeftMaster.setInverted(false);
         mLeftMaster.setSensorPhase(true);
+        mLeftMaster.enableVoltageCompensation(true);
+        mLeftMaster.configVoltageCompSaturation(12.0, Constants.kLongCANTimeoutMs);
 
         mLeftSlaveA = TalonSRXFactory.createPermanentSlaveTalon(Constants.kLeftDriveSlaveAId,
                 Constants.kLeftDriveMasterId);
@@ -108,13 +110,15 @@ public class Drive extends Subsystem {
         mLeftSlaveB.setInverted(false);
 
         mRightMaster = TalonSRXFactory.createDefaultTalon(Constants.kRightDriveMasterId);
-        ErrorCode rightSensorPresent = mRightMaster.configSelectedFeedbackSensor(FeedbackDevice
+        final ErrorCode rightSensorPresent = mRightMaster.configSelectedFeedbackSensor(FeedbackDevice
                 .CTRE_MagEncoder_Relative, 0, 100); //primary closed-loop, 100 ms timeout
         if (rightSensorPresent != ErrorCode.OK) {
             DriverStation.reportError("Could not detect left encoder: " + rightSensorPresent, false);
         }
         mRightMaster.setInverted(true);
         mRightMaster.setSensorPhase(true);
+        mRightMaster.enableVoltageCompensation(true);
+        mRightMaster.configVoltageCompSaturation(12.0, Constants.kLongCANTimeoutMs);
 
         mRightSlaveA = TalonSRXFactory.createPermanentSlaveTalon(Constants.kRightDriveSlaveAId,
                 Constants.kRightDriveMasterId);
@@ -130,7 +134,6 @@ public class Drive extends Subsystem {
 
         mPigeon = new PigeonIMU(mLeftSlaveB);
 
-        mIsHighGear = false;
         setHighGear(true);
         setOpenLoop(DriveSignal.NEUTRAL);
 
@@ -149,10 +152,6 @@ public class Drive extends Subsystem {
      */
     public synchronized void setOpenLoop(DriveSignal signal) {
         if (mDriveControlState != DriveControlState.OPEN_LOOP) {
-            mLeftMaster.configNominalOutputForward(0.0, 0);
-            mLeftMaster.configNominalOutputReverse(0.0, 0);
-            mRightMaster.configNominalOutputForward(0.0, 0);
-            mRightMaster.configNominalOutputReverse(0.0, 0);
             setBrakeMode(false);
 
             mDriveControlState = DriveControlState.OPEN_LOOP;
@@ -167,14 +166,9 @@ public class Drive extends Subsystem {
     private synchronized void setVelocity(DriveSignal signal) {
         if (mDriveControlState != DriveControlState.PATH_FOLLOWING) {
             // We entered a velocity control state.
-            mLeftMaster.enableVoltageCompensation(true);
-            mLeftMaster.configVoltageCompSaturation(12.0, 0);
-            mLeftMaster.selectProfileSlot(kHighGearVelocityControlSlot, 0);
-
-            mRightMaster.enableVoltageCompensation(true);
-            mRightMaster.configVoltageCompSaturation(12.0, 0);
-            mRightMaster.selectProfileSlot(kHighGearVelocityControlSlot, 0);
             setBrakeMode(true);
+            mLeftMaster.selectProfileSlot(kHighGearVelocityControlSlot, 0);
+            mRightMaster.selectProfileSlot(kHighGearVelocityControlSlot, 0);
 
             mDriveControlState = DriveControlState.PATH_FOLLOWING;
         }
