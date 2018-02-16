@@ -24,14 +24,16 @@ public class ElevatorMotionPlannerTest {
     ElevatorMotionPlanner planner = new ElevatorMotionPlanner();
     ElevatorState desiredState = new ElevatorState();
     ElevatorState simulatedState = new ElevatorState();
-    ControlledActuatorLinearSim elevatorSim = new ControlledActuatorLinearSim(ELEVATOR_MIN_HEIGHT, ELEVATOR_MAX_HEIGHT, ELEVATOR_VELOCITY);
-    ControlledActuatorLinearSim pivotSim = new ControlledActuatorLinearSim(PIVOT_MIN_ANGLE, PIVOT_MAX_ANGLE, PIVOTY_VELOCITY);
+    ControlledActuatorLinearSim elevatorSim = new ControlledActuatorLinearSim(ELEVATOR_MIN_HEIGHT,
+            ELEVATOR_MAX_HEIGHT, ELEVATOR_VELOCITY);
+    ControlledActuatorLinearSim pivotSim = new ControlledActuatorLinearSim(PIVOT_MIN_ANGLE, PIVOT_MAX_ANGLE,
+            PIVOTY_VELOCITY);
 
     @Test
     public void testPlannerBootsToHome() {
         planner.setDesiredState(desiredState, simulatedState);
         ElevatorState commandedState = planner.update(new ElevatorState());
-        assertEquals(ELEVATOR_MIN_HEIGHT, commandedState.height, EPSILON,"height must not go lower than low limit");
+        assertEquals(ELEVATOR_MIN_HEIGHT, commandedState.height, EPSILON, "height must not go lower than low limit");
     }
 
     @Test
@@ -43,8 +45,8 @@ public class ElevatorMotionPlannerTest {
         planner.reset(simulatedState);
         planner.setDesiredState(desiredState, simulatedState);
         ElevatorState commandedState = planner.update(simulatedState);
-        assertEquals(PIVOT_MIN_ANGLE, commandedState.angle, EPSILON,"angle must be homed");
-        assertEquals(ELEVATOR_MIN_HEIGHT, commandedState.height, EPSILON,"height must be homed");
+        assertEquals(PIVOT_MIN_ANGLE, commandedState.angle, EPSILON, "angle must be homed");
+        assertEquals(ELEVATOR_MIN_HEIGHT, commandedState.height, EPSILON, "height must be homed");
     }
 
     @Test
@@ -57,7 +59,7 @@ public class ElevatorMotionPlannerTest {
         planner.setDesiredState(desiredState, simulatedState);
         ElevatorState commandedState = planner.update(simulatedState);
         assertEquals(180, commandedState.angle, EPSILON, "angle must be correct");
-        assertEquals(ELEVATOR_MIN_HEIGHT, commandedState.height, EPSILON,"height must be correct");
+        assertEquals(ELEVATOR_MIN_HEIGHT, commandedState.height, EPSILON, "height must be correct");
 
         // 180 to 0
         desiredState.height = ELEVATOR_MIN_HEIGHT;
@@ -66,7 +68,7 @@ public class ElevatorMotionPlannerTest {
         simulatedState.angle = 180;
         planner.setDesiredState(desiredState, simulatedState);
         commandedState = planner.update(simulatedState);
-        assertEquals(0, commandedState.angle, EPSILON,"angle must be correct");
+        assertEquals(0, commandedState.angle, EPSILON, "angle must be correct");
         assertEquals(ELEVATOR_MIN_HEIGHT, commandedState.height, EPSILON, "height must be correct");
 
         // 0 to 90
@@ -169,7 +171,8 @@ public class ElevatorMotionPlannerTest {
         elevatorSim.reset(simulatedState.height);
 
         // Move to an illegal zone
-        desiredState.height = (SuperstructureConstants.kIllegalCrossbarStowMaxHeight + SuperstructureConstants.kIllegalCrossbarStowMinHeight) / 2.0;
+        desiredState.height = (SuperstructureConstants.kIllegalCrossbarStowMaxHeight + SuperstructureConstants
+                .kIllegalCrossbarStowMinHeight) / 2.0;
         desiredState.angle = SuperstructureConstants.kIllegalCrossbarStowMinAngle - 5;
 
         boolean canMove = planner.setDesiredState(desiredState, simulatedState);
@@ -182,8 +185,10 @@ public class ElevatorMotionPlannerTest {
             simulatedState.angle = pivotSim.update(DELTA_T);
             elevatorSim.setCommandedPosition(command.height);
             simulatedState.height = elevatorSim.update(DELTA_T);
-            assertEquals(PIVOT_MAX_ANGLE, command.angle, EPSILON, "wrist must not move when commanded to illegal state");
-            assertEquals(ELEVATOR_MIN_HEIGHT, command.height, EPSILON, "elevator must not move when commanded to illegal state");
+            assertEquals(PIVOT_MAX_ANGLE, command.angle, EPSILON, "wrist must not move when commanded to illegal " +
+                    "state");
+            assertEquals(ELEVATOR_MIN_HEIGHT, command.height, EPSILON, "elevator must not move when commanded to " +
+                    "illegal state");
         }
     }
 
@@ -214,8 +219,10 @@ public class ElevatorMotionPlannerTest {
 
             assertFalse(simulatedState.inIllegalZone(), "went into an illegal zone");
         }
-        assertEquals(SuperstructureConstants.kClearFirstStageMinWristAngle, simulatedState.angle, EPSILON, "wrist must end in dunking position");
-        assertEquals(SuperstructureConstants.kClearFirstStageMinHeight + 8, simulatedState.height, EPSILON, "elevator must end in dunking position");
+        assertEquals(SuperstructureConstants.kClearFirstStageMinWristAngle, simulatedState.angle, EPSILON, "wrist " +
+                "must end in dunking position");
+        assertEquals(SuperstructureConstants.kClearFirstStageMinHeight + 8, simulatedState.height, EPSILON, "elevator" +
+                " must end in dunking position");
     }
 
     @Test
@@ -246,13 +253,15 @@ public class ElevatorMotionPlannerTest {
                 simulatedState.height = elevatorSim.update(DELTA_T);
 
                 if (simulatedState.inIllegalZone(true)) {
-                    System.out.println("Discovered bad command: " + canMove + " : " + lastCommand + " to: " + commandedState);
+                    System.out.println("Discovered bad command: " + canMove + " : " + lastCommand + " to: " +
+                            commandedState);
                     System.out.println("Bad simulatedState: " + simulatedState);
                     assertFalse(true, "went into an illegal zone");
                 }
 
                 if (simulatedState.inIllegalJawZone()) {
-                    System.out.println("Discovered bad command: " + canMove + " : " + lastCommand + " to: " + commandedState);
+                    System.out.println("Discovered bad command: " + canMove + " : " + lastCommand + " to: " +
+                            commandedState);
                     System.out.println("Bad simulatedState: " + simulatedState);
                     assertFalse(true, "went into an illegal jaw zone");
                 }
@@ -261,7 +270,6 @@ public class ElevatorMotionPlannerTest {
             lastCommand = commandedState;
         }
     }
-
 
 
 }

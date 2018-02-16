@@ -34,8 +34,9 @@ class LidarPoint {
         double radians = Math.toRadians(angle);
         Translation2d cartesian = new Translation2d(Math.cos(radians) * distance, Math.sin(radians) * distance);
 
-        if (cartesian.x() < excludeRectMinX || cartesian.y() < excludeRectMinY || cartesian.x() > excludeRectMaxX || cartesian.y() > excludeRectMaxY) {
-           return null;
+        if (cartesian.x() < excludeRectMinX || cartesian.y() < excludeRectMinY || cartesian.x() > excludeRectMaxX ||
+                cartesian.y() > excludeRectMaxY) {
+            return null;
         }
 
         Pose2d robotPose;

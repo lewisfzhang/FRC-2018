@@ -81,10 +81,10 @@ public class Elevator extends Subsystem {
 
     @Override
     public void outputToSmartDashboard() {
-        SmartDashboard.putNumber("Elevator Master Output", mMaster.getMotorOutputPercent()) ;
+        SmartDashboard.putNumber("Elevator Master Output", mMaster.getMotorOutputPercent());
         SmartDashboard.putNumber("Elevator Master RPM", getRPM());
-        SmartDashboard.putNumber("Elevator Master Position" ,
-                mMaster.getSelectedSensorPosition(0))     ;
+        SmartDashboard.putNumber("Elevator Master Position",
+                mMaster.getSelectedSensorPosition(0));
     }
 
     @Override
@@ -93,16 +93,18 @@ public class Elevator extends Subsystem {
     }
 
     @Override
-    public void zeroSensors() {}
+    public void zeroSensors() {
+    }
 
     @Override
-    public void registerEnabledLoops(Looper enabledLooper) {}
+    public void registerEnabledLoops(Looper enabledLooper) {
+    }
 
     @Override
     public boolean checkSystem() {
         boolean rightSide =
                 TalonSRXChecker.CheckTalons(this,
-                        new ArrayList<TalonSRXChecker.TalonSRXConfig>(){
+                        new ArrayList<TalonSRXChecker.TalonSRXConfig>() {
                             {
                                 add(new TalonSRXChecker.TalonSRXConfig("left_slave_a",
                                         mLeftSlaveA));
@@ -122,7 +124,7 @@ public class Elevator extends Subsystem {
                         });
         boolean leftSide =
                 TalonSRXChecker.CheckTalons(this,
-                        new ArrayList<TalonSRXChecker.TalonSRXConfig>(){
+                        new ArrayList<TalonSRXChecker.TalonSRXConfig>() {
                             {
                                 add(new TalonSRXChecker.TalonSRXConfig("master", mMaster));
                                 add(new TalonSRXChecker.TalonSRXConfig("right_slave", mRightSlave));

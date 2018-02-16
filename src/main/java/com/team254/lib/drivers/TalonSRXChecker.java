@@ -95,7 +95,7 @@ public class TalonSRXChecker {
             if (checkerConfig.mRPMSupplier != null) {
                 if (rpm < checkerConfig.mRPMFloor) {
                     System.out.println(config.mName + " has failed rpm floor check vs " +
-                    checkerConfig.mRPMFloor + "!!");
+                            checkerConfig.mRPMFloor + "!!");
                     failure = true;
                 }
             }

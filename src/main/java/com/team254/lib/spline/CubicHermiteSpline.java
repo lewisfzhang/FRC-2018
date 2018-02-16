@@ -21,17 +21,17 @@ public class CubicHermiteSpline implements Spline {
         x0 = p0.getTranslation().x();
         x1 = p1.getTranslation().x();
         dx0 = p0.getRotation().cos() * scale;
-        dx1 = p1.getRotation().cos()  * scale;
+        dx1 = p1.getRotation().cos() * scale;
         y0 = p0.getTranslation().y();
         y1 = p1.getTranslation().y();
         dy0 = p0.getRotation().sin() * scale;
         dy1 = p1.getRotation().sin() * scale;
-        ax = dx0 + dx1 + 2*x0 - 2*x1;
-        bx = -2*dx0 - dx1 - 3*x0 + 3*x1;
+        ax = dx0 + dx1 + 2 * x0 - 2 * x1;
+        bx = -2 * dx0 - dx1 - 3 * x0 + 3 * x1;
         cx = dx0;
         dx = x0;
-        ay = dy0 + dy1 + 2*y0 - 2*y1;
-        by = -2*dy0 - dy1 - 3*y0 + 3*y1;
+        ay = dy0 + dy1 + 2 * y0 - 2 * y1;
+        by = -2 * dy0 - dy1 - 3 * y0 + 3 * y1;
         cy = dy0;
         dy = y0;
         this.mReferenceFrame = mReferenceFrame;
@@ -39,15 +39,15 @@ public class CubicHermiteSpline implements Spline {
 
     @Override
     public Translation2d getPoint(double t) {
-        double x = t*t*t * ax + t*t * bx + t * cx + dx;
-        double y = t*t*t * ay + t*t * by + t * cy + dy;
+        double x = t * t * t * ax + t * t * bx + t * cx + dx;
+        double y = t * t * t * ay + t * t * by + t * cy + dy;
         return new Translation2d(x, y);
     }
 
     @Override
     public Rotation2d getHeading(double t) {
-        double dx = 3*t*t * ax + 2*t * bx + cx;
-        double dy = 3*t*t * ay + 2*t * by + cy;
+        double dx = 3 * t * t * ax + 2 * t * bx + cx;
+        double dy = 3 * t * t * ay + 2 * t * by + cy;
         return new Rotation2d(dx, dy, true);
     }
 }

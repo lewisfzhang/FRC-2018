@@ -9,7 +9,7 @@ import java.util.ArrayList;
  * Holds a single 360 degree scan from the lidar
  */
 public class LidarScan {
-    private ArrayList<Translation2d> points = new ArrayList<>(Constants.kScanSize);
+    private ArrayList<Translation2d> points = new ArrayList<>(Constants.kChezyLidarScanSize);
     private double timestamp;
 
     public String toJsonString() {

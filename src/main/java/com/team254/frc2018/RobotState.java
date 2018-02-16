@@ -19,8 +19,9 @@ public class RobotState {
 
     private static final int kObservationBufferSize = 100;
 
-    private static final Pose2d kVehicleToCamera = new Pose2d(
-            new Translation2d(Constants.kCameraXOffset, Constants.kCameraYOffset), new Rotation2d());
+    private static final Pose2d kVehicleToLidar = new Pose2d(
+            new Translation2d(Constants.kLidarXOffset, Constants.kLidarYOffset), Rotation2d.fromDegrees(Constants
+            .kLidarYawAngleDegrees));
 
     // FPGATimestamp -> RigidTransform2d or Rotation2d
     private InterpolatingTreeMap<InterpolatingDouble, Pose2d> field_to_vehicle_;
@@ -64,8 +65,8 @@ public class RobotState {
                 .transformBy(Pose2d.exp(vehicle_velocity_predicted_.scaled(lookahead_time)));
     }
 
-    public synchronized Pose2d getFieldToCamera(double timestamp) {
-        return getFieldToVehicle(timestamp).transformBy(kVehicleToCamera);
+    public synchronized Pose2d getFieldToLidar(double timestamp) {
+        return getFieldToVehicle(timestamp).transformBy(kVehicleToLidar);
     }
 
     public synchronized void addFieldToVehicleObservation(double timestamp, Pose2d observation) {
@@ -80,12 +81,16 @@ public class RobotState {
         vehicle_velocity_predicted_ = predicted_velocity;
     }
 
-    public synchronized Twist2d generateOdometryFromSensors(double left_encoder_delta_distance, double right_encoder_delta_distance,
-                                                            double back_encoder_delta_distance, Rotation2d current_gyro_angle) {
+    public synchronized Twist2d generateOdometryFromSensors(double left_encoder_delta_distance, double
+            right_encoder_delta_distance,
+                                                            double back_encoder_delta_distance, Rotation2d
+                                                                    current_gyro_angle) {
         final Pose2d last_measurement = getLatestFieldToVehicle().getValue();
         // final Twist2d delta = Kinematics.forwardKinematics(last_measurement.getRotation(),
-        //        left_encoder_delta_distance, right_encoder_delta_distance, back_encoder_delta_distance, current_gyro_angle);
-        final Twist2d delta = Kinematics.forwardKinematics(left_encoder_delta_distance, right_encoder_delta_distance, back_encoder_delta_distance);
+        //        left_encoder_delta_distance, right_encoder_delta_distance, back_encoder_delta_distance,
+        // current_gyro_angle);
+        final Twist2d delta = Kinematics.forwardKinematics(left_encoder_delta_distance, right_encoder_delta_distance,
+                back_encoder_delta_distance);
         distance_driven_ += delta.dx; //do we care about dy here?
         return delta;
     }

@@ -176,7 +176,7 @@ public class Intake extends Subsystem {
         setPower(kIntakeSetpoint);
         setJaw(JawState.CLOSED);
 
-        if(seesCube()) {
+        if (seesCube()) {
             return SystemState.CLAMPING;
         }
 
@@ -192,8 +192,8 @@ public class Intake extends Subsystem {
         setPower(kIntakeSetpoint);
         setJaw(JawState.CLAMPED);
 
-        if(seesCube()) {
-            if(timeInState > kActuationTime) {
+        if (seesCube()) {
+            if (timeInState > kActuationTime) {
                 return SystemState.HOLDING;
             } else {
                 return SystemState.CLAMPING;
@@ -207,7 +207,7 @@ public class Intake extends Subsystem {
         setPower(kHoldSetpoint);
         setJaw(JawState.CLAMPED);
 
-        if(!seesCube()) {
+        if (!seesCube()) {
             return SystemState.IDLE;
         }
 
@@ -215,7 +215,8 @@ public class Intake extends Subsystem {
             case SHOOT:
                 return SystemState.SHOOTING;
             case PLACE:
-                if(mWrist.getAngle() < SuperstructureConstants.kAlwaysNeedsJawClampMinAngle) { //don't kill the elevator
+                if (mWrist.getAngle() < SuperstructureConstants.kAlwaysNeedsJawClampMinAngle) { //don't kill the
+                    // elevator
                     DriverStation.reportError("Can't open the jaw when the wrist is at that angle", false);
                     return SystemState.HOLDING;
                 } else {
@@ -230,7 +231,7 @@ public class Intake extends Subsystem {
         setPower(kShootSetpoint);
         setJaw(JawState.CLAMPED);
 
-        if(timeInState > kShootTime) {
+        if (timeInState > kShootTime) {
             return SystemState.IDLE;
         } else {
             return SystemState.SHOOTING;
@@ -238,7 +239,7 @@ public class Intake extends Subsystem {
     }
 
     private synchronized SystemState handlePlacing(double timeInState) {
-        if(timeInState > kActuationTime) {
+        if (timeInState > kActuationTime) {
             return SystemState.IDLE;
         } else {
             return SystemState.PLACING;
@@ -251,7 +252,7 @@ public class Intake extends Subsystem {
     }
 
     private void setJaw(JawState state) {
-        if(mJawState == state) {
+        if (mJawState == state) {
             return;
         }
         mJawState = state;

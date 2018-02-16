@@ -127,7 +127,7 @@ public class Robot extends IterativeRobot {
             mDrive.setHighGear(!mControlBoard.getLowGear());
 
             outputToSmartDashboard();
-        } catch (Throwable t){
+        } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
             throw t;
         }

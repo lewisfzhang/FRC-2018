@@ -40,7 +40,7 @@ public class LidarProcessor implements Loop {
             }
 
             mScans.add(new LidarScan());
-            if (mScans.size() > Constants.kNumScansToStore) {
+            if (mScans.size() > Constants.kChezyLidarNumScansToStore) {
                 mScans.removeFirst();
             }
         }
@@ -69,7 +69,7 @@ public class LidarProcessor implements Loop {
 
     @Override
     public void onLoop(double timestamp) {
-        if (Timer.getFPGATimestamp() - prev_timestamp > Constants.kLidarRestartTime) {
+        if (Timer.getFPGATimestamp() - prev_timestamp > Constants.kChezyLidarRestartTime) {
             if (mLidarServer.isRunning()) {
                 System.out.println("Lidar timed out. Restarting");
                 mLidarServer.stop();

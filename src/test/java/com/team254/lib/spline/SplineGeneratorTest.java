@@ -18,14 +18,14 @@ public class SplineGeneratorTest {
     public void test() {
         // Create the test spline
         Pose2d p1 = new Pose2d(new Translation2d(0, 0), new Rotation2d());
-        Pose2d p2 = new Pose2d(new Translation2d(15 ,10), new Rotation2d(1, -5, true));
+        Pose2d p2 = new Pose2d(new Translation2d(15, 10), new Rotation2d(1, -5, true));
         Spline s = new CubicHermiteSpline(p1, p2);
 
         List<Twist2d> arcs = SplineGenerator.parametrizeSpline(s);
 
         double arclength = 0;
         Pose2d finalPose = new Pose2d(p1);
-        for(Twist2d t : arcs) {
+        for (Twist2d t : arcs) {
             finalPose = finalPose.transformBy(Pose2d.exp(t));
             arclength += t.dx;
         }

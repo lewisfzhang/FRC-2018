@@ -17,10 +17,12 @@ public class FollowerWheels extends Subsystem {
     }
 
     private FollowerWheels() {
-        mLeftFollower = new Encoder(Constants.kFollowerLeftAChannelId, Constants.kFollowerLeftBChannelId, true, CounterBase.EncodingType.k4X);
-        mRightFollower = new Encoder(Constants.kFollowerRightAChannelId, Constants.kFollowerRightBChannelId, false, CounterBase.EncodingType.k4X);
-        mRearFollower = new Encoder(Constants.kFollowerRearAChannelId, Constants.kFollowerRearBChannelId, true, CounterBase.EncodingType.k4X);
-
+        mLeftFollower = new Encoder(Constants.kFollowerLeftAChannelId, Constants.kFollowerLeftBChannelId, true,
+                CounterBase.EncodingType.k4X);
+        mRightFollower = new Encoder(Constants.kFollowerRightAChannelId, Constants.kFollowerRightBChannelId, false,
+                CounterBase.EncodingType.k4X);
+        mRearFollower = new Encoder(Constants.kFollowerRearAChannelId, Constants.kFollowerRearBChannelId, true,
+                CounterBase.EncodingType.k4X);
 
 
         mLeftFollower.setDistancePerPulse(Math.PI * Constants.kFollowerWheelDiameterInches * (1.0 / kCTREEnocderCPR));
@@ -84,6 +86,7 @@ public class FollowerWheels extends Subsystem {
     }
 
     public double getHeading() {
-        return Math.toDegrees((mRightFollower.getDistance() - mLeftFollower.getDistance()) / Constants.kFollowerWheelTrackWidthInches);
+        return Math.toDegrees((mRightFollower.getDistance() - mLeftFollower.getDistance()) / Constants
+                .kFollowerWheelTrackWidthInches);
     }
 }

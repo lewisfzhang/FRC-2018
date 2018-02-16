@@ -193,10 +193,12 @@ public class PhysicsTest {
         min_max_accel = drive.getMinMaxAcceleration(new DifferentialDrive.ChassisState(0.0, 0.0), 0.0, 6.0);
         assertEquals(1.0, min_max_accel.max, 0.5);
         assertEquals(-1.0, min_max_accel.min, 0.5);
-        min_max_accel = drive.getMinMaxAcceleration(new DifferentialDrive.ChassisState(Units.feet_to_meters(8.0), 0.0), 0.0, 12.0);
+        min_max_accel = drive.getMinMaxAcceleration(new DifferentialDrive.ChassisState(Units.feet_to_meters(8.0),
+                0.0), 0.0, 12.0);
         assertEquals(1.0, min_max_accel.max, 1.0);
         assertEquals(-4.0, min_max_accel.min, 1.0);
-        min_max_accel = drive.getMinMaxAcceleration(new DifferentialDrive.ChassisState(0.0, 0.0), Double.POSITIVE_INFINITY, 6.0);
+        min_max_accel = drive.getMinMaxAcceleration(new DifferentialDrive.ChassisState(0.0, 0.0), Double
+                .POSITIVE_INFINITY, 6.0);
         assertEquals(1.0, min_max_accel.max, 0.5);
         assertEquals(-1.0, min_max_accel.min, 0.5);
     }

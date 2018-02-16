@@ -16,7 +16,8 @@ public class Kinematics {
      * Forward kinematics using only encoders, rotation is implicit (less accurate than below, but useful for predicting
      * motion)
      */
-    public static Twist2d forwardKinematics(double left_wheel_delta, double right_wheel_delta, double back_wheel_delta) {
+    public static Twist2d forwardKinematics(double left_wheel_delta, double right_wheel_delta, double
+            back_wheel_delta) {
         double delta_rotation = (right_wheel_delta - left_wheel_delta) / Constants.kFollowerWheelTrackWidthInches;
         return forwardKinematics(left_wheel_delta, right_wheel_delta, back_wheel_delta, delta_rotation);
     }
@@ -44,7 +45,8 @@ public class Kinematics {
      * Append the result of forward kinematics to a previous pose.
      */
     public static Pose2d integrateForwardKinematics(Pose2d current_pose, double left_wheel_delta,
-                                                    double right_wheel_delta, double back_wheel_delta, Rotation2d current_heading) {
+                                                    double right_wheel_delta, double back_wheel_delta, Rotation2d
+                                                            current_heading) {
         Twist2d with_gyro = forwardKinematics(current_pose.getRotation(), left_wheel_delta, right_wheel_delta,
                 back_wheel_delta, current_heading);
         return integrateForwardKinematics(current_pose, with_gyro);

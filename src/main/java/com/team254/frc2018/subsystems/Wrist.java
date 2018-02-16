@@ -26,46 +26,51 @@ public class Wrist extends Subsystem {
         ErrorCode errorCode;
 
         //configure talon
-        errorCode = mMaster.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, Constants.kLongCANTimeoutMs);
+        errorCode = mMaster.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, Constants
+                .kLongCANTimeoutMs);
         if (errorCode != ErrorCode.OK)
             DriverStation.reportError("Could not detect wrist encoder: " + errorCode, false);
-        errorCode = mMaster.configForwardLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyOpen, Constants.kLongCANTimeoutMs);
+        errorCode = mMaster.configForwardLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal
+                .NormallyOpen, Constants.kLongCANTimeoutMs);
         if (errorCode != ErrorCode.OK)
             DriverStation.reportError("Could not detect forward limit switch wrist: " + errorCode, false);
-        errorCode = mMaster.configReverseLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyOpen, Constants.kLongCANTimeoutMs);
-        if(errorCode != ErrorCode.OK)
+        errorCode = mMaster.configReverseLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal
+                .NormallyOpen, Constants.kLongCANTimeoutMs);
+        if (errorCode != ErrorCode.OK)
             DriverStation.reportError("Could not detect reverse limit switch wrist: " + errorCode, false);
         errorCode = mMaster.configVoltageCompSaturation(12.0, Constants.kLongCANTimeoutMs);
-        if(errorCode != ErrorCode.OK)
+        if (errorCode != ErrorCode.OK)
             DriverStation.reportError("Could not set wrist voltage compensation: " + errorCode, false);
 
         //configure magic motion
         errorCode = mMaster.config_kP(kMagicMotionSlot, Constants.kWristKp, Constants.kLongCANTimeoutMs);
-        if(errorCode != ErrorCode.OK)
+        if (errorCode != ErrorCode.OK)
             DriverStation.reportError("Could not set wrist kp: " + errorCode, false);
         errorCode = mMaster.config_kI(kMagicMotionSlot, Constants.kWristKi, Constants.kLongCANTimeoutMs);
-        if(errorCode != ErrorCode.OK)
+        if (errorCode != ErrorCode.OK)
             DriverStation.reportError("Could not set wrist ki: " + errorCode, false);
         errorCode = mMaster.config_kD(kMagicMotionSlot, Constants.kWristKd, Constants.kLongCANTimeoutMs);
-        if(errorCode != ErrorCode.OK)
+        if (errorCode != ErrorCode.OK)
             DriverStation.reportError("Could not set wrist kd: " + errorCode, false);
         errorCode = mMaster.config_kF(kMagicMotionSlot, Constants.kWristKf, Constants.kLongCANTimeoutMs);
-        if(errorCode != ErrorCode.OK)
+        if (errorCode != ErrorCode.OK)
             DriverStation.reportError("Could not set wrist kf: " + errorCode, false);
-        errorCode = mMaster.configMaxIntegralAccumulator(kMagicMotionSlot, Constants.kWristMaxIntegralAccumulator, Constants.kLongCANTimeoutMs);
-        if(errorCode != ErrorCode.OK)
+        errorCode = mMaster.configMaxIntegralAccumulator(kMagicMotionSlot, Constants.kWristMaxIntegralAccumulator,
+                Constants.kLongCANTimeoutMs);
+        if (errorCode != ErrorCode.OK)
             DriverStation.reportError("Could not set wrist max integral: " + errorCode, false);
         errorCode = mMaster.config_IntegralZone(kMagicMotionSlot, Constants.kWristIZone, Constants.kLongCANTimeoutMs);
-        if(errorCode != ErrorCode.OK)
+        if (errorCode != ErrorCode.OK)
             DriverStation.reportError("Could not set wrist i zone: " + errorCode, false);
-        errorCode = mMaster.configAllowableClosedloopError(kMagicMotionSlot, Constants.kWristDeadband, Constants.kLongCANTimeoutMs);
-        if(errorCode != ErrorCode.OK)
+        errorCode = mMaster.configAllowableClosedloopError(kMagicMotionSlot, Constants.kWristDeadband, Constants
+                .kLongCANTimeoutMs);
+        if (errorCode != ErrorCode.OK)
             DriverStation.reportError("Could not set wrist deadband: " + errorCode, false);
         errorCode = mMaster.configMotionAcceleration(Constants.kWristAcceleration, Constants.kLongCANTimeoutMs);
-        if(errorCode != ErrorCode.OK)
+        if (errorCode != ErrorCode.OK)
             DriverStation.reportError("Could not set wrist acceleration: " + errorCode, false);
         errorCode = mMaster.configMotionCruiseVelocity(Constants.kWristCruiseVelocity, Constants.kLongCANTimeoutMs);
-        if(errorCode != ErrorCode.OK)
+        if (errorCode != ErrorCode.OK)
             DriverStation.reportError("Could not set wrist cruise velocity: " + errorCode, false);
         mMaster.selectProfileSlot(0, 0);
 
@@ -96,7 +101,8 @@ public class Wrist extends Subsystem {
     }
 
     @Override
-    public void registerEnabledLoops(Looper enabledLooper) {}
+    public void registerEnabledLoops(Looper enabledLooper) {
+    }
 
     public void setOpenLoop(double percentage) {
         mMaster.set(ControlMode.PercentOutput, percentage);

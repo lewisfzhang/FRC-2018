@@ -12,6 +12,7 @@ public class ElevatorMotionPlanner {
         public SubCommand(ElevatorState endState) {
             mEndState = endState;
         }
+
         public ElevatorState mEndState;
         public double mHeightThreshold = .75;
         public double mWristThreshold = 2;
@@ -30,14 +31,17 @@ public class ElevatorMotionPlanner {
         ElevatorState desiredState = new ElevatorState(desiredStateIn);
 
         // Limit stupid inputs
-        desiredState.angle = Util.limit(desiredState.angle, SuperstructureConstants.kWristMinAngle, SuperstructureConstants.kWristMaxAngle);
-        desiredState.height = Util.limit(desiredState.height, SuperstructureConstants.kElevatorMinHeight, SuperstructureConstants.kElevatorMaxHeight);
+        desiredState.angle = Util.limit(desiredState.angle, SuperstructureConstants.kWristMinAngle,
+                SuperstructureConstants.kWristMaxAngle);
+        desiredState.height = Util.limit(desiredState.height, SuperstructureConstants.kElevatorMinHeight,
+                SuperstructureConstants.kElevatorMaxHeight);
 
         ElevatorState swapJaw = new ElevatorState(currentState);
         swapJaw.jawClosed = desiredState.jawClosed;
 
         // Immediate return, totally illegal commands
-        if (desiredState.inIllegalZone() || desiredState.inIllegalJawZone() || swapJaw.inIllegalJawZone()) { // if we cant move there ever
+        if (desiredState.inIllegalZone() || desiredState.inIllegalJawZone() || swapJaw.inIllegalJawZone()) { // if we
+            // cant move there ever
             // return false, let the sender optionally deal with the error
             return false;
         }
@@ -47,37 +51,44 @@ public class ElevatorMotionPlanner {
 
         // The following are bad commands, but fixable. Massage them into legal-ness
         boolean willEndClearingFirstStage = desiredState.height > SuperstructureConstants.kClearFirstStageMinHeight;
-        if (willEndClearingFirstStage && (desiredState.angle <= SuperstructureConstants.kClearFirstStageMinWristAngle)) {
+        if (willEndClearingFirstStage && (desiredState.angle <= SuperstructureConstants
+                .kClearFirstStageMinWristAngle)) {
             desiredState.angle = SuperstructureConstants.kClearFirstStageMinWristAngle;
         }
 
         // Compute zone infraction states
-        boolean startingInCrossBarZone =  currentState.height <= SuperstructureConstants.kIllegalCrossbarStowMaxHeight &&
+        boolean startingInCrossBarZone = currentState.height <= SuperstructureConstants.kIllegalCrossbarStowMaxHeight &&
                 currentState.height >= SuperstructureConstants.kIllegalCrossbarStowMinHeight;
 
-        boolean endingInCrossBarZone =  desiredState.height <= SuperstructureConstants.kIllegalCrossbarStowMaxHeight &&
+        boolean endingInCrossBarZone = desiredState.height <= SuperstructureConstants.kIllegalCrossbarStowMaxHeight &&
                 desiredState.height >= SuperstructureConstants.kIllegalCrossbarStowMinHeight;
 
-        boolean elevatorWillCrossThroughCrossBarZone = (currentState.height > SuperstructureConstants.kIllegalCrossbarStowMaxHeight &&
+        boolean elevatorWillCrossThroughCrossBarZone = (currentState.height > SuperstructureConstants
+                .kIllegalCrossbarStowMaxHeight &&
                 desiredState.height < SuperstructureConstants.kIllegalCrossbarStowMaxHeight) ||
                 (currentState.height < SuperstructureConstants.kIllegalCrossbarStowMinHeight &&
-                desiredState.height > SuperstructureConstants.kIllegalCrossbarStowMinHeight);
+                        desiredState.height > SuperstructureConstants.kIllegalCrossbarStowMinHeight);
 
-        boolean wristWillCrossThroughCrossBarZone = currentState.angle < SuperstructureConstants.kIllegalCrossbarStowMinAngle ||
+        boolean wristWillCrossThroughCrossBarZone = currentState.angle < SuperstructureConstants
+                .kIllegalCrossbarStowMinAngle ||
                 desiredState.angle < SuperstructureConstants.kIllegalCrossbarStowMinAngle;
 
         boolean willCrossThroughCrossBarZone = (elevatorWillCrossThroughCrossBarZone ||
                 endingInCrossBarZone ||
-                startingInCrossBarZone) && wristWillCrossThroughCrossBarZone ;
+                startingInCrossBarZone) && wristWillCrossThroughCrossBarZone;
 
-        boolean movingFar = Math.abs(desiredState.height - currentState.height) > SuperstructureConstants.kWristStowForMinElevatorMoveDistance;
+        boolean movingFar = Math.abs(desiredState.height - currentState.height) > SuperstructureConstants
+                .kWristStowForMinElevatorMoveDistance;
 
         // Break desired state into fixed movements
-        if (movingFar || willCrossThroughCrossBarZone) {  // Stow intake when we are making large movements or into a bad zone
+        if (movingFar || willCrossThroughCrossBarZone) {  // Stow intake when we are making large movements or into a
+            // bad zone
             // Stow wrist
-            mCommandQueue.add(new SubCommand(new ElevatorState(currentState.height, SuperstructureConstants.kWristStowedPosition, true)));
+            mCommandQueue.add(new SubCommand(new ElevatorState(currentState.height, SuperstructureConstants
+                    .kWristStowedPosition, true)));
             // Move elevator
-            mCommandQueue.add(new SubCommand(new ElevatorState(desiredState.height, SuperstructureConstants.kWristStowedPosition, true)));
+            mCommandQueue.add(new SubCommand(new ElevatorState(desiredState.height, SuperstructureConstants
+                    .kWristStowedPosition, true)));
             // Move wrist to end state
             mCommandQueue.add(new SubCommand(new ElevatorState(desiredState.height, desiredState.angle, true)));
         } else {
@@ -105,15 +116,18 @@ public class ElevatorMotionPlanner {
             SubCommand subCommand = mCurrentCommand.get();
             mIntermediateCommandState = subCommand.mEndState;
             if (subCommand.isFinished(currentState) && !mCommandQueue.isEmpty()) {
-                // Let the current command persist until there is something in the queue. or not. desired outcome unclear.
+                // Let the current command persist until there is something in the queue. or not. desired outcome
+                // unclear.
                 mCurrentCommand = Optional.empty();
             }
         } else {
             mIntermediateCommandState = currentState;
         }
 
-        mCommandedState.angle = Util.limit(mIntermediateCommandState.angle, SuperstructureConstants.kWristMinAngle, SuperstructureConstants.kWristMaxAngle);
-        mCommandedState.height = Util.limit(mIntermediateCommandState.height, SuperstructureConstants.kElevatorMinHeight, SuperstructureConstants.kElevatorMaxHeight);
+        mCommandedState.angle = Util.limit(mIntermediateCommandState.angle, SuperstructureConstants.kWristMinAngle,
+                SuperstructureConstants.kWristMaxAngle);
+        mCommandedState.height = Util.limit(mIntermediateCommandState.height, SuperstructureConstants
+                .kElevatorMinHeight, SuperstructureConstants.kElevatorMaxHeight);
 
         return mCommandedState;
     }

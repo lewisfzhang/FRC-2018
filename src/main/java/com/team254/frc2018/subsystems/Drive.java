@@ -31,7 +31,7 @@ public class Drive extends Subsystem {
 
     private static Drive mInstance = new Drive();
 
-    private static final int kLowGearPositionControlSlot = 0;
+    private static final int kLowGearVelocityControlSlot = 0;
     private static final int kHighGearVelocityControlSlot = 1;
 
     public static Drive getInstance() {
@@ -91,7 +91,8 @@ public class Drive extends Subsystem {
     private Drive() {
         // Start all Talons in open loop mode.
         mLeftMaster = TalonSRXFactory.createDefaultTalon(Constants.kLeftDriveMasterId);
-        ErrorCode leftSensorPresent = mLeftMaster.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 100); //primary closed-loop, 100 ms timeout
+        ErrorCode leftSensorPresent = mLeftMaster.configSelectedFeedbackSensor(FeedbackDevice
+                .CTRE_MagEncoder_Relative, 0, 100); //primary closed-loop, 100 ms timeout
         if (leftSensorPresent != ErrorCode.OK) {
             DriverStation.reportError("Could not detect left encoder: " + leftSensorPresent, false);
         }
@@ -107,7 +108,8 @@ public class Drive extends Subsystem {
         mLeftSlaveB.setInverted(false);
 
         mRightMaster = TalonSRXFactory.createDefaultTalon(Constants.kRightDriveMasterId);
-        ErrorCode rightSensorPresent = mRightMaster.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 100); //primary closed-loop, 100 ms timeout
+        ErrorCode rightSensorPresent = mRightMaster.configSelectedFeedbackSensor(FeedbackDevice
+                .CTRE_MagEncoder_Relative, 0, 100); //primary closed-loop, 100 ms timeout
         if (rightSensorPresent != ErrorCode.OK) {
             DriverStation.reportError("Could not detect left encoder: " + rightSensorPresent, false);
         }
@@ -168,14 +170,10 @@ public class Drive extends Subsystem {
             mLeftMaster.enableVoltageCompensation(true);
             mLeftMaster.configVoltageCompSaturation(12.0, 0);
             mLeftMaster.selectProfileSlot(kHighGearVelocityControlSlot, 0);
-            mLeftMaster.configNominalOutputForward(Constants.kDriveHighGearNominalOutput, 0);
-            mLeftMaster.configNominalOutputReverse(-Constants.kDriveHighGearNominalOutput, 0);
 
             mRightMaster.enableVoltageCompensation(true);
             mRightMaster.configVoltageCompSaturation(12.0, 0);
             mRightMaster.selectProfileSlot(kHighGearVelocityControlSlot, 0);
-            mRightMaster.configNominalOutputForward(Constants.kDriveHighGearNominalOutput, 0);
-            mRightMaster.configNominalOutputReverse(-Constants.kDriveHighGearNominalOutput, 0);
             setBrakeMode(true);
 
             mDriveControlState = DriveControlState.PATH_FOLLOWING;
@@ -280,8 +278,8 @@ public class Drive extends Subsystem {
 
     @Override
     public boolean checkSystem() {
-         boolean leftSide =  TalonSRXChecker.CheckTalons(this,
-                new ArrayList<TalonSRXChecker.TalonSRXConfig>(){
+        boolean leftSide = TalonSRXChecker.CheckTalons(this,
+                new ArrayList<TalonSRXChecker.TalonSRXConfig>() {
                     {
                         add(new TalonSRXChecker.TalonSRXConfig("left_master", mLeftMaster));
                         add(new TalonSRXChecker.TalonSRXConfig("left_slave", mLeftSlaveA));
@@ -295,9 +293,9 @@ public class Drive extends Subsystem {
                         mRPMEpsilon = 250;
                         mRPMSupplier = () -> mLeftMaster.getSelectedSensorVelocity(0);
                     }
-                 });
-        boolean rightSide =  TalonSRXChecker.CheckTalons(this,
-                new ArrayList<TalonSRXChecker.TalonSRXConfig>(){
+                });
+        boolean rightSide = TalonSRXChecker.CheckTalons(this,
+                new ArrayList<TalonSRXChecker.TalonSRXConfig>() {
                     {
                         add(new TalonSRXChecker.TalonSRXConfig("right_master", mRightMaster));
                         add(new TalonSRXChecker.TalonSRXConfig("right_slave", mRightSlaveA));

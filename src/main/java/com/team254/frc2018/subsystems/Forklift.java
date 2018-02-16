@@ -44,17 +44,23 @@ public class Forklift extends Subsystem {
     }
 
     @Override
-    public boolean checkSystem() { return true; }
+    public boolean checkSystem() {
+        return true;
+    }
 
     @Override
-    public void outputToSmartDashboard(){}
+    public void outputToSmartDashboard() {
+    }
 
     @Override
-    public void stop() {}
+    public void stop() {
+    }
 
     @Override
-    public void zeroSensors() {}
+    public void zeroSensors() {
+    }
 
     @Override
-    public void registerEnabledLoops(Looper enabledLooper) {}
+    public void registerEnabledLoops(Looper enabledLooper) {
+    }
 }
