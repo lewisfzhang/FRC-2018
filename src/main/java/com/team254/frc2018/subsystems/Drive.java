@@ -19,14 +19,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import java.util.ArrayList;
 
-/**
- * This subsystem consists of the robot's drivetrain: 4 CIM motors, 4 talons, one solenoid and 2 pistons to shift gears,
- * and a navX board. The Drive subsystem has several control methods including open loop, velocity control, and position
- * control. The Drive subsystem also has several methods that handle automatic aiming, autonomous path driving, and
- * manual control.
- *
- * @see Subsystem
- */
 public class Drive extends Subsystem {
 
     private static Drive mInstance = new Drive();
@@ -258,7 +250,7 @@ public class Drive extends Subsystem {
     }
 
     private void updatePathFollower() {
-        DriveSignal signal = new DriveSignal(0, 0); //get this from path follower
+        DriveSignal signal = new DriveSignal(0, 0); // TODO get this from path follower
         setVelocity(signal);
     }
 
