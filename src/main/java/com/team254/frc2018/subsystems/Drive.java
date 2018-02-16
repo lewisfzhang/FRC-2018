@@ -26,6 +26,8 @@ public class Drive extends Subsystem {
     private static final int kLowGearVelocityControlSlot = 0;
     private static final int kHighGearVelocityControlSlot = 1;
 
+    private static final double DRIVE_ENCODER_PPR = 4096.;
+
     public static Drive getInstance() {
         return mInstance;
     }
@@ -213,8 +215,8 @@ public class Drive extends Subsystem {
 
     @Override
     public void outputToSmartDashboard() {
-        SmartDashboard.putNumber("Left speed: ", mLeftMaster.getSelectedSensorVelocity(0));
-        SmartDashboard.putNumber("Right speed: ", mRightMaster.getSelectedSensorVelocity(0));
+        SmartDashboard.putNumber("driveRight: ", getRightEncoderDistance());
+        SmartDashboard.putNumber("driveLeft: ", getLeftEncoderDistance());
         SmartDashboard.putNumber("Heading: ", getHeading().getDegrees());
     }
 
@@ -247,6 +249,16 @@ public class Drive extends Subsystem {
 
     private static double inchesPerSecondToRpm(double inches_per_second) {
         return inchesToRotations(inches_per_second) * 60;
+    }
+
+    public double getLeftEncoderDistance() {
+        // TODO: Convert this to inches, currently just rotations
+        return -mLeftMaster.getSensorCollection().getQuadraturePosition() / DRIVE_ENCODER_PPR;
+    }
+
+    public double getRightEncoderDistance() {
+        // TODO: Convert this to inches, currently just rotations
+        return mRightMaster.getSensorCollection().getQuadraturePosition() / DRIVE_ENCODER_PPR;
     }
 
     private void updatePathFollower() {
