@@ -9,6 +9,7 @@ import com.team254.lib.util.CheesyDriveHelper;
 import com.team254.lib.util.CrashTracker;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import java.util.Arrays;
 
@@ -45,6 +46,8 @@ public class Robot extends IterativeRobot {
 
     @Override
     public void disabledInit() {
+        SmartDashboard.putString("Match Cycle", "DISABLED");
+
         try {
             CrashTracker.logDisabledInit();
 
@@ -61,6 +64,8 @@ public class Robot extends IterativeRobot {
 
     @Override
     public void autonomousInit() {
+        SmartDashboard.putString("Match Cycle", "AUTONOMOUS");
+
         try {
             CrashTracker.logAutoInit();
 
@@ -73,6 +78,8 @@ public class Robot extends IterativeRobot {
 
     @Override
     public void teleopInit() {
+        SmartDashboard.putString("Match Cycle", "TELEOP");
+
         try {
             CrashTracker.logTeleopInit();
             FollowerWheels.getInstance().zeroSensors();
@@ -87,6 +94,8 @@ public class Robot extends IterativeRobot {
 
     @Override
     public void testInit() {
+        SmartDashboard.putString("Match Cycle", "TEST");
+
         try {
             System.out.println("Starting check systems.");
             mDrive.checkSystem();
@@ -98,6 +107,8 @@ public class Robot extends IterativeRobot {
 
     @Override
     public void disabledPeriodic() {
+        SmartDashboard.putString("Match Cycle", "DISABLED");
+
         try {
             outputToSmartDashboard();
         } catch (Throwable t) {
@@ -108,6 +119,8 @@ public class Robot extends IterativeRobot {
 
     @Override
     public void autonomousPeriodic() {
+        SmartDashboard.putString("Match Cycle", "AUTONOMOUS");
+
         try {
 
         } catch (Throwable t) {
@@ -118,6 +131,8 @@ public class Robot extends IterativeRobot {
 
     @Override
     public void teleopPeriodic() {
+        SmartDashboard.putString("Match Cycle", "TELEOP");
+
         try {
             double throttle = mControlBoard.getThrottle();
             double turn = mControlBoard.getTurn();
@@ -135,6 +150,7 @@ public class Robot extends IterativeRobot {
 
     @Override
     public void testPeriodic() {
+        SmartDashboard.putString("Match Cycle", "TEST");
     }
 
     public void outputToSmartDashboard() {

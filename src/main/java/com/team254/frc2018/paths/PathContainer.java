@@ -1,7 +1,7 @@
 package com.team254.frc2018.paths;
 
 import com.team254.lib.geometry.Pose2d;
-import com.team254.lib.spline.Spline;
+import com.team254.lib.spline.QuinticHermiteSpline;
 
 import java.util.List;
 
@@ -10,7 +10,7 @@ import java.util.List;
  * whether or not the robot should drive in reverse along the path.
  */
 public interface PathContainer {
-    List<Spline> buildPath();
+    List<QuinticHermiteSpline> buildPath();
 
     Pose2d getStartPose();
 
