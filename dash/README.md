@@ -12,7 +12,7 @@ These instructions will get you a copy of the project up and running on your loc
 ### Installing
 - Clone this Repository (`git clone https://github.com/Team254/FRC-2018.git`)
 - If you don't have Python, [download](https://www.python.org/downloads/) at least Python 2.7 or newer
-- Run App (See [Running](https://github.com/Team254/FRC-2018#running))
+- Run App (See [Running](https://github.com/Team254/FRC-2018/tree/master/dash#running))
 
 ### Running
 - To run with the robot, start the server (`python dash.py 10.2.54.2`) and open `index.html` in a browser
