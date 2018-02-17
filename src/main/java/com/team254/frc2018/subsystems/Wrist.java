@@ -111,10 +111,24 @@ public class Wrist extends Subsystem {
     }
 
     /**
-     * @param position the target position of the wrist in degrees.  0 is full back, 180 is facing forwards
+     * @param position the target position of the wrist in sensor units
      */
     public void setClosedLoop(double position) {
-        mMaster.set(ControlMode.MotionMagic, degreesToSensorUnits(position));
+        mMaster.set(ControlMode.MotionMagic, position);
+    }
+
+    /**
+     * @param angle the target position of the wrist in degrees.  0 is full back, 180 is facing forwards
+     */
+    public void setClosedLoopAngle(double angle) {
+        mMaster.set(ControlMode.MotionMagic, degreesToSensorUnits(angle));
+    }
+
+    /**
+     * @return current position of the wrist in sensor units
+     */
+    public double getPosition() { //returns angle of wrist in degrees
+        return mMaster.getSelectedSensorPosition(0);
     }
 
     /**
