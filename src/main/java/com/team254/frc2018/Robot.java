@@ -16,7 +16,7 @@ import java.util.Arrays;
 public class Robot extends IterativeRobot {
     private Looper mEnabledLooper = new Looper();
     private CheesyDriveHelper mCheesyDriveHelper = new CheesyDriveHelper();
-    private ControlBoard mControlBoard = ControlBoard.getInstance();
+    private IControlBoard mControlBoard = ControlBoard.getInstance();
 
     private final SubsystemManager mSubsystemManager = new SubsystemManager(
             Arrays.asList(
@@ -146,22 +146,14 @@ public class Robot extends IterativeRobot {
                     !mControlBoard.getLowGear()));
             mDrive.setHighGear(!mControlBoard.getLowGear());
 
-            mIntake.setPower(mControlBoard.getIntakeTest() ? 1.0 : (mControlBoard.getReverseIntakeTest() ? -1.0 : 0.0));
+            mIntake.setPower(mControlBoard.getIntake() ? 1.0 : (mControlBoard.getExchangeIntake() ? -1.0 : 0.0));
             mIntake.setJaw(IntakeState.JawState.CLAMPED);
-//            mWrist.setOpenLoop(mControlBoard.getTestWristPositive() ? 1 : (mControlBoard.getTestWristNegative() ? -1 : 0.0));
-//            Elevator.getInstance().setOpenLoop(mControlBoard.getJogElevatorUp() ? .25 : (mControlBoard.getJogElevatorDown() ? -1.0 : 0.0));
 
-            if (mControlBoard.getTestWristPositive()) {
+            if (mControlBoard.getJogWristExtend()) {
                 mWrist.setClosedLoopAngle(0);
             }
-            if (mControlBoard.getTestWristNegative()) {
+            if (mControlBoard.getJogWristStow()) {
                 mWrist.setClosedLoopAngle(180);
-            }
-            if (mControlBoard.mButtonBoard.getRawButton(10)) {
-                mWrist.setClosedLoopAngle(45);
-            }
-            if (mControlBoard.mButtonBoard.getRawButton(9)) {
-                mWrist.setClosedLoopAngle(90);
             }
 
             if (mControlBoard.getJogElevatorUp()) {

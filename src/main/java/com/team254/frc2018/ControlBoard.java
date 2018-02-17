@@ -14,7 +14,7 @@ public class ControlBoard implements IControlBoard {
 
     private final Joystick mThrottleStick;
     private final Joystick mTurnStick;
-    public final Joystick mButtonBoard;
+    private final Joystick mButtonBoard;
 
     private ControlBoard() {
         mThrottleStick = new Joystick(0);
@@ -44,26 +44,80 @@ public class ControlBoard implements IControlBoard {
     }
 
     @Override
-    public boolean getIntakeTest() { return mButtonBoard.getRawButton(11); }
-
-    @Override
-    public boolean getReverseIntakeTest() { return mButtonBoard.getRawButton(12); }
-
-    public boolean getTestWristNegative() {
-        return mButtonBoard.getRawButton(7);
-    }
-
-    public boolean getTestWristPositive() {
+    public boolean getJogWristStow() {
         return mButtonBoard.getRawButton(8);
     }
 
     @Override
-    public boolean getJogElevatorUp() {
+    public boolean getJogWristExtend() {
+        return mButtonBoard.getRawButton(7);
+    }
+
+    @Override
+    public boolean getScore() {
+        return mButtonBoard.getRawButton(10);
+    }
+
+    @Override
+    public boolean getFarScore() {
+        return mButtonBoard.getRawButton(9);
+    }
+
+    @Override
+    public boolean getIntake() {
+        return mButtonBoard.getRawButton(11);
+    }
+
+    @Override
+    public boolean getExchangeIntake() {
+        return mButtonBoard.getRawButton(12);
+    }
+
+    @Override
+    public boolean getBackwardsModifier() {
         return mButtonBoard.getRawButton(1);
     }
 
     @Override
+    public boolean getHighScale() {
+        return mButtonBoard.getRawButton(3);
+    }
+
+    @Override
+    public boolean getSwitch() {
+        return mButtonBoard.getRawButton(4);
+    }
+
+    @Override
+    public boolean getNeutralScale() {
+        return mButtonBoard.getRawButton(5);
+    }
+
+    @Override
+    public boolean getJogElevatorUp() {
+        return mButtonBoard.getRawButton(6);
+    }
+
+    @Override
+    public boolean getExchange() {
+        return mButtonBoard.getRawAxis(2) < -0.1;
+    }
+
+    @Override
+    public boolean getLowScale() {
+        return mButtonBoard.getRawAxis(1) < -0.1;
+    }
+
+    @Override
     public boolean getJogElevatorDown() {
-        return mButtonBoard.getRawButton(2);
+        return mButtonBoard.getRawAxis(0) < -0.1;
+    }
+
+    /**
+     * @return switch position-> false is left, true is right
+     */
+    @Override
+    public boolean getClimbMode() {
+        return mButtonBoard.getRawAxis(3) < -0.1;
     }
 }

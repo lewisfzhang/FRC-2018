@@ -1,6 +1,6 @@
 package com.team254.frc2018;
 
-public interface IControlBoard {
+interface IControlBoard {
     double getThrottle();
 
     double getTurn();
@@ -9,15 +9,36 @@ public interface IControlBoard {
 
     boolean getLowGear();
 
-    boolean getIntakeTest();
+    boolean getJogWristStow();
 
-    boolean getReverseIntakeTest();
+    boolean getJogWristExtend();
 
-    boolean getTestWristNegative();
+    boolean getScore();
 
-    boolean getTestWristPositive();
+    boolean getFarScore();
+
+    boolean getIntake();
+
+    boolean getExchangeIntake();
+
+    boolean getBackwardsModifier();
+
+    boolean getHighScale();
+
+    boolean getSwitch();
+
+    boolean getNeutralScale();
 
     boolean getJogElevatorUp();
 
+    boolean getExchange();
+
+    boolean getLowScale();
+
     boolean getJogElevatorDown();
+
+    /**
+     * @return switch position-> false is left, true is right
+     */
+    boolean getClimbMode();
 }
