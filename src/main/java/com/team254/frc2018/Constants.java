@@ -73,13 +73,13 @@ public class Constants {
     // PID gains for elevator velocity loop (HIGH GEAR)
     // Units: setpoint, error, and output are in native units per 100ms.
     // Elevator encoder is CTRE mag encoder which is 4096 native units per revolution.
-    public static final double kElevatorHighGearKp =  0.125;//0.001;
+    public static final double kElevatorHighGearKp =  0.15;
     public static final double kElevatorHighGearKi = 0.0;
     public static final double kElevatorHighGearKd = 0; //0.1;
-    public static final double kElevatorHighGearKf = 0.08;
+    public static final double kElevatorHighGearKf = 0.090; // lower speed:  0.08;
     public static final int kElevatorHighGearIZone = 0;
-    public static final double kElevatorHighGearCruiseVelocity = 0.0;
-    public static final double kElevatorHighGearAcceleration = 0.0;
+    public static final int kElevatorHighGearCruiseVelocity = 10750;
+    public static final int kElevatorHighGearAcceleration = 33000;
 
     public static final double kWristKp = 1.7; //todo: tune me
     public static final double kWristKi = 0.0; //todo: tune me

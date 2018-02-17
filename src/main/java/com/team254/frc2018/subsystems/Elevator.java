@@ -17,7 +17,7 @@ import java.util.ArrayList;
 public class Elevator extends Subsystem {
     private static Elevator mInstance = null;
 
-    private int kNegativeSoftLimit = -130000; // -151000
+    private int kNegativeSoftLimit = -96000; // -151000
     private double kPositiveSoftLimit = 0;
 
     public synchronized static Elevator getInstance() {
@@ -84,8 +84,8 @@ public class Elevator extends Subsystem {
         mMaster.config_kD(0, Constants.kElevatorHighGearKd, 100);
         mMaster.config_kF(0, Constants.kElevatorHighGearKf, 100);
 
-        mMaster.configMotionCruiseVelocity(11250, 100); // TODO: tune
-        mMaster.configMotionAcceleration(40000, 100); //todo: tune
+        mMaster.configMotionCruiseVelocity(Constants.kElevatorHighGearCruiseVelocity, 100); // TODO: tune
+        mMaster.configMotionAcceleration(Constants.kElevatorHighGearAcceleration, 100); //todo: tune
 
         mMaster.config_IntegralZone(0, Constants.kElevatorHighGearIZone, 100);
 

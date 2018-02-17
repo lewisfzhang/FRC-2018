@@ -149,7 +149,7 @@ public class Robot extends IterativeRobot {
             mIntake.setPower(mControlBoard.getIntakeTest() ? 1.0 : (mControlBoard.getReverseIntakeTest() ? -1.0 : 0.0));
             mIntake.setJaw(IntakeState.JawState.CLAMPED);
 //            mWrist.setOpenLoop(mControlBoard.getTestWristPositive() ? 1 : (mControlBoard.getTestWristNegative() ? -1 : 0.0));
-           // Elevator.getInstance().setOpenLoop(mControlBoard.getJogElevatorUp() ? .25 : (mControlBoard.getJogElevatorDown() ? -1.0 : 0.0));
+//            Elevator.getInstance().setOpenLoop(mControlBoard.getJogElevatorUp() ? .25 : (mControlBoard.getJogElevatorDown() ? -1.0 : 0.0));
 
             if (mControlBoard.getTestWristPositive()) {
                 mWrist.setClosedLoopAngle(0);
@@ -165,10 +165,10 @@ public class Robot extends IterativeRobot {
             }
 
             if (mControlBoard.getJogElevatorUp()) {
-                Elevator.getInstance().setClosedLoopPosition(0);
+                Elevator.getInstance().setClosedLoopPosition(-15000);
             }
             if (mControlBoard.getJogElevatorDown()) {
-                Elevator.getInstance().setClosedLoopPosition(-100000);
+                Elevator.getInstance().setClosedLoopPosition(-70000);
             }
 
 
