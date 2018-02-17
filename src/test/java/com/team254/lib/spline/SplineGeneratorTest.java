@@ -21,7 +21,7 @@ public class SplineGeneratorTest {
         Pose2d p2 = new Pose2d(new Translation2d(15, 10), new Rotation2d(1, -5, true));
         Spline s = new CubicHermiteSpline(p1, p2);
 
-        List<Twist2d> arcs = SplineGenerator.parametrizeSpline(s);
+        List<Twist2d> arcs = SplineGenerator.parameterizeSpline(s);
 
         double arclength = 0;
         Pose2d finalPose = new Pose2d(p1);
