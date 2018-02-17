@@ -7,7 +7,7 @@ import com.team254.lib.geometry.Translation2d;
 /**
  * Temporary spline for testing
  */
-public class CubicHermiteSpline implements Spline {
+public class CubicHermiteSpline extends Spline {
     double ax, bx, cx, dx, ay, by, cy, dy;
     ReferenceFrame mReferenceFrame;
 
@@ -49,5 +49,12 @@ public class CubicHermiteSpline implements Spline {
         double dx = 3 * t * t * ax + 2 * t * bx + cx;
         double dy = 3 * t * t * ay + 2 * t * by + cy;
         return new Rotation2d(dx, dy, true);
+    }
+
+    @Override
+    public double getCurvature(double t) {
+        double ddx = 6 * t * ax + 2 * bx;
+        double ddy = 6 * t * ay + 2 * by;
+        return ddy / ddx;
     }
 }

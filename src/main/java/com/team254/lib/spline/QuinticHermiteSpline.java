@@ -6,7 +6,7 @@ import com.team254.lib.geometry.Pose2d;
 import com.team254.lib.geometry.Rotation2d;
 import com.team254.lib.geometry.Translation2d;
 
-public class QuinticHermiteSpline implements Spline {
+public class QuinticHermiteSpline extends Spline {
     private static final double kEpsilon = 1e-5;
     private static final double kStepSize = 1;
     private static final double kMinDelta = 0.005;
@@ -117,13 +117,13 @@ public class QuinticHermiteSpline implements Spline {
         return 20 * ay * t * t * t + 12 * by * t * t + 6 * cy * t + 2 * dy;
     }
 
-    private double curvature(double t) {
+    public double getCurvature(double t) {
         return (dx(t) * ddy(t) - ddx(t) * dy(t)) / ((dx(t) * dx(t) + dy(t) * dy(t)) * Math.sqrt((dx(t) * dx(t) + dy
                 (t) * dy(t))));
     }
 
     private double dCurvature(double t) {
-        return (curvature(t + kEpsilon) - curvature(t - kEpsilon)) / (2 * kEpsilon);
+        return (getCurvature(t + kEpsilon) - getCurvature(t - kEpsilon)) / (2 * kEpsilon);
     }
 
     @Override
@@ -286,7 +286,8 @@ public class QuinticHermiteSpline implements Spline {
      */
     private static double fitParabola(Translation2d p1, Translation2d p2, Translation2d p3) {
         double A = (p3.x() * (p2.y() - p1.y()) + p2.x() * (p1.y() - p3.y()) + p1.x() * (p3.y() - p2.y()));
-        double B = (p3.x() * p3.x() * (p1.y() - p2.y()) + p2.x() * p2.x() * (p3.y() - p1.y()) + p1.x() * p1.x() * (p2.y() - p3.y()));
+        double B = (p3.x() * p3.x() * (p1.y() - p2.y()) + p2.x() * p2.x() * (p3.y() - p1.y()) + p1.x() * p1.x() *
+                (p2.y() - p3.y()));
         return -B / (2 * A);
     }
 }

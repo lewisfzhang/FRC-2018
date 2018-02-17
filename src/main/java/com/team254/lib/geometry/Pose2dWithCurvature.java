@@ -24,6 +24,11 @@ public class Pose2dWithCurvature implements IPose2d<Pose2dWithCurvature>, ICurva
         curvature_ = curvature;
     }
 
+    public Pose2dWithCurvature(final Translation2d translation, final Rotation2d rotation, double curvature) {
+        pose_ = new Pose2d(translation, rotation);
+        curvature_ = curvature;
+    }
+
     @Override
     public final Pose2d getPose() {
         return pose_;

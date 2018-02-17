@@ -4,6 +4,8 @@ import com.team254.lib.geometry.Pose2d;
 import com.team254.lib.geometry.Pose2dWithCurvature;
 import com.team254.lib.geometry.State;
 import com.team254.lib.geometry.Twist2d;
+import com.team254.lib.spline.Spline;
+import com.team254.lib.spline.SplineGenerator;
 import com.team254.lib.util.Util;
 
 import java.util.ArrayList;
@@ -80,5 +82,11 @@ public class TrajectoryUtil {
         }
 
         return new Trajectory<Pose2dWithCurvature>(samples);
+    }
+
+    public static Trajectory<Pose2dWithCurvature> trajectoryFromSplines(final List<Spline> splines, double maxDx,
+                                                                        double maxDy, double maxDTheta) {
+        return new Trajectory<Pose2dWithCurvature>(SplineGenerator.parameterizeSplines(splines, maxDx, maxDy,
+                maxDTheta));
     }
 }
