@@ -19,6 +19,8 @@ public class Elevator extends Subsystem {
 
     private int kNegativeSoftLimit = -96000; // -151000
     private double kPositiveSoftLimit = 0;
+    private double kEncoderTicksPerInch = -1271;
+    public static final double kHomePositionInches = 5;
 
     public synchronized static Elevator getInstance() {
         if (mInstance == null) {
@@ -95,13 +97,15 @@ public class Elevator extends Subsystem {
         mMaster.set(ControlMode.PercentOutput, percentage);
     }
 
-    public synchronized void setClosedLoopPosition(double position) {
-        setClosedLoopRawPosition(position);
+    public synchronized void setClosedLoopPosition(double positionInchesOffGround) {
+        double positionInchesFromHome = positionInchesOffGround - kHomePositionInches;
+        double encoderPosition = positionInchesFromHome * kEncoderTicksPerInch;
+        setClosedLoopRawPosition(encoderPosition);
     }
 
-    private synchronized void setClosedLoopRawPosition(double position) {
-        System.out.println("Going for: " + position);
-        mMaster.set(ControlMode.MotionMagic, position);
+    private synchronized void setClosedLoopRawPosition(double encoderPosition) {
+        System.out.println("Going for: " + encoderPosition);
+        mMaster.set(ControlMode.MotionMagic, encoderPosition);
     }
 
     public double getRPM() {
@@ -109,6 +113,10 @@ public class Elevator extends Subsystem {
         // GetVelocity is in native units per 100ms.
         // TODO: make this rpm again
         return mMaster.getSelectedSensorVelocity(0); // * 10.0 / 4096.0 * 60.0;
+    }
+
+    public double getInchesOffGround() {
+        return (mMaster.getSelectedSensorPosition(0) / kEncoderTicksPerInch) + kHomePositionInches;
     }
 
     @Override

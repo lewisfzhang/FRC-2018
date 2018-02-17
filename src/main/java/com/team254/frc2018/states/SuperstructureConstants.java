@@ -13,7 +13,7 @@ public class SuperstructureConstants {
     public static final double kIllegalCrossbarStowMinAngle = 90;
 
     public static final double kClearFirstStageMinHeight = 43.5;
-    public static final double kClearFirstStageMinWristAngle = 35;
+    public static final double kClearFirstStageMinWristAngle = 60;
 
     public static final double kAlwaysNeedsJawClampMinAngle = 60;
 }

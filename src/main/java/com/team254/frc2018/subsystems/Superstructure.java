@@ -3,7 +3,11 @@ package com.team254.frc2018.subsystems;
 import com.team254.frc2018.Robot;
 import com.team254.frc2018.loops.Loop;
 import com.team254.frc2018.loops.Looper;
-import edu.wpi.first.wpilibj.Timer;
+import com.team254.frc2018.planners.SuperstructureMotionPlanner;
+import com.team254.frc2018.statemachines.IntakeStateMachine;
+import com.team254.frc2018.states.IntakeState;
+import com.team254.frc2018.states.SuperstructureState;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * The superstructure subsystem is the overarching superclass containing all components of the superstructure: the
@@ -29,78 +33,16 @@ public class Superstructure extends Subsystem {
         return mInstance;
     }
 
-    // Intenal state of the system
-    public enum SystemState {
-        IDLE
-    }
+    private SuperstructureState mState = new SuperstructureState();
+    private Elevator mElevator = Elevator.getInstance();
+    private Wrist mWrist = Wrist.getInstance();
+    private Intake mIntake = Intake.getInstance();
+    private SuperstructureMotionPlanner mPlanner = new SuperstructureMotionPlanner();
 
-    // Desired function from user
-    public enum WantedState {
-        IDLE
-    }
 
-    private SystemState mSystemState = SystemState.IDLE;
-    private WantedState mWantedState = WantedState.IDLE;
-
-    private double mCurrentStateStartTime;
-    private boolean mStateChanged;
-
-    private Loop mLoop = new Loop() {
-
-        // Every time we transition states, we update the current state start
-        // time and the state changed boolean (for one cycle)
-        private double mWantStateChangeStartTime;
-
-        @Override
-        public void onStart(double timestamp) {
-            synchronized (Superstructure.this) {
-                mWantedState = WantedState.IDLE;
-                mCurrentStateStartTime = timestamp;
-                mWantStateChangeStartTime = timestamp;
-                mSystemState = SystemState.IDLE;
-                mStateChanged = true;
-            }
-        }
-
-        @Override
-        public void onLoop(double timestamp) {
-            synchronized (Superstructure.this) {
-                SystemState newState = mSystemState;
-                switch (mSystemState) {
-                    case IDLE:
-                        newState = handleIdle(mStateChanged);
-                        break;
-                    default:
-                        newState = SystemState.IDLE;
-                }
-
-                if (newState != mSystemState) {
-                    System.out.println("Superstructure state " + mSystemState + " to " + newState + " Timestamp: "
-                            + Timer.getFPGATimestamp());
-                    mSystemState = newState;
-                    mCurrentStateStartTime = timestamp;
-                    mStateChanged = true;
-                } else {
-                    mStateChanged = false;
-                }
-            }
-        }
-
-        @Override
-        public void onStop(double timestamp) {
-            stop();
-        }
-    };
-
-    private SystemState handleIdle(boolean stateChanged) {
-        if (stateChanged) {
-            stop();
-        }
-
-        switch (mWantedState) {
-            default:
-                return SystemState.IDLE;
-        }
+    @Override
+    public boolean checkSystem() {
+        return false;
     }
 
     @Override
@@ -118,14 +60,55 @@ public class Superstructure extends Subsystem {
 
     }
 
+    synchronized void updateObservedState(SuperstructureState state) {
+        state.height = mElevator.getInchesOffGround();
+        state.angle = mWrist.getAngle();
+        state.jawClamped = mIntake.getJawState() == IntakeState.JawState.CLAMPED;
+    }
+
+    // Update subsystems from planner
+    synchronized void setFromCommandState(SuperstructureState commandState) {
+        mElevator.setClosedLoopPosition(commandState.height);
+        mWrist.setClosedLoopAngle(commandState.angle);
+    }
+
+    // Get commanded from user
+    synchronized public void set(double height, double angle, IntakeStateMachine.WantedAction intakeAction) {
+        updateObservedState(mState);
+        SuperstructureState mCommandedState = new SuperstructureState(height, angle);
+        mCommandedState.intakeAction = intakeAction;
+        mPlanner.setDesiredState(mCommandedState, mState);
+    }
+
+    // Get commanded from user
+    synchronized public void set(double height, double angle) {
+        set(height, angle, IntakeStateMachine.WantedAction.IDLE);
+    }
+
+
     @Override
     public void registerEnabledLoops(Looper enabledLooper) {
-        enabledLooper.register(mLoop);
-    }
+        enabledLooper.register(new Loop() {
+            int i = 0;
+            @Override
+            public void onStart(double timestamp) {
+                i = 0;
+            }
 
-    @Override
-    public boolean checkSystem() {
-        return true;
-    }
+            @Override
+            public void onLoop(double timestamp) {
+                synchronized (Superstructure.this) {
+                    updateObservedState(mState);
+                    SuperstructureState commandState = mPlanner.update(mState);
+                    setFromCommandState(commandState);
+                }
 
+            }
+
+            @Override
+            public void onStop(double timestamp) {
+
+            }
+        });
+    }
 }

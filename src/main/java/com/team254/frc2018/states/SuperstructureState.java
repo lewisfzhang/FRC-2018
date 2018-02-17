@@ -1,29 +1,32 @@
 package com.team254.frc2018.states;
 
+import com.team254.frc2018.statemachines.IntakeStateMachine;
 import com.team254.lib.util.Util;
 
-public class ElevatorState {
+public class SuperstructureState {
     public double height = SuperstructureConstants.kElevatorMinHeight;
     public double angle = SuperstructureConstants.kWristMinAngle;
-    public boolean jawClosed = true;
+    public boolean jawClamped = true;
+    // This isnt touched by planner
+    public IntakeStateMachine.WantedAction intakeAction = IntakeStateMachine.WantedAction.IDLE;
 
-    public ElevatorState(double height, double angle, boolean jawClosed) {
+    public SuperstructureState(double height, double angle, boolean jawClamped) {
         this.height = height;
         this.angle = angle;
-        this.jawClosed = jawClosed;
+        this.jawClamped = jawClamped;
     }
 
-    public ElevatorState(double height, double angle) {
+    public SuperstructureState(double height, double angle) {
         this(height, angle, true);
     }
 
-    public ElevatorState(ElevatorState other) {
+    public SuperstructureState(SuperstructureState other) {
         this.height = other.height;
         this.angle = other.angle;
-        this.jawClosed = other.jawClosed;
+        this.jawClamped = other.jawClamped;
     }
 
-    public ElevatorState() {
+    public SuperstructureState() {
         this(SuperstructureConstants.kElevatorMinHeight, SuperstructureConstants.kWristMinAngle, true);
     }
 
@@ -45,10 +48,10 @@ public class ElevatorState {
     }
 
     public boolean inIllegalJawZone() {
-        return angle < SuperstructureConstants.kAlwaysNeedsJawClampMinAngle && !jawClosed;
+        return angle < SuperstructureConstants.kAlwaysNeedsJawClampMinAngle && !jawClamped;
     }
 
-    public boolean isInRange(ElevatorState otherState, double heightThreshold, double wristThreshold) {
+    public boolean isInRange(SuperstructureState otherState, double heightThreshold, double wristThreshold) {
         return Util.epsilonEquals(otherState.height, height, heightThreshold) &&
                 Util.epsilonEquals(otherState.angle, angle, wristThreshold);
 
@@ -56,7 +59,7 @@ public class ElevatorState {
 
     @Override
     public String toString() {
-        return "" + height + " / " + angle + " / " + jawClosed;
+        return "" + height + " / " + angle + " / " + jawClamped;
     }
 
 }

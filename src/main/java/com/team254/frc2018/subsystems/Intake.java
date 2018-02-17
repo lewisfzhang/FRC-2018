@@ -4,6 +4,7 @@ import com.ctre.phoenix.CANifier;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.team254.frc2018.Constants;
+import com.team254.frc2018.ControlBoard;
 import com.team254.frc2018.loops.Loop;
 import com.team254.frc2018.loops.Looper;
 import com.team254.frc2018.statemachines.IntakeStateMachine;
@@ -71,7 +72,7 @@ public class Intake extends Subsystem {
 
     public IntakeState getCurrentState() {
         mCurrentState.leftCubeSensorTriggered = false; // TODO: replace with banner sensor
-        mCurrentState.rightCubeSensorTriggered = false; // TODO: replace with banner sensor
+        mCurrentState.rightCubeSensorTriggered = ControlBoard.getInstance().getBannerOverride(); // TODO: replace with banner sensor
         mCurrentState.wristAngle = Wrist.getInstance().getAngle(); // this is a hack
         return mCurrentState;
     }

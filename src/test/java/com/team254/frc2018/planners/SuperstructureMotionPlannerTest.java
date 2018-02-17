@@ -1,8 +1,7 @@
 package com.team254.frc2018.planners;
 
-import com.team254.frc2018.states.ElevatorState;
+import com.team254.frc2018.states.SuperstructureState;
 import com.team254.frc2018.states.SuperstructureConstants;
-import com.team254.frc2018.subsystems.Superstructure;
 import com.team254.util.test.ControlledActuatorLinearSim;
 import org.junit.jupiter.api.Test;
 
@@ -11,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
-public class ElevatorMotionPlannerTest {
+public class SuperstructureMotionPlannerTest {
     static final double ELEVATOR_MAX_HEIGHT = SuperstructureConstants.kElevatorMaxHeight;
     static final double ELEVATOR_MIN_HEIGHT = SuperstructureConstants.kElevatorMinHeight;
     static final double PIVOT_MAX_ANGLE = SuperstructureConstants.kWristMaxAngle;
@@ -21,9 +20,9 @@ public class ElevatorMotionPlannerTest {
     static final double DELTA_T = 0.005;
     private static final double EPSILON = 1e-8;
 
-    ElevatorMotionPlanner planner = new ElevatorMotionPlanner();
-    ElevatorState desiredState = new ElevatorState();
-    ElevatorState simulatedState = new ElevatorState();
+    SuperstructureMotionPlanner planner = new SuperstructureMotionPlanner();
+    SuperstructureState desiredState = new SuperstructureState();
+    SuperstructureState simulatedState = new SuperstructureState();
     ControlledActuatorLinearSim elevatorSim = new ControlledActuatorLinearSim(ELEVATOR_MIN_HEIGHT,
             ELEVATOR_MAX_HEIGHT, ELEVATOR_VELOCITY);
     ControlledActuatorLinearSim pivotSim = new ControlledActuatorLinearSim(PIVOT_MIN_ANGLE, PIVOT_MAX_ANGLE,
@@ -32,7 +31,7 @@ public class ElevatorMotionPlannerTest {
     @Test
     public void testPlannerBootsToHome() {
         planner.setDesiredState(desiredState, simulatedState);
-        ElevatorState commandedState = planner.update(new ElevatorState());
+        SuperstructureState commandedState = planner.update(new SuperstructureState());
         assertEquals(ELEVATOR_MIN_HEIGHT, commandedState.height, EPSILON, "height must not go lower than low limit");
     }
 
@@ -44,7 +43,7 @@ public class ElevatorMotionPlannerTest {
         simulatedState.angle = 0;
         planner.reset(simulatedState);
         planner.setDesiredState(desiredState, simulatedState);
-        ElevatorState commandedState = planner.update(simulatedState);
+        SuperstructureState commandedState = planner.update(simulatedState);
         assertEquals(PIVOT_MIN_ANGLE, commandedState.angle, EPSILON, "angle must be homed");
         assertEquals(ELEVATOR_MIN_HEIGHT, commandedState.height, EPSILON, "height must be homed");
     }
@@ -57,7 +56,7 @@ public class ElevatorMotionPlannerTest {
         simulatedState.height = ELEVATOR_MIN_HEIGHT;
         simulatedState.angle = 0;
         planner.setDesiredState(desiredState, simulatedState);
-        ElevatorState commandedState = planner.update(simulatedState);
+        SuperstructureState commandedState = planner.update(simulatedState);
         assertEquals(180, commandedState.angle, EPSILON, "angle must be correct");
         assertEquals(ELEVATOR_MIN_HEIGHT, commandedState.height, EPSILON, "height must be correct");
 
@@ -84,7 +83,7 @@ public class ElevatorMotionPlannerTest {
 
     @Test
     public void testPivotSims() {
-        ElevatorState currentState = new ElevatorState();
+        SuperstructureState currentState = new SuperstructureState();
         desiredState.height = ELEVATOR_MIN_HEIGHT;
         desiredState.angle = 180;
         simulatedState.height = ELEVATOR_MIN_HEIGHT;
@@ -94,7 +93,7 @@ public class ElevatorMotionPlannerTest {
         planner.setDesiredState(desiredState, simulatedState);
 
         for (double ts = 0; ts < 3.0; ts += DELTA_T) {
-            ElevatorState command = planner.update(currentState);
+            SuperstructureState command = planner.update(currentState);
             pivotSim.setCommandedPosition(command.angle);
             double pivotAngle = pivotSim.update(DELTA_T);
             double raw = (ts + DELTA_T) * PIVOT_MAX_ANGLE;
@@ -106,7 +105,7 @@ public class ElevatorMotionPlannerTest {
 
     @Test
     public void testWristDoesntGoTooLow() {
-        ElevatorState currentState = new ElevatorState();
+        SuperstructureState currentState = new SuperstructureState();
         desiredState.height = ELEVATOR_MIN_HEIGHT;
         desiredState.angle = 190;
         simulatedState.height = ELEVATOR_MIN_HEIGHT;
@@ -120,7 +119,7 @@ public class ElevatorMotionPlannerTest {
             desiredState.height = height;
             simulatedState.height = height;
             planner.setDesiredState(desiredState, simulatedState);
-            ElevatorState command = planner.update(currentState);
+            SuperstructureState command = planner.update(currentState);
             assertEquals(PIVOT_MAX_ANGLE, command.angle, EPSILON, "wrist must not go past max limit");
         }
     }
@@ -128,7 +127,7 @@ public class ElevatorMotionPlannerTest {
     @Test
     public void testWristStowsForBigMovements() {
         // Start with intake on ground
-        simulatedState = new ElevatorState();
+        simulatedState = new SuperstructureState();
         simulatedState.angle = PIVOT_MAX_ANGLE;
         simulatedState.height = ELEVATOR_MIN_HEIGHT;
         pivotSim.reset(simulatedState.angle);
@@ -142,7 +141,7 @@ public class ElevatorMotionPlannerTest {
 
         // Test that wrist is never outside vertical when elevator is "moving"
         for (double ts = 0; ts < 5; ts += DELTA_T) {
-            ElevatorState command = planner.update(simulatedState);
+            SuperstructureState command = planner.update(simulatedState);
             pivotSim.setCommandedPosition(command.angle);
             simulatedState.angle = pivotSim.update(DELTA_T);
             elevatorSim.setCommandedPosition(command.height);
@@ -163,7 +162,7 @@ public class ElevatorMotionPlannerTest {
     @Test
     public void testCantCommandToIllegalCrossBarZone() {
         // Start with intake on ground
-        simulatedState = new ElevatorState();
+        simulatedState = new SuperstructureState();
         simulatedState.angle = PIVOT_MAX_ANGLE;
         simulatedState.height = ELEVATOR_MIN_HEIGHT;
         planner.reset(simulatedState);
@@ -180,7 +179,7 @@ public class ElevatorMotionPlannerTest {
 
         // Test that wrist is never outside vertical when elevator is "moving"
         for (double ts = 0; ts < 5; ts += DELTA_T) {
-            ElevatorState command = planner.update(simulatedState);
+            SuperstructureState command = planner.update(simulatedState);
             pivotSim.setCommandedPosition(command.angle);
             simulatedState.angle = pivotSim.update(DELTA_T);
             elevatorSim.setCommandedPosition(command.height);
@@ -195,7 +194,7 @@ public class ElevatorMotionPlannerTest {
     @Test
     public void testCantDunkOverTheBackTooFar() {
         // Start with intake on ground
-        simulatedState = new ElevatorState();
+        simulatedState = new SuperstructureState();
         simulatedState.angle = PIVOT_MAX_ANGLE;
         simulatedState.height = ELEVATOR_MIN_HEIGHT;
         planner.reset(simulatedState);
@@ -211,7 +210,7 @@ public class ElevatorMotionPlannerTest {
 
         // Test that wrist is never outside vertical when elevator is "moving"
         for (double ts = 0; ts < 10; ts += DELTA_T) {
-            ElevatorState command = planner.update(simulatedState);
+            SuperstructureState command = planner.update(simulatedState);
             pivotSim.setCommandedPosition(command.angle);
             simulatedState.angle = pivotSim.update(DELTA_T);
             elevatorSim.setCommandedPosition(command.height);
@@ -228,25 +227,25 @@ public class ElevatorMotionPlannerTest {
     @Test
     public void testChaosMonkeyControllingElevator() {
         // Start stowed
-        simulatedState = new ElevatorState();
+        simulatedState = new SuperstructureState();
         simulatedState.angle = PIVOT_MAX_ANGLE;
         simulatedState.height = ELEVATOR_MIN_HEIGHT;
         planner.reset(simulatedState);
         pivotSim.reset(simulatedState.angle);
         elevatorSim.reset(simulatedState.height);
-        ElevatorState lastCommand = simulatedState;
+        SuperstructureState lastCommand = simulatedState;
         for (int i = 0; i < 50000; ++i) {
             double newHeight = Math.random() * (ELEVATOR_MAX_HEIGHT + 15);
             double newAngle = Math.random() * (PIVOT_MAX_ANGLE + 20);
             boolean jawClosed = Math.random() < .5;
-            ElevatorState commandedState = new ElevatorState(newHeight, newAngle, jawClosed);
+            SuperstructureState commandedState = new SuperstructureState(newHeight, newAngle, jawClosed);
             boolean canMove = planner.setDesiredState(commandedState, simulatedState);
             if (canMove) {
-                simulatedState.jawClosed = jawClosed;
+                simulatedState.jawClamped = jawClosed;
             }
 
             for (double ts = 0; ts < 7; ts += DELTA_T) {
-                ElevatorState command = planner.update(simulatedState);
+                SuperstructureState command = planner.update(simulatedState);
                 pivotSim.setCommandedPosition(command.angle);
                 simulatedState.angle = pivotSim.update(DELTA_T);
                 elevatorSim.setCommandedPosition(command.height);

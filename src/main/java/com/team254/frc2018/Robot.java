@@ -21,13 +21,16 @@ public class Robot extends IterativeRobot {
     private final SubsystemManager mSubsystemManager = new SubsystemManager(
             Arrays.asList(
                     Drive.getInstance(),
-                    FollowerWheels.getInstance()
+                    FollowerWheels.getInstance(),
+                    Superstructure.getInstance(),
+                    Intake.getInstance()
             )
     );
 
     private Drive mDrive = Drive.getInstance();
     private Intake mIntake = Intake.getInstance();
     private Wrist mWrist = Wrist.getInstance();
+    private Superstructure mSuperstructure = Superstructure.getInstance();
 
     public Robot() {
         CrashTracker.logRobotConstruction();
@@ -146,21 +149,25 @@ public class Robot extends IterativeRobot {
                     !mControlBoard.getLowGear()));
             mDrive.setHighGear(!mControlBoard.getLowGear());
 
-            mIntake.setPower(mControlBoard.getIntake() ? 1.0 : (mControlBoard.getExchangeIntake() ? -1.0 : 0.0));
-            mIntake.setJaw(IntakeState.JawState.CLAMPED);
+            //mIntake.setPower(mControlBoard.getIntake() ? 1.0 : (mControlBoard.getExchangeIntake() ? -1.0 : 0.0));
+            //mIntake.setJaw(IntakeState.JawState.CLAMPED);
+
+
 
             if (mControlBoard.getJogWristExtend()) {
-                mWrist.setClosedLoopAngle(0);
+                mWrist.setClosedLoopAngle(180);
             }
             if (mControlBoard.getJogWristStow()) {
-                mWrist.setClosedLoopAngle(180);
+                mWrist.setClosedLoopAngle(0);
             }
 
             if (mControlBoard.getJogElevatorUp()) {
-                Elevator.getInstance().setClosedLoopPosition(-15000);
+                //Elevator.getInstance().setClosedLoopPosition(Elevator.kHomePositionInches);
+                mSuperstructure.set(60, 0);
             }
             if (mControlBoard.getJogElevatorDown()) {
-                Elevator.getInstance().setClosedLoopPosition(-70000);
+                //Elevator.getInstance().setClosedLoopPosition(60);
+                mSuperstructure.set(0, 180);
             }
 
 

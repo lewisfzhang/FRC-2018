@@ -113,6 +113,8 @@ public class ControlBoard implements IControlBoard {
         return mButtonBoard.getRawAxis(0) < -0.1;
     }
 
+    public boolean getBannerOverride() { return mButtonBoard.getRawButton(2); };
+
     /**
      * @return switch position-> false is left, true is right
      */

@@ -1,34 +1,34 @@
 package com.team254.frc2018.planners;
 
-import com.team254.frc2018.states.ElevatorState;
+import com.team254.frc2018.states.SuperstructureState;
 import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.lib.util.Util;
 
 import java.util.LinkedList;
 import java.util.Optional;
 
-public class ElevatorMotionPlanner {
+public class SuperstructureMotionPlanner {
     class SubCommand {
-        public SubCommand(ElevatorState endState) {
+        public SubCommand(SuperstructureState endState) {
             mEndState = endState;
         }
 
-        public ElevatorState mEndState;
-        public double mHeightThreshold = .75;
-        public double mWristThreshold = 2;
+        public SuperstructureState mEndState;
+        public double mHeightThreshold = 1;
+        public double mWristThreshold = 5;
 
-        public boolean isFinished(ElevatorState currentState) {
+        public boolean isFinished(SuperstructureState currentState) {
             return mEndState.isInRange(currentState, mHeightThreshold, mWristThreshold);
         }
     }
 
-    protected ElevatorState mCommandedState = new ElevatorState();
-    protected ElevatorState mIntermediateCommandState = new ElevatorState();
+    protected SuperstructureState mCommandedState = new SuperstructureState();
+    protected SuperstructureState mIntermediateCommandState = new SuperstructureState();
     protected LinkedList<SubCommand> mCommandQueue = new LinkedList<>();
     protected Optional<SubCommand> mCurrentCommand = Optional.empty();
 
-    public boolean setDesiredState(ElevatorState desiredStateIn, ElevatorState currentState) {
-        ElevatorState desiredState = new ElevatorState(desiredStateIn);
+    public boolean setDesiredState(SuperstructureState desiredStateIn, SuperstructureState currentState) {
+        SuperstructureState desiredState = new SuperstructureState(desiredStateIn);
 
         // Limit stupid inputs
         desiredState.angle = Util.limit(desiredState.angle, SuperstructureConstants.kWristMinAngle,
@@ -36,8 +36,8 @@ public class ElevatorMotionPlanner {
         desiredState.height = Util.limit(desiredState.height, SuperstructureConstants.kElevatorMinHeight,
                 SuperstructureConstants.kElevatorMaxHeight);
 
-        ElevatorState swapJaw = new ElevatorState(currentState);
-        swapJaw.jawClosed = desiredState.jawClosed;
+        SuperstructureState swapJaw = new SuperstructureState(currentState);
+        swapJaw.jawClamped = desiredState.jawClamped;
 
         // Immediate return, totally illegal commands
         if (desiredState.inIllegalZone() || desiredState.inIllegalJawZone() || swapJaw.inIllegalJawZone()) { // if we
@@ -84,13 +84,13 @@ public class ElevatorMotionPlanner {
         if (movingFar || willCrossThroughCrossBarZone) {  // Stow intake when we are making large movements or into a
             // bad zone
             // Stow wrist
-            mCommandQueue.add(new SubCommand(new ElevatorState(currentState.height, SuperstructureConstants
+            mCommandQueue.add(new SubCommand(new SuperstructureState(currentState.height, SuperstructureConstants
                     .kWristStowedPosition, true)));
             // Move elevator
-            mCommandQueue.add(new SubCommand(new ElevatorState(desiredState.height, SuperstructureConstants
+            mCommandQueue.add(new SubCommand(new SuperstructureState(desiredState.height, SuperstructureConstants
                     .kWristStowedPosition, true)));
             // Move wrist to end state
-            mCommandQueue.add(new SubCommand(new ElevatorState(desiredState.height, desiredState.angle, true)));
+            mCommandQueue.add(new SubCommand(new SuperstructureState(desiredState.height, desiredState.angle, true)));
         } else {
             mCommandQueue.add(new SubCommand(desiredState));
         }
@@ -101,13 +101,13 @@ public class ElevatorMotionPlanner {
         return true; // this is a legal move
     }
 
-    void reset(ElevatorState currentState) {
+    void reset(SuperstructureState currentState) {
         mIntermediateCommandState = currentState;
         mCommandQueue.clear();
         mCurrentCommand = Optional.empty();
     }
 
-    ElevatorState update(ElevatorState currentState) {
+    public SuperstructureState update(SuperstructureState currentState) {
         if (!mCurrentCommand.isPresent() && !mCommandQueue.isEmpty()) {
             mCurrentCommand = Optional.of(mCommandQueue.remove());
         }
