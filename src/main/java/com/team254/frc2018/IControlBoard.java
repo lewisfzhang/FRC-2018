@@ -13,7 +13,11 @@ public interface IControlBoard {
 
     boolean getReverseIntakeTest();
 
-    boolean getTestWristUp();
+    boolean getTestWristNegative();
 
-    boolean getTestWristDown();
+    boolean getTestWristPositive();
+
+    boolean getJogElevatorUp();
+
+    boolean getJogElevatorDown();
 }

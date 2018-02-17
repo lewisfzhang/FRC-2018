@@ -138,6 +138,14 @@ public class Intake extends Subsystem {
         setJaw(state.jawState);
     }
 
+    public boolean getLeftBannerSensor() {
+        return canifier.getGeneralInput(CANifier.GeneralPin.LIMF);
+    }
+
+    public boolean getRightBannerSensor() {
+        return canifier.getGeneralInput(CANifier.GeneralPin.LIMF);
+    }
+
     public boolean hasCube() {
         return mStateMachine.hasCubeClamped();
     }

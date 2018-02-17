@@ -49,11 +49,21 @@ public class ControlBoard implements IControlBoard {
     @Override
     public boolean getReverseIntakeTest() { return mButtonBoard.getRawButton(12); }
 
-    public boolean getTestWristUp() {
+    public boolean getTestWristNegative() {
         return mButtonBoard.getRawButton(7);
     }
 
-    public boolean getTestWristDown() {
+    public boolean getTestWristPositive() {
         return mButtonBoard.getRawButton(8);
+    }
+
+    @Override
+    public boolean getJogElevatorUp() {
+        return mButtonBoard.getRawButton(1);
+    }
+
+    @Override
+    public boolean getJogElevatorDown() {
+        return mButtonBoard.getRawButton(2);
     }
 }

@@ -1,9 +1,8 @@
 package com.team254.frc2018.subsystems;
 
 import com.ctre.phoenix.ErrorCode;
-import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.FeedbackDevice;
-import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.ParamEnum;
+import com.ctre.phoenix.motorcontrol.*;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.team254.frc2018.Constants;
 import com.team254.frc2018.loops.Looper;
@@ -14,8 +13,12 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import java.util.ArrayList;
 
+// Top Soft limit : -151288
 public class Elevator extends Subsystem {
     private static Elevator mInstance = null;
+
+    private int kNegativeSoftLimit = -130000; // -151000
+    private double kPositiveSoftLimit = 0;
 
     public synchronized static Elevator getInstance() {
         if (mInstance == null) {
@@ -36,8 +39,28 @@ public class Elevator extends Subsystem {
                     sensorPresent, false);
         }
         mMaster.setInverted(false);
-        mMaster.setSensorPhase(false);
+        mMaster.setSensorPhase(true);
         mMaster.setNeutralMode(NeutralMode.Brake);
+
+        // SET UP BOTTOM LIMIT SWITCH
+        ErrorCode errorCode = mMaster.configForwardLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal
+                .NormallyOpen, Constants.kLongCANTimeoutMs);
+        if (errorCode != ErrorCode.OK)
+            DriverStation.reportError("Could not detect forward limit switch wrist: " + errorCode, false);
+
+        mMaster.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0,10, 10);
+
+        // Re-zero on limit
+        // TODO: determine if we want this on?
+        // mMaster.configSetParameter(ParamEnum.eClearPositionOnLimitF, 1, 0, 0, 0);
+
+        // Soft limits
+        mMaster.configReverseSoftLimitThreshold(kNegativeSoftLimit, 10);
+        mMaster.configReverseSoftLimitEnable(true, 10);
+
+        // Enable limts
+        mMaster.overrideLimitSwitchesEnable(true);
+        mMaster.overrideSoftLimitsEnable(true);
 
         mRightSlave = TalonSRXFactory.createPermanentSlaveTalon(Constants.kElevatorRightSlaveId,
                 Constants.kElevatorMasterId);
@@ -61,6 +84,9 @@ public class Elevator extends Subsystem {
         mMaster.config_kD(0, Constants.kElevatorHighGearKd, 100);
         mMaster.config_kF(0, Constants.kElevatorHighGearKf, 100);
 
+        mMaster.configMotionCruiseVelocity(11250, 100); // TODO: tune
+        mMaster.configMotionAcceleration(40000, 100); //todo: tune
+
         mMaster.config_IntegralZone(0, Constants.kElevatorHighGearIZone, 100);
 
     }
@@ -69,20 +95,27 @@ public class Elevator extends Subsystem {
         mMaster.set(ControlMode.PercentOutput, percentage);
     }
 
-    public synchronized void setClosedLoop(double position) {
+    public synchronized void setClosedLoopPosition(double position) {
+        setClosedLoopRawPosition(position);
+    }
+
+    private synchronized void setClosedLoopRawPosition(double position) {
+        System.out.println("Going for: " + position);
         mMaster.set(ControlMode.MotionMagic, position);
     }
 
     public double getRPM() {
         // We are using a CTRE mag encoder which is 4096 native units per revolution.
         // GetVelocity is in native units per 100ms.
-        return mMaster.getSelectedSensorVelocity(0) * 10.0 / 4096.0 * 60.0;
+        // TODO: make this rpm again
+        return mMaster.getSelectedSensorVelocity(0); // * 10.0 / 4096.0 * 60.0;
     }
 
     @Override
     public void outputToSmartDashboard() {
         SmartDashboard.putNumber("Elevator Master Output", mMaster.getMotorOutputPercent());
         SmartDashboard.putNumber("Elevator Master RPM", getRPM());
+        SmartDashboard.putNumber("Elevator error", mMaster.getClosedLoopError(0));
         SmartDashboard.putNumber("Elevator Master Position",
                 mMaster.getSelectedSensorPosition(0));
     }
@@ -94,6 +127,7 @@ public class Elevator extends Subsystem {
 
     @Override
     public void zeroSensors() {
+        mMaster.setSelectedSensorPosition(0,0, 10);
     }
 
     @Override

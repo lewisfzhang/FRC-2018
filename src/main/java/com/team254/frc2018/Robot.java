@@ -2,10 +2,7 @@ package com.team254.frc2018;
 
 import com.team254.frc2018.loops.Looper;
 import com.team254.frc2018.loops.RobotStateEstimator;
-import com.team254.frc2018.subsystems.Drive;
-import com.team254.frc2018.subsystems.FollowerWheels;
-import com.team254.frc2018.subsystems.Intake;
-import com.team254.frc2018.subsystems.Wrist;
+import com.team254.frc2018.subsystems.*;
 import com.team254.lib.geometry.Pose2d;
 import com.team254.lib.util.CheesyDriveHelper;
 import com.team254.lib.util.CrashTracker;
@@ -42,6 +39,8 @@ public class Robot extends IterativeRobot {
 
             mSubsystemManager.registerEnabledLoops(mEnabledLooper);
             mEnabledLooper.register(RobotStateEstimator.getInstance());
+
+            Elevator.getInstance().zeroSensors();
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
             throw t;
@@ -146,9 +145,18 @@ public class Robot extends IterativeRobot {
             mDrive.setHighGear(!mControlBoard.getLowGear());
 
             mIntake.setPower(mControlBoard.getIntakeTest() ? 1.0 : (mControlBoard.getReverseIntakeTest() ? -1.0 : 0.0));
-            mWrist.setOpenLoop(mControlBoard.getTestWristUp() ? 1 : (mControlBoard.getTestWristDown() ? -1 : 0.0));
+            mWrist.setOpenLoop(mControlBoard.getTestWristPositive() ? 1 : (mControlBoard.getTestWristNegative() ? -1 : 0.0));
+           // Elevator.getInstance().setOpenLoop(mControlBoard.getJogElevatorUp() ? .25 : (mControlBoard.getJogElevatorDown() ? -1.0 : 0.0));
 
-                    outputToSmartDashboard();
+            if (mControlBoard.getJogElevatorUp()) {
+                Elevator.getInstance().setClosedLoopPosition(-108000);
+            }
+            if (mControlBoard.getJogElevatorDown()) {
+                Elevator.getInstance().setClosedLoopPosition(-105000);
+            }
+
+
+            outputToSmartDashboard();
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
             throw t;
@@ -166,5 +174,6 @@ public class Robot extends IterativeRobot {
         Drive.getInstance().outputToSmartDashboard();
         Wrist.getInstance().outputToSmartDashboard();
         Intake.getInstance().outputToSmartDashboard();
+        Elevator.getInstance().outputToSmartDashboard();
     }
 }

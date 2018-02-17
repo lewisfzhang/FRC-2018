@@ -76,11 +76,14 @@ public class Wrist extends Subsystem {
         mMaster.selectProfileSlot(0, 0);
 
         mMaster.setInverted(false);
-        mMaster.setSensorPhase(false);
+        mMaster.setSensorPhase(true);
         mMaster.setNeutralMode(NeutralMode.Brake);
         mMaster.overrideLimitSwitchesEnable(true);
+
         mMaster.enableVoltageCompensation(true);
         mMaster.set(ControlMode.PercentOutput, 0);
+
+
 
 //        Reset encoder positions on limit switch
 //        mMaster.configSetParameter(ParamEnum.eClearPositionOnLimitF, 1, 0, 0, 0);
@@ -89,7 +92,7 @@ public class Wrist extends Subsystem {
 
     @Override
     public void outputToSmartDashboard() {
-        SmartDashboard.putNumber("WristEncoder", mMaster.getSelectedSensorPosition(0));
+        SmartDashboard.putNumber("WristAngle", getAngle());
     }
 
     @Override
