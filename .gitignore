@@ -91,3 +91,6 @@ gradle-app.setting
 # End of https://www.gitignore.io/api/gradle,intellij
 /.metadata/
 /.settings/
+
+# Visual Studio Code
+.vscode/

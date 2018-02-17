@@ -10,7 +10,7 @@ import java.util.ArrayList;
  */
 public class LidarScan {
     private ArrayList<Translation2d> points = new ArrayList<>(Constants.kChezyLidarScanSize);
-    private double timestamp;
+    private double timestamp = 0;
 
     public String toJsonString() {
         String json = "{\"timestamp\": " + timestamp + ", \"scan\": [";
