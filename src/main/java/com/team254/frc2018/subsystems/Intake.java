@@ -16,8 +16,8 @@ import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
 
 public class Intake extends Subsystem {
-    private final static boolean kClosed = true;
-    private final static boolean kClamped = true;
+    private final static boolean kClosed = false;
+    private final static boolean kClamped = false;
 
     private static Intake mInstance;
 
@@ -111,7 +111,7 @@ public class Intake extends Subsystem {
         mRightMaster.set(ControlMode.PercentOutput, output);
     }
 
-    private void setJaw(IntakeState.JawState state) {
+    public void setJaw(IntakeState.JawState state) {
         if (mJawState == state) {
             return;
         }

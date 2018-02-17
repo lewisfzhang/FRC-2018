@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Wrist extends Subsystem {
     private static final int kMagicMotionSlot = 0;
     private static Wrist mInstance;
+    private static int kForwardSoftLimit = 2048;
 
     public synchronized static Wrist getInstance() {
         if (mInstance == null) {
@@ -39,6 +40,20 @@ public class Wrist extends Subsystem {
                 .NormallyOpen, Constants.kLongCANTimeoutMs);
         if (errorCode != ErrorCode.OK)
             DriverStation.reportError("Could not detect reverse limit switch wrist: " + errorCode, false);
+
+        errorCode = mMaster.configForwardSoftLimitThreshold(kForwardSoftLimit, Constants.kLongCANTimeoutMs);
+        if (errorCode != ErrorCode.OK)
+            DriverStation.reportError("Could not set forward soft limit switch wrist: " + errorCode, false);
+
+        errorCode = mMaster.configForwardSoftLimitThreshold(kForwardSoftLimit, Constants.kLongCANTimeoutMs);
+        if (errorCode != ErrorCode.OK)
+            DriverStation.reportError("Could not set forward soft limit switch wrist: " + errorCode, false);
+
+        errorCode = mMaster.configForwardSoftLimitEnable(true, Constants.kLongCANTimeoutMs);
+        if (errorCode != ErrorCode.OK)
+            DriverStation.reportError("Could not enable forward soft limit switch wrist: " + errorCode, false);
+
+
         errorCode = mMaster.configVoltageCompSaturation(12.0, Constants.kLongCANTimeoutMs);
         if (errorCode != ErrorCode.OK)
             DriverStation.reportError("Could not set wrist voltage compensation: " + errorCode, false);
@@ -47,42 +62,53 @@ public class Wrist extends Subsystem {
         errorCode = mMaster.config_kP(kMagicMotionSlot, Constants.kWristKp, Constants.kLongCANTimeoutMs);
         if (errorCode != ErrorCode.OK)
             DriverStation.reportError("Could not set wrist kp: " + errorCode, false);
+
         errorCode = mMaster.config_kI(kMagicMotionSlot, Constants.kWristKi, Constants.kLongCANTimeoutMs);
         if (errorCode != ErrorCode.OK)
             DriverStation.reportError("Could not set wrist ki: " + errorCode, false);
+
         errorCode = mMaster.config_kD(kMagicMotionSlot, Constants.kWristKd, Constants.kLongCANTimeoutMs);
         if (errorCode != ErrorCode.OK)
             DriverStation.reportError("Could not set wrist kd: " + errorCode, false);
+
         errorCode = mMaster.config_kF(kMagicMotionSlot, Constants.kWristKf, Constants.kLongCANTimeoutMs);
         if (errorCode != ErrorCode.OK)
             DriverStation.reportError("Could not set wrist kf: " + errorCode, false);
+
         errorCode = mMaster.configMaxIntegralAccumulator(kMagicMotionSlot, Constants.kWristMaxIntegralAccumulator,
                 Constants.kLongCANTimeoutMs);
         if (errorCode != ErrorCode.OK)
             DriverStation.reportError("Could not set wrist max integral: " + errorCode, false);
+
         errorCode = mMaster.config_IntegralZone(kMagicMotionSlot, Constants.kWristIZone, Constants.kLongCANTimeoutMs);
         if (errorCode != ErrorCode.OK)
             DriverStation.reportError("Could not set wrist i zone: " + errorCode, false);
+
         errorCode = mMaster.configAllowableClosedloopError(kMagicMotionSlot, Constants.kWristDeadband, Constants
                 .kLongCANTimeoutMs);
         if (errorCode != ErrorCode.OK)
             DriverStation.reportError("Could not set wrist deadband: " + errorCode, false);
+
         errorCode = mMaster.configMotionAcceleration(Constants.kWristAcceleration, Constants.kLongCANTimeoutMs);
         if (errorCode != ErrorCode.OK)
             DriverStation.reportError("Could not set wrist acceleration: " + errorCode, false);
+
         errorCode = mMaster.configMotionCruiseVelocity(Constants.kWristCruiseVelocity, Constants.kLongCANTimeoutMs);
         if (errorCode != ErrorCode.OK)
             DriverStation.reportError("Could not set wrist cruise velocity: " + errorCode, false);
+
         mMaster.selectProfileSlot(0, 0);
 
         mMaster.setInverted(false);
         mMaster.setSensorPhase(true);
         mMaster.setNeutralMode(NeutralMode.Brake);
         mMaster.overrideLimitSwitchesEnable(true);
+        mMaster.overrideSoftLimitsEnable(true);
 
         mMaster.enableVoltageCompensation(true);
         mMaster.set(ControlMode.PercentOutput, 0);
 
+        mMaster.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0,10, 10); // todo: remove this when done tuning
 
 
 //        Reset encoder positions on limit switch
@@ -93,6 +119,10 @@ public class Wrist extends Subsystem {
     @Override
     public void outputToSmartDashboard() {
         SmartDashboard.putNumber("WristAngle", getAngle());
+        SmartDashboard.putNumber("WristPosition", getPosition());
+        SmartDashboard.putNumber("WristRpm", mMaster.getSelectedSensorVelocity(0));
+        SmartDashboard.putNumber("WristPower", mMaster.getMotorOutputPercent());
+        SmartDashboard.putNumber("WristClosedLoopError", mMaster.getClosedLoopError(0));
     }
 
     @Override

@@ -3,9 +3,9 @@ package com.team254.frc2018;
 import edu.wpi.first.wpilibj.Joystick;
 
 public class ControlBoard implements IControlBoard {
-    private static IControlBoard mInstance = null;
+    private static ControlBoard mInstance = null;
 
-    public static IControlBoard getInstance() {
+    public static ControlBoard getInstance() {
         if (mInstance == null) {
             mInstance = new ControlBoard();
         }
@@ -14,7 +14,7 @@ public class ControlBoard implements IControlBoard {
 
     private final Joystick mThrottleStick;
     private final Joystick mTurnStick;
-    private final Joystick mButtonBoard;
+    public final Joystick mButtonBoard;
 
     private ControlBoard() {
         mThrottleStick = new Joystick(0);

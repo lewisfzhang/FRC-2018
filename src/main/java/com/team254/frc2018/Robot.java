@@ -2,6 +2,7 @@ package com.team254.frc2018;
 
 import com.team254.frc2018.loops.Looper;
 import com.team254.frc2018.loops.RobotStateEstimator;
+import com.team254.frc2018.states.IntakeState;
 import com.team254.frc2018.subsystems.*;
 import com.team254.lib.geometry.Pose2d;
 import com.team254.lib.util.CheesyDriveHelper;
@@ -15,7 +16,7 @@ import java.util.Arrays;
 public class Robot extends IterativeRobot {
     private Looper mEnabledLooper = new Looper();
     private CheesyDriveHelper mCheesyDriveHelper = new CheesyDriveHelper();
-    private IControlBoard mControlBoard = ControlBoard.getInstance();
+    private ControlBoard mControlBoard = ControlBoard.getInstance();
 
     private final SubsystemManager mSubsystemManager = new SubsystemManager(
             Arrays.asList(
@@ -40,6 +41,7 @@ public class Robot extends IterativeRobot {
             mSubsystemManager.registerEnabledLoops(mEnabledLooper);
             mEnabledLooper.register(RobotStateEstimator.getInstance());
 
+            Wrist.getInstance().zeroSensors();
             Elevator.getInstance().zeroSensors();
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
@@ -145,14 +147,28 @@ public class Robot extends IterativeRobot {
             mDrive.setHighGear(!mControlBoard.getLowGear());
 
             mIntake.setPower(mControlBoard.getIntakeTest() ? 1.0 : (mControlBoard.getReverseIntakeTest() ? -1.0 : 0.0));
-            mWrist.setOpenLoop(mControlBoard.getTestWristPositive() ? 1 : (mControlBoard.getTestWristNegative() ? -1 : 0.0));
+            mIntake.setJaw(IntakeState.JawState.CLAMPED);
+//            mWrist.setOpenLoop(mControlBoard.getTestWristPositive() ? 1 : (mControlBoard.getTestWristNegative() ? -1 : 0.0));
            // Elevator.getInstance().setOpenLoop(mControlBoard.getJogElevatorUp() ? .25 : (mControlBoard.getJogElevatorDown() ? -1.0 : 0.0));
 
+            if (mControlBoard.getTestWristPositive()) {
+                mWrist.setClosedLoopAngle(0);
+            }
+            if (mControlBoard.getTestWristNegative()) {
+                mWrist.setClosedLoopAngle(180);
+            }
+            if (mControlBoard.mButtonBoard.getRawButton(10)) {
+                mWrist.setClosedLoopAngle(45);
+            }
+            if (mControlBoard.mButtonBoard.getRawButton(9)) {
+                mWrist.setClosedLoopAngle(90);
+            }
+
             if (mControlBoard.getJogElevatorUp()) {
-                Elevator.getInstance().setClosedLoopPosition(-108000);
+                Elevator.getInstance().setClosedLoopPosition(0);
             }
             if (mControlBoard.getJogElevatorDown()) {
-                Elevator.getInstance().setClosedLoopPosition(-105000);
+                Elevator.getInstance().setClosedLoopPosition(-100000);
             }
 
 
