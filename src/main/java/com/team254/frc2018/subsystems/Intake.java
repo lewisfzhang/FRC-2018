@@ -159,8 +159,8 @@ public class Intake extends Subsystem {
         return mJawState;
     }
 
-    public void setState(IntakeStateMachine.WantedAction mWantedAction) {
-        mWantedAction = mWantedAction;
+    public void setState(IntakeStateMachine.WantedAction wantedAction) {
+        mWantedAction = wantedAction;
     }
 
     @Override

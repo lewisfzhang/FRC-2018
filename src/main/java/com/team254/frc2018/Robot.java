@@ -154,16 +154,18 @@ public class Robot extends IterativeRobot {
             //mIntake.setJaw(IntakeState.JawState.CLAMPED);
 
             if (mControlBoard.getIntake()) {
-                mSuperstructure.set(0, 180, IntakeStateMachine.WantedAction.INTAKE);
+                mIntake.setState(IntakeStateMachine.WantedAction.INTAKE);
+            } else {
+                mIntake.setState(IntakeStateMachine.WantedAction.IDLE);
             }
 
-//
-//            if (mControlBoard.getJogWristExtend()) {
-//                mWrist.setClosedLoopAngle(180);
-//            }
-//            if (mControlBoard.getJogWristStow()) {
-//                mWrist.setClosedLoopAngle(0);
-//            }
+
+            if (mControlBoard.getJogWristExtend()) {
+                mSuperstructure.set(0, 180);
+            }
+            if (mControlBoard.getJogWristStow()) {
+                mSuperstructure.set(0, 0);
+            }
 
             if (mControlBoard.getJogElevatorUp()) {
                 //Elevator.getInstance().setClosedLoopPosition(Elevator.kHomePositionInches);

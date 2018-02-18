@@ -99,7 +99,7 @@ public class IntakeStateMachine {
     // Idle
     private synchronized void getIdleCommandedState(IntakeState currentState, IntakeState commandedState) {
         commandedState.setPower(0);
-        commandedState.jawState = IntakeState.JawState.CLOSED;
+        commandedState.jawState = IntakeState.JawState.CLAMPED;
     }
 
     private synchronized SystemState handleIdleTransitions(WantedAction wantedAction, IntakeState currentState) {
