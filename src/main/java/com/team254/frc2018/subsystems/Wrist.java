@@ -11,8 +11,10 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Wrist extends Subsystem {
     private static final int kMagicMotionSlot = 0;
+    private static final int kForwardSoftLimit = 2048;  // Encoder ticks.
+    private static final int kReverseSoftLimit = -500;  // Encoder ticks.  TODO make ~0 once skipping is fixed.
+
     private static Wrist mInstance;
-    private static int kForwardSoftLimit = 2048;
 
     public synchronized static Wrist getInstance() {
         if (mInstance == null) {
@@ -35,24 +37,23 @@ public class Wrist extends Subsystem {
         errorCode = mMaster.configForwardLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal
                 .NormallyOpen, Constants.kLongCANTimeoutMs);
         if (errorCode != ErrorCode.OK)
-            DriverStation.reportError("Could not detect forward limit switch wrist: " + errorCode, false);
+            DriverStation.reportError("Could not set forward limit switch wrist: " + errorCode, false);
         errorCode = mMaster.configReverseLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal
                 .NormallyOpen, Constants.kLongCANTimeoutMs);
         if (errorCode != ErrorCode.OK)
-            DriverStation.reportError("Could not detect reverse limit switch wrist: " + errorCode, false);
-
+            DriverStation.reportError("Could not set reverse limit switch wrist: " + errorCode, false);
         errorCode = mMaster.configForwardSoftLimitThreshold(kForwardSoftLimit, Constants.kLongCANTimeoutMs);
         if (errorCode != ErrorCode.OK)
             DriverStation.reportError("Could not set forward soft limit switch wrist: " + errorCode, false);
-
-        errorCode = mMaster.configForwardSoftLimitThreshold(kForwardSoftLimit, Constants.kLongCANTimeoutMs);
-        if (errorCode != ErrorCode.OK)
-            DriverStation.reportError("Could not set forward soft limit switch wrist: " + errorCode, false);
-
         errorCode = mMaster.configForwardSoftLimitEnable(true, Constants.kLongCANTimeoutMs);
         if (errorCode != ErrorCode.OK)
             DriverStation.reportError("Could not enable forward soft limit switch wrist: " + errorCode, false);
-
+        errorCode = mMaster.configReverseSoftLimitThreshold(kReverseSoftLimit, Constants.kLongCANTimeoutMs);
+        if (errorCode != ErrorCode.OK)
+            DriverStation.reportError("Could not set reverse soft limit switch wrist: " + errorCode, false);
+        errorCode = mMaster.configReverseSoftLimitEnable(true, Constants.kLongCANTimeoutMs);
+        if (errorCode != ErrorCode.OK)
+            DriverStation.reportError("Could not enable reverse soft limit switch wrist: " + errorCode, false);
 
         errorCode = mMaster.configVoltageCompSaturation(12.0, Constants.kLongCANTimeoutMs);
         if (errorCode != ErrorCode.OK)
@@ -175,14 +176,14 @@ public class Wrist extends Subsystem {
      * @return current velocity in rpm
      */
     public double getRPM() {
-        return sensorUnitsToDegrees(mMaster.getSelectedSensorPosition(0)) * 600;
+        return sensorUnitsToDegrees(mMaster.getSelectedSensorVelocity(0)) * 600.0 / 360.0;
     }
 
     /**
      * @return current velocity in degrees per second
      */
     public double getDegreesPerSecond() {
-        return sensorUnitsToDegrees(mMaster.getSelectedSensorVelocity(0)) * 10;
+        return sensorUnitsToDegrees(mMaster.getSelectedSensorVelocity(0)) * 10.0;
     }
 
     private double sensorUnitsToDegrees(double units) {
@@ -190,7 +191,7 @@ public class Wrist extends Subsystem {
     }
 
     private double degreesToSensorUnits(double degrees) {
-        return degrees * 4096 / 360.0;
+        return degrees * 4096.0 / 360.0;
     }
 
     @Override

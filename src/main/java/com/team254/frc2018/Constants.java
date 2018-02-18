@@ -77,7 +77,9 @@ public class Constants {
     public static final double kElevatorHighGearKi = 0.0;
     public static final double kElevatorHighGearKd = 0; //0.1;
     public static final double kElevatorHighGearKf = 0.090; // lower speed:  0.08;
+    public static final int kElevatorHighGearMaxIntegralAccumulator = 500000; //todo: tune me
     public static final int kElevatorHighGearIZone = 0;
+    public static final int kElevatorHighGearDeadband = 0;
     public static final int kElevatorHighGearCruiseVelocity = 10750;
     public static final int kElevatorHighGearAcceleration = 33000;
 
@@ -85,7 +87,6 @@ public class Constants {
     public static final double kWristKi = 0.0; //todo: tune me
     public static final double kWristKd = 40.0; //todo: tune me
     public static final double kWristKf = 1.7; //todo: tune me
-
     public static final int kWristMaxIntegralAccumulator = 500000; //todo: tune me
     public static final int kWristIZone = 500; //todo: tune me
     public static final int kWristDeadband = 25; //todo: tune me
