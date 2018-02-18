@@ -226,13 +226,19 @@ public class SuperstructureStateMachine {
                                                 SuperstructureState currentState) {
         // If we encounter a new end state while moving, push into motion planner and obey new state.
         if (wantedAction != mLastWantedAction) {
-            /*switch (wantedAction) {
+            switch (wantedAction) {
                 case GOTO_SCORE_POSITION:
                     if (scoringPositionChanged()) {
                         updateMotionPlannerDesired(SystemState.IN_SCORING_POSITION, currentState);
                     }
                     break;
-            }*/
+                case INTAKE:
+                    updateMotionPlannerDesired(SystemState.INTAKING, currentState);
+                    break;
+                case STOW:
+                    updateMotionPlannerDesired(SystemState.STOWED, currentState);
+                    break;
+            }
         }
 
         // Determine if we are not done with planner.
