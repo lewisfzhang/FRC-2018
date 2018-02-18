@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Intake extends Subsystem {
     private final static boolean kClosed = false;
@@ -64,6 +65,8 @@ public class Intake extends Subsystem {
 
     @Override
     public void outputToSmartDashboard() {
+        SmartDashboard.putBoolean("LeftBanner", getLeftBannerSensor());
+        SmartDashboard.putBoolean("RightBanner", getRightBannerSensor());
     }
 
     @Override
@@ -75,8 +78,8 @@ public class Intake extends Subsystem {
     }
 
     public IntakeState getCurrentState() {
-        mCurrentState.leftCubeSensorTriggered = false; // TODO: replace with banner sensor
-        mCurrentState.rightCubeSensorTriggered = ControlBoard.getInstance().getBannerOverride(); // TODO: replace with banner sensor
+        mCurrentState.leftCubeSensorTriggered = getLeftBannerSensor();
+        mCurrentState.rightCubeSensorTriggered = getRightBannerSensor();
         mCurrentState.wristAngle = Wrist.getInstance().getAngle(); // this is a hack
         return mCurrentState;
     }
@@ -144,11 +147,11 @@ public class Intake extends Subsystem {
     }
 
     public boolean getLeftBannerSensor() {
-        return canifier.getGeneralInput(CANifier.GeneralPin.LIMF);
+        return !canifier.getGeneralInput(CANifier.GeneralPin.LIMF);
     }
 
     public boolean getRightBannerSensor() {
-        return canifier.getGeneralInput(CANifier.GeneralPin.LIMF);
+        return !canifier.getGeneralInput(CANifier.GeneralPin.LIMR);
     }
 
     public boolean hasCube() {
