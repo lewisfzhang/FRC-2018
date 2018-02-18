@@ -12,7 +12,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Wrist extends Subsystem {
     private static final int kMagicMotionSlot = 0;
-    private static final int kForwardSoftLimit = 2048;  // Encoder ticks.
+    private static final int kForwardSoftLimit = 2100;  // Encoder ticks.
     private static final int kReverseSoftLimit = -500;  // Encoder ticks.  TODO make ~0 once skipping is fixed.
 
     private static Wrist mInstance;
