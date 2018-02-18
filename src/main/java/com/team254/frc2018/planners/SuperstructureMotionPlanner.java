@@ -79,11 +79,8 @@ public class SuperstructureMotionPlanner {
                 endingInCrossBarZone ||
                 startingInCrossBarZone) && wristWillCrossThroughCrossBarZone;
 
-        boolean movingFar = Math.abs(desiredState.height - currentState.height) > SuperstructureConstants
-                .kWristStowForMinElevatorMoveDistance;
-
         // Break desired state into fixed movements
-        if (movingFar || willCrossThroughCrossBarZone) {  // Stow intake when we are making large movements or into a
+        if (willCrossThroughCrossBarZone) {  // Stow intake when we are making large movements or into a
             // bad zone
             // Stow wrist (and wait)
             if (currentState.angle < Math.max(SuperstructureConstants.kClearFirstStageMinWristAngle,
