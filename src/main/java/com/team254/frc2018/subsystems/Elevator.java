@@ -103,6 +103,10 @@ public class Elevator extends Subsystem {
         if (errorCode != ErrorCode.OK)
             DriverStation.reportError("Could not set elevator cruise velocity: " + errorCode, false);
 
+        errorCode = mMaster.configSetParameter(ParamEnum.eClearPositionOnLimitF, 1, 0, 0, Constants.kLongCANTimeoutMs);
+        if (errorCode != ErrorCode.OK)
+            DriverStation.reportError("Could not set elevator reset on limit f: " + errorCode, false);
+
         // TODO add low gear gains
 
         mMaster.selectProfileSlot(0, 0);
