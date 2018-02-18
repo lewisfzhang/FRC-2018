@@ -1,5 +1,7 @@
 package com.team254.frc2018;
 
+import com.team254.frc2018.auto.AutoModeExecuter;
+import com.team254.frc2018.auto.modes.CharacterizeDrivetrainMode;
 import com.team254.frc2018.loops.Looper;
 import com.team254.frc2018.loops.RobotStateEstimator;
 import com.team254.frc2018.statemachines.SuperstructureStateMachine;
@@ -79,6 +81,11 @@ public class Robot extends IterativeRobot {
             CrashTracker.logAutoInit();
 
             RobotState.getInstance().reset(Timer.getFPGATimestamp(), Pose2d.identity());
+
+
+            AutoModeExecuter mAutoModeExecuter = new AutoModeExecuter();
+            mAutoModeExecuter.setAutoMode(new CharacterizeDrivetrainMode());
+            mAutoModeExecuter.start();
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
             throw t;

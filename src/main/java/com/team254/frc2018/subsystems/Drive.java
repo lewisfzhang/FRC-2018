@@ -253,12 +253,22 @@ public class Drive extends Subsystem {
 
     public double getLeftEncoderDistance() {
         // TODO: Convert this to inches, currently just rotations
-        return -mLeftMaster.getSensorCollection().getQuadraturePosition() / DRIVE_ENCODER_PPR;
+        return -mLeftMaster.getSelectedSensorPosition(0) / DRIVE_ENCODER_PPR;
     }
 
     public double getRightEncoderDistance() {
         // TODO: Convert this to inches, currently just rotations
-        return mRightMaster.getSensorCollection().getQuadraturePosition() / DRIVE_ENCODER_PPR;
+        return mRightMaster.getSelectedSensorPosition(0) / DRIVE_ENCODER_PPR;
+    }
+
+    public double getRightVelocity() {
+        // TODO: Convert this to inches, currently just rotations
+        return mRightMaster.getSelectedSensorVelocity(0);
+    }
+
+    public double getLeftVelocity() {
+        // TODO: Convert this to inches, currently just rotations
+        return mRightMaster.getSelectedSensorVelocity(0) ;
     }
 
     private void updatePathFollower() {
