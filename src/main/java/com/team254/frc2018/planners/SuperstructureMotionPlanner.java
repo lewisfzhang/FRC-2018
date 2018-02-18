@@ -71,6 +71,9 @@ public class SuperstructureMotionPlanner {
                 (currentState.height < SuperstructureConstants.kIllegalCrossbarStowMinHeight &&
                         desiredState.height > SuperstructureConstants.kIllegalCrossbarStowMinHeight);
 
+        boolean movingFar = Math.abs(desiredState.height - currentState.height) > SuperstructureConstants
+                .kMinMovingFarDistance;
+
         boolean wristWillCrossThroughCrossBarZone = currentState.angle < SuperstructureConstants
                 .kIllegalCrossbarStowMinAngle ||
                 desiredState.angle < SuperstructureConstants.kIllegalCrossbarStowMinAngle;
@@ -80,7 +83,7 @@ public class SuperstructureMotionPlanner {
                 startingInCrossBarZone) && wristWillCrossThroughCrossBarZone;
 
         // Break desired state into fixed movements
-        if (willCrossThroughCrossBarZone) {  // Stow intake when we are making large movements or into a
+        if (willCrossThroughCrossBarZone || movingFar) {  // Stow intake when we are making large movements or into a
             // bad zone
             // Stow wrist (and wait)
             if (currentState.angle < Math.max(SuperstructureConstants.kClearFirstStageMinWristAngle,

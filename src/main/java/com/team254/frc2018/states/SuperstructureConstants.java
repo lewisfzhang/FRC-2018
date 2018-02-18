@@ -7,6 +7,8 @@ public class SuperstructureConstants {
     public static final double kElevatorMinHeight = 4.9; // ?
     public static final double kWristStowedPosition = 90.0;
 
+    public static final double kMinMovingFarDistance = 24.0;
+
     public static final double kIllegalCrossbarStowMinHeight = 30.5;
     public static final double kIllegalCrossbarStowMaxHeight = 43.5;
     public static final double kIllegalCrossbarStowMinAngle = 90.0;
