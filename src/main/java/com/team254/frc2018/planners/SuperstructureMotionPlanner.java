@@ -1,5 +1,6 @@
 package com.team254.frc2018.planners;
 
+import com.team254.frc2018.Constants;
 import com.team254.frc2018.states.SuperstructureState;
 import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.lib.util.Util;
@@ -84,9 +85,12 @@ public class SuperstructureMotionPlanner {
         // Break desired state into fixed movements
         if (movingFar || willCrossThroughCrossBarZone) {  // Stow intake when we are making large movements or into a
             // bad zone
-            // Stow wrist
-            mCommandQueue.add(new SubCommand(new SuperstructureState(currentState.height, SuperstructureConstants
-                    .kWristStowedPosition, true)));
+            // Stow wrist (and wait)
+            if (currentState.angle < Math.max(SuperstructureConstants.kClearFirstStageMinWristAngle,
+                    SuperstructureConstants.kAlwaysNeedsJawClampMinAngle)) {
+                mCommandQueue.add(new SubCommand(new SuperstructureState(currentState.height, SuperstructureConstants
+                        .kWristStowedPosition, true)));
+            }
             // Move elevator
             mCommandQueue.add(new SubCommand(new SuperstructureState(desiredState.height, SuperstructureConstants
                     .kWristStowedPosition, true)));
