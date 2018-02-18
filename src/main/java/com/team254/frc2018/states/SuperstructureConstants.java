@@ -11,7 +11,7 @@ public class SuperstructureConstants {
     public static final double kElevatorMinHeight = 4.9; // ?
     public static final double kWristStowedPosition = 90.0;
 
-    public static final double kMinMovingFarDistance = 24.0;
+    public static final double kMinMovingFarDistance = 35.0;
 
     public static final double kIllegalCrossbarStowMinHeight = 30.5;
     public static final double kIllegalCrossbarStowMaxHeight = 43.5;
@@ -50,9 +50,9 @@ public class SuperstructureConstants {
     public static HashMap<ScoringPositionID, ScoringPosition> kScoringPositions =
             new HashMap<ScoringPositionID, ScoringPosition>() {
                 {
-                    put(ScoringPositionID.SWITCH, new ScoringPosition(20.0, 165.0));
+                    put(ScoringPositionID.SWITCH, new ScoringPosition(30.0, 165.0));
                     put(ScoringPositionID.SWITCH_BACKWARDS,
-                            new ScoringPosition(20.0, 0.0));
+                            new ScoringPosition(30.0, 0.0));
 
                     put(ScoringPositionID.SCALE_LOW, new ScoringPosition(60.0, 165.0));
                     put(ScoringPositionID.SCALE_LOW_BACKWARDS,
