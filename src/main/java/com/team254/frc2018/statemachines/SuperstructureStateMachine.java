@@ -191,8 +191,13 @@ public class SuperstructureStateMachine {
     // START
     private SystemState handleStartTransitions(WantedAction wantedAction,
                                                SuperstructureState currentState) {
-        updateMotionPlannerDesired(SystemState.STOWED, currentState);
-        return SystemState.MOVING;
+        if (currentState.hasCube) {
+            updateMotionPlannerDesired(SystemState.STOWED_WITH_CUBE, currentState);
+            return SystemState.MOVING;
+        } else {
+            updateMotionPlannerDesired(SystemState.STOWED, currentState);
+            return SystemState.MOVING;
+        }
     }
 
     // STOWED
