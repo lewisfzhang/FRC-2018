@@ -2,8 +2,8 @@ package com.team254.frc2018;
 
 import com.team254.frc2018.loops.Looper;
 import com.team254.frc2018.loops.RobotStateEstimator;
-import com.team254.frc2018.statemachines.IntakeStateMachine;
-import com.team254.frc2018.states.IntakeState;
+import com.team254.frc2018.statemachines.SuperstructureStateMachine;
+import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.frc2018.subsystems.*;
 import com.team254.lib.geometry.Pose2d;
 import com.team254.lib.util.CheesyDriveHelper;
@@ -150,30 +150,54 @@ public class Robot extends IterativeRobot {
                     !mControlBoard.getLowGear()));
             mDrive.setHighGear(!mControlBoard.getLowGear());
 
-            //mIntake.setPower(mControlBoard.getIntake() ? 1.0 : (mControlBoard.getExchangeIntake() ? -1.0 : 0.0));
-            //mIntake.setJaw(IntakeState.JawState.CLAMPED);
-
-            if (mControlBoard.getIntake()) {
-                mIntake.setState(IntakeStateMachine.WantedAction.INTAKE);
+            if (mControlBoard.getScore()) {
+                mSuperstructure.setWantedAction(SuperstructureStateMachine.WantedAction.PLACE);
+            } else if (mControlBoard.getFarScore()) {
+                mSuperstructure.setWantedAction(SuperstructureStateMachine.WantedAction.SHOOT);
+            } else if (mControlBoard.getIntake()) {
+                mSuperstructure.setWantedAction(SuperstructureStateMachine.WantedAction.INTAKE);
+            } else if (mControlBoard.getSwitch()) {
+                if (mControlBoard.getBackwardsModifier()) {
+                    mSuperstructure.setScoringPosition(
+                            SuperstructureConstants.ScoringPositionID.SWITCH_BACKWARDS);
+                } else {
+                    mSuperstructure.setScoringPosition(
+                            SuperstructureConstants.ScoringPositionID.SWITCH);
+                }
+            } else if (mControlBoard.getHighScale()) {
+                if (mControlBoard.getBackwardsModifier()) {
+                    mSuperstructure.setScoringPosition(
+                            SuperstructureConstants.ScoringPositionID.SCALE_HIGH_BACKWARDS);
+                } else {
+                    mSuperstructure.setScoringPosition(
+                            SuperstructureConstants.ScoringPositionID.SCALE_HIGH);
+                }
+            } else if (mControlBoard.getNeutralScale()) {
+                if (mControlBoard.getBackwardsModifier()) {
+                    mSuperstructure.setScoringPosition(
+                            SuperstructureConstants.ScoringPositionID.SCALE_NEUTRAL_BACKWARDS);
+                } else {
+                    mSuperstructure.setScoringPosition(
+                            SuperstructureConstants.ScoringPositionID.SCALE_NEUTRAL);
+                }
+            } else if (mControlBoard.getLowScale()) {
+                if (mControlBoard.getBackwardsModifier()) {
+                    mSuperstructure.setScoringPosition(
+                            SuperstructureConstants.ScoringPositionID.SCALE_LOW_BACKWARDS);
+                } else {
+                    mSuperstructure.setScoringPosition(
+                            SuperstructureConstants.ScoringPositionID.SCALE_LOW);
+                }
+            } else if (mControlBoard.getJogElevatorDown()) {
+                mSuperstructure.setJogPosition(-5.0);
+            } else if (mControlBoard.getJogElevatorUp()) {
+                mSuperstructure.setJogPosition(5.0);
+            } else if (mControlBoard.getArmIn()) {
+                mSuperstructure.setArmIn();
+            } else if (mControlBoard.getStow()) {
+                mSuperstructure.setWantedAction(SuperstructureStateMachine.WantedAction.STOW);
             } else {
-                mIntake.setState(IntakeStateMachine.WantedAction.IDLE);
-            }
-
-
-            if (mControlBoard.getJogWristExtend()) {
-                mSuperstructure.set(0, 180);
-            }
-            if (mControlBoard.getJogWristStow()) {
-                mSuperstructure.set(0, 0);
-            }
-
-            if (mControlBoard.getJogElevatorUp()) {
-                //Elevator.getInstance().setClosedLoopPosition(Elevator.kHomePositionInches);
-                mSuperstructure.set(60, 0);
-            }
-            if (mControlBoard.getJogElevatorDown()) {
-                //Elevator.getInstance().setClosedLoopPosition(60);
-                mSuperstructure.set(0, 180);
+                mSuperstructure.setWantedAction(SuperstructureStateMachine.WantedAction.IDLE);
             }
 
 

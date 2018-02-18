@@ -19,13 +19,15 @@ interface IControlBoard {
 
     boolean getIntake();
 
-    boolean getExchangeIntake();
-
     boolean getBackwardsModifier();
 
     boolean getHighScale();
 
     boolean getSwitch();
+
+    boolean getStow();
+
+    boolean getArmIn();
 
     boolean getNeutralScale();
 
@@ -36,9 +38,4 @@ interface IControlBoard {
     boolean getLowScale();
 
     boolean getJogElevatorDown();
-
-    /**
-     * @return switch position-> false is left, true is right
-     */
-    boolean getClimbMode();
 }

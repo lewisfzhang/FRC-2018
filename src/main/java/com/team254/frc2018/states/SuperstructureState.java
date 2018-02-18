@@ -9,6 +9,7 @@ public class SuperstructureState {
     public boolean jawClamped = true;
     // This isnt touched by planner
     public IntakeStateMachine.WantedAction intakeAction = IntakeStateMachine.WantedAction.IDLE;
+    public boolean hasCube = false;
 
     public SuperstructureState(double height, double angle, boolean jawClamped) {
         this.height = height;
@@ -59,7 +60,7 @@ public class SuperstructureState {
 
     @Override
     public String toString() {
-        return "" + height + " / " + angle + " / " + jawClamped;
+        return "" + height + " / " + angle + " / " + jawClamped + " / " + hasCube;
     }
 
 }

@@ -1,6 +1,7 @@
 package com.team254.frc2018.subsystems;
 
 import com.ctre.phoenix.ErrorCode;
+import com.ctre.phoenix.ParamEnum;
 import com.ctre.phoenix.motorcontrol.*;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.team254.frc2018.Constants;
@@ -30,7 +31,7 @@ public class Wrist extends Subsystem {
         ErrorCode errorCode;
 
         //configure talon
-        errorCode = mMaster.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, Constants
+        errorCode = mMaster.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, 0, Constants
                 .kLongCANTimeoutMs);
         if (errorCode != ErrorCode.OK)
             DriverStation.reportError("Could not detect wrist encoder: " + errorCode, false);
@@ -114,7 +115,8 @@ public class Wrist extends Subsystem {
 
 //        Reset encoder positions on limit switch
 //        mMaster.configSetParameter(ParamEnum.eClearPositionOnLimitF, 1, 0, 0, 0);
-//        mMaster.configSetParameter(ParamEnum.eClearPositionOnLimitR, 1, 0, 0, 0);
+
+        mMaster.configSetParameter(ParamEnum.eClearPositionOnLimitR, 1, 0, 0, 0);
     }
 
     @Override
@@ -132,7 +134,7 @@ public class Wrist extends Subsystem {
     }
 
     @Override
-    public void zeroSensors() {
+    public synchronized void zeroSensors() {
         mMaster.setSelectedSensorPosition(0, 0, Constants.kCANTimeoutMs);
     }
 
@@ -161,14 +163,14 @@ public class Wrist extends Subsystem {
     /**
      * @return current position of the wrist in sensor units
      */
-    public double getPosition() { //returns angle of wrist in degrees
+    public synchronized double getPosition() { //returns angle of wrist in degrees
         return mMaster.getSelectedSensorPosition(0);
     }
 
     /**
      * @return current angle of the wrist in degrees
      */
-    public double getAngle() { //returns angle of wrist in degrees
+    public synchronized double getAngle() { //returns angle of wrist in degrees
         return sensorUnitsToDegrees(mMaster.getSelectedSensorPosition(0));
     }
 

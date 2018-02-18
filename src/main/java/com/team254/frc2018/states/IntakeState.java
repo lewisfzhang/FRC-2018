@@ -22,5 +22,10 @@ public class IntakeState {
         return leftCubeSensorTriggered && rightCubeSensorTriggered;
     }
 
+    // For loosing cubes, make sure we drop both sensors.
+    public boolean hasLostCube() {
+        return !leftCubeSensorTriggered && !rightCubeSensorTriggered;
+    }
+
 
 }

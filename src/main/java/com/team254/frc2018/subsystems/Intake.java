@@ -154,7 +154,7 @@ public class Intake extends Subsystem {
         return !canifier.getGeneralInput(CANifier.GeneralPin.LIMR);
     }
 
-    public boolean hasCube() {
+    public synchronized boolean hasCube() {
         return mStateMachine.hasCubeClamped();
     }
 

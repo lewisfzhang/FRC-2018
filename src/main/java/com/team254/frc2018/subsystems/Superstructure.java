@@ -5,7 +5,9 @@ import com.team254.frc2018.loops.Loop;
 import com.team254.frc2018.loops.Looper;
 import com.team254.frc2018.planners.SuperstructureMotionPlanner;
 import com.team254.frc2018.statemachines.IntakeStateMachine;
+import com.team254.frc2018.statemachines.SuperstructureStateMachine;
 import com.team254.frc2018.states.IntakeState;
+import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.frc2018.states.SuperstructureState;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -38,8 +40,10 @@ public class Superstructure extends Subsystem {
     private Elevator mElevator = Elevator.getInstance();
     private Wrist mWrist = Wrist.getInstance();
     private Intake mIntake = Intake.getInstance();
-    private SuperstructureMotionPlanner mPlanner = new SuperstructureMotionPlanner();
 
+    private SuperstructureStateMachine mStateMachine = new SuperstructureStateMachine();
+    private SuperstructureStateMachine.WantedAction mWantedAction =
+            SuperstructureStateMachine.WantedAction.IDLE;
 
     @Override
     public boolean checkSystem() {
@@ -61,10 +65,11 @@ public class Superstructure extends Subsystem {
 
     }
 
-    synchronized void updateObservedState(SuperstructureState state) {
+    private synchronized void updateObservedState(SuperstructureState state) {
         state.height = mElevator.getInchesOffGround();
         state.angle = mWrist.getAngle();
         state.jawClamped = mIntake.getJawState() == IntakeState.JawState.CLAMPED;
+        state.hasCube = mIntake.hasCube();
     }
 
     // Update subsystems from planner
@@ -72,23 +77,7 @@ public class Superstructure extends Subsystem {
         mElevator.setClosedLoopPosition(commandState.height);
         mWrist.setClosedLoopAngle(commandState.angle);
 
-        updateObservedState(mState);
-    }
-
-    // Get commanded from user
-    synchronized public void set(double height, double angle, IntakeStateMachine.WantedAction intakeAction) {
-        updateObservedState(mState);
-        SuperstructureState commandState = new SuperstructureState(height, angle);
-        commandState.intakeAction = intakeAction;
-
-        if (!mPlanner.setDesiredState(commandState, mState)) {
-            DriverStation.reportError("Could not set elevator planner", false);
-        }
-    }
-
-    // Get commanded from user
-    synchronized public void set(double height, double angle) {
-        set(height, angle, IntakeStateMachine.WantedAction.IDLE);
+        mIntake.setState(commandState.intakeAction);
     }
 
     @Override
@@ -102,7 +91,8 @@ public class Superstructure extends Subsystem {
             public void onLoop(double timestamp) {
                 synchronized (Superstructure.this) {
                     updateObservedState(mState);
-                    SuperstructureState commandState = mPlanner.update(mState);
+                    SuperstructureState commandState =
+                            mStateMachine.update(timestamp, mWantedAction, mState);
                     setFromCommandState(commandState);
                 }
             }
@@ -112,5 +102,26 @@ public class Superstructure extends Subsystem {
 
             }
         });
+    }
+
+    public synchronized void setScoringPosition(SuperstructureConstants.ScoringPositionID position_id) {
+        SuperstructureConstants.ScoringPosition position =
+                SuperstructureConstants.kScoringPositions.get(position_id);
+        mStateMachine.setScoringPosition(position.height, position.angle);
+        mWantedAction = SuperstructureStateMachine.WantedAction.GOTO_SCORE_POSITION;
+    }
+
+    public synchronized void setArmIn() {
+        mStateMachine.setScoringPosition(mState.height, 0.0);
+        mWantedAction = SuperstructureStateMachine.WantedAction.GOTO_SCORE_POSITION;
+    }
+
+    public synchronized void setJogPosition(double amount) {
+        mStateMachine.setScoringPosition(mState.height + amount, mState.angle);
+        mWantedAction = SuperstructureStateMachine.WantedAction.GOTO_SCORE_POSITION;
+    }
+
+    public synchronized void setWantedAction(SuperstructureStateMachine.WantedAction wantedAction) {
+        mWantedAction = wantedAction;
     }
 }

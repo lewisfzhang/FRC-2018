@@ -5,7 +5,7 @@ import com.team254.frc2018.states.SuperstructureConstants;
 
 
 public class IntakeStateMachine {
-    public final static double kActuationTime = 0.25;
+    public final static double kActuationTime = 0.0;
     public final static double kShootSetpoint = 1.0;
     public final static double kIntakeCubeSetpoint = -1.0;
     public final static double kHoldSetpoint = 0;
@@ -51,10 +51,10 @@ public class IntakeStateMachine {
                     newState = handleHoldingTransitions(wantedAction, currentState);
                     break;
                 case SHOOTING:
-                    newState = handleShootingTransitions(timeInState);
+                    newState = handleShootingTransitions(wantedAction);
                     break;
                 case PLACING:
-                    newState = handlePlacingTransitions(timeInState);
+                    newState = handlePlacingTransitions(wantedAction);
                     break;
                 default:
                     System.out.println("Unexpected intake system state: " + mSystemState);
@@ -103,6 +103,9 @@ public class IntakeStateMachine {
     }
 
     private synchronized SystemState handleIdleTransitions(WantedAction wantedAction, IntakeState currentState) {
+        if (currentState.seesCube()) {
+            return SystemState.CLAMPING;
+        }
         switch (wantedAction) {
             case INTAKE:
                 return SystemState.INTAKING;
@@ -155,8 +158,8 @@ public class IntakeStateMachine {
     }
 
     private synchronized SystemState handleHoldingTransitions(WantedAction wantedAction, IntakeState currentState) {
-        if (!currentState.seesCube()) {
-            return SystemState.IDLE;
+        if (currentState.hasLostCube()) {
+      //      return SystemState.IDLE;
         }
 
         switch (wantedAction) {
@@ -181,11 +184,12 @@ public class IntakeStateMachine {
         commandedState.jawState = IntakeState.JawState.OPEN;
     }
 
-    private synchronized SystemState handlePlacingTransitions(double timeInState) {
-        if (timeInState > kActuationTime) {
-            return SystemState.IDLE;
-        } else {
-            return SystemState.PLACING;
+    private synchronized SystemState handlePlacingTransitions(WantedAction wantedAction) {
+        switch (wantedAction) {
+            case IDLE:
+                return SystemState.IDLE;
+            default:
+                return SystemState.PLACING;
         }
     }
 
@@ -194,16 +198,17 @@ public class IntakeStateMachine {
         commandedState.setPower(kShootSetpoint);
         commandedState.jawState = IntakeState.JawState.CLAMPED;
     }
-    private synchronized SystemState handleShootingTransitions(double timeInState) {
-        if (timeInState > kShootTime) {
-            return SystemState.IDLE;
-        } else {
-            return SystemState.SHOOTING;
+    private synchronized SystemState handleShootingTransitions(WantedAction wantedAction) {
+        switch (wantedAction) {
+            case IDLE:
+                return SystemState.IDLE;
+            default:
+                return SystemState.SHOOTING;
         }
     }
 
     // Getters
-    public boolean hasCubeClamped() {
+    public synchronized boolean hasCubeClamped() {
         return mSystemState == SystemState.HOLDING;
     }
 }

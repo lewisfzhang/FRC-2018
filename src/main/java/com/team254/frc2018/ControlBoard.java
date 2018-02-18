@@ -40,42 +40,37 @@ public class ControlBoard implements IControlBoard {
 
     @Override
     public boolean getLowGear() {
-        return mThrottleStick.getRawButton(2);
+        return mThrottleStick.getRawButton(1);
     }
 
     @Override
     public boolean getJogWristStow() {
-        return mButtonBoard.getRawButton(8);
-    }
-
-    @Override
-    public boolean getJogWristExtend() {
-        return mButtonBoard.getRawButton(7);
-    }
-
-    @Override
-    public boolean getScore() {
-        return mButtonBoard.getRawButton(10);
-    }
-
-    @Override
-    public boolean getFarScore() {
-        return mButtonBoard.getRawButton(9);
-    }
-
-    @Override
-    public boolean getIntake() {
         return mButtonBoard.getRawButton(11);
     }
 
     @Override
-    public boolean getExchangeIntake() {
+    public boolean getJogWristExtend() {
         return mButtonBoard.getRawButton(12);
     }
 
     @Override
+    public boolean getScore() {
+        return mThrottleStick.getRawButton(2);
+    }
+
+    @Override
+    public boolean getFarScore() {
+        return mTurnStick.getRawButton(2);
+    }
+
+    @Override
+    public boolean getIntake() {
+        return mButtonBoard.getRawButton(10);
+    }
+
+    @Override
     public boolean getBackwardsModifier() {
-        return mButtonBoard.getRawButton(1);
+        return mButtonBoard.getRawButton(9);
     }
 
     @Override
@@ -85,7 +80,7 @@ public class ControlBoard implements IControlBoard {
 
     @Override
     public boolean getSwitch() {
-        return mButtonBoard.getRawButton(4);
+        return mButtonBoard.getRawAxis(2) < -0.1;
     }
 
     @Override
@@ -94,8 +89,18 @@ public class ControlBoard implements IControlBoard {
     }
 
     @Override
-    public boolean getJogElevatorUp() {
+    public boolean getStow() {
+        return mButtonBoard.getRawAxis(0) < -0.1;
+    }
+
+    @Override
+    public boolean getArmIn() {
         return mButtonBoard.getRawButton(6);
+    }
+
+    @Override
+    public boolean getJogElevatorUp() {
+        return mButtonBoard.getRawButton(1);
     }
 
     @Override
@@ -110,16 +115,6 @@ public class ControlBoard implements IControlBoard {
 
     @Override
     public boolean getJogElevatorDown() {
-        return mButtonBoard.getRawAxis(0) < -0.1;
-    }
-
-    public boolean getBannerOverride() { return mButtonBoard.getRawButton(2); };
-
-    /**
-     * @return switch position-> false is left, true is right
-     */
-    @Override
-    public boolean getClimbMode() {
-        return mButtonBoard.getRawAxis(3) < -0.1;
+        return mButtonBoard.getRawButton(2);
     }
 }
