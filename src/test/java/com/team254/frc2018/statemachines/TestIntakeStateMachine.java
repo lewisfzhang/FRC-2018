@@ -19,7 +19,7 @@ public class TestIntakeStateMachine {
         IntakeState commandedState = sm.update(0, action, simState);
         assertEquals(0, commandedState.leftMotor, EPSILON, "motor must default to 0");
         assertEquals(0, commandedState.rightMotor, EPSILON, "motor must default to 0");
-        assertEquals(commandedState.jawState, IntakeState.JawState.CLOSED);
+        assertEquals(commandedState.jawState, IntakeState.JawState.CLAMPED);
     }
 
 
@@ -38,7 +38,7 @@ public class TestIntakeStateMachine {
         IntakeState commandedState = sm.update(0, action, simState);
         assertEquals(0, commandedState.leftMotor, EPSILON, "motor must intake");
         assertEquals(0, commandedState.rightMotor, EPSILON, "motor must intake");
-        assertEquals(commandedState.jawState, IntakeState.JawState.CLOSED);
+        assertEquals(commandedState.jawState, IntakeState.JawState.CLAMPED);
     }
 
     @Test
