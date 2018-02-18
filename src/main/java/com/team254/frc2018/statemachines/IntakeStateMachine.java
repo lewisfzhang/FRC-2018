@@ -9,7 +9,7 @@ public class IntakeStateMachine {
     public final static double kShootSetpoint = 1.0;
     public final static double kIntakeCubeSetpoint = -1.0;
     public final static double kHoldSetpoint = 0;
-    public final static double kShootTime = 0.25;
+    public final static double kLostCubeTime = 0.5;
 
     public enum WantedAction {
         IDLE,
@@ -23,6 +23,7 @@ public class IntakeStateMachine {
         INTAKING,
         CLAMPING,
         HOLDING,
+        LOST_CUBE,
         SHOOTING,
         PLACING
     }
@@ -49,6 +50,9 @@ public class IntakeStateMachine {
                     break;
                 case HOLDING:
                     newState = handleHoldingTransitions(wantedAction, currentState);
+                    break;
+                case LOST_CUBE:
+                    newState = handleLostCubeTransitions(timeInState, currentState);
                     break;
                 case SHOOTING:
                     newState = handleShootingTransitions(wantedAction);
@@ -81,6 +85,9 @@ public class IntakeStateMachine {
                     break;
                 case HOLDING:
                     getHoldingCommandedState(currentState, mCommandedState);
+                    break;
+                case LOST_CUBE:
+                    getLostCubeCommandedState(currentState, mCommandedState);
                     break;
                 case PLACING:
                     getPlacingCommandedState(currentState, mCommandedState);
@@ -159,7 +166,7 @@ public class IntakeStateMachine {
 
     private synchronized SystemState handleHoldingTransitions(WantedAction wantedAction, IntakeState currentState) {
         if (currentState.hasLostCube()) {
-      //      return SystemState.IDLE;
+            return SystemState.LOST_CUBE;
         }
 
         switch (wantedAction) {
@@ -207,8 +214,25 @@ public class IntakeStateMachine {
         }
     }
 
+    // Lost Cube
+    private synchronized SystemState handleLostCubeTransitions(double timeInState, IntakeState currentState) {
+        if (currentState.seesCube()) {
+            return SystemState.HOLDING;
+        }
+
+        if (timeInState > kLostCubeTime) {
+            return SystemState.IDLE;
+        }
+        return SystemState.LOST_CUBE;
+    }
+    private synchronized void getLostCubeCommandedState(IntakeState currentState,
+                                                        IntakeState commandedState) {
+        commandedState.setPower(kIntakeCubeSetpoint);
+        commandedState.jawState = IntakeState.JawState.CLAMPED;
+    }
+
     // Getters
     public synchronized boolean hasCubeClamped() {
-        return mSystemState == SystemState.HOLDING;
+        return mSystemState == SystemState.HOLDING || mSystemState == SystemState.LOST_CUBE;
     }
 }
