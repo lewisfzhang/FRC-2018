@@ -172,6 +172,9 @@ public class SuperstructureStateMachine {
                 break;
         }
 
+        System.out.println("Setting motion planner to height: " + mDesiredEndState.height
+                + " angle: " + mDesiredEndState.angle);
+
         // Populate the scoring angle and height just in case the state transitions to SHOOTING.
         // Which transitions to IN_SCORING_POSITION
         if (desiredState != SystemState.IN_SCORING_POSITION) {
@@ -290,11 +293,11 @@ public class SuperstructureStateMachine {
                 updateMotionPlannerDesired(SystemState.STOWED, currentState);
                 return SystemState.MOVING;
             default:
-                return SystemState.IN_SCORING_POSITION;
+                return SystemState.INTAKE_POSITION;
         }
     }
     private void getIntakePositionCommandedState() {
-        mCommandedState.intakeAction = IntakeStateMachine.WantedAction.IDLE;
+        mCommandedState.intakeAction = IntakeStateMachine.WantedAction.INTAKE_POSITION;
     }
 
     // STOWED_WITH_CUBE

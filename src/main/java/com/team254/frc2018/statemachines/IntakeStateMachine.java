@@ -14,6 +14,7 @@ public class IntakeStateMachine {
     public enum WantedAction {
         IDLE,
         INTAKE,
+        INTAKE_POSITION,
         SHOOT,
         PLACE
     }
@@ -21,6 +22,7 @@ public class IntakeStateMachine {
     private enum SystemState {
         IDLE,
         INTAKING,
+        INTAKE_POSITION,
         CLAMPING,
         HOLDING,
         LOST_CUBE,
@@ -45,6 +47,9 @@ public class IntakeStateMachine {
                 case INTAKING:
                     newState = handleIntakingTransitions(wantedAction, currentState);
                     break;
+                case INTAKE_POSITION:
+                    newState = handleIntakePositionTransitions(wantedAction, currentState);
+                    break;
                 case CLAMPING:
                     newState = handleClampingTransitions(timeInState, currentState);
                     break;
@@ -67,7 +72,7 @@ public class IntakeStateMachine {
             }
             
             if (newState != mSystemState) {
-                System.out.println(timestamp + ": Changed state: " + mSystemState + " -> " + newState);
+                System.out.println(timestamp + ": Intake changed state: " + mSystemState + " -> " + newState);
                 mSystemState = newState;
                 mCurrentStateStartTime = timestamp;
             }
@@ -79,6 +84,9 @@ public class IntakeStateMachine {
                     break;
                 case INTAKING:
                     getIntakingCommandedState(currentState, mCommandedState);
+                    break;
+                case INTAKE_POSITION:
+                    getIntakePositionCommandedState(currentState, mCommandedState);
                     break;
                 case CLAMPING:
                     getClampingCommandedState(currentState, mCommandedState);
@@ -135,10 +143,35 @@ public class IntakeStateMachine {
         switch (wantedAction) {
             case IDLE:
                 return SystemState.IDLE;
+            case INTAKE_POSITION:
+                return SystemState.INTAKE_POSITION;
             default:
                 return SystemState.INTAKING;
         }
     }
+
+    // Intake position
+    private synchronized void getIntakePositionCommandedState(IntakeState currentState,
+                                                              IntakeState commandedState) {
+        commandedState.setPower(0);
+        commandedState.jawState = IntakeState.JawState.CLOSED;
+    }
+    private synchronized SystemState handleIntakePositionTransitions(WantedAction wantedAction,
+                                                                     IntakeState currentState) {
+        if (currentState.seesCube()) {
+            return SystemState.CLAMPING;
+        }
+
+        switch (wantedAction) {
+            case IDLE:
+                return SystemState.IDLE;
+            case INTAKE:
+                return SystemState.INTAKING;
+            default:
+                return SystemState.INTAKE_POSITION;
+        }
+    }
+
 
     // Clamping
     private synchronized void getClampingCommandedState(IntakeState currentState, IntakeState commandedState) {
@@ -233,6 +266,7 @@ public class IntakeStateMachine {
 
     // Getters
     public synchronized boolean hasCubeClamped() {
-        return mSystemState == SystemState.HOLDING || mSystemState == SystemState.LOST_CUBE;
+        return mSystemState == SystemState.HOLDING || mSystemState == SystemState.LOST_CUBE
+                || mSystemState == SystemState.CLAMPING;
     }
 }

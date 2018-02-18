@@ -25,8 +25,8 @@ public class Robot extends IterativeRobot {
             Arrays.asList(
                     Drive.getInstance(),
                     FollowerWheels.getInstance(),
-                    Superstructure.getInstance(),
-                    Intake.getInstance()
+                    Intake.getInstance(),
+                    Superstructure.getInstance()
             )
     );
 
