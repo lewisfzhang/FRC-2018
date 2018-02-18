@@ -239,7 +239,11 @@ public class SuperstructureStateMachine {
                     updateMotionPlannerDesired(SystemState.INTAKING, currentState);
                     break;
                 case STOW:
-                    updateMotionPlannerDesired(SystemState.STOWED, currentState);
+                    if (currentState.hasCube) {
+                        updateMotionPlannerDesired(SystemState.STOWED_WITH_CUBE, currentState);
+                    } else {
+                        updateMotionPlannerDesired(SystemState.STOWED, currentState);
+                    }
                     break;
             }
         }
@@ -332,7 +336,11 @@ public class SuperstructureStateMachine {
             case SHOOT:
                 return SystemState.SHOOTING;
             case STOW:
-                updateMotionPlannerDesired(SystemState.STOWED, currentState);
+                if (currentState.hasCube) {
+                    updateMotionPlannerDesired(SystemState.STOWED_WITH_CUBE, currentState);
+                } else {
+                    updateMotionPlannerDesired(SystemState.STOWED, currentState);
+                }
                 return SystemState.MOVING;
             case INTAKE:
                 updateMotionPlannerDesired(SystemState.INTAKING, currentState);
