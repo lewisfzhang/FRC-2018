@@ -225,6 +225,23 @@ public class SuperstructureMotionPlannerTest {
     }
 
     @Test
+    public void testIsFinished() {
+        // 0 to 180
+        desiredState.height = ELEVATOR_MIN_HEIGHT;
+        desiredState.angle = 180;
+        simulatedState.height = ELEVATOR_MIN_HEIGHT;
+        simulatedState.angle = 0;
+        planner.setDesiredState(desiredState, simulatedState);
+        SuperstructureState commandedState = planner.update(simulatedState);
+        assertEquals(180, commandedState.angle, EPSILON, "angle must be correct");
+        assertEquals(ELEVATOR_MIN_HEIGHT, commandedState.height, EPSILON, "height must be correct");
+
+        simulatedState.height = ELEVATOR_MIN_HEIGHT;
+        simulatedState.angle = 180;
+        assertTrue(planner.isFinished(simulatedState));
+    }
+
+    @Test
     public void testChaosMonkeyControllingElevator() {
         // Start stowed
         simulatedState = new SuperstructureState();

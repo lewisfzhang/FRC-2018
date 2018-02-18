@@ -18,7 +18,6 @@ public class IntakeStateMachine {
         PLACE
     }
 
-
     private enum SystemState {
         IDLE,
         INTAKING,

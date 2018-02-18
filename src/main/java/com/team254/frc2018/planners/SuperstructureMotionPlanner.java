@@ -3,6 +3,7 @@ package com.team254.frc2018.planners;
 import com.team254.frc2018.states.SuperstructureState;
 import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.lib.util.Util;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import java.util.LinkedList;
 import java.util.Optional;
@@ -105,6 +106,11 @@ public class SuperstructureMotionPlanner {
         mIntermediateCommandState = currentState;
         mCommandQueue.clear();
         mCurrentCommand = Optional.empty();
+    }
+
+    public boolean isFinished(SuperstructureState currentState) {
+        return mCurrentCommand.isPresent() && mCommandQueue.isEmpty() && mCurrentCommand.get().isFinished(currentState);
+
     }
 
     public SuperstructureState update(SuperstructureState currentState) {

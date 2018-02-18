@@ -7,6 +7,7 @@ import com.team254.frc2018.planners.SuperstructureMotionPlanner;
 import com.team254.frc2018.statemachines.IntakeStateMachine;
 import com.team254.frc2018.states.IntakeState;
 import com.team254.frc2018.states.SuperstructureState;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
@@ -70,14 +71,19 @@ public class Superstructure extends Subsystem {
     synchronized void setFromCommandState(SuperstructureState commandState) {
         mElevator.setClosedLoopPosition(commandState.height);
         mWrist.setClosedLoopAngle(commandState.angle);
+
+        updateObservedState(mState);
     }
 
     // Get commanded from user
     synchronized public void set(double height, double angle, IntakeStateMachine.WantedAction intakeAction) {
         updateObservedState(mState);
-        SuperstructureState mCommandedState = new SuperstructureState(height, angle);
-        mCommandedState.intakeAction = intakeAction;
-        mPlanner.setDesiredState(mCommandedState, mState);
+        SuperstructureState commandState = new SuperstructureState(height, angle);
+        commandState.intakeAction = intakeAction;
+
+        if (!mPlanner.setDesiredState(commandState, mState)) {
+            DriverStation.reportError("Could not set elevator planner", false);
+        }
     }
 
     // Get commanded from user
@@ -85,14 +91,11 @@ public class Superstructure extends Subsystem {
         set(height, angle, IntakeStateMachine.WantedAction.IDLE);
     }
 
-
     @Override
     public void registerEnabledLoops(Looper enabledLooper) {
         enabledLooper.register(new Loop() {
-            int i = 0;
             @Override
             public void onStart(double timestamp) {
-                i = 0;
             }
 
             @Override
@@ -102,7 +105,6 @@ public class Superstructure extends Subsystem {
                     SuperstructureState commandState = mPlanner.update(mState);
                     setFromCommandState(commandState);
                 }
-
             }
 
             @Override

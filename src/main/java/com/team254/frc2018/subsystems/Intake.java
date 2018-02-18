@@ -35,7 +35,7 @@ public class Intake extends Subsystem {
 
     public static CANifier canifier = new CANifier(0);
 
-    private IntakeStateMachine.WantedAction mWantedAction;
+    private IntakeStateMachine.WantedAction mWantedAction = IntakeStateMachine.WantedAction.IDLE;
     private IntakeState.JawState mJawState;
 
     private IntakeState mCurrentState = new IntakeState();

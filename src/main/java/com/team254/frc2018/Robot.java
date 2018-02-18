@@ -2,6 +2,7 @@ package com.team254.frc2018;
 
 import com.team254.frc2018.loops.Looper;
 import com.team254.frc2018.loops.RobotStateEstimator;
+import com.team254.frc2018.statemachines.IntakeStateMachine;
 import com.team254.frc2018.states.IntakeState;
 import com.team254.frc2018.subsystems.*;
 import com.team254.lib.geometry.Pose2d;
@@ -152,14 +153,17 @@ public class Robot extends IterativeRobot {
             //mIntake.setPower(mControlBoard.getIntake() ? 1.0 : (mControlBoard.getExchangeIntake() ? -1.0 : 0.0));
             //mIntake.setJaw(IntakeState.JawState.CLAMPED);
 
-
-
-            if (mControlBoard.getJogWristExtend()) {
-                mWrist.setClosedLoopAngle(180);
+            if (mControlBoard.getIntake()) {
+                mSuperstructure.set(0, 180, IntakeStateMachine.WantedAction.INTAKE);
             }
-            if (mControlBoard.getJogWristStow()) {
-                mWrist.setClosedLoopAngle(0);
-            }
+
+//
+//            if (mControlBoard.getJogWristExtend()) {
+//                mWrist.setClosedLoopAngle(180);
+//            }
+//            if (mControlBoard.getJogWristStow()) {
+//                mWrist.setClosedLoopAngle(0);
+//            }
 
             if (mControlBoard.getJogElevatorUp()) {
                 //Elevator.getInstance().setClosedLoopPosition(Elevator.kHomePositionInches);
