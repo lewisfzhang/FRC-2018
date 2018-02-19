@@ -154,6 +154,13 @@ public class Intake extends Subsystem {
         return !canifier.getGeneralInput(CANifier.GeneralPin.LIMR);
     }
 
+    public void setLEDsOn(double percentOn) {
+        // A: Blue
+        // B: Green
+        // C: Red
+        canifier.setLEDOutput(percentOn, CANifier.LEDChannel.LEDChannelA);
+    }
+
     public synchronized boolean hasCube() {
         return mStateMachine.hasCubeClamped();
     }
