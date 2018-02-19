@@ -135,11 +135,11 @@ public class SuperstructureMotionPlannerTest {
 
         // desire to move to top, wrist out straight
         desiredState.height = ELEVATOR_MAX_HEIGHT;
-        desiredState.angle = PIVOT_MAX_ANGLE;
+        desiredState.angle = PIVOT_MIN_ANGLE;
 
         planner.setDesiredState(desiredState, simulatedState);
 
-        // Test that wrist is never outside vertical when elevator is "moving"
+        // Test that wrist is never less than vertical when elevator is "moving"
         for (double ts = 0; ts < 5; ts += DELTA_T) {
             SuperstructureState command = planner.update(simulatedState);
             pivotSim.setCommandedPosition(command.angle);
@@ -149,12 +149,12 @@ public class SuperstructureMotionPlannerTest {
 
             boolean elevatorMoving = (simulatedState.height > ELEVATOR_MIN_HEIGHT + 1) &&
                     (simulatedState.height < ELEVATOR_MAX_HEIGHT - 1);
-            boolean wristStowed = simulatedState.angle < 91 && simulatedState.angle > 89;
+            boolean wristSafe = simulatedState.angle > 89;
             if (elevatorMoving) {
-                if (!wristStowed) {
+                if (!wristSafe) {
                     System.out.println("Wrist illegal: " + simulatedState + " " + command);
                 }
-                assertTrue(wristStowed, "wrist must be stowed while moving");
+                assertTrue(wristSafe, "wrist must be safe while moving");
             }
         }
     }
