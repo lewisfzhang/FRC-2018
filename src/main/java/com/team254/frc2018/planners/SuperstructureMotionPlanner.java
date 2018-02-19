@@ -61,6 +61,17 @@ public class SuperstructureMotionPlanner {
         }
     }
 
+    class WaitForFinalSetpointSubcommand extends SubCommand {
+        public WaitForFinalSetpointSubcommand(SuperstructureState endState) {
+            super(endState);
+        }
+
+        @Override
+        public boolean isFinished(SuperstructureState currentState) {
+            return currentState.elevatorSentLastTrajectory && currentState.wristSentLastTrajectory;
+        }
+    }
+
     protected SuperstructureState mCommandedState = new SuperstructureState();
     protected SuperstructureState mIntermediateCommandState = new SuperstructureState();
     protected LinkedList<SubCommand> mCommandQueue = new LinkedList<>();
@@ -109,7 +120,7 @@ public class SuperstructureMotionPlanner {
         }
 
         // Go to the goal.
-        mCommandQueue.add(new SubCommand(desiredState));
+        mCommandQueue.add(new WaitForFinalSetpointSubcommand(desiredState));
 
         // Reset current command to start executing on next iteration
         mCurrentCommand = Optional.empty();

@@ -121,10 +121,13 @@ public class Elevator extends Subsystem {
                         Constants.kElevatorHighGearCruiseVelocity, Constants.kLongCANTimeoutMs),
             "Could not set elevator cruise velocity: ");
 
-        TalonSRXUtil.checkError(
+        /*TalonSRXUtil.checkError(
                 mMaster.configSetParameter(
                         ParamEnum.eClearPositionOnLimitF, 1, 0, 0, Constants.kLongCANTimeoutMs),
-            "Could not set elevator reset on limit f: ");
+            "Could not set elevator reset on limit f: ");*/
+
+        mMaster.configSetParameter(ParamEnum.eClearPositionOnLimitF, 0, 0, 0, 0);
+        mMaster.configSetParameter(ParamEnum.eClearPositionOnLimitR, 0, 0, 0, 0);
 
         // TODO add low gear gains
 

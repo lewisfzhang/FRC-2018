@@ -33,7 +33,7 @@ public class Wrist extends Subsystem {
         ErrorCode errorCode;
 
         //configure talon
-        errorCode = mMaster.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, 0, Constants
+        errorCode = mMaster.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, Constants
                 .kLongCANTimeoutMs);
         if (errorCode != ErrorCode.OK)
             DriverStation.reportError("Could not detect wrist encoder: " + errorCode, false);
@@ -115,10 +115,9 @@ public class Wrist extends Subsystem {
         mMaster.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0,10, 10); // todo: remove this when done tuning
 
 
-//        Reset encoder positions on limit switch
-//        mMaster.configSetParameter(ParamEnum.eClearPositionOnLimitF, 1, 0, 0, 0);
-
-        mMaster.configSetParameter(ParamEnum.eClearPositionOnLimitR, 1, 0, 0, 0);
+        // DO NOT reset encoder positions on limit switch
+        mMaster.configSetParameter(ParamEnum.eClearPositionOnLimitF, 0, 0, 0, 0);
+        mMaster.configSetParameter(ParamEnum.eClearPositionOnLimitR, 0, 0, 0, 0);
     }
 
     @Override
