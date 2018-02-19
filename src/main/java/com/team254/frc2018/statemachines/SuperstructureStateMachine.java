@@ -262,11 +262,13 @@ public class SuperstructureStateMachine {
                 case GOTO_SCORE_POSITION:
                     if (scoringPositionChanged()) {
                         updateMotionPlannerDesired(SystemState.IN_SCORING_POSITION, currentState);
+                        mIntakeActionDuringMove = IntakeStateMachine.WantedAction.IDLE;
                     }
                     break;
                 case INTAKE:
                     if (!currentState.hasCube) {
                         updateMotionPlannerDesired(SystemState.INTAKING, currentState);
+                        mIntakeActionDuringMove = IntakeStateMachine.WantedAction.IDLE;
                     }
                     break;
                 case STOW:
@@ -275,6 +277,7 @@ public class SuperstructureStateMachine {
                     } else {
                         updateMotionPlannerDesired(SystemState.STOWED, currentState);
                     }
+                    mIntakeActionDuringMove = IntakeStateMachine.WantedAction.IDLE;
                     break;
             }
         }
