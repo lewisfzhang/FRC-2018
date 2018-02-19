@@ -43,6 +43,14 @@ public class SuperstructureStateMachine {
     private double mScoringHeight = Elevator.kHomePositionInches;
     private double mScoringAngle = SuperstructureConstants.kStowedAngle;
 
+    public synchronized void setScoringHeight(double inches) {
+        mScoringHeight = inches;
+    }
+
+    public synchronized void setScoringAngle(double angle) {
+        mScoringAngle = angle;
+    }
+
     public synchronized void setScoringPosition(double inches, double angle) {
         mScoringHeight = inches;
         mScoringAngle = angle;

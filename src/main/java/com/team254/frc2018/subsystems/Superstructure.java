@@ -120,12 +120,12 @@ public class Superstructure extends Subsystem {
             angle = SuperstructureConstants.kClearFirstStageMinWristAngle;
         }
 
-        mStateMachine.setScoringPosition(mState.height, angle);
+        mStateMachine.setScoringAngle(angle);
         mWantedAction = SuperstructureStateMachine.WantedAction.GOTO_SCORE_POSITION;
     }
 
     public synchronized void setJogPosition(double amount) {
-        mStateMachine.setScoringPosition(mState.height + amount, mState.angle);
+        mStateMachine.setScoringHeight(mState.height + amount);
         mWantedAction = SuperstructureStateMachine.WantedAction.GOTO_SCORE_POSITION;
     }
 
