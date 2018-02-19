@@ -128,7 +128,10 @@ public class Drive extends Subsystem {
 
         mPigeon = new PigeonIMU(mLeftSlaveB);
 
-        setHighGear(true);
+        // Force a solenoid message.
+        mIsHighGear = true;
+        setHighGear(false);
+
         setOpenLoop(DriveSignal.NEUTRAL);
 
         // Force a CAN message across.

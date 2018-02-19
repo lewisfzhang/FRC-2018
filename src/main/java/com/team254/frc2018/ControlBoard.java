@@ -40,7 +40,7 @@ public class ControlBoard implements IControlBoard {
 
     @Override
     public boolean getLowGear() {
-        return mThrottleStick.getRawButton(1);
+        return !mThrottleStick.getRawButton(1);
     }
 
     @Override
