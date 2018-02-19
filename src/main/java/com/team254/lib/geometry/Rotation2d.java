@@ -31,8 +31,8 @@ public class Rotation2d implements IRotation2d<Rotation2d> {
             // Normalizing forces us to re-scale the sin and cos to reset rounding errors.
             double magnitude = Math.hypot(x, y);
             if (magnitude > kEpsilon) {
-                sin_angle_ = x / magnitude;
-                cos_angle_ = y / magnitude;
+                sin_angle_ = y / magnitude;
+                cos_angle_ = x / magnitude;
             } else {
                 sin_angle_ = 0;
                 cos_angle_ = 1;
