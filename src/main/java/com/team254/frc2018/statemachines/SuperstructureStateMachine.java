@@ -332,6 +332,11 @@ public class SuperstructureStateMachine {
                                                          SuperstructureState currentState) {
         switch (wantedAction) {
             case PLACE:
+                // DO NOT ALLOW PLACING with certain angles.
+                if (currentState.angle < SuperstructureConstants.kPlacingMinAngle) {
+                    System.out.println("Unable to place with angle: " + currentState.angle);
+                    return SystemState.IN_SCORING_POSITION;
+                }
                 return SystemState.PLACING;
             case SHOOT:
                 return SystemState.SHOOTING;

@@ -26,6 +26,8 @@ public class SuperstructureConstants {
     public final static double kStowedWithCubeAngle = 0.0;
     public final static double kIntakeAngle = 180.0;
 
+    public final static double kPlacingMinAngle = 145.0;
+
     public enum ScoringPositionID {
         SWITCH,
         SWITCH_BACKWARDS,
