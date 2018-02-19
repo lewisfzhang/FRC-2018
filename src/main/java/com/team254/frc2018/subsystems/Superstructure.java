@@ -115,7 +115,12 @@ public class Superstructure extends Subsystem {
     }
 
     public synchronized void setArmIn() {
-        mStateMachine.setScoringPosition(mState.height, 0.0);
+        double angle = 0.0;
+        if (mState.height >= SuperstructureConstants.kClearFirstStageMaxHeight) {
+            angle = SuperstructureConstants.kClearFirstStageMinWristAngle;
+        }
+
+        mStateMachine.setScoringPosition(mState.height, angle);
         mWantedAction = SuperstructureStateMachine.WantedAction.GOTO_SCORE_POSITION;
     }
 
