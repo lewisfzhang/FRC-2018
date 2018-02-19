@@ -4,7 +4,6 @@ import com.team254.frc2018.planners.SuperstructureMotionPlanner;
 import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.frc2018.states.SuperstructureState;
 import com.team254.frc2018.subsystems.Elevator;
-import com.team254.frc2018.subsystems.Superstructure;
 import com.team254.lib.util.Util;
 
 public class SuperstructureStateMachine {
@@ -37,6 +36,7 @@ public class SuperstructureStateMachine {
     private SuperstructureState mDesiredEndState = new SuperstructureState();
     private IntakeStateMachine.WantedAction mIntakeActionDuringMove =
             IntakeStateMachine.WantedAction.IDLE;
+    private double mCurrentStateStartTime = 0.0;
 
     private SuperstructureMotionPlanner mPlanner = new SuperstructureMotionPlanner();
 
@@ -57,6 +57,8 @@ public class SuperstructureStateMachine {
                                       SuperstructureState currentState) {
         synchronized (SuperstructureStateMachine.this) {
             SystemState newState;
+
+            double timeInState = timestamp - mCurrentStateStartTime;
 
             // Handle state transitions
             switch (mSystemState) {
@@ -82,10 +84,10 @@ public class SuperstructureStateMachine {
                     newState = handleScoringPositionTransitions(wantedAction, currentState);
                     break;
                 case PLACING:
-                    newState = handlePlacingTransitions(wantedAction, currentState);
+                    newState = handlePlacingTransitions(timeInState, wantedAction, currentState);
                     break;
                 case SHOOTING:
-                    newState = handleShootingTransitions(wantedAction, currentState);
+                    newState = handleShootingTransitions(timeInState, wantedAction, currentState);
                     break;
                 default:
                     System.out.println("Unexpected superstructure system state: " + mSystemState);
@@ -96,6 +98,7 @@ public class SuperstructureStateMachine {
             if (newState != mSystemState) {
                 System.out.println(timestamp + ": Superstructure changed state: " + mSystemState + " -> " + newState);
                 mSystemState = newState;
+                mCurrentStateStartTime = timestamp;
             }
 
             // Pump elevator planner
@@ -368,8 +371,11 @@ public class SuperstructureStateMachine {
     }
 
     // PLACING
-    private SystemState handlePlacingTransitions(WantedAction wantedAction,
+    private SystemState handlePlacingTransitions(double timeInState, WantedAction wantedAction,
                                                  SuperstructureState currentState) {
+        if (timeInState < SuperstructureConstants.kMinTimePlacing) {
+            return SystemState.PLACING;
+        }
         switch (wantedAction) {
             case IDLE:
                 // Take the current state and set the angle to stowed angle.
@@ -386,8 +392,12 @@ public class SuperstructureStateMachine {
     }
 
     // SHOOTING
-    private SystemState handleShootingTransitions(WantedAction wantedAction,
+    private SystemState handleShootingTransitions(double timeInState,
+                                                  WantedAction wantedAction,
                                                   SuperstructureState currentState) {
+        if (timeInState < SuperstructureConstants.kMinTimeShooting) {
+            return SystemState.SHOOTING;
+        }
         switch (wantedAction) {
             case IDLE:
                 // Take the current state and set the angle to stowed angle.
