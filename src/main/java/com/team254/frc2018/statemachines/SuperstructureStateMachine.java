@@ -212,6 +212,9 @@ public class SuperstructureStateMachine {
             case INTAKE:
                 updateMotionPlannerDesired(SystemState.INTAKING, currentState);
                 return SystemState.MOVING;
+            case GOTO_SCORE_POSITION:
+                updateMotionPlannerDesired(SystemState.IN_SCORING_POSITION, currentState);
+                return SystemState.MOVING;
             case IDLE:
             default:
                 return SystemState.STOWED;

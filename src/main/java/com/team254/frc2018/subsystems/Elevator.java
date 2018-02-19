@@ -8,6 +8,7 @@ import com.team254.frc2018.Constants;
 import com.team254.frc2018.loops.Looper;
 import com.team254.lib.drivers.TalonSRXFactory;
 import com.team254.lib.drivers.TalonSRXChecker;
+import com.team254.lib.util.Util;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -32,6 +33,8 @@ public class Elevator extends Subsystem {
     }
 
     private final TalonSRX mMaster, mRightSlave, mLeftSlaveA, mLeftSlaveB;
+
+    private double mLastTrajectoryPoint = Double.NaN;
 
     private Elevator() {
         mMaster = TalonSRXFactory.createDefaultTalon(Constants.kElevatorMasterId);
@@ -156,17 +159,24 @@ public class Elevator extends Subsystem {
     }
 
     private synchronized void setClosedLoopRawPosition(double encoderPosition) {
-        // System.out.println("Going for: " + encoderPosition);
         mMaster.set(ControlMode.MotionMagic, encoderPosition);
+        mLastTrajectoryPoint = encoderPosition;
     }
 
-    public double getRPM() {
+    public synchronized boolean hasFinishedTrajectory() {
+        if (Util.epsilonEquals(mMaster.getActiveTrajectoryPosition(), mLastTrajectoryPoint, 5)) {
+            return true;
+        }
+        return false;
+    }
+
+    public synchronized double getRPM() {
         // We are using a CTRE mag encoder which is 4096 native units per revolution.
         // GetVelocity is in native units per 100ms.
         return mMaster.getSelectedSensorVelocity(0) * 10.0 / 4096.0 * 60.0;
     }
 
-    public double getInchesOffGround() {
+    public synchronized double getInchesOffGround() {
         return (mMaster.getSelectedSensorPosition(0) / kEncoderTicksPerInch) + kHomePositionInches;
     }
 

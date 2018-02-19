@@ -113,8 +113,7 @@ public class SuperstructureMotionPlanner {
     }
 
     public boolean isFinished(SuperstructureState currentState) {
-        return mCurrentCommand.isPresent() && mCommandQueue.isEmpty() && mCurrentCommand.get().isFinished(currentState);
-
+        return mCurrentCommand.isPresent() && mCommandQueue.isEmpty() && currentState.wristSentLastTrajectory && currentState.elevatorSentLastTrajectory;
     }
 
     public SuperstructureState update(SuperstructureState currentState) {

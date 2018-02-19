@@ -70,6 +70,9 @@ public class Superstructure extends Subsystem {
         state.angle = mWrist.getAngle();
         state.jawClamped = mIntake.getJawState() == IntakeState.JawState.CLAMPED;
         state.hasCube = mIntake.hasCube();
+
+        state.elevatorSentLastTrajectory = mElevator.hasFinishedTrajectory();
+        state.wristSentLastTrajectory = mWrist.hasFinishedTrajectory();
     }
 
     // Update subsystems from planner

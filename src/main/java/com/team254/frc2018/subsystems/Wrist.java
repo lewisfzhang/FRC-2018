@@ -7,6 +7,7 @@ import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.team254.frc2018.Constants;
 import com.team254.frc2018.loops.Looper;
 import com.team254.lib.drivers.TalonSRXFactory;
+import com.team254.lib.util.Util;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -25,6 +26,7 @@ public class Wrist extends Subsystem {
     }
 
     private final TalonSRX mMaster;
+    private double mLastTrajectoryPoint = Double.NaN;
 
     private Wrist() {
         mMaster = TalonSRXFactory.createDefaultTalon(Constants.KWristMasterId);
@@ -142,7 +144,7 @@ public class Wrist extends Subsystem {
     public void registerEnabledLoops(Looper enabledLooper) {
     }
 
-    public void setOpenLoop(double percentage) {
+    public synchronized void setOpenLoop(double percentage) {
         mMaster.set(ControlMode.PercentOutput, percentage);
     }
 
@@ -150,14 +152,16 @@ public class Wrist extends Subsystem {
      * @param position the target position of the wrist in sensor units
      */
     public void setClosedLoop(double position) {
+        mLastTrajectoryPoint = position;
         mMaster.set(ControlMode.MotionMagic, position);
     }
 
     /**
      * @param angle the target position of the wrist in degrees.  0 is full back, 180 is facing forwards
      */
-    public void setClosedLoopAngle(double angle) {
-        mMaster.set(ControlMode.MotionMagic, degreesToSensorUnits(angle));
+    public synchronized void setClosedLoopAngle(double angle) {
+        mLastTrajectoryPoint = degreesToSensorUnits(angle);
+        mMaster.set(ControlMode.MotionMagic, mLastTrajectoryPoint);
     }
 
     /**
@@ -186,6 +190,14 @@ public class Wrist extends Subsystem {
      */
     public double getDegreesPerSecond() {
         return sensorUnitsToDegrees(mMaster.getSelectedSensorVelocity(0)) * 10.0;
+    }
+
+    public synchronized boolean hasFinishedTrajectory() {
+        if (Util.epsilonEquals(mMaster.getActiveTrajectoryPosition(),
+                mLastTrajectoryPoint, 1)) {
+            return true;
+        }
+        return false;
     }
 
     private double sensorUnitsToDegrees(double units) {
