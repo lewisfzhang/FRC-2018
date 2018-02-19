@@ -35,14 +35,13 @@ public class SuperstructureStateMachine {
 
     private SuperstructureState mCommandedState = new SuperstructureState();
     private SuperstructureState mDesiredEndState = new SuperstructureState();
+    private IntakeStateMachine.WantedAction mIntakeActionDuringMove =
+            IntakeStateMachine.WantedAction.IDLE;
 
     private SuperstructureMotionPlanner mPlanner = new SuperstructureMotionPlanner();
 
     private double mScoringHeight = Elevator.kHomePositionInches;
     private double mScoringAngle = SuperstructureConstants.kStowedAngle;
-
-    private double mLastHeight = mScoringHeight;
-    private double mLastAngle = mScoringAngle;
 
     public synchronized void setScoringPosition(double inches, double angle) {
         mScoringHeight = inches;
@@ -50,8 +49,8 @@ public class SuperstructureStateMachine {
     }
 
     public synchronized boolean scoringPositionChanged() {
-        return !Util.epsilonEquals(mLastAngle, mScoringAngle) ||
-                !Util.epsilonEquals(mLastHeight, mScoringHeight);
+        return !Util.epsilonEquals(mDesiredEndState.angle, mScoringAngle) ||
+                !Util.epsilonEquals(mDesiredEndState.height, mScoringHeight);
     }
 
     public synchronized SuperstructureState update(double timestamp, WantedAction wantedAction,
@@ -177,13 +176,8 @@ public class SuperstructureStateMachine {
 
         // Populate the scoring angle and height just in case the state transitions to SHOOTING.
         // Which transitions to IN_SCORING_POSITION
-        if (desiredState != SystemState.IN_SCORING_POSITION) {
-            mScoringAngle = mDesiredEndState.angle;
-            mScoringHeight = mDesiredEndState.height;
-        }
-
-        mLastAngle = mDesiredEndState.angle;
-        mLastHeight = mDesiredEndState.height;
+        mScoringAngle = mDesiredEndState.angle;
+        mScoringHeight = mDesiredEndState.height;
 
         // Push into elevator planner.
         if (!mPlanner.setDesiredState(mDesiredEndState, currentState)) {
@@ -236,7 +230,9 @@ public class SuperstructureStateMachine {
                     }
                     break;
                 case INTAKE:
-                    updateMotionPlannerDesired(SystemState.INTAKING, currentState);
+                    if (!currentState.hasCube) {
+                        updateMotionPlannerDesired(SystemState.INTAKING, currentState);
+                    }
                     break;
                 case STOW:
                     if (currentState.hasCube) {
@@ -253,10 +249,13 @@ public class SuperstructureStateMachine {
             return SystemState.MOVING;
         }
 
-        // Otherwise, transition to the state since we are done moving.
+        // Otherwise, transition to the state since we are done moving. And reset action.
+        mIntakeActionDuringMove = IntakeStateMachine.WantedAction.IDLE;
         return mSystemStateAfterMoving;
     }
-    private void getMovingCommandedState() {}
+    private void getMovingCommandedState() {
+        mCommandedState.intakeAction = mIntakeActionDuringMove;
+    }
 
     // INTAKING
     private SystemState handleIntakingTransitions(WantedAction wantedAction,
@@ -348,8 +347,11 @@ public class SuperstructureStateMachine {
                 }
                 return SystemState.MOVING;
             case INTAKE:
-                updateMotionPlannerDesired(SystemState.INTAKING, currentState);
-                return SystemState.MOVING;
+                if (!currentState.hasCube) {
+                    updateMotionPlannerDesired(SystemState.INTAKING, currentState);
+                    return SystemState.MOVING;
+                }
+                return SystemState.IN_SCORING_POSITION;
             case GOTO_SCORE_POSITION:
                 // Check if we need to move.
                 if (scoringPositionChanged()) {
@@ -372,6 +374,7 @@ public class SuperstructureStateMachine {
             case IDLE:
                 // Take the current state and set the angle to stowed angle.
                 mScoringAngle = SuperstructureConstants.kStowedAngle;
+                mIntakeActionDuringMove = IntakeStateMachine.WantedAction.PLACE;
                 updateMotionPlannerDesired(SystemState.IN_SCORING_POSITION, currentState);
                 return SystemState.MOVING;
             default:
@@ -389,6 +392,7 @@ public class SuperstructureStateMachine {
             case IDLE:
                 // Take the current state and set the angle to stowed angle.
                 mScoringAngle = SuperstructureConstants.kStowedAngle;
+                mIntakeActionDuringMove = IntakeStateMachine.WantedAction.SHOOT;
                 updateMotionPlannerDesired(SystemState.IN_SCORING_POSITION, currentState);
                 return SystemState.MOVING;
             default:
