@@ -30,6 +30,10 @@ public class SuperstructureConstants {
     public final static double kEarlyIntakeStartHeight = 10.0;
     public final static double kEarlyIntakeStartAngle = 135.0;
 
+    // Should be -
+    public final static double kJogUpPercent = -0.4;
+    public final static double kJogDownPercent = 0.25;
+
     public enum ScoringPositionID {
         SWITCH,
         SWITCH_BACKWARDS,

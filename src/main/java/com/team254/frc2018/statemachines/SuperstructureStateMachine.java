@@ -1,6 +1,7 @@
 package com.team254.frc2018.statemachines;
 
 import com.team254.frc2018.planners.SuperstructureMotionPlanner;
+import com.team254.frc2018.states.SuperstructureCommand;
 import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.frc2018.states.SuperstructureState;
 import com.team254.frc2018.subsystems.Elevator;
@@ -14,6 +15,7 @@ public class SuperstructureStateMachine {
         PLACE,
         SHOOT,
         STOW,
+        JOG,
     }
 
     public enum SystemState {
@@ -26,12 +28,14 @@ public class SuperstructureStateMachine {
         MOVING,
         INTAKING,
         INTAKE_POSITION,
+        JOGGING,
     }
 
     private SystemState mSystemStateAfterMoving = SystemState.STOWED;
     private SystemState mSystemState = SystemState.START;
     private WantedAction mLastWantedAction = WantedAction.IDLE;
 
+    private SuperstructureCommand mCommand = new SuperstructureCommand();
     private SuperstructureState mCommandedState = new SuperstructureState();
     private SuperstructureState mDesiredEndState = new SuperstructureState();
     private IntakeStateMachine.WantedAction mIntakeActionDuringMove =
@@ -42,6 +46,11 @@ public class SuperstructureStateMachine {
 
     private double mScoringHeight = Elevator.kHomePositionInches;
     private double mScoringAngle = SuperstructureConstants.kStowedAngle;
+    private double mJogPercent = Double.NaN;
+
+    public synchronized void setJogPercentage(double percent) {
+        mJogPercent = percent;
+    }
 
     public synchronized void setScoringHeight(double inches) {
         mScoringHeight = inches;
@@ -61,8 +70,8 @@ public class SuperstructureStateMachine {
                 !Util.epsilonEquals(mDesiredEndState.height, mScoringHeight);
     }
 
-    public synchronized SuperstructureState update(double timestamp, WantedAction wantedAction,
-                                      SuperstructureState currentState) {
+    public synchronized SuperstructureCommand update(double timestamp, WantedAction wantedAction,
+                                                     SuperstructureState currentState) {
         synchronized (SuperstructureStateMachine.this) {
             SystemState newState;
 
@@ -97,6 +106,9 @@ public class SuperstructureStateMachine {
                 case SHOOTING:
                     newState = handleShootingTransitions(timeInState, wantedAction, currentState);
                     break;
+                case JOGGING:
+                    newState = handleJoggingTransitions(wantedAction, currentState);
+                    break;
                 default:
                     System.out.println("Unexpected superstructure system state: " + mSystemState);
                     newState = mSystemState;
@@ -109,8 +121,12 @@ public class SuperstructureStateMachine {
                 mCurrentStateStartTime = timestamp;
             }
 
-            // Pump elevator planner
-            mCommandedState = mPlanner.update(currentState);
+            // Pump elevator planner only if not jogging.
+            if (mSystemState != SystemState.JOGGING) {
+                mCommandedState = mPlanner.update(currentState);
+                mCommand.height = mCommandedState.height;
+                mCommand.wristAngle = mCommandedState.angle;
+            }
 
             // Handle state outputs
             switch (mSystemState) {
@@ -138,13 +154,16 @@ public class SuperstructureStateMachine {
                 case SHOOTING:
                     getShootingCommandedState();
                     break;
+                case JOGGING:
+                    getJoggingCommandedState();
+                    break;
                 default:
                     getStowedCommandedState();
                     break;
             }
 
             mLastWantedAction = wantedAction;
-            return mCommandedState;
+            return mCommand;
         }
     }
 
@@ -223,13 +242,15 @@ public class SuperstructureStateMachine {
             case GOTO_SCORE_POSITION:
                 updateMotionPlannerDesired(SystemState.IN_SCORING_POSITION, currentState);
                 return SystemState.MOVING;
+            case JOG:
+                return SystemState.JOGGING;
             case IDLE:
             default:
                 return SystemState.STOWED;
         }
     }
     private void getStowedCommandedState() {
-        mCommandedState.intakeAction = IntakeStateMachine.WantedAction.IDLE;
+        mCommand.intakeAction = IntakeStateMachine.WantedAction.IDLE;
     }
 
     // MOVING
@@ -277,7 +298,7 @@ public class SuperstructureStateMachine {
         return mSystemStateAfterMoving;
     }
     private void getMovingCommandedState() {
-        mCommandedState.intakeAction = mIntakeActionDuringMove;
+        mCommand.intakeAction = mIntakeActionDuringMove;
     }
 
     // INTAKING
@@ -297,7 +318,7 @@ public class SuperstructureStateMachine {
         }
     }
     private void getIntakingCommandedState() {
-        mCommandedState.intakeAction = IntakeStateMachine.WantedAction.INTAKE;
+        mCommand.intakeAction = IntakeStateMachine.WantedAction.INTAKE;
     }
 
     // INTAKE POSITION
@@ -315,6 +336,8 @@ public class SuperstructureStateMachine {
             case GOTO_SCORE_POSITION:
                 updateMotionPlannerDesired(SystemState.IN_SCORING_POSITION, currentState);
                 return SystemState.MOVING;
+            case JOG:
+                return SystemState.JOGGING;
             case STOW:
                 updateMotionPlannerDesired(SystemState.STOWED, currentState);
                 return SystemState.MOVING;
@@ -323,7 +346,7 @@ public class SuperstructureStateMachine {
         }
     }
     private void getIntakePositionCommandedState() {
-        mCommandedState.intakeAction = IntakeStateMachine.WantedAction.INTAKE_POSITION;
+        mCommand.intakeAction = IntakeStateMachine.WantedAction.INTAKE_POSITION;
     }
 
     // STOWED_WITH_CUBE
@@ -339,6 +362,8 @@ public class SuperstructureStateMachine {
             case GOTO_SCORE_POSITION:
                 updateMotionPlannerDesired(SystemState.IN_SCORING_POSITION, currentState);
                 return SystemState.MOVING;
+            case JOG:
+                return SystemState.JOGGING;
             case SHOOT:
                 return SystemState.SHOOTING;
             default:
@@ -346,7 +371,7 @@ public class SuperstructureStateMachine {
         }
     }
     private void getStowedWithCubeCommandedState() {
-        mCommandedState.intakeAction = IntakeStateMachine.WantedAction.IDLE;
+        mCommand.intakeAction = IntakeStateMachine.WantedAction.IDLE;
     }
 
     // SCORING_POSITION
@@ -369,6 +394,8 @@ public class SuperstructureStateMachine {
                     updateMotionPlannerDesired(SystemState.STOWED, currentState);
                 }
                 return SystemState.MOVING;
+            case JOG:
+                return SystemState.JOGGING;
             case INTAKE:
                 if (!currentState.hasCube) {
                     updateMotionPlannerDesired(SystemState.INTAKING, currentState);
@@ -387,7 +414,7 @@ public class SuperstructureStateMachine {
         }
     }
     private void getScoringPositionCommandedState() {
-        mCommandedState.intakeAction = IntakeStateMachine.WantedAction.IDLE;
+        mCommand.intakeAction = IntakeStateMachine.WantedAction.IDLE;
     }
 
     // PLACING
@@ -408,7 +435,7 @@ public class SuperstructureStateMachine {
         }
     }
     private void getPlacingCommandedState() {
-        mCommandedState.intakeAction = IntakeStateMachine.WantedAction.PLACE;
+        mCommand.intakeAction = IntakeStateMachine.WantedAction.PLACE;
     }
 
     // SHOOTING
@@ -430,6 +457,26 @@ public class SuperstructureStateMachine {
         }
     }
     private void getShootingCommandedState() {
-        mCommandedState.intakeAction =  IntakeStateMachine.WantedAction.SHOOT;
+        mCommand.intakeAction =  IntakeStateMachine.WantedAction.SHOOT;
+    }
+
+    // JOGGING
+    private SystemState handleJoggingTransitions(WantedAction wantedAction,
+                                                 SuperstructureState currentState) {
+       switch (wantedAction) {
+           case IDLE:
+               mScoringAngle = mDesiredEndState.angle;
+               mScoringHeight = currentState.height;
+               updateMotionPlannerDesired(SystemState.IN_SCORING_POSITION, currentState);
+               mCommand.openLoopElevator = false;
+               return SystemState.MOVING;
+           default:
+               return SystemState.JOGGING;
+       }
+    }
+    private void getJoggingCommandedState() {
+        mCommand.wristAngle = mDesiredEndState.angle;
+        mCommand.openLoopElevator = true;
+        mCommand.openLoopElevatorPercent = mJogPercent;
     }
 }

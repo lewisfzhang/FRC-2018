@@ -7,6 +7,7 @@ import com.team254.frc2018.planners.SuperstructureMotionPlanner;
 import com.team254.frc2018.statemachines.IntakeStateMachine;
 import com.team254.frc2018.statemachines.SuperstructureStateMachine;
 import com.team254.frc2018.states.IntakeState;
+import com.team254.frc2018.states.SuperstructureCommand;
 import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.frc2018.states.SuperstructureState;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -76,9 +77,13 @@ public class Superstructure extends Subsystem {
     }
 
     // Update subsystems from planner
-    synchronized void setFromCommandState(SuperstructureState commandState) {
-        mElevator.setClosedLoopPosition(commandState.height);
-        mWrist.setClosedLoopAngle(commandState.angle);
+    synchronized void setFromCommandState(SuperstructureCommand commandState) {
+        if (commandState.openLoopElevator) {
+            mElevator.setOpenLoop(commandState.openLoopElevatorPercent);
+        } else {
+            mElevator.setClosedLoopPosition(commandState.height);
+        }
+        mWrist.setClosedLoopAngle(commandState.wristAngle);
 
         mIntake.setState(commandState.intakeAction);
     }
@@ -86,6 +91,8 @@ public class Superstructure extends Subsystem {
     @Override
     public void registerEnabledLoops(Looper enabledLooper) {
         enabledLooper.register(new Loop() {
+            private SuperstructureCommand mCommand;
+
             @Override
             public void onStart(double timestamp) {
             }
@@ -94,9 +101,8 @@ public class Superstructure extends Subsystem {
             public void onLoop(double timestamp) {
                 synchronized (Superstructure.this) {
                     updateObservedState(mState);
-                    SuperstructureState commandState =
-                            mStateMachine.update(timestamp, mWantedAction, mState);
-                    setFromCommandState(commandState);
+                    mCommand = mStateMachine.update(timestamp, mWantedAction, mState);
+                    setFromCommandState(mCommand);
                 }
             }
 
@@ -124,9 +130,14 @@ public class Superstructure extends Subsystem {
         mWantedAction = SuperstructureStateMachine.WantedAction.GOTO_SCORE_POSITION;
     }
 
-    public synchronized void setJogPosition(double amount) {
-        mStateMachine.setScoringHeight(mState.height + amount);
-        mWantedAction = SuperstructureStateMachine.WantedAction.GOTO_SCORE_POSITION;
+    public synchronized void setJogUp() {
+        mStateMachine.setJogPercentage(SuperstructureConstants.kJogUpPercent);
+        mWantedAction = SuperstructureStateMachine.WantedAction.JOG;
+    }
+
+    public synchronized void setJogDown() {
+        mStateMachine.setJogPercentage(SuperstructureConstants.kJogDownPercent);
+        mWantedAction = SuperstructureStateMachine.WantedAction.JOG;
     }
 
     public synchronized void setWantedAction(SuperstructureStateMachine.WantedAction wantedAction) {

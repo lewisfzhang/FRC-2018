@@ -196,9 +196,9 @@ public class Robot extends IterativeRobot {
                             SuperstructureConstants.ScoringPositionID.SCALE_LOW);
                 }
             } else if (mControlBoard.getJogElevatorDown()) {
-                mSuperstructure.setJogPosition(-5.0);
+                mSuperstructure.setJogDown();
             } else if (mControlBoard.getJogElevatorUp()) {
-                mSuperstructure.setJogPosition(5.0);
+                mSuperstructure.setJogUp();
             } else if (mControlBoard.getArmIn()) {
                 mSuperstructure.setArmIn();
             } else if (mControlBoard.getStow()) {
