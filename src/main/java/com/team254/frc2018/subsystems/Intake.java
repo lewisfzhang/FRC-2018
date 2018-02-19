@@ -48,13 +48,13 @@ public class Intake extends Subsystem {
 
         mLeftMaster = TalonSRXFactory.createDefaultTalon(Constants.kIntakeLeftMasterId);
         mLeftMaster.set(ControlMode.PercentOutput, 0);
-        mLeftMaster.setInverted(false);
+        mLeftMaster.setInverted(true);
         mLeftMaster.configVoltageCompSaturation(12.0, Constants.kLongCANTimeoutMs);
         mLeftMaster.enableVoltageCompensation(true);
 
         mRightMaster = TalonSRXFactory.createDefaultTalon(Constants.kIntakeRightMasterId);
         mRightMaster.set(ControlMode.PercentOutput, 0);
-        mRightMaster.setInverted(true);
+        mRightMaster.setInverted(false);
         mRightMaster.configVoltageCompSaturation(12.0, Constants.kLongCANTimeoutMs);
         mRightMaster.enableVoltageCompensation(true);
 
