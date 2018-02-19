@@ -22,7 +22,7 @@ public class CheesyDriveHelper {
     private static final double kLowNegInertiaCloseScalar = 4.0;
     private static final double kLowNegInertiaFarScalar = 5.0;
 
-    private static final double kHighSensitivity = 0.95;
+    private static final double kHighSensitivity = 0.75;
     private static final double kLowSensitiity = 1.3;
 
     private static final double kQuickStopDeadband = 0.2;
