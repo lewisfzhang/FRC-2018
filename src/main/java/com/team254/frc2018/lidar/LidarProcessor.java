@@ -1,9 +1,17 @@
 package com.team254.frc2018.lidar;
 
 import com.team254.frc2018.Constants;
+import com.team254.frc2018.RobotState;
+import com.team254.frc2018.lidar.icp.ICP;
+import com.team254.frc2018.lidar.icp.Point;
+import com.team254.frc2018.lidar.icp.ReferenceModel;
+import com.team254.frc2018.lidar.icp.Transform;
 import com.team254.frc2018.loops.Loop;
+import com.team254.lib.geometry.Pose2d;
+import com.team254.lib.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Timer;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 
 /**
@@ -12,9 +20,6 @@ import java.util.LinkedList;
  */
 public class LidarProcessor implements Loop {
     private static LidarProcessor mInstance = null;
-    private LidarServer mLidarServer = LidarServer.getInstance();
-    private LinkedList<LidarScan> mScans = new LinkedList<>();
-    private double prev_timestamp = Double.MAX_VALUE;
 
     public static LidarProcessor getInstance() {
         if (mInstance == null) {
@@ -22,6 +27,14 @@ public class LidarProcessor implements Loop {
         }
         return mInstance;
     }
+
+    private LidarServer mLidarServer = LidarServer.getInstance();
+    private RobotState mRobotState = RobotState.getInstance();
+
+    private LinkedList<LidarScan> mScans = new LinkedList<>();
+    private double prev_timestamp = Double.MAX_VALUE;
+
+    private ICP icp = new ICP(ReferenceModel.TOWER, 100);
 
     public LidarProcessor() {
         mScans.add(new LidarScan());
@@ -44,9 +57,10 @@ public class LidarProcessor implements Loop {
                 mScans.removeFirst();
             }
         }
-
-        if (point.toCartesian() != null) {
-            mScans.getLast().addPoint(point);
+        
+        Translation2d cartesian = point.toCartesian();
+        if (cartesian != null) {
+            getCurrentScan().addPoint(new Point(cartesian), point.timestamp);
         }
     }
 
@@ -59,7 +73,34 @@ public class LidarProcessor implements Loop {
     }
 
     public LidarScan getLatestCompleteScan() {
-        return mScans.get(mScans.size() > 1 ? mScans.size() - 2 : 0);
+        return mScans.size() > 1? mScans.get(mScans.size() - 2) : null;
+    }
+
+    public Iterable<Point> getAllPoints() {
+        return () -> {
+            return new Iterator<Point>() {
+                Iterator<LidarScan> scanIt = mScans.iterator();
+                Iterator<Point> pointIt = null;
+                
+                @Override
+                public Point next() {
+                    while (pointIt == null || !pointIt.hasNext()) {
+                        pointIt = scanIt.next().getPoints().iterator();
+                    }
+                    return pointIt.next();
+                }
+                
+                @Override
+                public boolean hasNext() {
+                    return scanIt.hasNext() || pointIt.hasNext();
+                }
+            };
+        };
+    }
+
+    public Pose2d doICP() {
+        Pose2d guess = mRobotState.getFieldToLidar(getCurrentScan().getTimestamp());
+        return icp.doICP(getAllPoints(), new Transform(guess)).toPose2d();
     }
 
     @Override

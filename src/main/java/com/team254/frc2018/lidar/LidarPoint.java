@@ -11,11 +11,12 @@ import com.team254.lib.geometry.Translation2d;
  * Represents a single point from the lidar
  */
 class LidarPoint {
-    double timestamp;
-    double angle;
-    double distance;
+    public final double timestamp;
+    public final double angle;
+    public final double distance;
     private double excludeRectMinX, excludeRectMinY, excludeRectMaxX, excludeRectMaxY; // TODO set values
     private RobotState mRobotState = RobotState.getInstance();
+    
     private final static int MAX_ENTRIES = 10;
     private final static LinkedHashMap<Double, Pose2d> mRobotPoseMap = new LinkedHashMap<Double, Pose2d>() {
         @Override

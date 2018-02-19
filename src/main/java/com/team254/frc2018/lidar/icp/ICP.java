@@ -1,7 +1,5 @@
 package com.team254.frc2018.lidar.icp;
 
-import java.util.Collection;
-
 public class ICP {
     
     public static final double OUTLIER_THRESH = 300;
@@ -27,7 +25,7 @@ public class ICP {
      * @param trans An initial guess Transform (if null, the identity is used)
      * @return The computed Transform
      */
-    public Transform doICP(Collection<Point> points, Transform trans) {
+    public Transform doICP(Iterable<Point> points, Transform trans) {
         long startTime = System.nanoTime();
         
         trans = trans==null? new Transform() : trans.inverse();

@@ -4,9 +4,25 @@ import java.util.Collection;
 
 public class ReferenceModel {
     
-    public Segment[] segments;
+    public static final double IN_TO_MM = 25.4; // 1 inch = 25.4 millimeters
+    public static final double TOWER_WIDTH = 17 * IN_TO_MM;
+    public static final double TOWER_DEPTH = 21.5 * IN_TO_MM;
+    private static final Point TOWER00 = new Point(0, -TOWER_WIDTH/2);
+    private static final Point TOWER01 = new Point(0, +TOWER_WIDTH/2);
+    private static final Point TOWER10 = new Point(TOWER_DEPTH, -TOWER_WIDTH/2);
+    private static final Point TOWER11 = new Point(TOWER_DEPTH, +TOWER_WIDTH/2);
+    
+    public static final ReferenceModel TOWER = new ReferenceModel(
+        new Segment(TOWER00, TOWER10), // bottom (-Y) face
+        new Segment(TOWER00, TOWER01), // front face
+        new Segment(TOWER01, TOWER11)  // top (+Y) face
+    );
+    
+    
+    public final Segment[] segments;
     
     public ReferenceModel(Segment... ss) {
+        if (ss.length == 0) throw new IllegalArgumentException("zero Segments passed to ReferenceModel");
         segments = ss;
     }
     
@@ -25,6 +41,14 @@ public class ReferenceModel {
             }
         }
         return minSeg.getClosestPoint(p);
+    }
+    
+    public String toString() {
+        String str = "[";
+        for (Segment s : segments) {
+            str += "\n  "+s;
+        }
+        return str+"\n]";
     }
     
 }

@@ -1,5 +1,6 @@
 package com.team254.frc2018.lidar.icp;
 
+import java.util.Arrays;
 import java.util.Collection;
 
 public class Line {
@@ -23,6 +24,10 @@ public class Line {
         this.y0 = y0;
         
         r = vy*x0 - vx*y0;
+    }
+    
+    public Line(Point p0, Point p1) {
+        this(p1.x-p0.x, p1.y-p0.y, p0.x, p0.y);
     }
     
     public static Line getFitLine(Collection<Point> points) {
@@ -52,9 +57,7 @@ public class Line {
         double vy = dsxy + Math.sqrt(dsxy*dsxy + 4*sxy*sxy);
         double vx = 2*sxy;
         double mag = Math.hypot(vx, vy);
-        vx /= mag;
-        vy /= mag;
-        double r = vy*xMean - vx*yMean;
+        double r = (vy*xMean - vx*yMean) / mag;
         return new Line(vx, vy, r);
     }
     
@@ -82,6 +85,10 @@ public class Line {
     
     public Point getPoint(double t) {
         return new Point(x0 + vx*t, y0 + vy*t);
+    }
+    
+    public String toString() {
+        return Arrays.toString(new double[] {vx, vy, r, x0, y0});
     }
     
 }
