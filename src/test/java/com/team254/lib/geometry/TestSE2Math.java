@@ -130,12 +130,6 @@ public class TestSE2Math {
         assertEquals(0, pos1.y(), kTestEpsilon);
         assertEquals(0, pos1.norm(), kTestEpsilon);
 
-        pos1.setX(3);
-        pos1.setY(4);
-        assertEquals(3, pos1.x(), kTestEpsilon);
-        assertEquals(4, pos1.y(), kTestEpsilon);
-        assertEquals(5, pos1.norm(), kTestEpsilon);
-
         pos1 = new Translation2d(3, 4);
         assertEquals(3, pos1.x(), kTestEpsilon);
         assertEquals(4, pos1.y(), kTestEpsilon);

@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 public class IntegrationTest {
 
     @Test
-    public void test() {
+    public void testFollowerTrajectoryGenerator() {
         // Specify desired waypoints.
         List<Translation2d> waypoints = Arrays.asList(
                 new Translation2d(0.0, 0.0),
@@ -35,6 +35,11 @@ public class IntegrationTest {
         System.out.println(smooth_path.toCSV());
 
         // Time parameterize the path subject to our dynamic constraints.
+        // TODO
+    }
+
+    @Test
+    public void testSplineTrajectoryGenerator() {
         // TODO
     }
 

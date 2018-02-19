@@ -4,23 +4,22 @@ import com.ctre.phoenix.CANifier;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.team254.frc2018.Constants;
+import com.team254.frc2018.ControlBoard;
 import com.team254.frc2018.loops.Loop;
 import com.team254.frc2018.loops.Looper;
+import com.team254.frc2018.statemachines.IntakeStateMachine;
+import com.team254.frc2018.states.IntakeState;
 import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.lib.drivers.TalonSRXFactory;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Intake extends Subsystem {
-    private final static boolean kClosed = true;
-    private final static boolean kClamped = true;
-    private final static double kActuationTime = 0.25;
-    private final static double kShootSetpoint = 1.0;
-    private final static double kIntakeSetpoint = -1.0;
-    private final static double kHoldSetpoint = -0.05;
-    private final static double kShootTime = 0.25;
+    private final static boolean kClosed = false;
+    private final static boolean kClamped = false;
 
     private static Intake mInstance;
 
@@ -31,38 +30,17 @@ public class Intake extends Subsystem {
         return mInstance;
     }
 
-    public enum WantedState {
-        IDLE,
-        INTAKE,
-        SHOOT,
-        PLACE
-    }
-
-    private enum SystemState {
-        IDLE,
-        INTAKING,
-        CLAMPING,
-        HOLDING,
-        SHOOTING,
-        PLACING
-    }
-
-    public enum JawState {
-        OPEN,
-        CLOSED,
-        CLAMPED
-    }
-
-    private final Solenoid mCloseSolenoid, mClampSolenoid;//open->false, false; close->true, false; clamp->true, true;
+    private final Solenoid mCloseSolenoid, mClampSolenoid; //open->false, false; close->true, false; clamp->true, true;
     private final TalonSRX mLeftMaster, mRightMaster;
     private final DigitalInput mLeftBanner, mRightBanner;
 
     public static CANifier canifier = new CANifier(0);
 
-    private WantedState mWantedState;
-    private SystemState mSystemState;
-    private JawState mJawState;
-    private Wrist mWrist;
+    private IntakeStateMachine.WantedAction mWantedAction = IntakeStateMachine.WantedAction.IDLE;
+    private IntakeState.JawState mJawState;
+
+    private IntakeState mCurrentState = new IntakeState();
+    private IntakeStateMachine mStateMachine = new IntakeStateMachine();
 
     private Intake() {
         mCloseSolenoid = Constants.makeSolenoidForId(Constants.kIntakeCloseSolenoid);
@@ -71,19 +49,24 @@ public class Intake extends Subsystem {
         mLeftMaster = TalonSRXFactory.createDefaultTalon(Constants.kIntakeLeftMasterId);
         mLeftMaster.set(ControlMode.PercentOutput, 0);
         mLeftMaster.setInverted(false);
+        mLeftMaster.configVoltageCompSaturation(12.0, Constants.kLongCANTimeoutMs);
+        mLeftMaster.enableVoltageCompensation(true);
 
         mRightMaster = TalonSRXFactory.createDefaultTalon(Constants.kIntakeRightMasterId);
         mRightMaster.set(ControlMode.PercentOutput, 0);
         mRightMaster.setInverted(true);
+        mRightMaster.configVoltageCompSaturation(12.0, Constants.kLongCANTimeoutMs);
+        mRightMaster.enableVoltageCompensation(true);
 
         mLeftBanner = new DigitalInput(Constants.kIntakeLeftBannerId);
         mRightBanner = new DigitalInput(Constants.kIntakeRightBannerId);
 
-        mWrist = Wrist.getInstance();
     }
 
     @Override
     public void outputToSmartDashboard() {
+        SmartDashboard.putBoolean("LeftBanner", getLeftBannerSensor());
+        SmartDashboard.putBoolean("RightBanner", getRightBannerSensor());
     }
 
     @Override
@@ -94,65 +77,36 @@ public class Intake extends Subsystem {
     public void zeroSensors() {
     }
 
+    public IntakeState getCurrentState() {
+        mCurrentState.leftCubeSensorTriggered = getLeftBannerSensor();
+        mCurrentState.rightCubeSensorTriggered = getRightBannerSensor();
+        mCurrentState.wristAngle = Wrist.getInstance().getAngle(); // this is a hack
+        return mCurrentState;
+    }
+
     @Override
     public void registerEnabledLoops(Looper enabledLooper) {
         Loop loop = new Loop() {
-            private double mCurrentStateStartTime;
+
 
             @Override
             public void onStart(double timestamp) {
-                synchronized (Intake.this) {
-                    mSystemState = SystemState.IDLE;
-                    mWantedState = WantedState.IDLE;
-                    mJawState = null; //force a state change on start
-                }
-                mCurrentStateStartTime = Timer.getFPGATimestamp();
+
             }
 
             @Override
             public void onLoop(double timestamp) {
 
                 synchronized (Intake.this) {
-                    SystemState newState;
-                    double timeInState = Timer.getFPGATimestamp() - mCurrentStateStartTime;
-                    switch (mSystemState) {
-                        case IDLE:
-                            newState = handleIdle();
-                            break;
-                        case INTAKING:
-                            newState = handleIntaking();
-                            break;
-                        case CLAMPING:
-                            newState = handleClamping(timeInState);
-                            break;
-                        case HOLDING:
-                            newState = handleHolding();
-                            break;
-                        case SHOOTING:
-                            newState = handleShooting(timeInState);
-                            break;
-                        case PLACING:
-                            newState = handlePlacing(timeInState);
-                            break;
-                        default:
-                            System.out.println("Unexpected intake system state: " + mSystemState);
-                            newState = mSystemState;
-                            break;
-                    }
-
-                    if (newState != mSystemState) {
-                        System.out.println(timestamp + ": Changed state: " + mSystemState + " -> " + newState);
-                        mSystemState = newState;
-                        mCurrentStateStartTime = Timer.getFPGATimestamp();
-                    }
+                    IntakeState newState = mStateMachine.update(Timer.getFPGATimestamp(), mWantedAction, getCurrentState());
+                    updateActuatorFromState(newState);
                 }
 
             }
 
             @Override
             public void onStop(double timestamp) {
-                mWantedState = WantedState.IDLE;
-                mSystemState = SystemState.IDLE;
+                mWantedAction = IntakeStateMachine.WantedAction.IDLE;
                 // Set the states to what the robot falls into when disabled.
                 stop();
             }
@@ -160,98 +114,12 @@ public class Intake extends Subsystem {
         enabledLooper.register(loop);
     }
 
-    private synchronized SystemState handleIdle() {
-        setPower(0);
-        setJaw(JawState.CLOSED);
-
-        switch (mWantedState) {
-            case INTAKE:
-                return SystemState.INTAKING;
-            default:
-                return SystemState.IDLE;
-        }
-    }
-
-    private synchronized SystemState handleIntaking() {
-        setPower(kIntakeSetpoint);
-        setJaw(JawState.CLOSED);
-
-        if (seesCube()) {
-            return SystemState.CLAMPING;
-        }
-
-        switch (mWantedState) {
-            case IDLE:
-                return SystemState.IDLE;
-            default:
-                return SystemState.INTAKING;
-        }
-    }
-
-    private synchronized SystemState handleClamping(double timeInState) {
-        setPower(kIntakeSetpoint);
-        setJaw(JawState.CLAMPED);
-
-        if (seesCube()) {
-            if (timeInState > kActuationTime) {
-                return SystemState.HOLDING;
-            } else {
-                return SystemState.CLAMPING;
-            }
-        } else {
-            return SystemState.IDLE;
-        }
-    }
-
-    private synchronized SystemState handleHolding() {
-        setPower(kHoldSetpoint);
-        setJaw(JawState.CLAMPED);
-
-        if (!seesCube()) {
-            return SystemState.IDLE;
-        }
-
-        switch (mWantedState) {
-            case SHOOT:
-                return SystemState.SHOOTING;
-            case PLACE:
-                if (mWrist.getAngle() < SuperstructureConstants.kAlwaysNeedsJawClampMinAngle) { //don't kill the
-                    // elevator
-                    DriverStation.reportError("Can't open the jaw when the wrist is at that angle", false);
-                    return SystemState.HOLDING;
-                } else {
-                    return SystemState.PLACING;
-                }
-            default:
-                return SystemState.HOLDING;
-        }
-    }
-
-    private synchronized SystemState handleShooting(double timeInState) {
-        setPower(kShootSetpoint);
-        setJaw(JawState.CLAMPED);
-
-        if (timeInState > kShootTime) {
-            return SystemState.IDLE;
-        } else {
-            return SystemState.SHOOTING;
-        }
-    }
-
-    private synchronized SystemState handlePlacing(double timeInState) {
-        if (timeInState > kActuationTime) {
-            return SystemState.IDLE;
-        } else {
-            return SystemState.PLACING;
-        }
-    }
-
     public void setPower(double output) {
         mLeftMaster.set(ControlMode.PercentOutput, output);
         mRightMaster.set(ControlMode.PercentOutput, output);
     }
 
-    private void setJaw(JawState state) {
+    public void setJaw(IntakeState.JawState state) {
         if (mJawState == state) {
             return;
         }
@@ -272,20 +140,30 @@ public class Intake extends Subsystem {
         }
     }
 
-    private boolean seesCube() {
-        return mLeftBanner.get() && mRightBanner.get();
+    private synchronized void updateActuatorFromState(IntakeState state) {
+        mLeftMaster.set(ControlMode.PercentOutput, state.leftMotor);
+        mRightMaster.set(ControlMode.PercentOutput, state.rightMotor);
+        setJaw(state.jawState);
     }
 
-    public boolean hasCube() {
-        return mSystemState == SystemState.HOLDING;
+    public boolean getLeftBannerSensor() {
+        return !canifier.getGeneralInput(CANifier.GeneralPin.LIMF);
     }
 
-    public JawState getJawState() {
+    public boolean getRightBannerSensor() {
+        return !canifier.getGeneralInput(CANifier.GeneralPin.LIMR);
+    }
+
+    public synchronized boolean hasCube() {
+        return mStateMachine.hasCubeClamped();
+    }
+
+    public IntakeState.JawState getJawState() {
         return mJawState;
     }
 
-    public void setState(WantedState wantedState) {
-        mWantedState = wantedState;
+    public void setState(IntakeStateMachine.WantedAction wantedAction) {
+        mWantedAction = wantedAction;
     }
 
     @Override

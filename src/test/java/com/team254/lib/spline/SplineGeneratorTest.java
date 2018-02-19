@@ -1,9 +1,6 @@
 package com.team254.lib.spline;
 
-import com.team254.lib.geometry.Pose2d;
-import com.team254.lib.geometry.Rotation2d;
-import com.team254.lib.geometry.Translation2d;
-import com.team254.lib.geometry.Twist2d;
+import com.team254.lib.geometry.*;
 import com.team254.lib.util.Util;
 import org.junit.jupiter.api.Test;
 
@@ -21,18 +18,19 @@ public class SplineGeneratorTest {
         Pose2d p2 = new Pose2d(new Translation2d(15, 10), new Rotation2d(1, -5, true));
         Spline s = new CubicHermiteSpline(p1, p2);
 
-        List<Twist2d> arcs = SplineGenerator.parametrizeSpline(s);
+        List<Pose2dWithCurvature> samples = SplineGenerator.parameterizeSpline(s);
 
         double arclength = 0;
-        Pose2d finalPose = new Pose2d(p1);
-        for (Twist2d t : arcs) {
-            finalPose = finalPose.transformBy(Pose2d.exp(t));
+        Pose2dWithCurvature cur_pose = samples.get(0);
+        for (Pose2dWithCurvature sample : samples) {
+            final Twist2d t = Pose2d.log(cur_pose.getPose().inverse().transformBy(sample.getPose()));
             arclength += t.dx;
+            cur_pose = sample;
         }
 
-        assertEquals(finalPose.getTranslation().x(), 15.0, kTestEpsilon);
-        assertEquals(finalPose.getTranslation().y(), 10.000000000001135, kTestEpsilon);
-        assertEquals(finalPose.getRotation().getDegrees(), -78.69006752597981, kTestEpsilon);
+        assertEquals(cur_pose.getTranslation().x(), 15.0, kTestEpsilon);
+        assertEquals(cur_pose.getTranslation().y(), 10.0, kTestEpsilon);
+        assertEquals(cur_pose.getRotation().getDegrees(), -78.69006752597981, kTestEpsilon);
         assertEquals(arclength, 24.136686154402014, kTestEpsilon);
     }
 }

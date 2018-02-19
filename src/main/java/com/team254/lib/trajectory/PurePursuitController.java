@@ -51,10 +51,10 @@ public class PurePursuitController<S extends ITranslation2d<S>> implements IPath
         }
     }
 
-    protected TrajectoryIterator<S> iterator_;
-    protected double sampling_dist_;
-    protected double lookahead_;
-    protected double goal_tolerance_;
+    protected final TrajectoryIterator<S> iterator_;
+    protected final double sampling_dist_;
+    protected final double lookahead_;
+    protected final double goal_tolerance_;
     protected boolean done_ = false;
 
     public PurePursuitController(final DistanceView<S> path, double sampling_dist, double lookahead,

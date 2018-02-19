@@ -7,9 +7,9 @@ import com.team254.lib.geometry.Translation2d;
 /**
  * Temporary spline for testing
  */
-public class CubicHermiteSpline implements Spline {
-    double ax, bx, cx, dx, ay, by, cy, dy;
-    ReferenceFrame mReferenceFrame;
+public class CubicHermiteSpline extends Spline {
+    private final double ax, bx, cx, dx, ay, by, cy, dy;
+    private final ReferenceFrame mReferenceFrame;
 
     public CubicHermiteSpline(Pose2d p0, Pose2d p1) {
         this(p0, p1, ReferenceFrame.NONE);
@@ -39,15 +39,24 @@ public class CubicHermiteSpline implements Spline {
 
     @Override
     public Translation2d getPoint(double t) {
-        double x = t * t * t * ax + t * t * bx + t * cx + dx;
-        double y = t * t * t * ay + t * t * by + t * cy + dy;
+        final double x = t * t * t * ax + t * t * bx + t * cx + dx;
+        final double y = t * t * t * ay + t * t * by + t * cy + dy;
         return new Translation2d(x, y);
     }
 
     @Override
     public Rotation2d getHeading(double t) {
-        double dx = 3 * t * t * ax + 2 * t * bx + cx;
-        double dy = 3 * t * t * ay + 2 * t * by + cy;
+        final double dx = 3 * t * t * ax + 2 * t * bx + cx;
+        final double dy = 3 * t * t * ay + 2 * t * by + cy;
         return new Rotation2d(dx, dy, true);
+    }
+
+    @Override
+    public double getCurvature(double t) {
+        final double dx = 3 * t * t * ax + 2 * t * bx + cx;
+        final double dy = 3 * t * t * ay + 2 * t * by + cy;
+        final double ddx = 6 * t * ax + 2 * bx;
+        final double ddy = 6 * t * ay + 2 * by;
+        return (dx*ddy - dy*ddx) / ((dx*dx + dy*dy) * Math.sqrt(dx*dx + dy*dy));
     }
 }

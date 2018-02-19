@@ -5,9 +5,9 @@ import com.team254.lib.trajectory.timing.TimedState;
 import com.team254.lib.util.Util;
 
 public class TimedView<S extends State<S>> implements TrajectoryView<TimedState<S>> {
-    protected Trajectory<TimedState<S>> trajectory_;
-    protected double start_t_;
-    protected double end_t_;
+    protected final Trajectory<TimedState<S>> trajectory_;
+    protected final double start_t_;
+    protected final double end_t_;
 
     public TimedView(Trajectory<TimedState<S>> trajectory) {
         trajectory_ = trajectory;

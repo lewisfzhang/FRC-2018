@@ -1,11 +1,12 @@
 package com.team254.frc2018;
 
+import com.team254.frc2018.auto.AutoModeExecuter;
+import com.team254.frc2018.auto.modes.CharacterizeDrivetrainMode;
 import com.team254.frc2018.loops.Looper;
 import com.team254.frc2018.loops.RobotStateEstimator;
-import com.team254.frc2018.subsystems.Drive;
-import com.team254.frc2018.subsystems.FollowerWheels;
-import com.team254.frc2018.subsystems.Intake;
-import com.team254.frc2018.subsystems.Wrist;
+import com.team254.frc2018.statemachines.SuperstructureStateMachine;
+import com.team254.frc2018.states.SuperstructureConstants;
+import com.team254.frc2018.subsystems.*;
 import com.team254.lib.geometry.Pose2d;
 import com.team254.lib.util.CheesyDriveHelper;
 import com.team254.lib.util.CrashTracker;
@@ -23,13 +24,16 @@ public class Robot extends IterativeRobot {
     private final SubsystemManager mSubsystemManager = new SubsystemManager(
             Arrays.asList(
                     Drive.getInstance(),
-                    FollowerWheels.getInstance()
+                    FollowerWheels.getInstance(),
+                    Intake.getInstance(),
+                    Superstructure.getInstance()
             )
     );
 
     private Drive mDrive = Drive.getInstance();
     private Intake mIntake = Intake.getInstance();
     private Wrist mWrist = Wrist.getInstance();
+    private Superstructure mSuperstructure = Superstructure.getInstance();
 
     public Robot() {
         CrashTracker.logRobotConstruction();
@@ -42,6 +46,9 @@ public class Robot extends IterativeRobot {
 
             mSubsystemManager.registerEnabledLoops(mEnabledLooper);
             mEnabledLooper.register(RobotStateEstimator.getInstance());
+
+            Wrist.getInstance().zeroSensors();
+            Elevator.getInstance().zeroSensors();
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
             throw t;
@@ -74,6 +81,11 @@ public class Robot extends IterativeRobot {
             CrashTracker.logAutoInit();
 
             RobotState.getInstance().reset(Timer.getFPGATimestamp(), Pose2d.identity());
+
+
+            AutoModeExecuter mAutoModeExecuter = new AutoModeExecuter();
+            mAutoModeExecuter.setAutoMode(new CharacterizeDrivetrainMode());
+            mAutoModeExecuter.start();
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
             throw t;
@@ -145,10 +157,58 @@ public class Robot extends IterativeRobot {
                     !mControlBoard.getLowGear()));
             mDrive.setHighGear(!mControlBoard.getLowGear());
 
-            mIntake.setPower(mControlBoard.getIntakeTest() ? 1.0 : (mControlBoard.getReverseIntakeTest() ? -1.0 : 0.0));
-            mWrist.setOpenLoop(mControlBoard.getTestWristUp() ? 1 : (mControlBoard.getTestWristDown() ? -1 : 0.0));
+            if (mControlBoard.getScore()) {
+                mSuperstructure.setWantedAction(SuperstructureStateMachine.WantedAction.PLACE);
+            } else if (mControlBoard.getFarScore()) {
+                mSuperstructure.setWantedAction(SuperstructureStateMachine.WantedAction.SHOOT);
+            } else if (mControlBoard.getIntake()) {
+                mSuperstructure.setWantedAction(SuperstructureStateMachine.WantedAction.INTAKE);
+            } else if (mControlBoard.getSwitch()) {
+                if (mControlBoard.getBackwardsModifier()) {
+                    mSuperstructure.setScoringPosition(
+                            SuperstructureConstants.ScoringPositionID.SWITCH_BACKWARDS);
+                } else {
+                    mSuperstructure.setScoringPosition(
+                            SuperstructureConstants.ScoringPositionID.SWITCH);
+                }
+            } else if (mControlBoard.getHighScale()) {
+                if (mControlBoard.getBackwardsModifier()) {
+                    mSuperstructure.setScoringPosition(
+                            SuperstructureConstants.ScoringPositionID.SCALE_HIGH_BACKWARDS);
+                } else {
+                    mSuperstructure.setScoringPosition(
+                            SuperstructureConstants.ScoringPositionID.SCALE_HIGH);
+                }
+            } else if (mControlBoard.getNeutralScale()) {
+                if (mControlBoard.getBackwardsModifier()) {
+                    mSuperstructure.setScoringPosition(
+                            SuperstructureConstants.ScoringPositionID.SCALE_NEUTRAL_BACKWARDS);
+                } else {
+                    mSuperstructure.setScoringPosition(
+                            SuperstructureConstants.ScoringPositionID.SCALE_NEUTRAL);
+                }
+            } else if (mControlBoard.getLowScale()) {
+                if (mControlBoard.getBackwardsModifier()) {
+                    mSuperstructure.setScoringPosition(
+                            SuperstructureConstants.ScoringPositionID.SCALE_LOW_BACKWARDS);
+                } else {
+                    mSuperstructure.setScoringPosition(
+                            SuperstructureConstants.ScoringPositionID.SCALE_LOW);
+                }
+            } else if (mControlBoard.getJogElevatorDown()) {
+                mSuperstructure.setJogPosition(-5.0);
+            } else if (mControlBoard.getJogElevatorUp()) {
+                mSuperstructure.setJogPosition(5.0);
+            } else if (mControlBoard.getArmIn()) {
+                mSuperstructure.setArmIn();
+            } else if (mControlBoard.getStow()) {
+                mSuperstructure.setWantedAction(SuperstructureStateMachine.WantedAction.STOW);
+            } else {
+                mSuperstructure.setWantedAction(SuperstructureStateMachine.WantedAction.IDLE);
+            }
 
-                    outputToSmartDashboard();
+
+            outputToSmartDashboard();
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
             throw t;
@@ -166,5 +226,6 @@ public class Robot extends IterativeRobot {
         Drive.getInstance().outputToSmartDashboard();
         Wrist.getInstance().outputToSmartDashboard();
         Intake.getInstance().outputToSmartDashboard();
+        Elevator.getInstance().outputToSmartDashboard();
     }
 }

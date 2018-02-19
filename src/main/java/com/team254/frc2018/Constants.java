@@ -73,23 +73,25 @@ public class Constants {
     // PID gains for elevator velocity loop (HIGH GEAR)
     // Units: setpoint, error, and output are in native units per 100ms.
     // Elevator encoder is CTRE mag encoder which is 4096 native units per revolution.
-    public static final double kElevatorHighGearKp = 0.0;
+    public static final double kElevatorHighGearKp =  0.18;//0.15;
     public static final double kElevatorHighGearKi = 0.0;
-    public static final double kElevatorHighGearKd = 0.0;
-    public static final double kElevatorHighGearKf = 0.0;
+    public static final double kElevatorHighGearKd = 0; //0.1;
+    public static final double kElevatorHighGearKf = 0.082; // lower speed:  0.08;
+    public static final int kElevatorHighGearMaxIntegralAccumulator = 500000; //todo: tune me
     public static final int kElevatorHighGearIZone = 0;
-    public static final double kElevatorHighGearCruiseVelocity = 0.0;
-    public static final double kElevatorHighGearAcceleration = 0.0;
+    public static final int kElevatorHighGearDeadband = 0;
+    public static final int kElevatorHighGearCruiseVelocity = 12500;
+    public static final int kElevatorHighGearAcceleration = 33000;//33000;
 
-    public static final double kWristKp = 0.0; //todo: tune me
+    public static final double kWristKp = 1.7; //todo: tune me
     public static final double kWristKi = 0.0; //todo: tune me
-    public static final double kWristKd = 0.0; //todo: tune me
-    public static final double kWristKf = 1.0; //todo: tune me
+    public static final double kWristKd = 40.0; //todo: tune me
+    public static final double kWristKf = 1.7; //todo: tune me
     public static final int kWristMaxIntegralAccumulator = 500000; //todo: tune me
     public static final int kWristIZone = 500; //todo: tune me
     public static final int kWristDeadband = 25; //todo: tune me
-    public static final int kWristCruiseVelocity = 400; //todo: tune me
-    public static final int kWristAcceleration = 600; //todo: tune me
+    public static final int kWristCruiseVelocity = 650; //todo: tune me
+    public static final int kWristAcceleration = 700; //todo: tune me
 
     // Do not change anything after this line unless you rewire the robot and
     // update the spreadsheet!
@@ -135,8 +137,8 @@ public class Constants {
 
     // Solenoids
     public static final int kShifterSolenoidId = 12; // PCM 0, Solenoid 4
-    public static final int kIntakeCloseSolenoid = 1; //todo: get actual value
-    public static final int kIntakeClampSolenoid = 2; //todo: get actual value
+    public static final int kIntakeCloseSolenoid = 11; //todo: get actual value
+    public static final int kIntakeClampSolenoid = 10; //todo: get actual value
     public static final int kForkliftDeploySolenoid = 3; //todo: get actual value
 
     // Sensors

@@ -4,8 +4,8 @@ import com.team254.lib.geometry.State;
 import com.team254.lib.util.Util;
 
 public class DistanceView<S extends State<S>> implements TrajectoryView<S> {
-    protected Trajectory<S> trajectory_;
-    protected double[] distances_;
+    protected final Trajectory<S> trajectory_;
+    protected final double[] distances_;
 
     public DistanceView(final Trajectory<S> trajectory) {
         trajectory_ = trajectory;

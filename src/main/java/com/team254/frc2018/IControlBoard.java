@@ -1,6 +1,6 @@
 package com.team254.frc2018;
 
-public interface IControlBoard {
+interface IControlBoard {
     double getThrottle();
 
     double getTurn();
@@ -9,11 +9,33 @@ public interface IControlBoard {
 
     boolean getLowGear();
 
-    boolean getIntakeTest();
+    boolean getJogWristStow();
 
-    boolean getReverseIntakeTest();
+    boolean getJogWristExtend();
 
-    boolean getTestWristUp();
+    boolean getScore();
 
-    boolean getTestWristDown();
+    boolean getFarScore();
+
+    boolean getIntake();
+
+    boolean getBackwardsModifier();
+
+    boolean getHighScale();
+
+    boolean getSwitch();
+
+    boolean getStow();
+
+    boolean getArmIn();
+
+    boolean getNeutralScale();
+
+    boolean getJogElevatorUp();
+
+    boolean getExchange();
+
+    boolean getLowScale();
+
+    boolean getJogElevatorDown();
 }

@@ -1,12 +1,25 @@
 package com.team254.lib.spline;
 
+import com.team254.lib.geometry.Pose2d;
+import com.team254.lib.geometry.Pose2dWithCurvature;
 import com.team254.lib.geometry.Rotation2d;
 import com.team254.lib.geometry.Translation2d;
 
-public interface Spline {
-    public Translation2d getPoint(double t);
+public abstract class Spline {
+    public abstract Translation2d getPoint(double t);
 
-    public Rotation2d getHeading(double t);
+    public abstract Rotation2d getHeading(double t);
 
-    public String toString();
+    public abstract double getCurvature(double t);
+
+    public Pose2d getPose2d(double t) {
+        return new Pose2d(getPoint(t), getHeading(t));
+    }
+
+    public Pose2dWithCurvature getPose2dWithCurvature(double t) {
+        return new Pose2dWithCurvature(getPoint(t), getHeading(t), getCurvature(t));
+    }
+
+    // TODO add toString
+    // public abstract String toString();
 }
