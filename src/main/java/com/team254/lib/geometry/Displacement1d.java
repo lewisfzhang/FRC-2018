@@ -6,7 +6,7 @@ import java.text.DecimalFormat;
 
 public class Displacement1d implements State<Displacement1d> {
 
-    protected double displacement_;
+    protected final double displacement_;
 
     public Displacement1d() {
         displacement_ = 0.0;

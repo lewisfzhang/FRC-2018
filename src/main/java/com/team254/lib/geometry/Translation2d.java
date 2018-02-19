@@ -14,8 +14,8 @@ public class Translation2d implements ITranslation2d<Translation2d> {
         return kIdentity;
     }
 
-    protected double x_;
-    protected double y_;
+    protected final double x_;
+    protected final double y_;
 
     public Translation2d() {
         x_ = 0;
@@ -56,14 +56,6 @@ public class Translation2d implements ITranslation2d<Translation2d> {
 
     public double y() {
         return y_;
-    }
-
-    public void setX(double x) {
-        x_ = x;
-    }
-
-    public void setY(double y) {
-        y_ = y;
     }
 
     /**

@@ -18,18 +18,28 @@ public class Rotation2d implements IRotation2d<Rotation2d> {
         return kIdentity;
     }
 
-    protected double cos_angle_;
-    protected double sin_angle_;
+    protected final double cos_angle_;
+    protected final double sin_angle_;
 
     public Rotation2d() {
         this(1, 0, false);
     }
 
     public Rotation2d(double x, double y, boolean normalize) {
-        cos_angle_ = x;
-        sin_angle_ = y;
         if (normalize) {
-            normalize();
+            // From trig, we know that sin^2 + cos^2 == 1, but as we do math on this object we might accumulate rounding errors.
+            // Normalizing forces us to re-scale the sin and cos to reset rounding errors.
+            double magnitude = Math.hypot(x, y);
+            if (magnitude > kEpsilon) {
+                sin_angle_ = x / magnitude;
+                cos_angle_ = y / magnitude;
+            } else {
+                sin_angle_ = 0;
+                cos_angle_ = 1;
+            }
+        } else {
+            cos_angle_ = x;
+            sin_angle_ = y;
         }
     }
 
@@ -48,21 +58,6 @@ public class Rotation2d implements IRotation2d<Rotation2d> {
 
     public static Rotation2d fromDegrees(double angle_degrees) {
         return fromRadians(Math.toRadians(angle_degrees));
-    }
-
-    /**
-     * From trig, we know that sin^2 + cos^2 == 1, but as we do math on this object we might accumulate rounding errors.
-     * Normalizing forces us to re-scale the sin and cos to reset rounding errors.
-     */
-    public void normalize() {
-        double magnitude = Math.hypot(cos_angle_, sin_angle_);
-        if (magnitude > kEpsilon) {
-            sin_angle_ /= magnitude;
-            cos_angle_ /= magnitude;
-        } else {
-            sin_angle_ = 0;
-            cos_angle_ = 1;
-        }
     }
 
     public double cos() {

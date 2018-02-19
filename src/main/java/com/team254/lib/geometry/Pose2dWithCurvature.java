@@ -11,8 +11,8 @@ public class Pose2dWithCurvature implements IPose2d<Pose2dWithCurvature>, ICurva
         return kIdentity;
     }
 
-    protected Pose2d pose_;
-    protected double curvature_;
+    protected final Pose2d pose_;
+    protected final double curvature_;
 
     public Pose2dWithCurvature() {
         pose_ = new Pose2d();

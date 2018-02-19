@@ -16,8 +16,8 @@ public class Pose2d implements IPose2d<Pose2d> {
 
     private final static double kEps = 1E-9;
 
-    protected Translation2d translation_;
-    protected Rotation2d rotation_;
+    protected final Translation2d translation_;
+    protected final Rotation2d rotation_;
 
     public Pose2d() {
         translation_ = new Translation2d();
@@ -84,17 +84,9 @@ public class Pose2d implements IPose2d<Pose2d> {
         return translation_;
     }
 
-    public void setTranslation(final Translation2d translation) {
-        translation_ = translation;
-    }
-
     @Override
     public Rotation2d getRotation() {
         return rotation_;
-    }
-
-    public void setRotation(final Rotation2d rotation) {
-        rotation_ = rotation;
     }
 
     /**

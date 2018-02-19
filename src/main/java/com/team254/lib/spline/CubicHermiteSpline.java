@@ -8,8 +8,8 @@ import com.team254.lib.geometry.Translation2d;
  * Temporary spline for testing
  */
 public class CubicHermiteSpline extends Spline {
-    double ax, bx, cx, dx, ay, by, cy, dy;
-    ReferenceFrame mReferenceFrame;
+    private final double ax, bx, cx, dx, ay, by, cy, dy;
+    private final ReferenceFrame mReferenceFrame;
 
     public CubicHermiteSpline(Pose2d p0, Pose2d p1) {
         this(p0, p1, ReferenceFrame.NONE);
