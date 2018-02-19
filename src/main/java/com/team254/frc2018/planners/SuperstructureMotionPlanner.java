@@ -3,6 +3,7 @@ package com.team254.frc2018.planners;
 import com.team254.frc2018.Constants;
 import com.team254.frc2018.states.SuperstructureState;
 import com.team254.frc2018.states.SuperstructureConstants;
+import com.team254.frc2018.subsystems.Superstructure;
 import com.team254.lib.util.Util;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -24,6 +25,42 @@ public class SuperstructureMotionPlanner {
         }
     }
 
+    class WaitForWristSafeSubcommand extends SubCommand {
+        public WaitForWristSafeSubcommand(SuperstructureState endState) {
+            super(endState);
+            mWristThreshold = mWristThreshold + Math.max(0.0, mEndState.angle - SuperstructureConstants.kClearFirstStageMinWristAngle);
+        }
+
+        @Override
+        public boolean isFinished(SuperstructureState currentState) {
+            return mEndState.isInRange(currentState, Double.POSITIVE_INFINITY, mWristThreshold);
+        }
+    }
+
+    class WaitForElevatorSafeSubcommand extends SubCommand {
+        public WaitForElevatorSafeSubcommand(SuperstructureState endState) {
+            super(endState);
+            mHeightThreshold = mHeightThreshold + Math.max(0.0, mEndState.height - SuperstructureConstants.kClearFirstStageMaxHeight);
+        }
+
+        @Override
+        public boolean isFinished(SuperstructureState currentState) {
+            return mEndState.isInRange(currentState, mHeightThreshold, Double.POSITIVE_INFINITY);
+        }
+    }
+
+    class WaitForElevatorApproachingSubcommand extends SubCommand {
+        public WaitForElevatorApproachingSubcommand(SuperstructureState endState) {
+            super(endState);
+            mHeightThreshold = SuperstructureConstants.kElevatorApproachingThreshold;
+        }
+
+        @Override
+        public boolean isFinished(SuperstructureState currentState) {
+            return mEndState.isInRange(currentState, mHeightThreshold, Double.POSITIVE_INFINITY);
+        }
+    }
+
     protected SuperstructureState mCommandedState = new SuperstructureState();
     protected SuperstructureState mIntermediateCommandState = new SuperstructureState();
     protected LinkedList<SubCommand> mCommandQueue = new LinkedList<>();
@@ -32,7 +69,7 @@ public class SuperstructureMotionPlanner {
     public boolean setDesiredState(SuperstructureState desiredStateIn, SuperstructureState currentState) {
         SuperstructureState desiredState = new SuperstructureState(desiredStateIn);
 
-        // Limit stupid inputs
+        // Limit illegal inputs.
         desiredState.angle = Util.limit(desiredState.angle, SuperstructureConstants.kWristMinAngle,
                 SuperstructureConstants.kWristMaxAngle);
         desiredState.height = Util.limit(desiredState.height, SuperstructureConstants.kElevatorMinHeight,
@@ -41,64 +78,38 @@ public class SuperstructureMotionPlanner {
         SuperstructureState swapJaw = new SuperstructureState(currentState);
         swapJaw.jawClamped = desiredState.jawClamped;
 
-        // Immediate return, totally illegal commands
-        if (desiredState.inIllegalZone() || desiredState.inIllegalJawZone() || swapJaw.inIllegalJawZone()) { // if we
-            // cant move there ever
-            // return false, let the sender optionally deal with the error
+        // Immediate return, totally illegal commands.
+        if (desiredState.inIllegalZone() ||desiredState.inIllegalJawZone() || swapJaw.inIllegalJawZone()) {
+            // Desired state is not legal.  Return false, let the caller deal with it.
             return false;
         }
 
         // Everything beyond this is probably do-able; clear queue
         mCommandQueue.clear();
 
-        // The following are bad commands, but fixable. Massage them into legal-ness
-        boolean willEndClearingFirstStage = desiredState.height > SuperstructureConstants.kClearFirstStageMinHeight;
-        if (willEndClearingFirstStage && (desiredState.angle <= SuperstructureConstants
-                .kClearFirstStageMinWristAngle)) {
-            desiredState.angle = SuperstructureConstants.kClearFirstStageMinWristAngle;
+        final boolean longUpwardsMove = desiredState.height - currentState.height > SuperstructureConstants.kElevatorLongRaiseDistance;
+        final double firstWristAngle = longUpwardsMove ? Math.min(desiredState.angle, SuperstructureConstants.kStowedAngle) : desiredState.angle;
+
+        if (currentState.angle < SuperstructureConstants.kClearFirstStageMinWristAngle && desiredState.height > SuperstructureConstants.kClearFirstStageMaxHeight) {
+            // PRECONDITION: wrist is unsafe, want to go high
+            mCommandQueue.add(new WaitForWristSafeSubcommand(new SuperstructureState(SuperstructureConstants.kClearFirstStageMaxHeight, Math.max(SuperstructureConstants
+                    .kClearFirstStageMinWristAngle, firstWristAngle), true)));
+            // POSTCONDITION: wrist is safe (either at desired angle, or the cruise angle), elevator is as close as possible to goal.
+        } else if (desiredState.angle < SuperstructureConstants.kClearFirstStageMinWristAngle && currentState.height > SuperstructureConstants.kClearFirstStageMaxHeight) {
+            // PRECONDITION: wrist is safe, want to go low.
+            mCommandQueue.add(new WaitForElevatorSafeSubcommand(new SuperstructureState(desiredState.height, SuperstructureConstants
+                    .kClearFirstStageMinWristAngle, true)));
+            // POSTCONDITION: elevator is safe, wrist is as close as possible to goal.
         }
 
-        // Compute zone infraction states
-        boolean startingInCrossBarZone = currentState.height <= SuperstructureConstants.kIllegalCrossbarStowMaxHeight &&
-                currentState.height >= SuperstructureConstants.kIllegalCrossbarStowMinHeight;
-
-        boolean endingInCrossBarZone = desiredState.height <= SuperstructureConstants.kIllegalCrossbarStowMaxHeight &&
-                desiredState.height >= SuperstructureConstants.kIllegalCrossbarStowMinHeight;
-
-        boolean elevatorWillCrossThroughCrossBarZone = (currentState.height > SuperstructureConstants
-                .kIllegalCrossbarStowMaxHeight &&
-                desiredState.height < SuperstructureConstants.kIllegalCrossbarStowMaxHeight) ||
-                (currentState.height < SuperstructureConstants.kIllegalCrossbarStowMinHeight &&
-                        desiredState.height > SuperstructureConstants.kIllegalCrossbarStowMinHeight);
-
-        boolean movingFar = Math.abs(desiredState.height - currentState.height) > SuperstructureConstants
-                .kMinMovingFarDistance;
-
-        boolean wristWillCrossThroughCrossBarZone = currentState.angle < SuperstructureConstants
-                .kIllegalCrossbarStowMinAngle ||
-                desiredState.angle < SuperstructureConstants.kIllegalCrossbarStowMinAngle;
-
-        boolean willCrossThroughCrossBarZone = (elevatorWillCrossThroughCrossBarZone ||
-                endingInCrossBarZone ||
-                startingInCrossBarZone) && wristWillCrossThroughCrossBarZone;
-
-        // Break desired state into fixed movements
-        if (willCrossThroughCrossBarZone || movingFar) {  // Stow intake when we are making large movements or into a
-            // bad zone
-            // Stow wrist (and wait)
-            if (currentState.angle < Math.max(SuperstructureConstants.kClearFirstStageMinWristAngle,
-                    SuperstructureConstants.kAlwaysNeedsJawClampMinAngle)) {
-                mCommandQueue.add(new SubCommand(new SuperstructureState(currentState.height, SuperstructureConstants
-                        .kWristStowedPosition, true)));
-            }
-            // Move elevator
-            mCommandQueue.add(new SubCommand(new SuperstructureState(desiredState.height, SuperstructureConstants
-                    .kWristStowedPosition, true)));
-            // Move wrist to end state
-            mCommandQueue.add(new SubCommand(new SuperstructureState(desiredState.height, desiredState.angle, true)));
-        } else {
-            mCommandQueue.add(new SubCommand(desiredState));
+        if (longUpwardsMove) {
+            // PRECONDITION: wrist is safe, we are moving upwards.
+            mCommandQueue.add(new WaitForElevatorApproachingSubcommand(new SuperstructureState(desiredState.height, firstWristAngle, true)));
+            // POSTCONDITION: elevator is approaching final goal.
         }
+
+        // Go to the goal.
+        mCommandQueue.add(new SubCommand(desiredState));
 
         // Reset current command to start executing on next iteration
         mCurrentCommand = Optional.empty();

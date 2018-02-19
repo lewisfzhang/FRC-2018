@@ -11,16 +11,13 @@ public class SuperstructureConstants {
     public static final double kElevatorMinHeight = 4.9; // ?
     public static final double kWristStowedPosition = 90.0;
 
-    public static final double kMinMovingFarDistance = 35.0;
-
-    public static final double kIllegalCrossbarStowMinHeight = 30.5;
-    public static final double kIllegalCrossbarStowMaxHeight = 43.5;
-    public static final double kIllegalCrossbarStowMinAngle = 90.0;
-
-    public static final double kClearFirstStageMinHeight = 43.5;
+    public static final double kClearFirstStageMaxHeight = 33.0;
     public static final double kClearFirstStageMinWristAngle = 45.0;
 
     public static final double kAlwaysNeedsJawClampMinAngle = kClearFirstStageMinWristAngle;
+
+    public static final double kElevatorLongRaiseDistance = 24.0;
+    public static final double kElevatorApproachingThreshold = 12.0;
 
     public final static double kStowedAngle = 90.0;
     public final static double kStowedWithCubeAngle = 0.0;

@@ -38,9 +38,8 @@ public class SuperstructureState {
         double kAllowableWristAngleError = allowSmallErrors ? 5.5 : 0;
         double kAllowableElevatorHeightError = allowSmallErrors ? 1 : 0;
 
-        if (height >= SuperstructureConstants.kIllegalCrossbarStowMinHeight + kAllowableElevatorHeightError &&
-                height < SuperstructureConstants.kIllegalCrossbarStowMaxHeight - kAllowableElevatorHeightError &&
-                angle < SuperstructureConstants.kIllegalCrossbarStowMinAngle - kAllowableWristAngleError) {
+        if (height >= SuperstructureConstants.kClearFirstStageMaxHeight + kAllowableElevatorHeightError &&
+                angle < SuperstructureConstants.kClearFirstStageMinWristAngle - kAllowableWristAngleError) {
             return true;
         }
 
