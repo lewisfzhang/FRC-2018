@@ -27,6 +27,9 @@ public class SuperstructureConstants {
     public final static double kMinTimePlacing = 0.25;
     public final static double kMinTimeShooting = 0.25;
 
+    public final static double kEarlyIntakeStartHeight = 10.0;
+    public final static double kEarlyIntakeStartAngle = 135.0;
+
     public enum ScoringPositionID {
         SWITCH,
         SWITCH_BACKWARDS,
