@@ -129,8 +129,8 @@ public class Elevator extends Subsystem {
         mMaster.setNeutralMode(NeutralMode.Brake);
 
         // Re-zero on limit
-        // TODO: determine if we want this on?
-        // mMaster.configSetParameter(ParamEnum.eClearPositionOnLimitF, 1, 0, 0, 0);
+        mMaster.configSetParameter(
+                ParamEnum.eClearPositionOnLimitF, 1, 0, 0, 0);
 
         mRightSlave = TalonSRXFactory.createPermanentSlaveTalon(Constants.kElevatorRightSlaveId,
                 Constants.kElevatorMasterId);
