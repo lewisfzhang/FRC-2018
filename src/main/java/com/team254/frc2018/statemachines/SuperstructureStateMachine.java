@@ -70,6 +70,10 @@ public class SuperstructureStateMachine {
                 !Util.epsilonEquals(mDesiredEndState.height, mScoringHeight);
     }
 
+    private boolean placingLegal(SuperstructureState currentState) {
+        return currentState.angle > SuperstructureConstants.kPlacingMinAngle;
+    }
+
     public synchronized SuperstructureCommand update(double timestamp, WantedAction wantedAction,
                                                      SuperstructureState currentState) {
         synchronized (SuperstructureStateMachine.this) {
@@ -271,6 +275,19 @@ public class SuperstructureStateMachine {
                         mIntakeActionDuringMove = IntakeStateMachine.WantedAction.IDLE;
                     }
                     break;
+                case SHOOT:
+                    mScoringHeight = currentState.height;
+                    mScoringAngle = currentState.angle;
+                    updateMotionPlannerDesired(SystemState.IN_SCORING_POSITION, currentState);
+                    return SystemState.SHOOTING;
+                case PLACE:
+                    if (placingLegal(currentState)) {
+                        mScoringHeight = currentState.height;
+                        mScoringAngle = currentState.angle;
+                        updateMotionPlannerDesired(SystemState.IN_SCORING_POSITION, currentState);
+                        return SystemState.PLACING;
+                    }
+                    break;
                 case STOW:
                     if (currentState.hasCube) {
                         updateMotionPlannerDesired(SystemState.STOWED_WITH_CUBE, currentState);
@@ -341,6 +358,10 @@ public class SuperstructureStateMachine {
                 return SystemState.MOVING;
             case JOG:
                 return SystemState.JOGGING;
+            case PLACE:
+                return SystemState.PLACING;
+            case SHOOT:
+                return SystemState.SHOOTING;
             case STOW:
                 updateMotionPlannerDesired(SystemState.STOWED, currentState);
                 return SystemState.MOVING;
@@ -382,12 +403,12 @@ public class SuperstructureStateMachine {
                                                          SuperstructureState currentState) {
         switch (wantedAction) {
             case PLACE:
-                // DO NOT ALLOW PLACING with certain angles.
-                if (currentState.angle < SuperstructureConstants.kPlacingMinAngle) {
+                if (placingLegal(currentState)) {
+                    return SystemState.PLACING;
+                } else {
                     System.out.println("Unable to place with angle: " + currentState.angle);
                     return SystemState.IN_SCORING_POSITION;
                 }
-                return SystemState.PLACING;
             case SHOOT:
                 return SystemState.SHOOTING;
             case STOW:
