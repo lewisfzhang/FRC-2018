@@ -133,24 +133,26 @@ public class Elevator extends Subsystem {
 
         mMaster.enableVoltageCompensation(true);
 
-        mMaster.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0,10, 10);
-        mMaster.setInverted(false);
+        mMaster.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0,10, 20);
+        mMaster.setStatusFramePeriod(StatusFrameEnhanced.Status_9_MotProfBuffer,10, 20);
+
+        mMaster.setInverted(true);
         mMaster.setSensorPhase(true);
         mMaster.setNeutralMode(NeutralMode.Brake);
 
         mRightSlave = TalonSRXFactory.createPermanentSlaveTalon(Constants.kElevatorRightSlaveId,
                 Constants.kElevatorMasterId);
-        mRightSlave.setInverted(false);
+        mRightSlave.setInverted(true);
         mRightSlave.setNeutralMode(NeutralMode.Brake);
 
         mLeftSlaveA = TalonSRXFactory.createPermanentSlaveTalon(Constants.kElevatorLeftSlaveAId,
                 Constants.kElevatorMasterId);
-        mLeftSlaveA.setInverted(true);
+        mLeftSlaveA.setInverted(false);
         mLeftSlaveA.setNeutralMode(NeutralMode.Brake);
 
         mLeftSlaveB = TalonSRXFactory.createPermanentSlaveTalon(Constants.kElevatorLeftSlaveBId,
                 Constants.kElevatorMasterId);
-        mLeftSlaveB.setInverted(true);
+        mLeftSlaveB.setInverted(false);
         mLeftSlaveB.setNeutralMode(NeutralMode.Brake);
 
         // Start with zero power.

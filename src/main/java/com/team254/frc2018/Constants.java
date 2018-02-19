@@ -19,6 +19,7 @@ public class Constants {
     public static final double kFollowerWheelTrackWidthInches = 25.624;
     public static final double kFollowerWheelBackOffset = 14.19; // Tune me!
     public static final double kFollowerWheelDiameterInches = 2.28;  // Tune me!
+    public static final double kDriveWheelTrackWidthInches = 26.0;  // TODO: measure
     public static final double kDriveWheelDiameterInches = 4; // TODO: measure
     public static final double kTrackScrubFactor = 1.0;  // Tune me!
 
@@ -27,9 +28,6 @@ public class Constants {
     public static final double kCenterToIntakeDistance = 23.11;
     public static final double kCenterToRearBumperDistance = 16.99;
     public static final double kCenterToSideBumperDistance = 17.225;
-
-    // Gearing
-    // TODO
 
     // Pose of the LIDAR frame w.r.t. the robot frame
     // TUNE ME
@@ -44,6 +42,11 @@ public class Constants {
     public static final double kChezyLidarRestartTime = 2.5;
 
     /* CONTROL LOOP GAINS */
+
+    // Gearing and mechanical constants.
+    public static final double kDriveDownShiftVelocity = 9.5 * 12.0;  // inches per second
+    public static final double kDriveDownShiftAngularVelocity = Math.PI / 2.0; // rad/sec
+    public static final double kDriveUpShiftVelocity = 11.0 * 12.0;  // inches per second
 
     // PID gains for drive velocity loop (HIGH GEAR)
     // Units: setpoint, error, and output are in inches per second.

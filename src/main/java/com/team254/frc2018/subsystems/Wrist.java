@@ -112,8 +112,8 @@ public class Wrist extends Subsystem {
         mMaster.enableVoltageCompensation(true);
         mMaster.set(ControlMode.PercentOutput, 0);
 
-        mMaster.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0,10, 10); // todo: remove this when done tuning
-
+        mMaster.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0,10, 20);
+        mMaster.setStatusFramePeriod(StatusFrameEnhanced.Status_9_MotProfBuffer,10, 20);
 
         // DO NOT reset encoder positions on limit switch
         mMaster.configSetParameter(ParamEnum.eClearPositionOnLimitF, 0, 0, 0, 0);

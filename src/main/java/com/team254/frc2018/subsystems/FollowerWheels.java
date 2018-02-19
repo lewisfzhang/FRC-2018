@@ -8,7 +8,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class FollowerWheels extends Subsystem {
     private final Encoder mLeftFollower, mRightFollower, mRearFollower;
-    public static double kCTREEnocderCPR = 1024;
+    public static double kMagEncoderCPR = 1024;
 
     private static FollowerWheels sInstance = new FollowerWheels();
 
@@ -19,15 +19,18 @@ public class FollowerWheels extends Subsystem {
     private FollowerWheels() {
         mLeftFollower = new Encoder(Constants.kFollowerLeftAChannelId, Constants.kFollowerLeftBChannelId, true,
                 CounterBase.EncodingType.k4X);
+        mLeftFollower.setName("LeftFollower");
         mRightFollower = new Encoder(Constants.kFollowerRightAChannelId, Constants.kFollowerRightBChannelId, false,
                 CounterBase.EncodingType.k4X);
+        mRightFollower.setName("RightFollower");
         mRearFollower = new Encoder(Constants.kFollowerRearAChannelId, Constants.kFollowerRearBChannelId, true,
                 CounterBase.EncodingType.k4X);
+        mRearFollower.setName("RearFollower");
 
 
-        mLeftFollower.setDistancePerPulse(Math.PI * Constants.kFollowerWheelDiameterInches * (1.0 / kCTREEnocderCPR));
-        mRightFollower.setDistancePerPulse(Math.PI * Constants.kFollowerWheelDiameterInches * (1.0 / kCTREEnocderCPR));
-        mRearFollower.setDistancePerPulse(Math.PI * Constants.kFollowerWheelDiameterInches * (1.0 / kCTREEnocderCPR));
+        mLeftFollower.setDistancePerPulse(Math.PI * Constants.kFollowerWheelDiameterInches * (1.0 / kMagEncoderCPR));
+        mRightFollower.setDistancePerPulse(Math.PI * Constants.kFollowerWheelDiameterInches * (1.0 / kMagEncoderCPR));
+        mRearFollower.setDistancePerPulse(Math.PI * Constants.kFollowerWheelDiameterInches * (1.0 / kMagEncoderCPR));
 
     }
 

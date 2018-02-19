@@ -158,7 +158,7 @@ public class Robot extends IterativeRobot {
 
             mDrive.setOpenLoop(mCheesyDriveHelper.cheesyDrive(throttle, turn, mControlBoard.getQuickTurn(),
                     !mControlBoard.getLowGear()));
-            mDrive.setHighGear(!mControlBoard.getLowGear());
+            // mDrive.setHighGear(!mControlBoard.getLowGear());
 
             if (mControlBoard.getScore()) {
                 mSuperstructure.setWantedAction(SuperstructureStateMachine.WantedAction.PLACE);
@@ -231,6 +231,7 @@ public class Robot extends IterativeRobot {
         Intake.getInstance().outputToSmartDashboard();
         Elevator.getInstance().outputToSmartDashboard();
         Infrastructure.getInstance().outputToSmartDashboard();
+        mEnabledLooper.outputToSmartDashboard();
         // SmartDashboard.updateValues();
     }
 }

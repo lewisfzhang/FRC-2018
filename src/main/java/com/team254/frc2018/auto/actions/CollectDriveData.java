@@ -39,7 +39,7 @@ public class CollectDriveData implements Action {
         }
         mDrive.setOpenLoop(new DriveSignal(percentPower, (mTurn ? -1.0 : 1.0) * percentPower));
         mVelocityData.add(new double[]{
-                (Math.abs(mDrive.getLeftVelocity()) + Math.abs(mDrive.getRightVelocity())) / 4096.0 * Math.PI * 10, //convert to radians per second
+                (Math.abs(mDrive.getLeftVelocityNativeUnits()) + Math.abs(mDrive.getRightVelocityNativeUnits())) / 4096.0 * Math.PI * 10, //convert to radians per second
                 percentPower * 12.0 //convert to volts
         });
     }

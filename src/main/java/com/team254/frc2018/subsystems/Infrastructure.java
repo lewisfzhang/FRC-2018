@@ -13,13 +13,13 @@ public class Infrastructure extends Subsystem {
         return mInstance;
     }
 
-    protected PowerDistributionPanel mPdp;
-    protected Compressor mCompressor;
+    // protected PowerDistributionPanel mPdp;
+    // protected Compressor mCompressor;
 
     private void Infrastructure() {
-        mPdp = new PowerDistributionPanel();
-        mCompressor = new Compressor();
-        mCompressor.start();
+        // mPdp = new PowerDistributionPanel();
+        // mCompressor = new Compressor();
+        // mCompressor.start();
     }
 
     @Override
