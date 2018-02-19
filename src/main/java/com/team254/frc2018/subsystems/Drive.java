@@ -178,7 +178,7 @@ public class Drive extends Subsystem {
     public synchronized void setHighGear(boolean wantsHighGear) {
         if (wantsHighGear != mIsHighGear) {
             mIsHighGear = wantsHighGear;
-            mShifter.set(!wantsHighGear);
+            mShifter.set(wantsHighGear);
         }
     }
 
