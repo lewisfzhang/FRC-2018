@@ -115,6 +115,7 @@ public class IntakeStateMachine {
     private synchronized void getIdleCommandedState(IntakeState currentState, IntakeState commandedState) {
         commandedState.setPower(0);
         commandedState.jawState = IntakeState.JawState.CLAMPED;
+        commandedState.ledState = new IntakeState.LEDState(0.0,0.0,0.0);
     }
 
     private synchronized SystemState handleIdleTransitions(WantedAction wantedAction, IntakeState currentState) {
@@ -133,6 +134,7 @@ public class IntakeStateMachine {
     private synchronized void getIntakingCommandedState(IntakeState currentState, IntakeState commandedState) {
         commandedState.setPower(kIntakeCubeSetpoint);
         commandedState.jawState = IntakeState.JawState.CLOSED;
+        commandedState.ledState = new IntakeState.LEDState(0.0,1.0,0.0);
     }
 
     private synchronized SystemState handleIntakingTransitions(WantedAction wantedAction, IntakeState currentState) {
@@ -155,6 +157,7 @@ public class IntakeStateMachine {
                                                               IntakeState commandedState) {
         commandedState.setPower(0);
         commandedState.jawState = IntakeState.JawState.CLOSED;
+        commandedState.ledState = new IntakeState.LEDState(0.0,0.0,0.0);
     }
     private synchronized SystemState handleIntakePositionTransitions(WantedAction wantedAction,
                                                                      IntakeState currentState) {
@@ -177,6 +180,7 @@ public class IntakeStateMachine {
     private synchronized void getClampingCommandedState(IntakeState currentState, IntakeState commandedState) {
         commandedState.setPower(kIntakeCubeSetpoint);
         commandedState.jawState = IntakeState.JawState.CLAMPED;
+        commandedState.ledState = new IntakeState.LEDState(1.0,1.0,0.0);
     }
 
     private synchronized SystemState handleClampingTransitions(double timeInState, IntakeState currentState) {
@@ -195,6 +199,7 @@ public class IntakeStateMachine {
     private synchronized void getHoldingCommandedState(IntakeState currentState, IntakeState commandedState) {
         commandedState.setPower(kHoldSetpoint);
         commandedState.jawState = IntakeState.JawState.CLAMPED;
+        commandedState.ledState = new IntakeState.LEDState(1.0,0.0,0.0);
     }
 
     private synchronized SystemState handleHoldingTransitions(WantedAction wantedAction, IntakeState currentState) {
@@ -222,6 +227,7 @@ public class IntakeStateMachine {
     private synchronized void getPlacingCommandedState(IntakeState currentState, IntakeState commandedState) {
         commandedState.setPower(0);
         commandedState.jawState = IntakeState.JawState.OPEN;
+        commandedState.ledState = new IntakeState.LEDState(0.0,0.0,1.0);
     }
 
     private synchronized SystemState handlePlacingTransitions(WantedAction wantedAction) {
@@ -237,6 +243,7 @@ public class IntakeStateMachine {
     private synchronized void getShootingCommandedState(IntakeState currentState, IntakeState commandedState) {
         commandedState.setPower(kShootSetpoint);
         commandedState.jawState = IntakeState.JawState.CLAMPED;
+        commandedState.ledState = new IntakeState.LEDState(0.0,0.0,1.0);
     }
     private synchronized SystemState handleShootingTransitions(WantedAction wantedAction) {
         switch (wantedAction) {
@@ -262,6 +269,7 @@ public class IntakeStateMachine {
                                                         IntakeState commandedState) {
         commandedState.setPower(kIntakeCubeSetpoint);
         commandedState.jawState = IntakeState.JawState.CLAMPED;
+        commandedState.ledState = new IntakeState.LEDState(0.0,0.0,1.0);
     }
 
     // Getters

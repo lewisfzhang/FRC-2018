@@ -144,6 +144,7 @@ public class Intake extends Subsystem {
         mLeftMaster.set(ControlMode.PercentOutput, state.leftMotor);
         mRightMaster.set(ControlMode.PercentOutput, state.rightMotor);
         setJaw(state.jawState);
+        setLEDsOn(state.ledState.blue, state.ledState.green, state.ledState.red);
     }
 
     public boolean getLeftBannerSensor() {
@@ -154,11 +155,13 @@ public class Intake extends Subsystem {
         return !canifier.getGeneralInput(CANifier.GeneralPin.LIMR);
     }
 
-    public void setLEDsOn(double percentOn) {
+    public void setLEDsOn(double blue, double green, double red) {
         // A: Blue
         // B: Green
         // C: Red
-        canifier.setLEDOutput(percentOn, CANifier.LEDChannel.LEDChannelA);
+        canifier.setLEDOutput(blue, CANifier.LEDChannel.LEDChannelA);
+        canifier.setLEDOutput(green, CANifier.LEDChannel.LEDChannelB);
+        canifier.setLEDOutput(red, CANifier.LEDChannel.LEDChannelC);
     }
 
     public synchronized boolean hasCube() {
