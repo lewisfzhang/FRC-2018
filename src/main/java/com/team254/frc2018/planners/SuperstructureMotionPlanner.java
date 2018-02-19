@@ -16,8 +16,8 @@ public class SuperstructureMotionPlanner {
         }
 
         public SuperstructureState mEndState;
-        public double mHeightThreshold = 1;
-        public double mWristThreshold = 5;
+        public double mHeightThreshold = 1.0;
+        public double mWristThreshold = 5.0;
 
         public boolean isFinished(SuperstructureState currentState) {
             return mEndState.isInRange(currentState, mHeightThreshold, mWristThreshold);
