@@ -227,7 +227,7 @@ public class IntakeStateMachine {
     private synchronized void getPlacingCommandedState(IntakeState currentState, IntakeState commandedState) {
         commandedState.setPower(0);
         commandedState.jawState = IntakeState.JawState.OPEN;
-        commandedState.ledState = new IntakeState.LEDState(0.0,0.0,1.0);
+        commandedState.ledState = new IntakeState.LEDState(1.0,1.0,1.0);
     }
 
     private synchronized SystemState handlePlacingTransitions(WantedAction wantedAction) {
@@ -243,7 +243,7 @@ public class IntakeStateMachine {
     private synchronized void getShootingCommandedState(IntakeState currentState, IntakeState commandedState) {
         commandedState.setPower(kShootSetpoint);
         commandedState.jawState = IntakeState.JawState.CLAMPED;
-        commandedState.ledState = new IntakeState.LEDState(0.0,0.0,1.0);
+        commandedState.ledState = new IntakeState.LEDState(1.0,1.0,1.0);
     }
     private synchronized SystemState handleShootingTransitions(WantedAction wantedAction) {
         switch (wantedAction) {

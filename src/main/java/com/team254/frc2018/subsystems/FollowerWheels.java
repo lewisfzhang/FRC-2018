@@ -4,10 +4,12 @@ import com.team254.frc2018.Constants;
 import com.team254.frc2018.loops.Looper;
 import edu.wpi.first.wpilibj.CounterBase;
 import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class FollowerWheels extends Subsystem {
     private final Encoder mLeftFollower, mRightFollower, mRearFollower;
+    private final Solenoid mDeploySolenoid;
     public static double kMagEncoderCPR = 1024;
 
     private static FollowerWheels sInstance = new FollowerWheels();
@@ -27,11 +29,13 @@ public class FollowerWheels extends Subsystem {
                 CounterBase.EncodingType.k4X);
         mRearFollower.setName("RearFollower");
 
-
         mLeftFollower.setDistancePerPulse(Math.PI * Constants.kFollowerWheelDiameterInches * (1.0 / kMagEncoderCPR));
         mRightFollower.setDistancePerPulse(Math.PI * Constants.kFollowerWheelDiameterInches * (1.0 / kMagEncoderCPR));
         mRearFollower.setDistancePerPulse(Math.PI * Constants.kFollowerWheelDiameterInches * (1.0 / kMagEncoderCPR));
 
+        mDeploySolenoid = Constants.makeSolenoidForId(Constants.kFollowerWheelSolenoid);
+        // TEMP
+        mDeploySolenoid.set(true);
     }
 
     @Override
@@ -62,6 +66,14 @@ public class FollowerWheels extends Subsystem {
     @Override
     public void registerEnabledLoops(Looper enabledLooper) {
 
+    }
+
+    public void deploy() {
+        mDeploySolenoid.set(true);
+    }
+
+    public void retract() {
+        mDeploySolenoid.set(true);
     }
 
     public double getLeftDistance() {
