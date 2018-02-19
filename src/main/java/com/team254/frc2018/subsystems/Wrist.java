@@ -122,12 +122,12 @@ public class Wrist extends Subsystem {
 
     @Override
     public void outputToSmartDashboard() {
-        SmartDashboard.putNumber("WristAngle", getAngle());
-        SmartDashboard.putNumber("WristPosition", getPosition());
-        SmartDashboard.putNumber("WristRpm", mMaster.getSelectedSensorVelocity(0));
-        SmartDashboard.putNumber("WristPower", mMaster.getMotorOutputPercent());
-        SmartDashboard.putNumber("WristClosedLoopError", mMaster.getClosedLoopError(0));
-        SmartDashboard.putBoolean("Wrist limit switch", mMaster.getSensorCollection().isRevLimitSwitchClosed());
+        SmartDashboard.putNumber("Wrist Angle", getAngle());
+        SmartDashboard.putNumber("Wrist Position", getPosition());
+        SmartDashboard.putNumber("Wrist RPM", getRPM());
+        SmartDashboard.putNumber("Wrist Power %", mMaster.getMotorOutputPercent());
+        SmartDashboard.putNumber("Wrist Error", sensorUnitsToDegrees(mMaster.getClosedLoopError(0)));
+        SmartDashboard.putBoolean("Wrist Limit Switch", mMaster.getSensorCollection().isRevLimitSwitchClosed());
     }
 
     @Override

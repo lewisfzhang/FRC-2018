@@ -137,8 +137,8 @@ public class Constants {
 
     // Solenoids
     public static final int kShifterSolenoidId = 12; // PCM 0, Solenoid 4
-    public static final int kIntakeCloseSolenoid = 11; //todo: get actual value
-    public static final int kIntakeClampSolenoid = 10; //todo: get actual value
+    public static final int kIntakeCloseSolenoid = 10; //todo: get actual value
+    public static final int kIntakeClampSolenoid = 9; //todo: get actual value
     public static final int kForkliftDeploySolenoid = 3; //todo: get actual value
 
     // Sensors

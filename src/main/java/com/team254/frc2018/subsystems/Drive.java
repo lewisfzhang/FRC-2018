@@ -218,9 +218,9 @@ public class Drive extends Subsystem {
 
     @Override
     public void outputToSmartDashboard() {
-        SmartDashboard.putNumber("driveRight: ", getRightEncoderDistance());
-        SmartDashboard.putNumber("driveLeft: ", getLeftEncoderDistance());
-        SmartDashboard.putNumber("Heading: ", getHeading().getDegrees());
+        SmartDashboard.putNumber("Right Drive Distance", getRightEncoderDistance());
+        SmartDashboard.putNumber("Left Drive Distance", getLeftEncoderDistance());
+        SmartDashboard.putNumber("Gyro Heading", getHeading().getDegrees());
     }
 
     public synchronized void resetEncoders() {

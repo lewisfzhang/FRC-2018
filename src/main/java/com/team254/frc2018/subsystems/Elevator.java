@@ -121,11 +121,6 @@ public class Elevator extends Subsystem {
                         Constants.kElevatorHighGearCruiseVelocity, Constants.kLongCANTimeoutMs),
             "Could not set elevator cruise velocity: ");
 
-        /*TalonSRXUtil.checkError(
-                mMaster.configSetParameter(
-                        ParamEnum.eClearPositionOnLimitF, 1, 0, 0, Constants.kLongCANTimeoutMs),
-            "Could not set elevator reset on limit f: ");*/
-
         mMaster.configSetParameter(ParamEnum.eClearPositionOnLimitF, 0, 0, 0, 0);
         mMaster.configSetParameter(ParamEnum.eClearPositionOnLimitR, 0, 0, 0, 0);
 
@@ -196,11 +191,11 @@ public class Elevator extends Subsystem {
 
     @Override
     public void outputToSmartDashboard() {
-        SmartDashboard.putNumber("Elevator Master Output", mMaster.getMotorOutputPercent());
-        SmartDashboard.putNumber("Elevator Master RPM", getRPM());
-        SmartDashboard.putNumber("Elevator error", mMaster.getClosedLoopError(0));
-        SmartDashboard.putNumber("Elevator Master Position",
-                mMaster.getSelectedSensorPosition(0));
+        SmartDashboard.putNumber("Elevator Output %", mMaster.getMotorOutputPercent());
+        SmartDashboard.putNumber("Elevator RPM", getRPM());
+        SmartDashboard.putNumber("Elevator Error", mMaster.getClosedLoopError(0) / kEncoderTicksPerInch);
+        SmartDashboard.putNumber("Elevator Height", getInchesOffGround());
+        SmartDashboard.putBoolean("Elevator Limit", mMaster.getSensorCollection().isFwdLimitSwitchClosed());
     }
 
     @Override

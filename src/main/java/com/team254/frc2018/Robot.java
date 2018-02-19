@@ -11,6 +11,7 @@ import com.team254.lib.geometry.Pose2d;
 import com.team254.lib.util.CheesyDriveHelper;
 import com.team254.lib.util.CrashTracker;
 import edu.wpi.first.wpilibj.IterativeRobot;
+import edu.wpi.first.wpilibj.PowerDistributionPanel;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -26,13 +27,15 @@ public class Robot extends IterativeRobot {
                     Drive.getInstance(),
                     FollowerWheels.getInstance(),
                     Intake.getInstance(),
-                    Superstructure.getInstance()
+                    Superstructure.getInstance(),
+                    Infrastructure.getInstance()
             )
     );
 
     private Drive mDrive = Drive.getInstance();
     private Intake mIntake = Intake.getInstance();
     private Wrist mWrist = Wrist.getInstance();
+    private Infrastructure mInfrastructure = Infrastructure.getInstance();
     private Superstructure mSuperstructure = Superstructure.getInstance();
 
     public Robot() {
@@ -227,5 +230,7 @@ public class Robot extends IterativeRobot {
         Wrist.getInstance().outputToSmartDashboard();
         Intake.getInstance().outputToSmartDashboard();
         Elevator.getInstance().outputToSmartDashboard();
+        Infrastructure.getInstance().outputToSmartDashboard();
+        // SmartDashboard.updateValues();
     }
 }

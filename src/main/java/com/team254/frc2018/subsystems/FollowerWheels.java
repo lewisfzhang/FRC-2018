@@ -38,10 +38,10 @@ public class FollowerWheels extends Subsystem {
 
     @Override
     public void outputToSmartDashboard() {
-        SmartDashboard.putNumber("leftFollowerDistance", getLeftDistance());
-        SmartDashboard.putNumber("rightFollowerDistance", getRightDistance());
-        SmartDashboard.putNumber("rearFollowerDistance", getRearDistance());
-        SmartDashboard.putNumber("headingFollower", getHeading());
+        SmartDashboard.putNumber("Left Follower Distance", getLeftDistance());
+        SmartDashboard.putNumber("Right Follower Distance", getRightDistance());
+        SmartDashboard.putNumber("Rear Follower Distance", getRearDistance());
+        SmartDashboard.putNumber("Follower Wheel Heading", getHeading());
     }
 
     @Override
