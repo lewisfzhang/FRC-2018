@@ -9,4 +9,7 @@ public class SuperstructureCommand {
 
     public boolean openLoopElevator = false;
     public double openLoopElevatorPercent = 0.0;
+
+    public boolean elevatorLowGear = false;
+    public boolean deployForklift = false;
 }

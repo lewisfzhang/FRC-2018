@@ -206,10 +206,11 @@ public class Robot extends IterativeRobot {
                 mSuperstructure.setArmIn();
             } else if (mControlBoard.getStow()) {
                 mSuperstructure.setWantedAction(SuperstructureStateMachine.WantedAction.STOW);
+            } else if (mControlBoard.getHangMode()) {
+                mSuperstructure.setHangThrottle(mControlBoard.getHangThrottle());
             } else {
                 mSuperstructure.setWantedAction(SuperstructureStateMachine.WantedAction.IDLE);
             }
-
 
             outputToSmartDashboard();
         } catch (Throwable t) {

@@ -38,4 +38,8 @@ interface IControlBoard {
     boolean getLowScale();
 
     boolean getJogElevatorDown();
+
+    boolean getHangMode(); // TODO
+
+    double getHangThrottle();  // TODO
 }

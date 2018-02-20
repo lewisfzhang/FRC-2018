@@ -34,8 +34,6 @@ public class FollowerWheels extends Subsystem {
         mRearFollower.setDistancePerPulse(Math.PI * Constants.kFollowerWheelDiameterInches * (1.0 / kMagEncoderCPR));
 
         mDeploySolenoid = Constants.makeSolenoidForId(Constants.kFollowerWheelSolenoid);
-        // TEMP
-        mDeploySolenoid.set(true);
     }
 
     @Override

@@ -117,4 +117,10 @@ public class ControlBoard implements IControlBoard {
     public boolean getJogElevatorDown() {
         return mButtonBoard.getRawButton(2);
     }
+
+    @Override
+    public boolean getHangMode() { return mButtonBoard.getRawButton(4); }
+
+    @Override
+    public double getHangThrottle() { return mTurnStick.getRawAxis(0); }
 }

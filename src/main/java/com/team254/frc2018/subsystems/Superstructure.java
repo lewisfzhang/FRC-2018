@@ -41,6 +41,7 @@ public class Superstructure extends Subsystem {
     private Elevator mElevator = Elevator.getInstance();
     private Wrist mWrist = Wrist.getInstance();
     private Intake mIntake = Intake.getInstance();
+    private Forklift mForklift = Forklift.getInstance();
 
     private SuperstructureStateMachine mStateMachine = new SuperstructureStateMachine();
     private SuperstructureStateMachine.WantedAction mWantedAction =
@@ -82,6 +83,14 @@ public class Superstructure extends Subsystem {
             mElevator.setOpenLoop(commandState.openLoopElevatorPercent);
         } else {
             mElevator.setClosedLoopPosition(commandState.height);
+        }
+        if (commandState.elevatorLowGear) {
+            mElevator.setHangMode(true);
+        } else {
+            mElevator.setHangMode(false);
+        }
+        if (commandState.deployForklift) {
+            mForklift.deploy();
         }
         mWrist.setClosedLoopAngle(commandState.wristAngle);
 
@@ -138,6 +147,11 @@ public class Superstructure extends Subsystem {
     public synchronized void setJogDown() {
         mStateMachine.setJogPercentage(SuperstructureConstants.kJogDownPercent);
         mWantedAction = SuperstructureStateMachine.WantedAction.JOG;
+    }
+
+    public synchronized void setHangThrottle(double throttle) {
+        mStateMachine.setJogPercentage(throttle);
+        mWantedAction = SuperstructureStateMachine.WantedAction.HANG;
     }
 
     public synchronized void setWantedAction(SuperstructureStateMachine.WantedAction wantedAction) {

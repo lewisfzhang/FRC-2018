@@ -16,6 +16,7 @@ public class SuperstructureStateMachine {
         SHOOT,
         STOW,
         JOG,
+        HANG  // TODO break into constituent states
     }
 
     public enum SystemState {
@@ -29,6 +30,7 @@ public class SuperstructureStateMachine {
         INTAKING,
         INTAKE_POSITION,
         JOGGING,
+        HANGING  // TODO break into constituent states
     }
 
     private SystemState mSystemStateAfterMoving = SystemState.STOWED;
@@ -113,6 +115,9 @@ public class SuperstructureStateMachine {
                 case JOGGING:
                     newState = handleJoggingTransitions(wantedAction, currentState);
                     break;
+                case HANGING:
+                    newState = handleHangingTransitions(wantedAction, currentState);
+                    break;
                 default:
                     System.out.println("Unexpected superstructure system state: " + mSystemState);
                     newState = mSystemState;
@@ -126,7 +131,7 @@ public class SuperstructureStateMachine {
             }
 
             // Pump elevator planner only if not jogging.
-            if (mSystemState != SystemState.JOGGING) {
+            if (mSystemState != SystemState.JOGGING && mSystemState != SystemState.HANGING) {
                 mCommandedState = mPlanner.update(currentState);
                 mCommand.height = mCommandedState.height;
                 mCommand.wristAngle = mCommandedState.angle;
@@ -160,6 +165,9 @@ public class SuperstructureStateMachine {
                     break;
                 case JOGGING:
                     getJoggingCommandedState();
+                    break;
+                case HANGING:
+                    getHangingCommandedState();
                     break;
                 default:
                     getStowedCommandedState();
@@ -248,6 +256,8 @@ public class SuperstructureStateMachine {
                 return SystemState.MOVING;
             case JOG:
                 return SystemState.JOGGING;
+            case HANG:
+                return SystemState.HANGING;
             case IDLE:
             default:
                 return SystemState.STOWED;
@@ -358,6 +368,8 @@ public class SuperstructureStateMachine {
                 return SystemState.MOVING;
             case JOG:
                 return SystemState.JOGGING;
+            case HANG:
+                return SystemState.HANGING;
             case PLACE:
                 return SystemState.PLACING;
             case SHOOT:
@@ -388,6 +400,8 @@ public class SuperstructureStateMachine {
                 return SystemState.MOVING;
             case JOG:
                 return SystemState.JOGGING;
+            case HANG:
+                return SystemState.HANGING;
             case SHOOT:
                 return SystemState.SHOOTING;
             default:
@@ -500,6 +514,22 @@ public class SuperstructureStateMachine {
     }
     private void getJoggingCommandedState() {
         mCommand.wristAngle = mDesiredEndState.angle;
+        mCommand.openLoopElevator = true;
+        mCommand.openLoopElevatorPercent = mJogPercent;
+    }
+
+    // HANGING
+    private SystemState handleHangingTransitions(WantedAction wantedAction,
+                                                 SuperstructureState currentState) {
+        switch (wantedAction) {
+            default:
+                return SystemState.HANGING;
+        }
+    }
+    private void getHangingCommandedState() {
+        mCommand.elevatorLowGear = true;
+        mCommand.deployForklift = true;
+        mCommand.wristAngle = SuperstructureConstants.kWristMaxAngle;
         mCommand.openLoopElevator = true;
         mCommand.openLoopElevatorPercent = mJogPercent;
     }

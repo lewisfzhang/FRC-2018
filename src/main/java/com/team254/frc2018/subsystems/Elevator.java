@@ -11,6 +11,7 @@ import com.team254.lib.drivers.TalonSRXChecker;
 import com.team254.lib.drivers.TalonSRXUtil;
 import com.team254.lib.util.Util;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -35,6 +36,8 @@ public class Elevator extends Subsystem {
     }
 
     private final TalonSRX mMaster, mRightSlave, mLeftSlaveA, mLeftSlaveB;
+
+    private final Solenoid mShifter;
 
     private double mLastTrajectoryPoint = Double.NaN;
 
@@ -155,6 +158,8 @@ public class Elevator extends Subsystem {
         mLeftSlaveB.setInverted(false);
         mLeftSlaveB.setNeutralMode(NeutralMode.Brake);
 
+        mShifter = Constants.makeSolenoidForId(Constants.kElevatorShifterSolenoidId);
+
         // Start with zero power.
         mMaster.set(ControlMode.PercentOutput, 0);
     }
@@ -179,6 +184,10 @@ public class Elevator extends Subsystem {
             return true;
         }
         return false;
+    }
+
+    public synchronized void setHangMode(boolean hang_mode) {
+        mShifter.set(hang_mode);
     }
 
     public synchronized double getRPM() {
