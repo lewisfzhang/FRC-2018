@@ -24,7 +24,9 @@ public class QuinticHermiteOptimizerTest {
         splines.add(new QuinticHermiteSpline(a, b));
         splines.add(new QuinticHermiteSpline(b, c));
 
+        long startTime = System.currentTimeMillis();
         assertTrue(QuinticHermiteSpline.optimizeSpline(splines) < 0.014);
+        System.out.println("Optimization time (ms): " + (System.currentTimeMillis() - startTime));
 
         Pose2d d = new Pose2d(new Translation2d(0, 0), Rotation2d.fromDegrees(90));
         Pose2d e = new Pose2d(new Translation2d(0, 50), Rotation2d.fromDegrees(0));
@@ -36,6 +38,8 @@ public class QuinticHermiteOptimizerTest {
         splines1.add(new QuinticHermiteSpline(e, f));
         splines1.add(new QuinticHermiteSpline(f, g));
 
+        startTime = System.currentTimeMillis();
         assertTrue(QuinticHermiteSpline.optimizeSpline(splines1) < 0.16);
+        System.out.println("Optimization time (ms): " + (System.currentTimeMillis() - startTime));
     }
 }

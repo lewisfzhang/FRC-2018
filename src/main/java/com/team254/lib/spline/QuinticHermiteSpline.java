@@ -117,14 +117,27 @@ public class QuinticHermiteSpline extends Spline {
         return 20 * ay * t * t * t + 12 * by * t * t + 6 * cy * t + 2 * dy;
     }
 
+    private double dddx(double t) {
+        return 60 * ax * t * t + 24 * bx * t + 6 * cx;
+    }
+
+    private double dddy(double t) {
+        return 60 * ay * t * t + 24 * by * t + 6 * cy;
+    }
+
     public double getCurvature(double t) {
         return (dx(t) * ddy(t) - ddx(t) * dy(t)) / ((dx(t) * dx(t) + dy(t) * dy(t)) * Math.sqrt((dx(t) * dx(t) + dy
                 (t) * dy(t))));
     }
 
     private double dCurvature(double t) {
-        // TODO use the closed-form equation.
-        return (getCurvature(t + kEpsilon) - getCurvature(t - kEpsilon)) / (2 * kEpsilon);
+        //quotient rule
+        double df = ((dx(t)*dddy(t) + ddx(t)*ddy(t)) - (dddx(t)*dy(t) + ddx(t)*ddy(t)));
+        double g = ((dx(t) * dx(t) + dy(t) * dy(t)) * Math.sqrt((dx(t) * dx(t) + dy(t) * dy(t))));
+        double f = (dx(t) * ddy(t) - ddx(t) * dy(t));
+        double dg = 1.5 * Math.sqrt(dx(t) * dx(t) + dy(t) * dy(t)) * (2 * dx(t) * ddx(t) + 2 * dy(t) * ddy(t));
+        
+        return (df * g - f * dg) / (g * g);
     }
 
     @Override
