@@ -1,10 +1,17 @@
 package com.team254.lib.trajectory;
 
 import com.team254.lib.geometry.Pose2dWithCurvature;
+import com.team254.lib.geometry.Pose2d;
+import com.team254.lib.geometry.Rotation2d;
 import com.team254.lib.geometry.Translation2d;
+import com.team254.lib.physics.DCMotorTransmission;
+import com.team254.lib.physics.DifferentialDrive;
+import com.team254.lib.trajectory.timing.DifferentialDriveDynamicsConstraint;
+import com.team254.lib.trajectory.timing.TimingUtil;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -40,7 +47,27 @@ public class IntegrationTest {
 
     @Test
     public void testSplineTrajectoryGenerator() {
-        // TODO
+        // Specify desired waypoints.
+        List<Pose2d> waypoints = Arrays.asList(
+                new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0.0)),
+                new Pose2d(36.0, 0.0, Rotation2d.fromDegrees(0.0)),
+                new Pose2d(60.0, 100, Rotation2d.fromDegrees(0.0)),
+                new Pose2d(160.0, 100.0, Rotation2d.fromDegrees(0.0)),
+                new Pose2d(200.0, 70, Rotation2d.fromDegrees(45.0)));
+
+        // Create a trajectory from splines.
+        Trajectory<Pose2dWithCurvature> trajectory = TrajectoryUtil.trajectoryFromSplineWaypoints(waypoints, 3.0, 0.25, Math.toRadians(5.0));
+        System.out.println(trajectory.toCSV());
+
+        // Create a differential drive.
+        //DCMotorTransmission transmission = new DCMotorTransmission();
+        //DifferentialDrive drive = new DifferentialDrive();
+
+        // Create the constraint that the robot must be able to traverse the trajectory without ever applying more than 10V.
+        //DifferentialDriveDynamicsConstraint<Pose2dWithCurvature> drive_constraints = new DifferentialDriveDynamicsConstraint<>(drive, 10.0);
+
+        //TimingUtil.timeParameterizeTrajectory(new DistanceView<>(trajectory), 3.0, Arrays.asList(drive_constraints), 0.0, 0.0, 0.0, 0.0);
+
     }
 
 }

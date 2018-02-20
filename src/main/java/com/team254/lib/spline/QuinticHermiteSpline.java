@@ -8,9 +8,9 @@ import com.team254.lib.geometry.Translation2d;
 
 public class QuinticHermiteSpline extends Spline {
     private static final double kEpsilon = 1e-5;
-    private static final double kStepSize = 1;
-    private static final double kMinDelta = 0.005;
-    private static final int kSamples = 50;
+    private static final double kStepSize = 1.0;
+    private static final double kMinDelta = 0.001;
+    private static final int kSamples = 100;
     private static final int kMaxIterations = 100;
 
     private double x0, x1, dx0, dx1, ddx0, ddx1, y0, y1, dy0, dy1, ddy0, ddy1;
@@ -123,6 +123,7 @@ public class QuinticHermiteSpline extends Spline {
     }
 
     private double dCurvature(double t) {
+        // TODO use the closed-form equation.
         return (getCurvature(t + kEpsilon) - getCurvature(t - kEpsilon)) / (2 * kEpsilon);
     }
 
@@ -178,7 +179,6 @@ public class QuinticHermiteSpline extends Spline {
                 return current;
             prev = current;
             count++;
-            System.out.println(count);
         }
         return prev;
     }

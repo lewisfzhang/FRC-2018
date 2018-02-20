@@ -4,6 +4,7 @@ import com.team254.lib.geometry.Pose2d;
 import com.team254.lib.geometry.Pose2dWithCurvature;
 import com.team254.lib.geometry.State;
 import com.team254.lib.geometry.Twist2d;
+import com.team254.lib.spline.QuinticHermiteSpline;
 import com.team254.lib.spline.Spline;
 import com.team254.lib.spline.SplineGenerator;
 import com.team254.lib.util.Util;
@@ -84,9 +85,19 @@ public class TrajectoryUtil {
         return new Trajectory<Pose2dWithCurvature>(samples);
     }
 
-    public static Trajectory<Pose2dWithCurvature> trajectoryFromSplines(final List<Spline> splines, double maxDx,
-                                                                        double maxDy, double maxDTheta) {
-        return new Trajectory<Pose2dWithCurvature>(SplineGenerator.parameterizeSplines(splines, maxDx, maxDy,
-                maxDTheta));
+    public static Trajectory<Pose2dWithCurvature> trajectoryFromSplineWaypoints(final List<Pose2d> waypoints, double maxDx,
+                                                                         double maxDy, double maxDTheta) {
+        List<QuinticHermiteSpline> splines = new ArrayList<>(waypoints.size() - 1);
+        for (int i = 1; i < waypoints.size(); ++i) {
+            splines.add(new QuinticHermiteSpline(waypoints.get(i - 1), waypoints.get(i)));
+        }
+        QuinticHermiteSpline.optimizeSpline(splines);
+        return trajectoryFromSplines(splines, maxDx, maxDy, maxDTheta);
     }
+
+    public static Trajectory<Pose2dWithCurvature> trajectoryFromSplines(final List<? extends Spline> splines, double maxDx,
+                                                                        double maxDy, double maxDTheta) {
+        return new Trajectory<>(SplineGenerator.parameterizeSplines(splines, maxDx, maxDy,
+                maxDTheta));
+    };
 }
