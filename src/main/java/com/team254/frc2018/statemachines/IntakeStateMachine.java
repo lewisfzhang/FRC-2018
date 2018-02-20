@@ -34,6 +34,16 @@ public class IntakeStateMachine {
     private IntakeState mCommandedState = new IntakeState();
     private double mCurrentStateStartTime = 0;
 
+    public SystemState maybePlace(IntakeState currentState, SystemState defaultState) {
+        if (currentState.wristAngle < SuperstructureConstants.kAlwaysNeedsJawClampMinAngle) {
+            // Don't kill the elevator
+            System.out.println("Unable to place with: " + currentState.wristAngle);
+            return defaultState;
+        } else {
+            return SystemState.PLACING;
+        }
+    }
+
     public IntakeState update(double timestamp, WantedAction wantedAction, IntakeState currentState) {
         synchronized (IntakeStateMachine.this) {
             SystemState newState;
@@ -125,6 +135,10 @@ public class IntakeStateMachine {
         switch (wantedAction) {
             case INTAKE:
                 return SystemState.INTAKING;
+            case SHOOT:
+                return SystemState.SHOOTING;
+            case PLACE:
+                return maybePlace(currentState, SystemState.IDLE);
             default:
                 return SystemState.IDLE;
         }
@@ -147,6 +161,10 @@ public class IntakeStateMachine {
                 return SystemState.IDLE;
             case INTAKE_POSITION:
                 return SystemState.INTAKE_POSITION;
+            case SHOOT:
+                return SystemState.SHOOTING;
+            case PLACE:
+                return maybePlace(currentState, SystemState.INTAKING);
             default:
                 return SystemState.INTAKING;
         }
@@ -170,6 +188,10 @@ public class IntakeStateMachine {
                 return SystemState.IDLE;
             case INTAKE:
                 return SystemState.INTAKING;
+            case SHOOT:
+                return SystemState.SHOOTING;
+            case PLACE:
+                return maybePlace(currentState, SystemState.INTAKE_POSITION);
             default:
                 return SystemState.INTAKE_POSITION;
         }
@@ -211,13 +233,7 @@ public class IntakeStateMachine {
             case SHOOT:
                 return SystemState.SHOOTING;
             case PLACE:
-                if (currentState.wristAngle < SuperstructureConstants.kAlwaysNeedsJawClampMinAngle) { // don't kill the elevator
-                    // TODO:  make this work
-                    // DriverStation.reportError("Can't open the jaw when the wrist is at that angle", false);
-                    return SystemState.HOLDING;
-                } else {
-                    return SystemState.PLACING;
-                }
+                return maybePlace(currentState, SystemState.HOLDING);
             default:
                 return SystemState.HOLDING;
         }
