@@ -5,11 +5,15 @@ import com.ctre.phoenix.ParamEnum;
 import com.ctre.phoenix.motorcontrol.*;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.team254.frc2018.Constants;
+import com.team254.frc2018.loops.Loop;
 import com.team254.frc2018.loops.Looper;
+import com.team254.lib.drivers.TalonSRXChecker;
 import com.team254.lib.drivers.TalonSRXFactory;
 import com.team254.lib.util.Util;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
+import java.util.ArrayList;
 
 public class Wrist extends Subsystem {
     private static final int kMagicMotionSlot = 0;
@@ -121,13 +125,16 @@ public class Wrist extends Subsystem {
     }
 
     @Override
-    public void outputToSmartDashboard() {
+    public synchronized void outputToSmartDashboard() {
         SmartDashboard.putNumber("Wrist Angle", getAngle());
         SmartDashboard.putNumber("Wrist Position", getPosition());
         SmartDashboard.putNumber("Wrist RPM", getRPM());
         SmartDashboard.putNumber("Wrist Power %", mMaster.getMotorOutputPercent());
         SmartDashboard.putNumber("Wrist Error", sensorUnitsToDegrees(mMaster.getClosedLoopError(0)));
         SmartDashboard.putBoolean("Wrist Limit Switch", mMaster.getSensorCollection().isRevLimitSwitchClosed());
+        SmartDashboard.putNumber("Wrist Last Expected Trajectory", mLastTrajectoryPoint);
+        SmartDashboard.putNumber("Wrist Current Trajectory Point", mMaster.getActiveTrajectoryPosition());
+        SmartDashboard.putBoolean("Wrist Has Sent Trajectory", hasFinishedTrajectory());
     }
 
     @Override
@@ -216,6 +223,21 @@ public class Wrist extends Subsystem {
 
     @Override
     public boolean checkSystem() {
-        return true;
+        return TalonSRXChecker.CheckTalons(this,
+                new ArrayList<TalonSRXChecker.TalonSRXConfig>() {
+                    {
+                        add(new TalonSRXChecker.TalonSRXConfig("wrist_master", mMaster));
+                    }
+                }, new TalonSRXChecker.CheckerConfig() {
+                    {
+                        mRunTimeSec = 1.0;
+                        mRunOutputPercentage = 0.15;
+
+                        mRPMFloor = 0;
+                        mCurrentFloor = 2;
+
+                        mRPMSupplier = () -> mMaster.getSelectedSensorVelocity(0);
+                    }
+                });
     }
 }
