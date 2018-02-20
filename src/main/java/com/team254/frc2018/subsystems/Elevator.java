@@ -219,6 +219,12 @@ public class Elevator extends Subsystem {
         mMaster.setSelectedSensorPosition(0,0, 10);
     }
 
+    public synchronized void resetIfAtLimit() {
+        if (mMaster.getSensorCollection().isFwdLimitSwitchClosed()) {
+            zeroSensors();
+        }
+    }
+
     @Override
     public void registerEnabledLoops(Looper enabledLooper) {
     }

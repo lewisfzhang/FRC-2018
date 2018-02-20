@@ -37,6 +37,7 @@ public class Robot extends IterativeRobot {
     private Wrist mWrist = Wrist.getInstance();
     private Infrastructure mInfrastructure = Infrastructure.getInstance();
     private Superstructure mSuperstructure = Superstructure.getInstance();
+    private Elevator mElevator = Elevator.getInstance();
 
     public Robot() {
         CrashTracker.logRobotConstruction();
@@ -130,6 +131,8 @@ public class Robot extends IterativeRobot {
 
         try {
             outputToSmartDashboard();
+            mWrist.resetIfAtLimit();
+            mElevator.resetIfAtLimit();
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
             throw t;

@@ -148,6 +148,12 @@ public class Wrist extends Subsystem {
         mMaster.set(ControlMode.PercentOutput, percentage);
     }
 
+    public synchronized void resetIfAtLimit() {
+        if (mMaster.getSensorCollection().isRevLimitSwitchClosed()) {
+            zeroSensors();
+        }
+    }
+
     /**
      * @param position the target position of the wrist in sensor units
      */

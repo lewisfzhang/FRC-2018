@@ -311,7 +311,6 @@ public class SuperstructureStateMachine {
 
         // Determine if we are not done with planner.
         if (!mPlanner.isFinished(currentState)) {
-
             // If our next state is INTAKING, start intaking early.
             if (mSystemStateAfterMoving == SystemState.INTAKING) {
                 if (currentState.height < SuperstructureConstants.kEarlyIntakeStartHeight
