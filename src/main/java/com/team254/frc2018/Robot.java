@@ -1,7 +1,7 @@
 package com.team254.frc2018;
 
 import com.team254.frc2018.auto.AutoModeExecuter;
-import com.team254.frc2018.auto.modes.CharacterizeDrivetrainMode;
+import com.team254.frc2018.auto.modes.CharacterizeHighGearStraight;
 import com.team254.frc2018.loops.Looper;
 import com.team254.frc2018.loops.RobotStateEstimator;
 import com.team254.frc2018.statemachines.SuperstructureStateMachine;
@@ -11,7 +11,6 @@ import com.team254.lib.geometry.Pose2d;
 import com.team254.lib.util.CheesyDriveHelper;
 import com.team254.lib.util.CrashTracker;
 import edu.wpi.first.wpilibj.IterativeRobot;
-import edu.wpi.first.wpilibj.PowerDistributionPanel;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -88,7 +87,7 @@ public class Robot extends IterativeRobot {
 
 
             AutoModeExecuter mAutoModeExecuter = new AutoModeExecuter();
-            mAutoModeExecuter.setAutoMode(new CharacterizeDrivetrainMode());
+            mAutoModeExecuter.setAutoMode(new CharacterizeHighGearStraight());
             mAutoModeExecuter.start();
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
