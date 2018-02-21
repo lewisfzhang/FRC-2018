@@ -1,6 +1,5 @@
 package com.team254.frc2018.subsystems;
 
-import com.ctre.phoenix.ErrorCode;
 import com.ctre.phoenix.ParamEnum;
 import com.ctre.phoenix.motorcontrol.*;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
@@ -10,9 +9,7 @@ import com.team254.lib.drivers.TalonSRXFactory;
 import com.team254.lib.drivers.TalonSRXChecker;
 import com.team254.lib.drivers.TalonSRXUtil;
 import com.team254.lib.util.Util;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Solenoid;
-import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import java.util.ArrayList;
@@ -141,27 +138,24 @@ public class Elevator extends Subsystem {
 
         mMaster.setInverted(true);
         mMaster.setSensorPhase(true);
-        mMaster.setNeutralMode(NeutralMode.Brake);
 
         mRightSlave = TalonSRXFactory.createPermanentSlaveTalon(Constants.kElevatorRightSlaveId,
                 Constants.kElevatorMasterId);
         mRightSlave.setInverted(true);
-        mRightSlave.setNeutralMode(NeutralMode.Brake);
 
         mLeftSlaveA = TalonSRXFactory.createPermanentSlaveTalon(Constants.kElevatorLeftSlaveAId,
                 Constants.kElevatorMasterId);
         mLeftSlaveA.setInverted(false);
-        mLeftSlaveA.setNeutralMode(NeutralMode.Brake);
 
         mLeftSlaveB = TalonSRXFactory.createPermanentSlaveTalon(Constants.kElevatorLeftSlaveBId,
                 Constants.kElevatorMasterId);
         mLeftSlaveB.setInverted(false);
-        mLeftSlaveB.setNeutralMode(NeutralMode.Brake);
 
         mShifter = Constants.makeSolenoidForId(Constants.kElevatorShifterSolenoidId);
 
         // Start with zero power.
         mMaster.set(ControlMode.PercentOutput, 0);
+        setNeutralMode(NeutralMode.Brake);
     }
 
     public synchronized void setOpenLoop(double percentage) {
@@ -229,9 +223,19 @@ public class Elevator extends Subsystem {
     public void registerEnabledLoops(Looper enabledLooper) {
     }
 
+    private void setNeutralMode(NeutralMode neutralMode) {
+        mLeftSlaveA.setNeutralMode(neutralMode);
+        mLeftSlaveB.setNeutralMode(neutralMode);
+        mMaster.setNeutralMode(neutralMode);
+        mRightSlave.setNeutralMode(neutralMode);
+    }
+
     @Override
     public boolean checkSystem() {
-        boolean rightSide =
+        setNeutralMode(NeutralMode.Coast);
+        setHangMode(true);
+
+        boolean leftSide =
                 TalonSRXChecker.CheckTalons(this,
                         new ArrayList<TalonSRXChecker.TalonSRXConfig>() {
                             {
@@ -243,15 +247,15 @@ public class Elevator extends Subsystem {
                         }, new TalonSRXChecker.CheckerConfig() {
                             {
                                 mCurrentFloor = 2;
-                                mRPMFloor = 1500;
+                                mRPMFloor = 200;
                                 mCurrentEpsilon = 2.0;
                                 mRPMEpsilon = 250;
-                                mRunTimeSec = 1.0;
-                                mRunOutputPercentage = 0.25;
-                                mRPMSupplier = () -> mMaster.getSelectedSensorVelocity(0);
+                                mRunTimeSec = 0.5;
+                                mRunOutputPercentage = -0.5;
+                                mRPMSupplier = () -> -mMaster.getSelectedSensorVelocity(0);
                             }
                         });
-        boolean leftSide =
+        boolean rightSide =
                 TalonSRXChecker.CheckTalons(this,
                         new ArrayList<TalonSRXChecker.TalonSRXConfig>() {
                             {
@@ -261,14 +265,17 @@ public class Elevator extends Subsystem {
                         }, new TalonSRXChecker.CheckerConfig() {
                             {
                                 mCurrentFloor = 2;
-                                mRPMFloor = 1500;
+                                mRPMFloor = 200;
                                 mCurrentEpsilon = 2.0;
                                 mRPMEpsilon = 250;
-                                mRunTimeSec = 1.0;
-                                mRunOutputPercentage = 0.25;
-                                mRPMSupplier = () -> mMaster.getSelectedSensorVelocity(0);
+                                mRunTimeSec = 0.5;
+                                mRunOutputPercentage = -0.5;
+                                mRPMSupplier = () -> -mMaster.getSelectedSensorVelocity(0);
                             }
                         });
+
+        setHangMode(false);
+        setNeutralMode(NeutralMode.Brake);
         return leftSide && rightSide;
     }
 
