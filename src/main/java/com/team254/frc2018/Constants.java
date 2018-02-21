@@ -142,7 +142,8 @@ public class Constants {
     public static final int kShifterSolenoidId = 12; // PCM 0, Solenoid 4
     public static final int kIntakeCloseSolenoid = 10;
     public static final int kIntakeClampSolenoid = 9;
-    public static final int kForkliftDeploySolenoid = 6;
+    public static final int kForkliftDeploySolenoid = 7;  // CURRENTLY 6 ON PRACTICE!!!
+    public static final int kHangerReleaseSolenoid = 6;
     public static final int kFollowerWheelSolenoid = 11;
     public static final int kElevatorShifterSolenoidId = 8;
 
