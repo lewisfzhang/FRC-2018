@@ -254,6 +254,8 @@ public class SuperstructureStateMachine {
             case GOTO_SCORE_POSITION:
                 updateMotionPlannerDesired(SystemState.IN_SCORING_POSITION, currentState);
                 return SystemState.MOVING;
+            case SHOOT:
+                return SystemState.SHOOTING;
             case JOG:
                 return SystemState.JOGGING;
             case HANG:
@@ -342,6 +344,10 @@ public class SuperstructureStateMachine {
         switch (wantedAction) {
             case INTAKE:
                 return SystemState.INTAKING;
+            case SHOOT:
+                return SystemState.SHOOTING;
+            case PLACE:
+                return SystemState.PLACING;
             default:
                 return SystemState.INTAKE_POSITION;
         }
