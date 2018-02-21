@@ -10,12 +10,15 @@ import com.team254.frc2018.loops.Looper;
 import com.team254.frc2018.statemachines.IntakeStateMachine;
 import com.team254.frc2018.states.IntakeState;
 import com.team254.frc2018.states.SuperstructureConstants;
+import com.team254.lib.drivers.TalonSRXChecker;
 import com.team254.lib.drivers.TalonSRXFactory;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
+import java.util.ArrayList;
 
 public class Intake extends Subsystem {
     private final static boolean kClosed = false;
@@ -178,7 +181,20 @@ public class Intake extends Subsystem {
 
     @Override
     public boolean checkSystem() {
-        return true;
+        return TalonSRXChecker.CheckTalons(this,
+                new ArrayList<TalonSRXChecker.TalonSRXConfig>() {
+                    {
+
+                        add(new TalonSRXChecker.TalonSRXConfig("intake right master", mRightMaster));
+                        add(new TalonSRXChecker.TalonSRXConfig("intake left master", mLeftMaster));
+                    }
+                }, new TalonSRXChecker.CheckerConfig() {
+                    {
+                        mCurrentFloor = 2;
+                        mCurrentEpsilon = 2.0;
+                        mRPMSupplier = null;
+                    }
+                });
     }
 }
 
