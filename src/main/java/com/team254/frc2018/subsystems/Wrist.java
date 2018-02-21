@@ -207,7 +207,7 @@ public class Wrist extends Subsystem {
 
     public synchronized boolean hasFinishedTrajectory() {
         if (Util.epsilonEquals(mMaster.getActiveTrajectoryPosition(),
-                mLastTrajectoryPoint, 1)) {
+                mLastTrajectoryPoint, 2)) {
             return true;
         }
         return false;
@@ -230,11 +230,11 @@ public class Wrist extends Subsystem {
                     }
                 }, new TalonSRXChecker.CheckerConfig() {
                     {
-                        mRunTimeSec = 1.0;
-                        mRunOutputPercentage = 0.15;
+                        mRunTimeSec = 0.5;
+                        mRunOutputPercentage = 0.25;
 
-                        mRPMFloor = 0;
-                        mCurrentFloor = 2;
+                        mRPMFloor = 50.0;
+                        mCurrentFloor = 2.0;
 
                         mRPMSupplier = () -> mMaster.getSelectedSensorVelocity(0);
                     }
