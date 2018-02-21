@@ -7,7 +7,9 @@ import com.team254.lib.geometry.Translation2d;
 import com.team254.lib.physics.DCMotorTransmission;
 import com.team254.lib.physics.DifferentialDrive;
 import com.team254.lib.trajectory.timing.DifferentialDriveDynamicsConstraint;
+import com.team254.lib.trajectory.timing.TimedState;
 import com.team254.lib.trajectory.timing.TimingUtil;
+import com.team254.lib.util.Units;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -56,18 +58,26 @@ public class IntegrationTest {
                 new Pose2d(200.0, 70, Rotation2d.fromDegrees(45.0)));
 
         // Create a trajectory from splines.
-        Trajectory<Pose2dWithCurvature> trajectory = TrajectoryUtil.trajectoryFromSplineWaypoints(waypoints, 3.0, 0.25, Math.toRadians(5.0));
-        System.out.println(trajectory.toCSV());
+        Trajectory<Pose2dWithCurvature> trajectory = TrajectoryUtil.trajectoryFromSplineWaypoints(waypoints, 3.0,
+                0.25, Math.toRadians(5.0));
+        // System.out.println(trajectory.toCSV());
 
         // Create a differential drive.
-        //DCMotorTransmission transmission = new DCMotorTransmission();
-        //DifferentialDrive drive = new DifferentialDrive();
+        final double kRobotMassKg = 60.0;
+        final double kRobotAngularInertia = 80.0;
+        final double kWheelRadius = Units.inches_to_meters(2.0);
+        DCMotorTransmission transmission = new DCMotorTransmission(1.0 / 0.143, (kWheelRadius * kWheelRadius * kRobotMassKg / 2.0) / 0.12, 0.75);
+        DifferentialDrive drive = new DifferentialDrive(kRobotMassKg, kRobotAngularInertia, kWheelRadius, Units.inches_to_meters(26.0 / 2.0), transmission, transmission);
 
-        // Create the constraint that the robot must be able to traverse the trajectory without ever applying more than 10V.
-        //DifferentialDriveDynamicsConstraint<Pose2dWithCurvature> drive_constraints = new DifferentialDriveDynamicsConstraint<>(drive, 10.0);
+        // Create the constraint that the robot must be able to traverse the trajectory without ever applying more
+        // than 10V.
+        DifferentialDriveDynamicsConstraint<Pose2dWithCurvature> drive_constraints = new
+                DifferentialDriveDynamicsConstraint<>(drive, 10.0);
 
-        //TimingUtil.timeParameterizeTrajectory(new DistanceView<>(trajectory), 3.0, Arrays.asList(drive_constraints), 0.0, 0.0, 0.0, 0.0);
+        Trajectory<TimedState<Pose2dWithCurvature>> timed_trajectory = TimingUtil.timeParameterizeTrajectory(new DistanceView<>(trajectory), 3.0, Arrays.asList(drive_constraints),
+                0.0, 0.0, 12.0 * 14.0, 12.0 * 10.0);
 
+        System.out.println(timed_trajectory.toCSV());
     }
 
 }

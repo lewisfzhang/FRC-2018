@@ -15,6 +15,11 @@ public class TimingUtil {
         public double max_velocity;
         public double min_acceleration;
         public double max_acceleration;
+
+        @Override
+        public String toString() {
+            return state.toString() + ", distance: " + distance + ", max_velocity: " + max_velocity + ", min_acceleration: " + min_acceleration + ", max_acceleration: " + max_acceleration;
+        }
     }
 
     public static <S extends State<S>> Trajectory<TimedState<S>> timeParameterizeTrajectory(
@@ -127,7 +132,9 @@ public class TimingUtil {
                     }
                     break;
                 }
+                // System.out.println("(intermediate) i: " + i + ", " + constraint_state.toString());
             }
+            // System.out.println("i: " + i + ", " + constraint_state.toString());
             predecessor = constraint_state;
         }
 
