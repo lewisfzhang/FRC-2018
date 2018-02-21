@@ -152,6 +152,7 @@ public class Elevator extends Subsystem {
         mLeftSlaveB.setInverted(false);
 
         mShifter = Constants.makeSolenoidForId(Constants.kElevatorShifterSolenoidId);
+        mShifter.set(true);
 
         // Start with zero power.
         mMaster.set(ControlMode.PercentOutput, 0);
@@ -181,7 +182,7 @@ public class Elevator extends Subsystem {
     }
 
     public synchronized void setHangMode(boolean hang_mode) {
-        mShifter.set(hang_mode);
+        mShifter.set(!hang_mode);
     }
 
     public synchronized double getRPM() {

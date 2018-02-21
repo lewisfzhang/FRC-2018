@@ -71,7 +71,7 @@ public class FollowerWheels extends Subsystem {
     }
 
     public void retract() {
-        mDeploySolenoid.set(true);
+        mDeploySolenoid.set(false);
     }
 
     public double getLeftDistance() {
