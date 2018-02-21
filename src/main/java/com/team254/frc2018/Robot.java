@@ -118,7 +118,12 @@ public class Robot extends IterativeRobot {
 
         try {
             System.out.println("Starting check systems.");
+
             mDrive.checkSystem();
+            mIntake.checkSystem();
+            mWrist.checkSystem();
+            mElevator.checkSystem();
+
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
             throw t;

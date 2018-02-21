@@ -250,8 +250,8 @@ public class Elevator extends Subsystem {
                                 mRPMFloor = 200;
                                 mCurrentEpsilon = 2.0;
                                 mRPMEpsilon = 250;
-                                mRunTimeSec = 0.5;
-                                mRunOutputPercentage = -0.5;
+                                mRunTimeSec = 0.4;
+                                mRunOutputPercentage = -0.4;
                                 mRPMSupplier = () -> -mMaster.getSelectedSensorVelocity(0);
                             }
                         });
@@ -268,8 +268,8 @@ public class Elevator extends Subsystem {
                                 mRPMFloor = 200;
                                 mCurrentEpsilon = 2.0;
                                 mRPMEpsilon = 250;
-                                mRunTimeSec = 0.5;
-                                mRunOutputPercentage = -0.5;
+                                mRunTimeSec = 0.4;
+                                mRunOutputPercentage = -0.4;
                                 mRPMSupplier = () -> -mMaster.getSelectedSensorVelocity(0);
                             }
                         });
