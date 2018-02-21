@@ -30,7 +30,7 @@ public class TimingUtil {
             double end_velocity,
             double max_velocity,
             double max_abs_acceleration) {
-        final int num_states = (int) Math.ceil(distance_view.last_interpolant() / step_size);
+        final int num_states = (int) Math.ceil(distance_view.last_interpolant() / step_size + 1);
         List<S> states = new ArrayList<>(num_states);
         for (int i = 0; i < num_states; ++i) {
             states.add(distance_view.sample(Math.min(i * step_size, distance_view.last_interpolant())).state());
