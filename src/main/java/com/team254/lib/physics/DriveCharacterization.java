@@ -12,9 +12,31 @@ public class DriveCharacterization {
         public double ka;
     }
 
-    public static CharacterizationConstants characterizeDrive(List<double[]> velocityData, List<double[]> accelerationData) {
-        CharacterizationConstants rv = getVelocityCharacterization(trimData(velocityData));
-        getAccelerationCharacterization(trimData(accelerationData), rv);
+    public static class VelocityDataPoint {
+        public final double velocity;
+        public final double power;
+
+        public VelocityDataPoint(double velocity, double power) {
+            this.velocity = velocity;
+            this.power = power;
+        }
+    }
+
+    public static class AccelerationDataPoint {
+        public final double velocity;
+        public final double power;
+        public final double acceleration;
+
+        public AccelerationDataPoint(double velocity, double power, double acceleration) {
+            this.velocity = velocity;
+            this.power = power;
+            this.acceleration = acceleration;
+        }
+    }
+
+    public static CharacterizationConstants characterizeDrive(List<VelocityDataPoint> velocityData, List<AccelerationDataPoint> accelerationData) {
+        CharacterizationConstants rv = getVelocityCharacterization(getVelocityData(velocityData));
+        getAccelerationCharacterization(getAccelerationData(accelerationData, rv), rv);
         return rv;
     }
 
@@ -34,26 +56,37 @@ public class DriveCharacterization {
         if(points == null) {
             return velocityChacterization;
         }
+
         PolynomialRegression p = new PolynomialRegression(points, 1);
         System.out.println("r^2: " + p.R2());
-        velocityChacterization.ka = p.beta(1) - velocityChacterization.kv;
+        velocityChacterization.ka = p.beta(1);
         return velocityChacterization;
     }
 
     /**
      * removes data points with a velocity of zero to get a better line fit
      */
-    private static double[][] trimData(List<double[]> input) {
+    private static double[][] getVelocityData(List<VelocityDataPoint> input) {
         double[][] output = null;
         int startTrim = 0;
         for(int i = 0; i < input.size(); ++i) {
-            if(input.get(i)[0] > Util.kEpsilon) {
+            if(input.get(i).velocity > Util.kEpsilon) {
                 if(output == null) {
                     output = new double[input.size() - i][2];
                     startTrim = i;
                 }
-                output[i - startTrim] = input.get(i);
+                output[i - startTrim][0] = input.get(i).velocity;
+                output[i - startTrim][1] = input.get(i).power;
             }
+        }
+        return output;
+    }
+
+    private static double[][] getAccelerationData(List<AccelerationDataPoint> input, CharacterizationConstants constants) {
+        double[][] output = new double[input.size()][2];
+        for(int i = 0; i < input.size(); ++i) {
+            output[i][0] = input.get(i).acceleration;
+            output[i][1] = input.get(i).power - constants.kv * input.get(i).velocity - constants.ks;
         }
         return output;
     }
