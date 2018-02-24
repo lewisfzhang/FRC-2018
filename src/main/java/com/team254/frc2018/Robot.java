@@ -209,7 +209,7 @@ public class Robot extends IterativeRobot {
 
 
             // Rumble
-            if (mControlBoard.getRunIntake() && mIntake.hasCube()) {
+            if (runIntake && mIntake.hasCube()) {
                 mControlBoard.setRumble(true);
             } else {
                 mControlBoard.setRumble(false);
