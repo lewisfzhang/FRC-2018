@@ -57,6 +57,9 @@ public class Robot extends IterativeRobot {
 
             Wrist.getInstance().zeroSensors();
             Elevator.getInstance().zeroSensors();
+
+            mRunIntakeReleased.update(true);
+            mShootReleased.update(true);
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
             throw t;
@@ -177,7 +180,7 @@ public class Robot extends IterativeRobot {
                 mIntake.clampJaw();
             }
 
-            // Intaking.
+            // Intake/Shoot
             boolean runIntake = mControlBoard.getRunIntake();
             boolean shoot = mControlBoard.getShoot();
             boolean runIntakeReleased = mRunIntakeReleased.update(!runIntake);
