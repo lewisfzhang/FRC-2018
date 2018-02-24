@@ -1,6 +1,7 @@
 package com.team254.frc2018.controlboard;
 
 import com.team254.frc2018.Constants;
+import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 
 public class GamepadButtonControlBoard implements IButtonControlBoard {
@@ -30,7 +31,7 @@ public class GamepadButtonControlBoard implements IButtonControlBoard {
     public boolean goToScoringWrist() {
         return mJoystick.getPOV() == 270;
     }
-    
+
     @Override
     public boolean goToVerticalWrist() {
     		return mJoystick.getPOV() == 0;
@@ -93,5 +94,10 @@ public class GamepadButtonControlBoard implements IButtonControlBoard {
     @Override
     public boolean getRunIntake() {
         return mJoystick.getRawAxis(2) != 0;
+    }
+
+    @Override
+    public void setRumble(boolean on) {
+        mJoystick.setRumble(GenericHID.RumbleType.kRightRumble, on ? 1.0 : 0);
     }
 }

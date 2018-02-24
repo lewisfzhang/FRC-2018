@@ -133,4 +133,8 @@ public class ControlBoard implements IControlBoard {
     public double getHangThrottle() {
         return 0.0;
     }
+
+    public void setRumble(boolean on) {
+        mButtonControlBoard.setRumble(on);
+    }
 }

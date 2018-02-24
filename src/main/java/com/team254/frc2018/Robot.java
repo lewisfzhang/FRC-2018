@@ -184,6 +184,13 @@ public class Robot extends IterativeRobot {
                 mIntake.setPower(0.0);
             }
 
+            // Rumble
+            if (mControlBoard.getRunIntake() && mIntake.getLeftBannerSensor()) {
+                mControlBoard.setRumble(true);
+            } else {
+                mControlBoard.setRumble(false);
+            }
+
             // Presets.
             double desired_height = Double.NaN;
             double desired_angle = Double.NaN;

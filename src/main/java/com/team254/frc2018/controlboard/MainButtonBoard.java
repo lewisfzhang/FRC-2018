@@ -93,4 +93,9 @@ public class MainButtonBoard implements IButtonControlBoard {
     public boolean getRunIntake() {
         return mButtonBoard.getRawButton(9);
     }
+
+    @Override
+    public void setRumble(boolean on) {
+
+    }
 }
