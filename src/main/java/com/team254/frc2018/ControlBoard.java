@@ -1,6 +1,6 @@
 package com.team254.frc2018;
 
-import edu.wpi.first.wpilibj.Joystick;
+import com.team254.frc2018.controlboard.*;
 
 public class ControlBoard implements IControlBoard {
     private static ControlBoard mInstance = null;
@@ -12,111 +12,116 @@ public class ControlBoard implements IControlBoard {
         return mInstance;
     }
 
-    private final Joystick mThrottleStick;
-    private final Joystick mTurnStick;
-    private final Joystick mButtonBoard;
+    private IDriveControlBoard mDriveControlBoard;
+    private IButtonControlBoard mButtonControlBoard;
 
     private ControlBoard() {
-        mThrottleStick = new Joystick(0);
-        mTurnStick = new Joystick(1);
-        mButtonBoard = new Joystick(2);
-    }
+        if (Constants.kUseGamepadForDriving) {
+            mDriveControlBoard = GamepadDriveControlBoard.getInstance();
+        } else {
+            mDriveControlBoard = MainDriveControlBoard.getInstance();
+        }
 
+        if (Constants.kUseGamepadForButtons) {
+            mButtonControlBoard = GamepadButtonControlBoard.getInstance();
+        } else {
+            mButtonControlBoard = MainButtonBoard.getInstance();
+        }
+    }
 
     @Override
     public double getThrottle() {
-        return -mThrottleStick.getRawAxis(0);
+        return mDriveControlBoard.getThrottle();
     }
 
     @Override
     public double getTurn() {
-        return mTurnStick.getRawAxis(1);
+        return mDriveControlBoard.getTurn();
     }
 
     @Override
     public boolean getQuickTurn() {
-        return mTurnStick.getRawButton(1);
-    }
-
-    @Override
-    public boolean getJogWristBack() {
-        return mButtonBoard.getRawButton(11);
-    }
-
-    @Override
-    public boolean getJogWristForward() {
-        return mButtonBoard.getRawButton(12);
+        return mDriveControlBoard.getQuickTurn();
     }
 
     @Override
     public boolean getOpenJaw() {
-        return mThrottleStick.getRawButton(2);
+        return mDriveControlBoard.getOpenJaw();
     }
 
     @Override
     public boolean getShoot() {
-        return mTurnStick.getRawButton(2);
-    }
-
-    @Override
-    public boolean getRunIntake() {
-        return mButtonBoard.getRawButton(9);
-    }
-
-    @Override
-    public boolean getGoToStowHeight() {
-        return mButtonBoard.getRawButton(10);
-    }
-
-    @Override
-    public boolean getGoToSwitchHeight() {
-        return mButtonBoard.getRawButton(3);
-    }
-
-    @Override
-    public boolean getGoToLowScaleHeight() {
-        return mButtonBoard.getRawButton(4);
-    }
-
-    @Override
-    public boolean getGoToNeutralScaleHeight() {
-        return mButtonBoard.getRawButton(5);
-    }
-
-    @Override
-    public boolean getGoToHighScaleHeight() {
-        return mButtonBoard.getRawButton(6);
+        return mDriveControlBoard.getShoot();
     }
 
     @Override
     public boolean goToIntakingWrist() {
-        return mButtonBoard.getRawAxis(0) < 0.1;
+        return mButtonControlBoard.goToIntakingWrist();
     }
 
     @Override
     public boolean goToScoringWrist() {
-        return mButtonBoard.getRawButton(7);
+        return mButtonControlBoard.goToScoringWrist();
     }
 
     @Override
     public boolean goToVerticalWrist() {
-        return mButtonBoard.getRawAxis(1) < 0.1;
+        return mButtonControlBoard.goToVerticalWrist();
     }
 
     @Override
     public boolean goToStowWrist() {
-        return mButtonBoard.getRawAxis(2) < 0.1;
+        return mButtonControlBoard.goToStowWrist();
     }
 
     @Override
-   public boolean getJogElevatorUp() {
-        return mButtonBoard.getRawButton(1);
+    public boolean getGoToHighScaleHeight() {
+        return mButtonControlBoard.getGoToHighScaleHeight();
     }
 
+    @Override
+    public boolean getGoToNeutralScaleHeight() {
+        return mButtonControlBoard.getGoToNeutralScaleHeight();
+    }
+
+    @Override
+    public boolean getGoToLowScaleHeight() {
+        return mButtonControlBoard.getGoToLowScaleHeight();
+    }
+
+    @Override
+    public boolean getGoToSwitchHeight() {
+        return mButtonControlBoard.getGoToSwitchHeight();
+    }
+
+    @Override
+    public boolean getGoToStowHeight() {
+        return mButtonControlBoard.getGoToStowHeight();
+    }
+
+    @Override
+    public boolean getJogElevatorUp() {
+        return mButtonControlBoard.getJogElevatorUp();
+    }
 
     @Override
     public boolean getJogElevatorDown() {
-        return mButtonBoard.getRawButton(2);
+        return mButtonControlBoard.getJogElevatorDown();
+    }
+
+    @Override
+    public boolean getJogWristBack() {
+        return mButtonControlBoard.getJogWristBack();
+    }
+
+    @Override
+    public boolean getJogWristForward() {
+        return mButtonControlBoard.getJogWristForward();
+    }
+
+    @Override
+    public boolean getRunIntake() {
+        return mButtonControlBoard.getRunIntake();
     }
 
     @Override
