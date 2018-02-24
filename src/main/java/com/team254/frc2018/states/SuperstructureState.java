@@ -9,7 +9,6 @@ public class SuperstructureState {
     public boolean jawClamped = true;
 
     // This isnt touched by planner
-    public IntakeStateMachine.WantedAction intakeAction = IntakeStateMachine.WantedAction.IDLE;
     public boolean hasCube = false;
     public boolean elevatorSentLastTrajectory = false;
     public boolean wristSentLastTrajectory = false;

@@ -34,7 +34,8 @@ public class SuperstructureConstants {
     public final static double kJogUpPercent = -0.4;
     public final static double kJogDownPercent = 0.25;
 
-    public enum ScoringPositionID {
+    public enum SuperstructurePositionID {
+        GROUND,
         SWITCH,
         SWITCH_BACKWARDS,
         SCALE_LOW,
@@ -45,35 +46,37 @@ public class SuperstructureConstants {
         SCALE_HIGH_BACKWARDS,
     }
 
-    public static class ScoringPosition {
+    public static class SuperstructurePosition {
         public double height = Elevator.kHomePositionInches;
         public double angle = kStowedAngle;
 
-        public ScoringPosition(double in_height, double in_angle) {
+        public SuperstructurePosition(double in_height, double in_angle) {
             height = in_height;
             angle = in_angle;
         }
     }
 
-    public static HashMap<ScoringPositionID, ScoringPosition> kScoringPositions =
-            new HashMap<ScoringPositionID, ScoringPosition>() {
+    public static HashMap<SuperstructurePositionID, SuperstructurePosition> kScoringPositions =
+            new HashMap<SuperstructurePositionID, SuperstructurePosition>() {
                 {
-                    put(ScoringPositionID.SWITCH, new ScoringPosition(30.0, 165.0));
-                    put(ScoringPositionID.SWITCH_BACKWARDS,
-                            new ScoringPosition(30.0, 0.0));
+                    put(SuperstructurePositionID.GROUND, new SuperstructurePosition(0.0, 0.0));
 
-                    put(ScoringPositionID.SCALE_LOW, new ScoringPosition(60.0, 165.0));
-                    put(ScoringPositionID.SCALE_LOW_BACKWARDS,
-                            new ScoringPosition(60.0, 45.0));
+                    put(SuperstructurePositionID.SWITCH, new SuperstructurePosition(30.0, 165.0));
+                    put(SuperstructurePositionID.SWITCH_BACKWARDS,
+                            new SuperstructurePosition(30.0, 0.0));
 
-                    put(ScoringPositionID.SCALE_NEUTRAL,
-                            new ScoringPosition(70.0, 165.0));
-                    put(ScoringPositionID.SCALE_NEUTRAL_BACKWARDS,
-                            new ScoringPosition(70.0, 45.0));
+                    put(SuperstructurePositionID.SCALE_LOW, new SuperstructurePosition(60.0, 165.0));
+                    put(SuperstructurePositionID.SCALE_LOW_BACKWARDS,
+                            new SuperstructurePosition(60.0, 45.0));
 
-                    put(ScoringPositionID.SCALE_HIGH, new ScoringPosition(80.0, 165.0));
-                    put(ScoringPositionID.SCALE_HIGH_BACKWARDS,
-                            new ScoringPosition(80.0, 45.0));
+                    put(SuperstructurePositionID.SCALE_NEUTRAL,
+                            new SuperstructurePosition(70.0, 165.0));
+                    put(SuperstructurePositionID.SCALE_NEUTRAL_BACKWARDS,
+                            new SuperstructurePosition(70.0, 45.0));
+
+                    put(SuperstructurePositionID.SCALE_HIGH, new SuperstructurePosition(80.0, 165.0));
+                    put(SuperstructurePositionID.SCALE_HIGH_BACKWARDS,
+                            new SuperstructurePosition(80.0, 45.0));
                 }
     };
 }

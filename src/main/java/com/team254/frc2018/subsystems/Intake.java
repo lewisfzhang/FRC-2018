@@ -4,16 +4,13 @@ import com.ctre.phoenix.CANifier;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.team254.frc2018.Constants;
-import com.team254.frc2018.ControlBoard;
 import com.team254.frc2018.loops.Loop;
 import com.team254.frc2018.loops.Looper;
 import com.team254.frc2018.statemachines.IntakeStateMachine;
 import com.team254.frc2018.states.IntakeState;
-import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.lib.drivers.TalonSRXChecker;
 import com.team254.lib.drivers.TalonSRXFactory;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -37,9 +34,9 @@ public class Intake extends Subsystem {
     private final TalonSRX mLeftMaster, mRightMaster;
     private final DigitalInput mLeftBanner, mRightBanner;
 
-    public static CANifier canifier = new CANifier(0);
+    public final CANifier mCanifier = new CANifier(0);
 
-    private IntakeStateMachine.WantedAction mWantedAction = IntakeStateMachine.WantedAction.IDLE;
+    private IntakeStateMachine.WantedAction mWantedAction = IntakeStateMachine.WantedAction.WANT_MANUAL;
     private IntakeState.JawState mJawState;
 
     private IntakeState mCurrentState = new IntakeState();
@@ -83,7 +80,8 @@ public class Intake extends Subsystem {
     public IntakeState getCurrentState() {
         mCurrentState.leftCubeSensorTriggered = getLeftBannerSensor();
         mCurrentState.rightCubeSensorTriggered = getRightBannerSensor();
-        mCurrentState.wristAngle = Wrist.getInstance().getAngle(); // this is a hack
+        mCurrentState.wristAngle = Wrist.getInstance().getAngle();
+        mCurrentState.wristSetpoint = Wrist.getInstance().getSetpoint();
         return mCurrentState;
     }
 
@@ -109,7 +107,7 @@ public class Intake extends Subsystem {
 
             @Override
             public void onStop(double timestamp) {
-                mWantedAction = IntakeStateMachine.WantedAction.IDLE;
+                mWantedAction = IntakeStateMachine.WantedAction.WANT_MANUAL;
                 // Set the states to what the robot falls into when disabled.
                 stop();
             }
@@ -151,24 +149,20 @@ public class Intake extends Subsystem {
     }
 
     public boolean getLeftBannerSensor() {
-        return !canifier.getGeneralInput(CANifier.GeneralPin.LIMF);
+        return !mCanifier.getGeneralInput(CANifier.GeneralPin.LIMF);
     }
 
     public boolean getRightBannerSensor() {
-        return !canifier.getGeneralInput(CANifier.GeneralPin.LIMR);
+        return !mCanifier.getGeneralInput(CANifier.GeneralPin.LIMR);
     }
 
     public void setLEDsOn(double blue, double green, double red) {
         // A: Blue
         // B: Green
         // C: Red
-        canifier.setLEDOutput(blue, CANifier.LEDChannel.LEDChannelA);
-        canifier.setLEDOutput(green, CANifier.LEDChannel.LEDChannelB);
-        canifier.setLEDOutput(red, CANifier.LEDChannel.LEDChannelC);
-    }
-
-    public synchronized boolean hasCube() {
-        return mStateMachine.hasCubeClamped();
+        mCanifier.setLEDOutput(blue, CANifier.LEDChannel.LEDChannelA);
+        mCanifier.setLEDOutput(green, CANifier.LEDChannel.LEDChannelB);
+        mCanifier.setLEDOutput(red, CANifier.LEDChannel.LEDChannelC);
     }
 
     public IntakeState.JawState getJawState() {

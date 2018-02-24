@@ -3,45 +3,36 @@ package com.team254.frc2018.statemachines;
 import com.team254.frc2018.states.IntakeState;
 import com.team254.frc2018.states.SuperstructureConstants;
 
-
 public class IntakeStateMachine {
     public final static double kActuationTime = 0.0;
     public final static double kShootSetpoint = 1.0;
     public final static double kIntakeCubeSetpoint = -1.0;
-    public final static double kHoldSetpoint = 0;
+    public final static double kHoldSetpoint = 0.0;
     public final static double kLostCubeTime = 0.5;
 
     public enum WantedAction {
-        IDLE,
-        INTAKE,
-        INTAKE_POSITION,
-        SHOOT,
-        PLACE
+        WANT_MANUAL,
+        WANT_CUBE
     }
 
     private enum SystemState {
-        IDLE,
-        INTAKING,
-        INTAKE_POSITION,
-        CLAMPING,
-        HOLDING,
-        LOST_CUBE,
-        SHOOTING,
-        PLACING
+        OPEN_LOOP,
+        KEEPING_CUBE
     }
 
-    private SystemState mSystemState = SystemState.IDLE;
+    private SystemState mSystemState = SystemState.OPEN_LOOP;
     private IntakeState mCommandedState = new IntakeState();
     private double mCurrentStateStartTime = 0;
 
-    public SystemState maybePlace(IntakeState currentState, SystemState defaultState) {
-        if (currentState.wristAngle < SuperstructureConstants.kAlwaysNeedsJawClampMinAngle) {
-            // Don't kill the elevator
-            System.out.println("Unable to place with: " + currentState.wristAngle);
-            return defaultState;
-        } else {
-            return SystemState.PLACING;
-        }
+    private IntakeState.JawState mWantedJawState = IntakeState.JawState.CLAMPED;
+    private double mWantedPower = 0.0;
+
+    public synchronized void setWantedJawState(final IntakeState.JawState jaw_state) {
+        mWantedJawState = jaw_state;
+    }
+
+    public synchronized void setmWantedPower(double power) {
+        mWantedPower = power;
     }
 
     public IntakeState update(double timestamp, WantedAction wantedAction, IntakeState currentState) {
@@ -51,29 +42,11 @@ public class IntakeStateMachine {
 
             // Handle state transitions
             switch (mSystemState) {
-                case IDLE:
-                    newState = handleIdleTransitions(wantedAction, currentState);
+                case OPEN_LOOP:
+                    newState = handleOpenLoopTransitions(wantedAction, currentState);
                     break;
-                case INTAKING:
-                    newState = handleIntakingTransitions(wantedAction, currentState);
-                    break;
-                case INTAKE_POSITION:
-                    newState = handleIntakePositionTransitions(wantedAction, currentState);
-                    break;
-                case CLAMPING:
-                    newState = handleClampingTransitions(timeInState, currentState);
-                    break;
-                case HOLDING:
-                    newState = handleHoldingTransitions(wantedAction, currentState);
-                    break;
-                case LOST_CUBE:
-                    newState = handleLostCubeTransitions(timeInState, currentState);
-                    break;
-                case SHOOTING:
-                    newState = handleShootingTransitions(wantedAction);
-                    break;
-                case PLACING:
-                    newState = handlePlacingTransitions(wantedAction);
+                case KEEPING_CUBE:
+                    newState = handleKeepingCubeTransitions(wantedAction, currentState);
                     break;
                 default:
                     System.out.println("Unexpected intake system state: " + mSystemState);
@@ -89,208 +62,67 @@ public class IntakeStateMachine {
             
             // Handle State outputs
             switch (mSystemState) {
-                case IDLE:
-                    getIdleCommandedState(currentState, mCommandedState);
+                case OPEN_LOOP:
+                    getOpenLoopCommandedState(currentState, mCommandedState);
                     break;
-                case INTAKING:
-                    getIntakingCommandedState(currentState, mCommandedState);
-                    break;
-                case INTAKE_POSITION:
-                    getIntakePositionCommandedState(currentState, mCommandedState);
-                    break;
-                case CLAMPING:
-                    getClampingCommandedState(currentState, mCommandedState);
-                    break;
-                case HOLDING:
-                    getHoldingCommandedState(currentState, mCommandedState);
-                    break;
-                case LOST_CUBE:
-                    getLostCubeCommandedState(currentState, mCommandedState);
-                    break;
-                case PLACING:
-                    getPlacingCommandedState(currentState, mCommandedState);
-                    break;
-                case SHOOTING:
-                    getShootingCommandedState(currentState, mCommandedState);
+                case KEEPING_CUBE:
+                    getKeepingCubeCommandedState(currentState, mCommandedState);
                     break;
                 default:
-                    getIdleCommandedState(currentState, mCommandedState);
+                    getOpenLoopCommandedState(currentState, mCommandedState);
                     break;
             }
         }
         return mCommandedState;
     }
 
-    // Idle
-    private synchronized void getIdleCommandedState(IntakeState currentState, IntakeState commandedState) {
-        commandedState.setPower(0);
-        commandedState.jawState = IntakeState.JawState.CLAMPED;
-        commandedState.ledState = new IntakeState.LEDState(0.0,0.0,0.0);
-    }
-
-    private synchronized SystemState handleIdleTransitions(WantedAction wantedAction, IntakeState currentState) {
+    // IDLE
+    private synchronized SystemState handleOpenLoopTransitions(WantedAction wantedAction, IntakeState currentState) {
         if (currentState.seesCube()) {
-            return SystemState.CLAMPING;
+            // TODO think about this...
+            return SystemState.KEEPING_CUBE;
         }
         switch (wantedAction) {
-            case INTAKE:
-                return SystemState.INTAKING;
-            case SHOOT:
-                return SystemState.SHOOTING;
-            case PLACE:
-                return maybePlace(currentState, SystemState.IDLE);
+            case WANT_CUBE:
+                return SystemState.KEEPING_CUBE;
             default:
-                return SystemState.IDLE;
+                return SystemState.OPEN_LOOP;
         }
     }
-
-    // Intaking
-    private synchronized void getIntakingCommandedState(IntakeState currentState, IntakeState commandedState) {
-        commandedState.setPower(kIntakeCubeSetpoint);
-        commandedState.jawState = IntakeState.JawState.CLOSED;
-        commandedState.ledState = new IntakeState.LEDState(0.0,1.0,0.0);
-    }
-
-    private synchronized SystemState handleIntakingTransitions(WantedAction wantedAction, IntakeState currentState) {
-        if (currentState.seesCube()) {
-            return SystemState.CLAMPING;
-        }
-
-        switch (wantedAction) {
-            case IDLE:
-                return SystemState.IDLE;
-            case INTAKE_POSITION:
-                return SystemState.INTAKE_POSITION;
-            case SHOOT:
-                return SystemState.SHOOTING;
-            case PLACE:
-                return maybePlace(currentState, SystemState.INTAKING);
-            default:
-                return SystemState.INTAKING;
-        }
-    }
-
-    // Intake position
-    private synchronized void getIntakePositionCommandedState(IntakeState currentState,
-                                                              IntakeState commandedState) {
-        commandedState.setPower(0);
-        commandedState.jawState = IntakeState.JawState.CLOSED;
-        commandedState.ledState = new IntakeState.LEDState(0.0,0.0,0.0);
-    }
-    private synchronized SystemState handleIntakePositionTransitions(WantedAction wantedAction,
-                                                                     IntakeState currentState) {
-        if (currentState.seesCube()) {
-            return SystemState.CLAMPING;
-        }
-
-        switch (wantedAction) {
-            case IDLE:
-                return SystemState.IDLE;
-            case INTAKE:
-                return SystemState.INTAKING;
-            case SHOOT:
-                return SystemState.SHOOTING;
-            case PLACE:
-                return maybePlace(currentState, SystemState.INTAKE_POSITION);
-            default:
-                return SystemState.INTAKE_POSITION;
-        }
-    }
-
-
-    // Clamping
-    private synchronized void getClampingCommandedState(IntakeState currentState, IntakeState commandedState) {
-        commandedState.setPower(kIntakeCubeSetpoint);
-        commandedState.jawState = IntakeState.JawState.CLAMPED;
-        commandedState.ledState = new IntakeState.LEDState(1.0,1.0,0.0);
-    }
-
-    private synchronized SystemState handleClampingTransitions(double timeInState, IntakeState currentState) {
-        if (currentState.seesCube()) {
-            if (timeInState > kActuationTime) {
-                return SystemState.HOLDING;
-            } else {
-                return SystemState.CLAMPING;
-            }
+    private synchronized void getOpenLoopCommandedState(IntakeState currentState, IntakeState commandedState) {
+        commandedState.setPower(mWantedPower);
+        if (mustStayClamped(currentState)) {
+            commandedState.jawState = IntakeState.JawState.CLAMPED;
         } else {
-            return SystemState.IDLE;
+            commandedState.jawState = mWantedJawState;
         }
+        commandedState.ledState = new IntakeState.LEDState(0.0,0.0,0.0);
     }
 
-    // Holding
-    private synchronized void getHoldingCommandedState(IntakeState currentState, IntakeState commandedState) {
-        commandedState.setPower(kHoldSetpoint);
-        commandedState.jawState = IntakeState.JawState.CLAMPED;
-        commandedState.ledState = new IntakeState.LEDState(1.0,0.0,0.0);
-    }
-
-    private synchronized SystemState handleHoldingTransitions(WantedAction wantedAction, IntakeState currentState) {
-        if (currentState.hasLostCube()) {
-            return SystemState.LOST_CUBE;
-        }
-
+    // KEEP_CUBE
+    private synchronized SystemState handleKeepingCubeTransitions(WantedAction wantedAction, IntakeState currentState) {
         switch (wantedAction) {
-            case SHOOT:
-                return SystemState.SHOOTING;
-            case PLACE:
-                return maybePlace(currentState, SystemState.HOLDING);
+            case WANT_MANUAL:
+                return SystemState.OPEN_LOOP;
             default:
-                return SystemState.HOLDING;
+                return SystemState.KEEPING_CUBE;
         }
     }
-
-    // Placing
-    private synchronized void getPlacingCommandedState(IntakeState currentState, IntakeState commandedState) {
-        commandedState.setPower(0);
-        commandedState.jawState = IntakeState.JawState.OPEN;
-        commandedState.ledState = new IntakeState.LEDState(1.0,1.0,1.0);
-    }
-
-    private synchronized SystemState handlePlacingTransitions(WantedAction wantedAction) {
-        switch (wantedAction) {
-            case IDLE:
-                return SystemState.IDLE;
-            default:
-                return SystemState.PLACING;
-        }
-    }
-
-    // Shooting
-    private synchronized void getShootingCommandedState(IntakeState currentState, IntakeState commandedState) {
-        commandedState.setPower(kShootSetpoint);
-        commandedState.jawState = IntakeState.JawState.CLAMPED;
-        commandedState.ledState = new IntakeState.LEDState(1.0,1.0,1.0);
-    }
-    private synchronized SystemState handleShootingTransitions(WantedAction wantedAction) {
-        switch (wantedAction) {
-            case IDLE:
-                return SystemState.IDLE;
-            default:
-                return SystemState.SHOOTING;
-        }
-    }
-
-    // Lost Cube
-    private synchronized SystemState handleLostCubeTransitions(double timeInState, IntakeState currentState) {
-        if (currentState.seesCube()) {
-            return SystemState.HOLDING;
-        }
-
-        if (timeInState > kLostCubeTime) {
-            return SystemState.IDLE;
-        }
-        return SystemState.LOST_CUBE;
-    }
-    private synchronized void getLostCubeCommandedState(IntakeState currentState,
-                                                        IntakeState commandedState) {
+    private synchronized void getKeepingCubeCommandedState(IntakeState currentState, IntakeState commandedState) {
         commandedState.setPower(kIntakeCubeSetpoint);
-        commandedState.jawState = IntakeState.JawState.CLAMPED;
-        commandedState.ledState = new IntakeState.LEDState(0.0,0.0,1.0);
+        if (currentState.seesCube()) {
+            commandedState.setPower(kHoldSetpoint);
+            commandedState.jawState = IntakeState.JawState.CLAMPED;
+            commandedState.ledState = new IntakeState.LEDState(1.0, 0.0, 0.0);
+        } else {
+            commandedState.setPower(kIntakeCubeSetpoint);
+            commandedState.jawState = mustStayClamped(currentState) ? IntakeState.JawState.CLAMPED : IntakeState.JawState.CLOSED;
+            commandedState.ledState = new IntakeState.LEDState(0.0, 1.0, 0.0);
+        }
     }
 
-    // Getters
-    public synchronized boolean hasCubeClamped() {
-        return mSystemState == SystemState.HOLDING || mSystemState == SystemState.LOST_CUBE
-                || mSystemState == SystemState.CLAMPING;
+    private boolean mustStayClamped(IntakeState state) {
+        return state.wristSetpoint < SuperstructureConstants.kAlwaysNeedsJawClampMinAngle ||
+                state.wristAngle < SuperstructureConstants.kAlwaysNeedsJawClampMinAngle;
     }
 }

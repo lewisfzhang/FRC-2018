@@ -195,6 +195,10 @@ public class Elevator extends Subsystem {
         return (mMaster.getSelectedSensorPosition(0) / kEncoderTicksPerInch) + kHomePositionInches;
     }
 
+    public synchronized double getSetpoint() {
+        return mLastTrajectoryPoint / kEncoderTicksPerInch + kHomePositionInches;
+    }
+
     @Override
     public void outputToSmartDashboard() {
         SmartDashboard.putNumber("Elevator Output %", mMaster.getMotorOutputPercent());

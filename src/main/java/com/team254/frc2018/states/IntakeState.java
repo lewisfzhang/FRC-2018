@@ -23,6 +23,7 @@ public class IntakeState {
     public double leftMotor = 0;
     public double rightMotor = 0;
     public double wristAngle = 0; // needed to enforce clamping limits
+    public double wristSetpoint = 0;
 
     public boolean leftCubeSensorTriggered = false;
     public boolean rightCubeSensorTriggered = false;
@@ -36,11 +37,4 @@ public class IntakeState {
     public boolean seesCube() {
         return leftCubeSensorTriggered && rightCubeSensorTriggered;
     }
-
-    // For loosing cubes, make sure we drop both sensors.
-    public boolean hasLostCube() {
-        return !leftCubeSensorTriggered && !rightCubeSensorTriggered;
-    }
-
-
 }

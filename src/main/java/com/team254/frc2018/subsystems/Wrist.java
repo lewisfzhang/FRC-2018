@@ -213,6 +213,10 @@ public class Wrist extends Subsystem {
         return false;
     }
 
+    public synchronized double getSetpoint() {
+        return sensorUnitsToDegrees(mLastTrajectoryPoint);
+    }
+
     private double sensorUnitsToDegrees(double units) {
         return units / 4096.0 * 360.0;
     }

@@ -175,35 +175,35 @@ public class Robot extends IterativeRobot {
                 mSuperstructure.setWantedAction(SuperstructureStateMachine.WantedAction.INTAKE);
             } else if (mControlBoard.getSwitch()) {
                 if (mControlBoard.getBackwardsModifier()) {
-                    mSuperstructure.setScoringPosition(
-                            SuperstructureConstants.ScoringPositionID.SWITCH_BACKWARDS);
+                    mSuperstructure.setDesiredPosition(
+                            SuperstructureConstants.SuperstructurePositionID.SWITCH_BACKWARDS);
                 } else {
-                    mSuperstructure.setScoringPosition(
-                            SuperstructureConstants.ScoringPositionID.SWITCH);
+                    mSuperstructure.setDesiredPosition(
+                            SuperstructureConstants.SuperstructurePositionID.SWITCH);
                 }
             } else if (mControlBoard.getHighScale()) {
                 if (mControlBoard.getBackwardsModifier()) {
-                    mSuperstructure.setScoringPosition(
-                            SuperstructureConstants.ScoringPositionID.SCALE_HIGH_BACKWARDS);
+                    mSuperstructure.setDesiredPosition(
+                            SuperstructureConstants.SuperstructurePositionID.SCALE_HIGH_BACKWARDS);
                 } else {
-                    mSuperstructure.setScoringPosition(
-                            SuperstructureConstants.ScoringPositionID.SCALE_HIGH);
+                    mSuperstructure.setDesiredPosition(
+                            SuperstructureConstants.SuperstructurePositionID.SCALE_HIGH);
                 }
             } else if (mControlBoard.getNeutralScale()) {
                 if (mControlBoard.getBackwardsModifier()) {
-                    mSuperstructure.setScoringPosition(
-                            SuperstructureConstants.ScoringPositionID.SCALE_NEUTRAL_BACKWARDS);
+                    mSuperstructure.setDesiredPosition(
+                            SuperstructureConstants.SuperstructurePositionID.SCALE_NEUTRAL_BACKWARDS);
                 } else {
-                    mSuperstructure.setScoringPosition(
-                            SuperstructureConstants.ScoringPositionID.SCALE_NEUTRAL);
+                    mSuperstructure.setDesiredPosition(
+                            SuperstructureConstants.SuperstructurePositionID.SCALE_NEUTRAL);
                 }
             } else if (mControlBoard.getLowScale()) {
                 if (mControlBoard.getBackwardsModifier()) {
-                    mSuperstructure.setScoringPosition(
-                            SuperstructureConstants.ScoringPositionID.SCALE_LOW_BACKWARDS);
+                    mSuperstructure.setDesiredPosition(
+                            SuperstructureConstants.SuperstructurePositionID.SCALE_LOW_BACKWARDS);
                 } else {
-                    mSuperstructure.setScoringPosition(
-                            SuperstructureConstants.ScoringPositionID.SCALE_LOW);
+                    mSuperstructure.setDesiredPosition(
+                            SuperstructureConstants.SuperstructurePositionID.SCALE_LOW);
                 }
             } else if (mControlBoard.getJogElevatorDown()) {
                 mSuperstructure.setJogDown();

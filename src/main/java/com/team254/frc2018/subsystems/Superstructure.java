@@ -3,15 +3,11 @@ package com.team254.frc2018.subsystems;
 import com.team254.frc2018.Robot;
 import com.team254.frc2018.loops.Loop;
 import com.team254.frc2018.loops.Looper;
-import com.team254.frc2018.planners.SuperstructureMotionPlanner;
-import com.team254.frc2018.statemachines.IntakeStateMachine;
 import com.team254.frc2018.statemachines.SuperstructureStateMachine;
 import com.team254.frc2018.states.IntakeState;
 import com.team254.frc2018.states.SuperstructureCommand;
 import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.frc2018.states.SuperstructureState;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * The superstructure subsystem is the overarching superclass containing all components of the superstructure: the
@@ -41,7 +37,6 @@ public class Superstructure extends Subsystem {
     private Elevator mElevator = Elevator.getInstance();
     private Wrist mWrist = Wrist.getInstance();
     private Intake mIntake = Intake.getInstance();
-    private Forklift mForklift = Forklift.getInstance();
 
     private SuperstructureStateMachine mStateMachine = new SuperstructureStateMachine();
     private SuperstructureStateMachine.WantedAction mWantedAction =
@@ -71,7 +66,6 @@ public class Superstructure extends Subsystem {
         state.height = mElevator.getInchesOffGround();
         state.angle = mWrist.getAngle();
         state.jawClamped = mIntake.getJawState() == IntakeState.JawState.CLAMPED;
-        state.hasCube = mIntake.hasCube();
 
         state.elevatorSentLastTrajectory = mElevator.hasFinishedTrajectory();
         state.wristSentLastTrajectory = mWrist.hasFinishedTrajectory();
@@ -89,12 +83,7 @@ public class Superstructure extends Subsystem {
         } else {
             mElevator.setHangMode(false);
         }
-        if (commandState.deployForklift) {
-            mForklift.deploy();
-        }
         mWrist.setClosedLoopAngle(commandState.wristAngle);
-
-        mIntake.setState(commandState.intakeAction);
     }
 
     @Override
@@ -122,35 +111,20 @@ public class Superstructure extends Subsystem {
         });
     }
 
-    public synchronized void setScoringPosition(SuperstructureConstants.ScoringPositionID position_id) {
-        SuperstructureConstants.ScoringPosition position =
+    public synchronized void setDesiredPosition(SuperstructureConstants.SuperstructurePositionID position_id) {
+        SuperstructureConstants.SuperstructurePosition position =
                 SuperstructureConstants.kScoringPositions.get(position_id);
         mStateMachine.setScoringPosition(position.height, position.angle);
-        mWantedAction = SuperstructureStateMachine.WantedAction.GOTO_SCORE_POSITION;
+        mWantedAction = SuperstructureStateMachine.WantedAction.GO_TO_POSITION;
     }
 
-    public synchronized void setArmIn() {
-        double angle = 0.0;
-        if (mState.height >= SuperstructureConstants.kClearFirstStageMaxHeight) {
-            angle = SuperstructureConstants.kClearFirstStageMinWristAngle;
-        }
-
-        mStateMachine.setScoringAngle(angle);
-        mWantedAction = SuperstructureStateMachine.WantedAction.GOTO_SCORE_POSITION;
-    }
-
-    public synchronized void setJogUp() {
-        mStateMachine.setJogPercentage(SuperstructureConstants.kJogUpPercent);
-        mWantedAction = SuperstructureStateMachine.WantedAction.JOG;
-    }
-
-    public synchronized void setJogDown() {
-        mStateMachine.setJogPercentage(SuperstructureConstants.kJogDownPercent);
-        mWantedAction = SuperstructureStateMachine.WantedAction.JOG;
+    public synchronized void setJog(double relative_inches) {
+        mStateMachine.jogElevator(relative_inches);
+        mWantedAction = SuperstructureStateMachine.WantedAction.GO_TO_POSITION;
     }
 
     public synchronized void setHangThrottle(double throttle) {
-        mStateMachine.setJogPercentage(throttle);
+        mStateMachine.setOpenLoopPower(throttle);
         mWantedAction = SuperstructureStateMachine.WantedAction.HANG;
     }
 
