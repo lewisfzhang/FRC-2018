@@ -95,6 +95,9 @@ public class MainButtonBoard implements IButtonControlBoard {
     }
 
     @Override
+    public boolean getRunIntakePosition() { return false; }
+
+    @Override
     public void setRumble(boolean on) {
 
     }

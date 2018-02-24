@@ -174,21 +174,17 @@ public class Robot extends IterativeRobot {
             mDrive.setOpenLoop(mCheesyDriveHelper.cheesyDrive(throttle, turn, mControlBoard.getQuickTurn(),
                     mDrive.isHighGear()));
 
-            // Manual jaw inputs.
-            if (mControlBoard.getOpenJaw()) {
-                mIntake.tryOpenJaw();
-            } else {
-                mIntake.clampJaw();
-            }
-
             // Intake/Shoot
-            boolean runIntake = mControlBoard.getRunIntake();
+            boolean runIntake = mControlBoard.getRunIntake() || mControlBoard.getRunIntakePosition();
             boolean shoot = mControlBoard.getShoot();
             boolean runIntakeReleased = mRunIntakeReleased.update(!runIntake);
             boolean shootReleased = mShootReleased.update(!shoot);
+            boolean intakeAction = false;
             if (runIntake) {
                 mIntake.getOrKeepCube();
+                intakeAction = true;
             } else if (shoot) {
+                intakeAction = true;
                 mIntake.shoot();
             } else if (runIntakeReleased || shootReleased) {
                 if (mIntake.hasCube()) {
@@ -197,7 +193,20 @@ public class Robot extends IterativeRobot {
                     mIntake.setState(IntakeStateMachine.WantedAction.WANT_MANUAL);
                     mIntake.setPower(0.0);
                 }
+                intakeAction = true;
             }
+
+            // Manual jaw inputs.
+            if (mControlBoard.getOpenJaw()) {
+                mIntake.tryOpenJaw();
+                if (!intakeAction) {
+                    mIntake.setState(IntakeStateMachine.WantedAction.WANT_MANUAL);
+                    mIntake.setPower(0.0);
+                }
+            } else {
+                mIntake.clampJaw();
+            }
+
 
             // Rumble
             if (mControlBoard.getRunIntake() && mIntake.hasCube()) {
@@ -215,23 +224,23 @@ public class Robot extends IterativeRobot {
                 desired_angle = SuperstructureConstants.getAngle(SuperstructureConstants.SuperstructurePositionID.STOW);
             }
 
-            if (mRunIntakePressed.update(runIntake)) {
+            if (mRunIntakePressed.update(mControlBoard.getRunIntakePosition())) {
                 desired_height = SuperstructureConstants.getHeight(SuperstructureConstants.SuperstructurePositionID.STOW);
                 desired_angle = SuperstructureConstants.getAngle(SuperstructureConstants.SuperstructurePositionID.INTAKE);
             }
 
             // Elevator.
-            if (mControlBoard.getGoToHighScaleHeight() && !mControlBoard.getRunIntake()) {
+            if (mControlBoard.getGoToHighScaleHeight() && !mControlBoard.getRunIntakePosition()) {
                 desired_height = SuperstructureConstants.getHeight(SuperstructureConstants.SuperstructurePositionID.SCALE_HIGH);
-            } else if (mControlBoard.getGoToNeutralScaleHeight() && !mControlBoard.getRunIntake()) {
+            } else if (mControlBoard.getGoToNeutralScaleHeight() && !mControlBoard.getRunIntakePosition()) {
                 desired_height = SuperstructureConstants.getHeight(SuperstructureConstants.SuperstructurePositionID.SCALE_NEUTRAL);
-            } else if (mControlBoard.getGoToLowScaleHeight() && !mControlBoard.getRunIntake()) {
+            } else if (mControlBoard.getGoToLowScaleHeight() && !mControlBoard.getRunIntakePosition()) {
                 desired_height = SuperstructureConstants.getHeight(SuperstructureConstants.SuperstructurePositionID.SCALE_LOW);
-            } else if (mControlBoard.getGoToHighScaleHeight() && mControlBoard.getRunIntake()) {
+            } else if (mControlBoard.getGoToHighScaleHeight() && mControlBoard.getRunIntakePosition()) {
                 desired_height = SuperstructureConstants.getHeight(SuperstructureConstants.SuperstructurePositionID.INTAKE_THIRD_LEVEL);
-            } else if (mControlBoard.getGoToNeutralScaleHeight() && mControlBoard.getRunIntake()) {
+            } else if (mControlBoard.getGoToNeutralScaleHeight() && mControlBoard.getRunIntakePosition()) {
                 desired_height = SuperstructureConstants.getHeight(SuperstructureConstants.SuperstructurePositionID.INTAKE_SECOND_LEVEL);
-            } else if (mControlBoard.getGoToLowScaleHeight() && mControlBoard.getRunIntake()) {
+            } else if (mControlBoard.getGoToLowScaleHeight() && mControlBoard.getRunIntakePosition()) {
                 desired_height = SuperstructureConstants.getHeight(SuperstructureConstants.SuperstructurePositionID.INTAKE_FLOOR_LEVEL);
             }  else if (mControlBoard.getGoToSwitchHeight()) {
                 desired_height = SuperstructureConstants.getHeight(SuperstructureConstants.SuperstructurePositionID.SWITCH);

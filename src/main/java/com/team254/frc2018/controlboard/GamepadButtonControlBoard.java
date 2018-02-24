@@ -92,8 +92,13 @@ public class GamepadButtonControlBoard implements IButtonControlBoard {
 
     //Intake
     @Override
-    public boolean getRunIntake() {
+    public boolean getRunIntakePosition() {
         return mJoystick.getRawAxis(2) != 0;
+    }
+
+    @Override
+    public boolean getRunIntake() {
+        return mJoystick.getRawButton(5);
     }
 
     @Override

@@ -34,5 +34,7 @@ public interface IButtonControlBoard {
     //Intake
     boolean getRunIntake();
 
+    boolean getRunIntakePosition();
+
     void setRumble(boolean on);
 }
