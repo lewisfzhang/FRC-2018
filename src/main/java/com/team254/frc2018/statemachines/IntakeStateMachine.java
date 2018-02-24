@@ -31,7 +31,7 @@ public class IntakeStateMachine {
         mWantedJawState = jaw_state;
     }
 
-    public synchronized void setmWantedPower(double power) {
+    public synchronized void setWantedPower(double power) {
         mWantedPower = power;
     }
 
@@ -78,7 +78,7 @@ public class IntakeStateMachine {
 
     // IDLE
     private synchronized SystemState handleOpenLoopTransitions(WantedAction wantedAction, IntakeState currentState) {
-        if (currentState.seesCube()) {
+        if (currentState.seesCube() && mWantedPower <= 0.0 && mWantedJawState != IntakeState.JawState.OPEN) {
             // TODO think about this...
             return SystemState.KEEPING_CUBE;
         }
@@ -110,13 +110,15 @@ public class IntakeStateMachine {
     }
     private synchronized void getKeepingCubeCommandedState(IntakeState currentState, IntakeState commandedState) {
         commandedState.setPower(kIntakeCubeSetpoint);
+        final boolean clamp = (currentState.seesCube() && mWantedJawState != IntakeState.JawState.OPEN) || mustStayClamped(currentState);
+        final boolean open = !clamp && mWantedJawState == IntakeState.JawState.OPEN;
         if (currentState.seesCube()) {
             commandedState.setPower(kHoldSetpoint);
-            commandedState.jawState = IntakeState.JawState.CLAMPED;
+            commandedState.jawState = clamp ? IntakeState.JawState.CLAMPED : IntakeState.JawState.OPEN;
             commandedState.ledState = new IntakeState.LEDState(1.0, 0.0, 0.0);
         } else {
             commandedState.setPower(kIntakeCubeSetpoint);
-            commandedState.jawState = mustStayClamped(currentState) ? IntakeState.JawState.CLAMPED : IntakeState.JawState.CLOSED;
+            commandedState.jawState = clamp ? IntakeState.JawState.CLAMPED : (mWantedJawState == IntakeState.JawState.OPEN ? IntakeState.JawState.OPEN : IntakeState.JawState.CLOSED);
             commandedState.ledState = new IntakeState.LEDState(0.0, 1.0, 0.0);
         }
     }

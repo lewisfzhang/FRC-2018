@@ -35,7 +35,9 @@ public class SuperstructureConstants {
     public final static double kJogDownPercent = 0.25;
 
     public enum SuperstructurePositionID {
-        GROUND,
+        INTAKE,
+        VERTICAL,
+        STOW,
         SWITCH,
         SWITCH_BACKWARDS,
         SCALE_LOW,
@@ -56,10 +58,13 @@ public class SuperstructureConstants {
         }
     }
 
+    // TODO refactor?
     public static HashMap<SuperstructurePositionID, SuperstructurePosition> kScoringPositions =
             new HashMap<SuperstructurePositionID, SuperstructurePosition>() {
                 {
-                    put(SuperstructurePositionID.GROUND, new SuperstructurePosition(0.0, 0.0));
+                    put(SuperstructurePositionID.INTAKE, new SuperstructurePosition(0.0, 180.0));
+                    put(SuperstructurePositionID.VERTICAL, new SuperstructurePosition(0.0, 90.0));
+                    put(SuperstructurePositionID.STOW, new SuperstructurePosition(0.0, 0.0));
 
                     put(SuperstructurePositionID.SWITCH, new SuperstructurePosition(30.0, 165.0));
                     put(SuperstructurePositionID.SWITCH_BACKWARDS,
@@ -79,4 +84,12 @@ public class SuperstructureConstants {
                             new SuperstructurePosition(80.0, 45.0));
                 }
     };
+
+    public static double getHeight(SuperstructurePositionID id) {
+        return kScoringPositions.get(id).height;
+    }
+
+    public static double getAngle(SuperstructurePositionID id) {
+        return kScoringPositions.get(id).angle;
+    }
 }

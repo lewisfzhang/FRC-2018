@@ -118,6 +118,21 @@ public class Superstructure extends Subsystem {
         mWantedAction = SuperstructureStateMachine.WantedAction.GO_TO_POSITION;
     }
 
+    public synchronized void setDesiredPosition(double height, double angle) {
+        mStateMachine.setScoringPosition(height, angle);
+        mWantedAction = SuperstructureStateMachine.WantedAction.GO_TO_POSITION;
+    }
+
+    public synchronized void setDesiredHeight(double height) {
+        mStateMachine.setScoringHeight(height);
+        mWantedAction = SuperstructureStateMachine.WantedAction.GO_TO_POSITION;
+    }
+
+    public synchronized void setDesiredAngle(double angle) {
+        mStateMachine.setScoringAngle(angle);
+        mWantedAction = SuperstructureStateMachine.WantedAction.GO_TO_POSITION;
+    }
+
     public synchronized void setJog(double relative_inches) {
         mStateMachine.jogElevator(relative_inches);
         mWantedAction = SuperstructureStateMachine.WantedAction.GO_TO_POSITION;

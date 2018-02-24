@@ -5,6 +5,7 @@ import com.team254.frc2018.auto.modes.CharacterizeHighGearStraight;
 import com.team254.frc2018.loops.Looper;
 import com.team254.frc2018.loops.RobotStateEstimator;
 import com.team254.frc2018.statemachines.SuperstructureStateMachine;
+import com.team254.frc2018.states.IntakeState;
 import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.frc2018.subsystems.*;
 import com.team254.lib.geometry.Pose2d;
@@ -162,62 +163,62 @@ public class Robot extends IterativeRobot {
         try {
             double throttle = mControlBoard.getThrottle();
             double turn = mControlBoard.getTurn();
-
             mDrive.setOpenLoop(mCheesyDriveHelper.cheesyDrive(throttle, turn, mControlBoard.getQuickTurn(),
-                    !mControlBoard.getLowGear()));
-            // mDrive.setHighGear(!mControlBoard.getLowGear());
+                    mDrive.isHighGear()));
 
-            if (mControlBoard.getScore()) {
-                mSuperstructure.setWantedAction(SuperstructureStateMachine.WantedAction.PLACE);
-            } else if (mControlBoard.getFarScore()) {
-                mSuperstructure.setWantedAction(SuperstructureStateMachine.WantedAction.SHOOT);
-            } else if (mControlBoard.getIntake()) {
-                mSuperstructure.setWantedAction(SuperstructureStateMachine.WantedAction.INTAKE);
-            } else if (mControlBoard.getSwitch()) {
-                if (mControlBoard.getBackwardsModifier()) {
-                    mSuperstructure.setDesiredPosition(
-                            SuperstructureConstants.SuperstructurePositionID.SWITCH_BACKWARDS);
-                } else {
-                    mSuperstructure.setDesiredPosition(
-                            SuperstructureConstants.SuperstructurePositionID.SWITCH);
-                }
-            } else if (mControlBoard.getHighScale()) {
-                if (mControlBoard.getBackwardsModifier()) {
-                    mSuperstructure.setDesiredPosition(
-                            SuperstructureConstants.SuperstructurePositionID.SCALE_HIGH_BACKWARDS);
-                } else {
-                    mSuperstructure.setDesiredPosition(
-                            SuperstructureConstants.SuperstructurePositionID.SCALE_HIGH);
-                }
-            } else if (mControlBoard.getNeutralScale()) {
-                if (mControlBoard.getBackwardsModifier()) {
-                    mSuperstructure.setDesiredPosition(
-                            SuperstructureConstants.SuperstructurePositionID.SCALE_NEUTRAL_BACKWARDS);
-                } else {
-                    mSuperstructure.setDesiredPosition(
-                            SuperstructureConstants.SuperstructurePositionID.SCALE_NEUTRAL);
-                }
-            } else if (mControlBoard.getLowScale()) {
-                if (mControlBoard.getBackwardsModifier()) {
-                    mSuperstructure.setDesiredPosition(
-                            SuperstructureConstants.SuperstructurePositionID.SCALE_LOW_BACKWARDS);
-                } else {
-                    mSuperstructure.setDesiredPosition(
-                            SuperstructureConstants.SuperstructurePositionID.SCALE_LOW);
-                }
-            } else if (mControlBoard.getJogElevatorDown()) {
-                mSuperstructure.setJogDown();
-            } else if (mControlBoard.getJogElevatorUp()) {
-                mSuperstructure.setJogUp();
-            } else if (mControlBoard.getArmIn()) {
-                mSuperstructure.setArmIn();
-            } else if (mControlBoard.getStow()) {
-                mSuperstructure.setWantedAction(SuperstructureStateMachine.WantedAction.STOW);
+            // Manual jaw inputs.
+            if (mControlBoard.getOpenJaw()) {
+                mIntake.tryOpenJaw();
+            } else {
+                mIntake.clampJaw();
+            }
+
+            // Intaking.
+            if (mControlBoard.getRunIntake()) {
+                mIntake.getOrKeepCube();
+            } else if (mControlBoard.getShoot()) {
+                mIntake.shoot();
+            }
+
+            // Presets.
+            double desired_height = Double.NaN;
+            double desired_angle = Double.NaN;
+
+            // Elevator.
+            if (mControlBoard.getGoToHighScaleHeight()) {
+                desired_height = SuperstructureConstants.getHeight(SuperstructureConstants.SuperstructurePositionID.SCALE_HIGH);
+            } else if (mControlBoard.getGoToNeutralScaleHeight()) {
+                desired_height = SuperstructureConstants.getHeight(SuperstructureConstants.SuperstructurePositionID.SCALE_NEUTRAL);
+            } else if (mControlBoard.getGoToLowScaleHeight()) {
+                desired_height = SuperstructureConstants.getHeight(SuperstructureConstants.SuperstructurePositionID.SCALE_LOW);
+            } else if (mControlBoard.getGoToSwitchHeight()) {
+                desired_height = SuperstructureConstants.getHeight(SuperstructureConstants.SuperstructurePositionID.SWITCH);
+            } else if (mControlBoard.getGoToStowHeight()) {
+                desired_height = SuperstructureConstants.getHeight(SuperstructureConstants.SuperstructurePositionID.STOW);
             } else if (mControlBoard.getHangMode()) {
                 mSuperstructure.setHangThrottle(mControlBoard.getHangThrottle());
-            } else {
-                mSuperstructure.setWantedAction(SuperstructureStateMachine.WantedAction.IDLE);
             }
+
+            // Wrist.
+            if (mControlBoard.goToStowWrist()) {
+                desired_angle = SuperstructureConstants.getAngle(SuperstructureConstants.SuperstructurePositionID.STOW);
+            } else if (mControlBoard.goToIntakingWrist()) {
+                desired_angle = SuperstructureConstants.getAngle(SuperstructureConstants.SuperstructurePositionID.INTAKE);
+            } else if (mControlBoard.goToVerticalWrist()) {
+                desired_angle = SuperstructureConstants.getAngle(SuperstructureConstants.SuperstructurePositionID.VERTICAL);
+            } else if (mControlBoard.goToScoringWrist()) {
+                desired_angle = SuperstructureConstants.getAngle(SuperstructureConstants.SuperstructurePositionID.SCALE_HIGH);
+            }
+
+            if (Double.isNaN(desired_angle) && Double.isNaN(desired_height)) {
+                mSuperstructure.setWantedAction(SuperstructureStateMachine.WantedAction.IDLE);
+            } else if (Double.isNaN(desired_angle)) {
+                mSuperstructure.setDesiredHeight(desired_height);
+            } else if (Double.isNaN(desired_height)) {
+                mSuperstructure.setDesiredAngle(desired_angle);
+            }
+
+            // TODO jogging
 
             outputToSmartDashboard();
         } catch (Throwable t) {

@@ -115,12 +115,7 @@ public class Intake extends Subsystem {
         enabledLooper.register(loop);
     }
 
-    public void setPower(double output) {
-        mLeftMaster.set(ControlMode.PercentOutput, output);
-        mRightMaster.set(ControlMode.PercentOutput, output);
-    }
-
-    public void setJaw(IntakeState.JawState state) {
+    private void setJaw(IntakeState.JawState state) {
         if (mJawState == state) {
             return;
         }
@@ -169,8 +164,29 @@ public class Intake extends Subsystem {
         return mJawState;
     }
 
-    public void setState(IntakeStateMachine.WantedAction wantedAction) {
+    public synchronized void setState(IntakeStateMachine.WantedAction wantedAction) {
         mWantedAction = wantedAction;
+    }
+
+    public synchronized void setPower(double power) {
+        mStateMachine.setWantedPower(power);
+    }
+
+    public synchronized void shoot() {
+        setState(IntakeStateMachine.WantedAction.WANT_MANUAL);
+        setPower(IntakeStateMachine.kShootSetpoint);
+    }
+
+    public synchronized void getOrKeepCube() {
+        setState(IntakeStateMachine.WantedAction.WANT_CUBE);
+    }
+
+    public synchronized void tryOpenJaw() {
+        mStateMachine.setWantedJawState(IntakeState.JawState.OPEN);
+    }
+
+    public synchronized void clampJaw() {
+        mStateMachine.setWantedJawState(IntakeState.JawState.CLAMPED);
     }
 
     @Override

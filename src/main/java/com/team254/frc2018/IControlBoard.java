@@ -7,35 +7,35 @@ interface IControlBoard {
 
     boolean getQuickTurn();
 
-    boolean getLowGear();
+    boolean getJogWristBack();
 
-    boolean getJogWristStow();
+    boolean getJogWristForward();
 
-    boolean getJogWristExtend();
+    boolean getOpenJaw();
 
-    boolean getScore();
+    boolean getShoot();
 
-    boolean getFarScore();
+    boolean getRunIntake();
 
-    boolean getIntake();
+    boolean getGoToStowHeight();
 
-    boolean getBackwardsModifier();
+    boolean getGoToSwitchHeight();
 
-    boolean getHighScale();
+    boolean getGoToLowScaleHeight();
 
-    boolean getSwitch();
+    boolean getGoToNeutralScaleHeight();
 
-    boolean getStow();
+    boolean getGoToHighScaleHeight();
 
-    boolean getArmIn();
+    boolean goToIntakingWrist();
 
-    boolean getNeutralScale();
+    boolean goToScoringWrist();
+
+    boolean goToVerticalWrist();
+
+    boolean goToStowWrist();
 
     boolean getJogElevatorUp();
-
-    boolean getExchange();
-
-    boolean getLowScale();
 
     boolean getJogElevatorDown();
 
