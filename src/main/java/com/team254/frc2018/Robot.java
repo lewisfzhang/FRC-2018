@@ -42,6 +42,7 @@ public class Robot extends IterativeRobot {
 
     private LatchedBoolean mRunIntakeReleased = new LatchedBoolean();
     private LatchedBoolean mShootReleased = new LatchedBoolean();
+    private LatchedBoolean mRunIntakePressed = new LatchedBoolean();
 
     public Robot() {
         CrashTracker.logRobotConstruction();
@@ -205,6 +206,16 @@ public class Robot extends IterativeRobot {
             double desired_height = Double.NaN;
             double desired_angle = Double.NaN;
 
+            if (mControlBoard.getGoToStowHeight()) {
+                desired_height = SuperstructureConstants.getHeight(SuperstructureConstants.SuperstructurePositionID.STOW);
+                desired_angle = SuperstructureConstants.getAngle(SuperstructureConstants.SuperstructurePositionID.STOW);
+            }
+
+            if (mRunIntakePressed.update(runIntake)) {
+                desired_height = SuperstructureConstants.getHeight(SuperstructureConstants.SuperstructurePositionID.STOW);
+                desired_angle = SuperstructureConstants.getAngle(SuperstructureConstants.SuperstructurePositionID.INTAKE);
+            }
+
             // Elevator.
             if (mControlBoard.getGoToHighScaleHeight() && !mControlBoard.getRunIntake()) {
                 desired_height = SuperstructureConstants.getHeight(SuperstructureConstants.SuperstructurePositionID.SCALE_HIGH);
@@ -220,8 +231,6 @@ public class Robot extends IterativeRobot {
                 desired_height = SuperstructureConstants.getHeight(SuperstructureConstants.SuperstructurePositionID.INTAKE_FLOOR_LEVEL);
             }  else if (mControlBoard.getGoToSwitchHeight()) {
                 desired_height = SuperstructureConstants.getHeight(SuperstructureConstants.SuperstructurePositionID.SWITCH);
-            } else if (mControlBoard.getGoToStowHeight()) {
-                desired_height = SuperstructureConstants.getHeight(SuperstructureConstants.SuperstructurePositionID.STOW);
             } else if (mControlBoard.getHangMode()) {
                 mSuperstructure.setHangThrottle(mControlBoard.getHangThrottle());
             }
@@ -243,6 +252,9 @@ public class Robot extends IterativeRobot {
                 mSuperstructure.setDesiredHeight(desired_height);
             } else if (Double.isNaN(desired_height)) {
                 mSuperstructure.setDesiredAngle(desired_angle);
+            } else if (!Double.isNaN(desired_angle) && !Double.isNaN(desired_height)) {
+                mSuperstructure.setDesiredAngle(desired_angle);
+                mSuperstructure.setDesiredHeight(desired_height);
             }
 
             // TODO jogging
