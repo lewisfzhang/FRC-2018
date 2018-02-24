@@ -120,8 +120,8 @@ public class ControlBoard implements IControlBoard {
     }
 
     @Override
-    public boolean getRunIntakePosition() {
-        return mButtonControlBoard.getRunIntakePosition();
+    public boolean getIntakePosition() {
+        return mButtonControlBoard.getIntakePosition();
     }
 
     @Override
