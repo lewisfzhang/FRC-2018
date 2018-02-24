@@ -40,6 +40,9 @@ public class MainButtonBoard implements IButtonControlBoard {
         return mButtonBoard.getRawAxis(2) < Constants.kJoystickThreshold;
     }
 
+    @Override
+    public boolean goToScoringAngledWrist() { return false; }
+
     //Elevator
     @Override
     public boolean getGoToHighScaleHeight() {

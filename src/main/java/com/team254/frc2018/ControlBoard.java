@@ -65,6 +65,9 @@ public class ControlBoard implements IControlBoard {
     }
 
     @Override
+    public boolean goToScoringAngledWrist() { return mButtonControlBoard.goToScoringAngledWrist(); }
+
+    @Override
     public boolean goToVerticalWrist() {
         return mButtonControlBoard.goToVerticalWrist();
     }

@@ -42,6 +42,9 @@ public class GamepadButtonControlBoard implements IButtonControlBoard {
         return mJoystick.getPOV() == 270;
     }
 
+    @Override
+    public boolean goToScoringAngledWrist() { return mJoystick.getPOV() == 45; }
+
     //Elevator
     @Override
     public boolean getGoToHighScaleHeight() {

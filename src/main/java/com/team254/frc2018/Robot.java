@@ -257,6 +257,8 @@ public class Robot extends IterativeRobot {
                 desired_angle = SuperstructureConstants.getAngle(SuperstructureConstants.SuperstructurePositionID.VERTICAL);
             } else if (mControlBoard.goToScoringWrist()) {
                 desired_angle = SuperstructureConstants.getAngle(SuperstructureConstants.SuperstructurePositionID.SCALE_HIGH_BACKWARDS);
+            } else if (mControlBoard.goToScoringAngledWrist()) {
+                 desired_angle = 135.0;
             }
 
             if (Double.isNaN(desired_angle) && Double.isNaN(desired_height)) {

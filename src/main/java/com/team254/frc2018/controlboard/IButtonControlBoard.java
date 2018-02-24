@@ -10,6 +10,8 @@ public interface IButtonControlBoard {
 
     boolean goToStowWrist();
 
+    boolean goToScoringAngledWrist();
+
     //Elevator
     boolean getGoToHighScaleHeight();
 
