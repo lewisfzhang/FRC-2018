@@ -26,7 +26,7 @@ public class Superstructure extends Subsystem {
 
     static Superstructure mInstance = null;
 
-    public static Superstructure getInstance() {
+    public synchronized static Superstructure getInstance() {
         if (mInstance == null) {
             mInstance = new Superstructure();
         }
@@ -60,6 +60,10 @@ public class Superstructure extends Subsystem {
     @Override
     public void zeroSensors() {
 
+    }
+
+    public synchronized SuperstructureStateMachine.SystemState getSuperStructureState() {
+        return mStateMachine.getSystemState();
     }
 
     private synchronized void updateObservedState(SuperstructureState state) {

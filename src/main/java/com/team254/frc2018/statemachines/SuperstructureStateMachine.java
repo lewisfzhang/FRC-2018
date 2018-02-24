@@ -57,6 +57,10 @@ public class SuperstructureStateMachine {
                 !Util.epsilonEquals(mDesiredEndState.height, mScoringHeight);
     }
 
+    public synchronized SystemState getSystemState() {
+        return mSystemState;
+    }
+
     public synchronized SuperstructureCommand update(double timestamp, WantedAction wantedAction,
                                                      SuperstructureState currentState) {
         synchronized (SuperstructureStateMachine.this) {
