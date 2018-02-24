@@ -29,7 +29,7 @@ public class GamepadButtonControlBoard implements IButtonControlBoard {
     
     @Override
     public boolean goToScoringWrist() {
-        return mJoystick.getPOV() == 270;
+        return mJoystick.getPOV() == 180;
     }
 
     @Override
@@ -39,7 +39,7 @@ public class GamepadButtonControlBoard implements IButtonControlBoard {
 
     @Override
     public boolean goToStowWrist() {
-        return mJoystick.getPOV() == 180;
+        return mJoystick.getPOV() == 270;
     }
 
     //Elevator
