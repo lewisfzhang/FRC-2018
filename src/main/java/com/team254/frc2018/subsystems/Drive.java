@@ -80,8 +80,10 @@ public class Drive extends Subsystem {
                         System.out.println("Unexpected drive control state: " + mDriveControlState);
                         break;
                 }
-                if (mAutoShift) {
+                if (mAutoShift && false) { // TODO: fix this (tom)
                     handleAutoShift();
+                } else {
+                    setHighGear(false);
                 }
             }
         }
