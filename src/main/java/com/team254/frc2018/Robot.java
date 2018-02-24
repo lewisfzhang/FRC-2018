@@ -191,12 +191,16 @@ public class Robot extends IterativeRobot {
             } else if (shoot) {
                 mIntake.shoot();
             } else if (runIntakeReleased || shootReleased) {
-                mIntake.setState(IntakeStateMachine.WantedAction.WANT_MANUAL);
-                mIntake.setPower(0.0);
+                if (mIntake.hasCube()) {
+                    mIntake.getOrKeepCube();
+                } else {
+                    mIntake.setState(IntakeStateMachine.WantedAction.WANT_MANUAL);
+                    mIntake.setPower(0.0);
+                }
             }
 
             // Rumble
-            if (mControlBoard.getRunIntake() && mIntake.getLeftBannerSensor()) {
+            if (mControlBoard.getRunIntake() && mIntake.hasCube()) {
                 mControlBoard.setRumble(true);
             } else {
                 mControlBoard.setRumble(false);

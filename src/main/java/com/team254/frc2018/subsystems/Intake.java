@@ -77,7 +77,7 @@ public class Intake extends Subsystem {
     public void zeroSensors() {
     }
 
-    public IntakeState getCurrentState() {
+    private IntakeState getCurrentState() {
         mCurrentState.leftCubeSensorTriggered = getLeftBannerSensor();
         mCurrentState.rightCubeSensorTriggered = getRightBannerSensor();
         mCurrentState.wristAngle = Wrist.getInstance().getAngle();
@@ -143,11 +143,15 @@ public class Intake extends Subsystem {
         setLEDsOn(state.ledState.blue, state.ledState.green, state.ledState.red);
     }
 
-    public boolean getLeftBannerSensor() {
+    public synchronized boolean hasCube() {
+        return getLeftBannerSensor() || getRightBannerSensor();
+    }
+
+    private boolean getLeftBannerSensor() {
         return !mCanifier.getGeneralInput(CANifier.GeneralPin.LIMF);
     }
 
-    public boolean getRightBannerSensor() {
+    private boolean getRightBannerSensor() {
         return !mCanifier.getGeneralInput(CANifier.GeneralPin.LIMR);
     }
 
