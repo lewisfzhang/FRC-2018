@@ -11,6 +11,7 @@ import com.team254.frc2018.subsystems.*;
 import com.team254.lib.geometry.Pose2d;
 import com.team254.lib.util.CheesyDriveHelper;
 import com.team254.lib.util.CrashTracker;
+import com.team254.lib.util.LatchedBoolean;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -38,6 +39,9 @@ public class Robot extends IterativeRobot {
     private Infrastructure mInfrastructure = Infrastructure.getInstance();
     private Superstructure mSuperstructure = Superstructure.getInstance();
     private Elevator mElevator = Elevator.getInstance();
+
+    private LatchedBoolean mRunIntakeReleased = new LatchedBoolean();
+    private LatchedBoolean mShootReleased = new LatchedBoolean();
 
     public Robot() {
         CrashTracker.logRobotConstruction();
@@ -174,11 +178,15 @@ public class Robot extends IterativeRobot {
             }
 
             // Intaking.
-            if (mControlBoard.getRunIntake()) {
+            boolean runIntake = mControlBoard.getRunIntake();
+            boolean shoot = mControlBoard.getShoot();
+            boolean runIntakeReleased = mRunIntakeReleased.update(!runIntake);
+            boolean shootReleased = mShootReleased.update(!shoot);
+            if (runIntake) {
                 mIntake.getOrKeepCube();
-            } else if (mControlBoard.getShoot()) {
+            } else if (shoot) {
                 mIntake.shoot();
-            } else {
+            } else if (runIntakeReleased || shootReleased) {
                 mIntake.setState(IntakeStateMachine.WantedAction.WANT_MANUAL);
                 mIntake.setPower(0.0);
             }

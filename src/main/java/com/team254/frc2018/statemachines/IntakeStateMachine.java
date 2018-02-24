@@ -103,12 +103,11 @@ public class IntakeStateMachine {
     private synchronized SystemState handleKeepingCubeTransitions(WantedAction wantedAction, IntakeState currentState) {
         switch (wantedAction) {
             case WANT_MANUAL:
-//                if (!currentState.seesCube()) {
-//                    return SystemState.OPEN_LOOP;
-//                } else {
-//                    return SystemState.KEEPING_CUBE;
-//                }
-                return SystemState.OPEN_LOOP;
+                if (!currentState.seesCube()) {
+                    return SystemState.OPEN_LOOP;
+                } else {
+                    return SystemState.KEEPING_CUBE;
+                }
             default:
                 return SystemState.KEEPING_CUBE;
         }
