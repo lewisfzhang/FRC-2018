@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestIntakeStateMachine {
+    /*
     IntakeStateMachine sm = new IntakeStateMachine();
     IntakeStateMachine.WantedAction action = IntakeStateMachine.WantedAction.IDLE;
     IntakeState simState = new IntakeState();
@@ -223,5 +224,5 @@ public class TestIntakeStateMachine {
         assertEquals(IntakeStateMachine.kShootSetpoint, commandedState.leftMotor, EPSILON, "motor must shoot");
         assertEquals(IntakeStateMachine.kShootSetpoint, commandedState.rightMotor, EPSILON, "motor must shoot");
         assertEquals(commandedState.jawState, IntakeState.JawState.CLAMPED);
-    }
+    }*/
 }
