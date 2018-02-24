@@ -62,7 +62,7 @@ public class SuperstructureConstants {
     public static HashMap<SuperstructurePositionID, SuperstructurePosition> kScoringPositions =
             new HashMap<SuperstructurePositionID, SuperstructurePosition>() {
                 {
-                    put(SuperstructurePositionID.INTAKE, new SuperstructurePosition(0.0, 180.0));
+                    put(SuperstructurePositionID.INTAKE, new SuperstructurePosition(0.0, 175.0));
                     put(SuperstructurePositionID.VERTICAL, new SuperstructurePosition(0.0, 90.0));
                     put(SuperstructurePositionID.STOW, new SuperstructurePosition(0.0, 0.0));
 

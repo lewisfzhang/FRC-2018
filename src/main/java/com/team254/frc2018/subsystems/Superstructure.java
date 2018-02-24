@@ -133,10 +133,16 @@ public class Superstructure extends Subsystem {
         mWantedAction = SuperstructureStateMachine.WantedAction.GO_TO_POSITION;
     }
 
-    public synchronized void setJog(double relative_inches) {
+    public synchronized void setElevatorJog(double relative_inches) {
         mStateMachine.jogElevator(relative_inches);
         mWantedAction = SuperstructureStateMachine.WantedAction.GO_TO_POSITION;
     }
+
+    public synchronized void setWristJog(double relative_degrees) {
+        mStateMachine.jogWrist(relative_degrees);
+        mWantedAction = SuperstructureStateMachine.WantedAction.GO_TO_POSITION;
+    }
+
 
     public synchronized void setHangThrottle(double throttle) {
         mStateMachine.setOpenLoopPower(throttle);

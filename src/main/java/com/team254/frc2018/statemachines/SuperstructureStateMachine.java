@@ -45,6 +45,8 @@ public class SuperstructureStateMachine {
 
     public synchronized void jogElevator(double relative_inches) { mScoringHeight += relative_inches; }
 
+    public synchronized void jogWrist(double relative_degrees) { mScoringAngle += relative_degrees; }
+
     public synchronized void setScoringPosition(double inches, double angle) {
         mScoringHeight = inches;
         mScoringAngle = angle;

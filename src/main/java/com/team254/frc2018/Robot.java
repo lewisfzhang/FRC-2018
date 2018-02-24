@@ -6,7 +6,6 @@ import com.team254.frc2018.loops.Looper;
 import com.team254.frc2018.loops.RobotStateEstimator;
 import com.team254.frc2018.statemachines.IntakeStateMachine;
 import com.team254.frc2018.statemachines.SuperstructureStateMachine;
-import com.team254.frc2018.states.IntakeState;
 import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.frc2018.subsystems.*;
 import com.team254.lib.geometry.Pose2d;
@@ -230,6 +229,17 @@ public class Robot extends IterativeRobot {
             }
 
             // TODO jogging
+            if (mControlBoard.getJogElevatorUp()) {
+                mSuperstructure.setElevatorJog(24. / 50.);
+            } else if (mControlBoard.getJogElevatorDown()) {
+                mSuperstructure.setElevatorJog(-24. / 50.);
+            }
+
+            if (mControlBoard.getJogWristForward()) {
+                mSuperstructure.setWristJog(90. / 50.);
+            } else if (mControlBoard.getJogWristBack()) {
+                mSuperstructure.setWristJog(-90. / 50.);
+            }
 
             outputToSmartDashboard();
         } catch (Throwable t) {
