@@ -195,13 +195,19 @@ public class Robot extends IterativeRobot {
             double desired_angle = Double.NaN;
 
             // Elevator.
-            if (mControlBoard.getGoToHighScaleHeight()) {
+            if (mControlBoard.getGoToHighScaleHeight() && !mControlBoard.getRunIntake()) {
                 desired_height = SuperstructureConstants.getHeight(SuperstructureConstants.SuperstructurePositionID.SCALE_HIGH);
-            } else if (mControlBoard.getGoToNeutralScaleHeight()) {
+            } else if (mControlBoard.getGoToNeutralScaleHeight() && !mControlBoard.getRunIntake()) {
                 desired_height = SuperstructureConstants.getHeight(SuperstructureConstants.SuperstructurePositionID.SCALE_NEUTRAL);
-            } else if (mControlBoard.getGoToLowScaleHeight()) {
+            } else if (mControlBoard.getGoToLowScaleHeight() && !mControlBoard.getRunIntake()) {
                 desired_height = SuperstructureConstants.getHeight(SuperstructureConstants.SuperstructurePositionID.SCALE_LOW);
-            } else if (mControlBoard.getGoToSwitchHeight()) {
+            } else if (mControlBoard.getGoToHighScaleHeight() && mControlBoard.getRunIntake()) {
+                desired_height = SuperstructureConstants.getHeight(SuperstructureConstants.SuperstructurePositionID.INTAKE_THIRD_LEVEL);
+            } else if (mControlBoard.getGoToNeutralScaleHeight() && mControlBoard.getRunIntake()) {
+                desired_height = SuperstructureConstants.getHeight(SuperstructureConstants.SuperstructurePositionID.INTAKE_SECOND_LEVEL);
+            } else if (mControlBoard.getGoToLowScaleHeight() && mControlBoard.getRunIntake()) {
+                desired_height = SuperstructureConstants.getHeight(SuperstructureConstants.SuperstructurePositionID.INTAKE_FLOOR_LEVEL);
+            }  else if (mControlBoard.getGoToSwitchHeight()) {
                 desired_height = SuperstructureConstants.getHeight(SuperstructureConstants.SuperstructurePositionID.SWITCH);
             } else if (mControlBoard.getGoToStowHeight()) {
                 desired_height = SuperstructureConstants.getHeight(SuperstructureConstants.SuperstructurePositionID.STOW);

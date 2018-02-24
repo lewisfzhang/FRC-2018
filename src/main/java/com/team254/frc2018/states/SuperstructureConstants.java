@@ -46,6 +46,9 @@ public class SuperstructureConstants {
         SCALE_NEUTRAL_BACKWARDS,
         SCALE_HIGH,
         SCALE_HIGH_BACKWARDS,
+        INTAKE_FLOOR_LEVEL,
+        INTAKE_SECOND_LEVEL,
+        INTAKE_THIRD_LEVEL,
     }
 
     public static class SuperstructurePosition {
@@ -63,6 +66,9 @@ public class SuperstructureConstants {
             new HashMap<SuperstructurePositionID, SuperstructurePosition>() {
                 {
                     put(SuperstructurePositionID.INTAKE, new SuperstructurePosition(0.0, 175.0));
+                    put(SuperstructurePositionID.INTAKE_FLOOR_LEVEL, new SuperstructurePosition(0.0, 175.0));
+                    put(SuperstructurePositionID.INTAKE_SECOND_LEVEL, new SuperstructurePosition(14.5, 175.0));
+                    put(SuperstructurePositionID.INTAKE_THIRD_LEVEL, new SuperstructurePosition(25.5, 175.0));
                     put(SuperstructurePositionID.VERTICAL, new SuperstructurePosition(0.0, 90.0));
                     put(SuperstructurePositionID.STOW, new SuperstructurePosition(0.0, 0.0));
 
