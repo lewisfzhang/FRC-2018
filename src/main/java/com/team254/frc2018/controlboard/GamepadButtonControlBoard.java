@@ -28,7 +28,7 @@ public class GamepadButtonControlBoard implements IButtonControlBoard {
     
     @Override
     public boolean goToScoringWrist() {
-        return mJoystick.getPOV() == 90;
+        return mJoystick.getPOV() == 270;
     }
     
     @Override
