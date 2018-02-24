@@ -184,13 +184,13 @@ public class TimingUtil {
                     break;
                 }
                 // If the min acceleration for this constraint state is more conservative than what we have applied, we
-                // need to reduce the max accel and try again.
+                // need to reduce the min accel and try again.
                 // TODO: Simply using the new max acceleration is guaranteed to be valid, but may be too conservative.
                 // Doing a search would be better.
                 final double actual_acceleration = (constraint_state.max_velocity * constraint_state.max_velocity
                         - successor.max_velocity * successor.max_velocity) / (2.0 * ds);
                 if (constraint_state.min_acceleration > actual_acceleration + Util.kEpsilon) {
-                    successor.min_acceleration = successor.max_acceleration = constraint_state.min_acceleration;
+                    successor.min_acceleration = constraint_state.min_acceleration;
                 } else {
                     successor.min_acceleration = successor.max_acceleration = actual_acceleration;
                     break;

@@ -76,11 +76,33 @@ public class IntegrationTest {
         DifferentialDriveDynamicsConstraint<Pose2dWithCurvature> drive_constraints = new
                 DifferentialDriveDynamicsConstraint<>(drive, 10.0);
 
+        // Generate the timed trajectory.
         Trajectory<TimedState<Pose2dWithCurvature>> timed_trajectory = TimingUtil.timeParameterizeTrajectory(new
                         DistanceView<>(trajectory), 3.0, Arrays.asList(drive_constraints),
                 0.0, 0.0, 12.0 * 14.0, 12.0 * 10.0);
 
         System.out.println(timed_trajectory.toCSV());
+
+        // "Follow" the trajectory.
+        final double kDt = 0.01;
+        boolean first = true;
+        TrajectoryIterator<TimedState<Pose2dWithCurvature>> it = new TrajectoryIterator<>(new TimedView<>(timed_trajectory));
+        while (!it.isDone()) {
+            TrajectorySamplePoint<TimedState<Pose2dWithCurvature>> sample;
+            if (first) {
+                sample = it.getSample();
+                first = false;
+            } else {
+                sample = it.advance(kDt);
+            }
+            final TimedState<Pose2dWithCurvature> state = sample.state();
+
+            final DifferentialDrive.DriveDynamics dynamics = drive.solveInverseDynamics(
+                    new DifferentialDrive.ChassisState(Units.inches_to_meters(state.velocity()), state.velocity() * state.state().getCurvature()),
+                    new DifferentialDrive.ChassisState(Units.inches_to_meters(state.acceleration()), state.acceleration() * state.state().getCurvature()));
+
+            System.out.println(state.t() + ", " + dynamics.toCSV());
+        }
     }
 
 }

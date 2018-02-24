@@ -2,6 +2,7 @@ package com.team254.lib.physics;
 
 import com.team254.lib.util.Util;
 
+import java.text.DecimalFormat;
 import java.util.Arrays;
 
 /**
@@ -290,6 +291,12 @@ public class DifferentialDrive {
 
         public ChassisState() {
         }
+
+        @Override
+        public String toString() {
+            DecimalFormat fmt = new DecimalFormat("#0.000");
+            return fmt.format(linear) + ", " + fmt.format(angular);
+        }
     }
 
     // Can refer to velocity, acceleration, torque, voltage, etc., depending on context.
@@ -316,6 +323,12 @@ public class DifferentialDrive {
                 right = val;
             }
         }
+
+        @Override
+        public String toString() {
+            DecimalFormat fmt = new DecimalFormat("#0.000");
+            return fmt.format(left) + ", " + fmt.format(right);
+        }
     }
 
     // Full state dynamics of the drivetrain.
@@ -327,5 +340,10 @@ public class DifferentialDrive {
         public WheelState wheel_acceleration = new WheelState();  // rad/s^2
         public WheelState voltage = new WheelState();  // V
         public WheelState wheel_torque = new WheelState();  // N m
+
+        public String toCSV() {
+            return chassis_velocity + ", " + chassis_acceleration + ", " + wheel_velocity + ", " + wheel_acceleration
+                    + ", " + voltage + ", " + wheel_torque;
+        }
     }
 }
