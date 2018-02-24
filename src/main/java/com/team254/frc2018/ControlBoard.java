@@ -95,7 +95,7 @@ public class ControlBoard implements IControlBoard {
 
     @Override
     public boolean goToScoringWrist() {
-        return mButtonBoard.getRawAxis(2) < 0.1;
+        return mButtonBoard.getRawButton(7);
     }
 
     @Override
@@ -105,7 +105,7 @@ public class ControlBoard implements IControlBoard {
 
     @Override
     public boolean goToStowWrist() {
-        return false;
+        return mButtonBoard.getRawAxis(2) < 0.1;
     }
 
     @Override

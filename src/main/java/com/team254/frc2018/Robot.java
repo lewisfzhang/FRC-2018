@@ -4,6 +4,7 @@ import com.team254.frc2018.auto.AutoModeExecuter;
 import com.team254.frc2018.auto.modes.CharacterizeHighGearStraight;
 import com.team254.frc2018.loops.Looper;
 import com.team254.frc2018.loops.RobotStateEstimator;
+import com.team254.frc2018.statemachines.IntakeStateMachine;
 import com.team254.frc2018.statemachines.SuperstructureStateMachine;
 import com.team254.frc2018.states.IntakeState;
 import com.team254.frc2018.states.SuperstructureConstants;
@@ -178,6 +179,9 @@ public class Robot extends IterativeRobot {
                 mIntake.getOrKeepCube();
             } else if (mControlBoard.getShoot()) {
                 mIntake.shoot();
+            } else {
+                mIntake.setState(IntakeStateMachine.WantedAction.WANT_MANUAL);
+                mIntake.setPower(0.0);
             }
 
             // Presets.
@@ -207,7 +211,7 @@ public class Robot extends IterativeRobot {
             } else if (mControlBoard.goToVerticalWrist()) {
                 desired_angle = SuperstructureConstants.getAngle(SuperstructureConstants.SuperstructurePositionID.VERTICAL);
             } else if (mControlBoard.goToScoringWrist()) {
-                desired_angle = SuperstructureConstants.getAngle(SuperstructureConstants.SuperstructurePositionID.SCALE_HIGH);
+                desired_angle = SuperstructureConstants.getAngle(SuperstructureConstants.SuperstructurePositionID.SCALE_HIGH_BACKWARDS);
             }
 
             if (Double.isNaN(desired_angle) && Double.isNaN(desired_height)) {

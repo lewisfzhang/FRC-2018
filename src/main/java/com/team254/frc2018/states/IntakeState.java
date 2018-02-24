@@ -35,6 +35,6 @@ public class IntakeState {
     }
 
     public boolean seesCube() {
-        return leftCubeSensorTriggered && rightCubeSensorTriggered;
+        return leftCubeSensorTriggered || rightCubeSensorTriggered;
     }
 }

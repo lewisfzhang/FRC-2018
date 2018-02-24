@@ -76,7 +76,7 @@ public class IntakeStateMachine {
         return mCommandedState;
     }
 
-    // IDLE
+    // OPEN_LOOP
     private synchronized SystemState handleOpenLoopTransitions(WantedAction wantedAction, IntakeState currentState) {
         if (currentState.seesCube() && mWantedPower <= 0.0 && mWantedJawState != IntakeState.JawState.OPEN) {
             // TODO think about this...
@@ -103,7 +103,11 @@ public class IntakeStateMachine {
     private synchronized SystemState handleKeepingCubeTransitions(WantedAction wantedAction, IntakeState currentState) {
         switch (wantedAction) {
             case WANT_MANUAL:
-                return SystemState.OPEN_LOOP;
+                if (!currentState.seesCube()) {
+                    return SystemState.OPEN_LOOP;
+                } else {
+                    return SystemState.KEEPING_CUBE;
+                }
             default:
                 return SystemState.KEEPING_CUBE;
         }
