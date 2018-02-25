@@ -2,7 +2,7 @@ package com.team254.frc2018.lidar.icp;
 
 public class ICP {
     
-    public static final double OUTLIER_THRESH = 300;
+    public static final double OUTLIER_THRESH = 1.0; // multiplier of the mean distance
     
     public ReferenceModel reference;
     public long timeoutNs;
@@ -28,19 +28,25 @@ public class ICP {
     public Transform doICP(Iterable<Point> points, Transform trans) {
         long startTime = System.nanoTime();
         
+        double lastMeanDist = Double.POSITIVE_INFINITY;
+        
         trans = trans==null? new Transform() : trans.inverse();
         while (System.nanoTime() - startTime < timeoutNs) {
-            /// get pairs of corresponding points
-            Transform transInv = trans.inverse();
+            final Transform transInv = trans.inverse();
             
+            final double threshold = lastMeanDist*OUTLIER_THRESH;
+            double sumDists = 0;
+            
+            /// get pairs of corresponding points
             double SumXa = 0, SumXb = 0, SumYa = 0, SumYb = 0;
             double Sxx = 0, Sxy = 0, Syx = 0, Syy = 0;
             int N = 0;
             for (Point p : points) {
                 Point p2 = transInv.apply(p);
                 Point rp = reference.getClosestPoint(p2);
-                boolean isOutlier = p2.getDistanceSq(rp) > OUTLIER_THRESH*OUTLIER_THRESH;
-                if (isOutlier) continue;
+                double dist = p2.getDistance(rp);
+                sumDists += dist;
+                if (dist > threshold) continue;
                 N++;
                 
                 // Compute the terms:
@@ -56,9 +62,7 @@ public class ICP {
                 Syy += p.y * rp.y;
             }
             
-            // TODO: compute the mean & [variance|std. dev.] for the point distances,
-            //       then reject outliers whose distance is more than mean+[some multiple of variance]
-            // (also look up popular variants of ICP that deal with outliers)
+            lastMeanDist = sumDists / N;
             
             /// calculate the new transform
             // code based on http://mrpt.ual.es/reference/devel/se2__l2_8cpp_source.html#l00158
