@@ -171,6 +171,9 @@ public class Robot extends IterativeRobot {
         try {
             double throttle = mControlBoard.getThrottle();
             double turn = mControlBoard.getTurn();
+            if (mElevator.getInchesOffGround() > 50.0) {
+                turn /= 4.0;
+            }
             mDrive.setOpenLoop(mCheesyDriveHelper.cheesyDrive(throttle, turn, mControlBoard.getQuickTurn(),
                     mDrive.isHighGear()));
 
@@ -252,7 +255,11 @@ public class Robot extends IterativeRobot {
             if (mControlBoard.goToStowWrist()) {
                 desired_angle = SuperstructureConstants.getAngle(SuperstructureConstants.SuperstructurePositionID.STOW);
             } else if (mControlBoard.goToIntakingWrist()) {
-                desired_angle = SuperstructureConstants.getAngle(SuperstructureConstants.SuperstructurePositionID.INTAKE);
+                if (mSuperstructure.getScoringHeight() > 5.0) {
+                    desired_angle = 155.0;
+                } else {
+                    desired_angle = 175.0;
+                }
             } else if (mControlBoard.goToVerticalWrist()) {
                 desired_angle = SuperstructureConstants.getAngle(SuperstructureConstants.SuperstructurePositionID.VERTICAL);
             } else if (mControlBoard.goToScoringWrist()) {

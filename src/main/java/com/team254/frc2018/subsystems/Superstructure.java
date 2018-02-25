@@ -127,6 +127,10 @@ public class Superstructure extends Subsystem {
         mWantedAction = SuperstructureStateMachine.WantedAction.GO_TO_POSITION;
     }
 
+    public synchronized double getScoringHeight() {
+        return mStateMachine.getScoringHeight();
+    }
+
     public synchronized void setDesiredHeight(double height) {
         mStateMachine.setScoringHeight(height);
         mWantedAction = SuperstructureStateMachine.WantedAction.GO_TO_POSITION;
