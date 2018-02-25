@@ -119,11 +119,11 @@ public class SuperstructureStateMachine {
     }
 
     private void updateMotionPlannerDesired(SuperstructureState currentState) {
-        System.out.println("Setting motion planner to height: " + mDesiredEndState.height
-                + " angle: " + mDesiredEndState.angle);
-
         mDesiredEndState.angle = mScoringAngle;
         mDesiredEndState.height = mScoringHeight;
+
+         System.out.println("Setting motion planner to height: " + mDesiredEndState.height
+                + " angle: " + mDesiredEndState.angle);
 
         // Push into elevator planner.
         if (!mPlanner.setDesiredState(mDesiredEndState, currentState)) {
