@@ -121,6 +121,11 @@ public class Elevator extends Subsystem {
                         Constants.kElevatorHighGearCruiseVelocity, Constants.kLongCANTimeoutMs),
             "Could not set elevator cruise velocity: ");
 
+        TalonSRXUtil.checkError(
+                mMaster.configClosedloopRamp(
+                        Constants.kElevatorRampRate, Constants.kLongCANTimeoutMs),
+                "Could not set elevator voltage ramp rate: ");
+
         mMaster.configSetParameter(ParamEnum.eClearPositionOnLimitF, 0, 0, 0, 0);
         mMaster.configSetParameter(ParamEnum.eClearPositionOnLimitR, 0, 0, 0, 0);
 
@@ -207,6 +212,11 @@ public class Elevator extends Subsystem {
         SmartDashboard.putNumber("Elevator Height", getInchesOffGround());
         SmartDashboard.putBoolean("Elevator Limit", mMaster.getSensorCollection().isFwdLimitSwitchClosed());
         SmartDashboard.putNumber("Elevator Sensor Height", mMaster.getSelectedSensorPosition(0));
+
+
+        SmartDashboard.putNumber("Elevator Last Expected Trajectory", mLastTrajectoryPoint);
+        SmartDashboard.putNumber("Elevator Current Trajectory Point", mMaster.getActiveTrajectoryPosition());
+        SmartDashboard.putBoolean("Elevator Has Sent Trajectory", hasFinishedTrajectory());
     }
 
     @Override
