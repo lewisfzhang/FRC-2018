@@ -15,6 +15,10 @@ public class Point {
         this(t.x(), t.y());
     }
     
+    public Translation2d toTranslation2d() {
+        return new Translation2d(x, y);
+    }
+    
     public double getDistanceSq(Point p) {
         double dx = x-p.x, dy = y-p.y;
         return dx*dx + dy*dy;

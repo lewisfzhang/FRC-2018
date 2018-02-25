@@ -75,32 +75,50 @@ public class LidarProcessor implements Loop {
     public LidarScan getLatestCompleteScan() {
         return mScans.size() > 1? mScans.get(mScans.size() - 2) : null;
     }
-
-    public Iterable<Point> getAllPoints() {
-        return () -> {
-            return new Iterator<Point>() {
-                Iterator<LidarScan> scanIt = mScans.iterator();
-                Iterator<Point> pointIt = null;
-                
-                @Override
-                public Point next() {
-                    while (pointIt == null || !pointIt.hasNext()) {
-                        pointIt = scanIt.next().getPoints().iterator();
-                    }
-                    return pointIt.next();
+    
+    private final Iterable<Point> allPoints = () -> {
+        return new Iterator<Point>() {
+            Iterator<LidarScan> scanIt = mScans.iterator();
+            Iterator<Point> pointIt = null;
+            
+            @Override
+            public Point next() {
+                while (pointIt == null || !pointIt.hasNext()) {
+                    pointIt = scanIt.next().getPoints().iterator();
                 }
-                
-                @Override
-                public boolean hasNext() {
-                    return scanIt.hasNext() || pointIt.hasNext();
-                }
-            };
+                return pointIt.next();
+            }
+            
+            @Override
+            public boolean hasNext() {
+                return scanIt.hasNext() || pointIt.hasNext();
+            }
         };
+    };
+    public Iterable<Point> getAllPoints() {
+        return allPoints;
+    }
+    
+    protected Point getAveragePoint() {
+        double sumX = 0, sumY = 0;
+        int n = 0;
+        for (Point p : getAllPoints()) {
+            sumX += p.x;
+            sumY += p.y;
+            n++;
+        }
+        return new Point(sumX/n, sumY/n);
     }
 
     public Pose2d doICP() {
         Pose2d guess = mRobotState.getFieldToLidar(getCurrentScan().getTimestamp());
-        return icp.doICP(getAllPoints(), new Transform(guess)).toPose2d();
+        return icp.doICP(getAllPoints(), new Transform(guess).inverse()).inverse().toPose2d();
+    }
+    
+    public Translation2d getTowerPosition() {
+        Point avg = getAveragePoint();
+        Transform trans = icp.doICP(getAllPoints(), new Transform(0, avg.x, avg.y));
+        return trans.apply(icp.reference).getMidpoint().toTranslation2d();
     }
 
     @Override

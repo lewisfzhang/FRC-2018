@@ -30,7 +30,7 @@ public class ICP {
         
         double lastMeanDist = Double.POSITIVE_INFINITY;
         
-        trans = trans==null? new Transform() : trans.inverse();
+        trans = trans==null? new Transform() : trans;
         while (System.nanoTime() - startTime < timeoutNs) {
             final Transform transInv = trans.inverse();
             
@@ -93,7 +93,7 @@ public class ICP {
             trans = new Transform(theta, tx, ty, csin, ccos);
         }
         
-        return trans.inverse();
+        return trans;
     }
     
 }

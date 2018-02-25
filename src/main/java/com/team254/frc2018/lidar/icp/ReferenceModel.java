@@ -13,9 +13,9 @@ public class ReferenceModel {
     private static final Point TOWER11 = new Point(TOWER_DEPTH, +TOWER_WIDTH/2);
     
     public static final ReferenceModel TOWER = new ReferenceModel(
-        new Segment(TOWER00, TOWER10), // bottom (-Y) face
-        new Segment(TOWER00, TOWER01), // front face
-        new Segment(TOWER01, TOWER11)  // top (+Y) face
+        // new Segment(TOWER00, TOWER10), // bottom (-Y) face
+        new Segment(TOWER00, TOWER01) // front face
+        // new Segment(TOWER01, TOWER11)  // top (+Y) face
     );
     
     
@@ -41,6 +41,12 @@ public class ReferenceModel {
             }
         }
         return minSeg.getClosestPoint(p);
+    }
+    
+    public Point getMidpoint() {
+        if (segments.length > 1)
+            throw new RuntimeException("getMidpoint() called on multi-segment ReferenceModel");
+        return segments[0].getMidpoint();
     }
     
     public String toString() {
