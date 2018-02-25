@@ -89,6 +89,7 @@ public class Constants {
     public static final int kElevatorHighGearDeadband = 0;
     public static final int kElevatorHighGearCruiseVelocity = 12500;
     public static final int kElevatorHighGearAcceleration = 33000;//33000;
+    public static final double kElevatorRampRate = 1.0;
 
     public static final double kWristKp = 1.7; //todo: tune me
     public static final double kWristKi = 0.0; //todo: tune me
@@ -99,6 +100,7 @@ public class Constants {
     public static final int kWristDeadband = 25; //todo: tune me
     public static final int kWristCruiseVelocity = 650; //todo: tune me
     public static final int kWristAcceleration = 700; //todo: tune me
+    public static final double kWristRampRate = 1.0;
 
     // Do not change anything after this line unless you rewire the robot and
     // update the spreadsheet!
@@ -132,6 +134,7 @@ public class Constants {
     // Intake
     public static final int kIntakeLeftMasterId = 9;
     public static final int kIntakeRightMasterId = 10;
+    public static final int kCanifierId = 0;
 
     // Elevator
     public static final int kElevatorMasterId = 11;

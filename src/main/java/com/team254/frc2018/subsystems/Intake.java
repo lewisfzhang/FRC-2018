@@ -1,6 +1,5 @@
 package com.team254.frc2018.subsystems;
 
-import com.ctre.phoenix.CANifier;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.team254.frc2018.Constants;
@@ -10,7 +9,6 @@ import com.team254.frc2018.statemachines.IntakeStateMachine;
 import com.team254.frc2018.states.IntakeState;
 import com.team254.lib.drivers.TalonSRXChecker;
 import com.team254.lib.drivers.TalonSRXFactory;
-import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -32,9 +30,8 @@ public class Intake extends Subsystem {
 
     private final Solenoid mCloseSolenoid, mClampSolenoid; //open->false, false; close->true, false; clamp->true, true;
     private final TalonSRX mLeftMaster, mRightMaster;
-    private final DigitalInput mLeftBanner, mRightBanner;
 
-    public final CANifier mCanifier = new CANifier(0);
+    private final CarriageCanifier mCanifier = CarriageCanifier.getInstance();
 
     private IntakeStateMachine.WantedAction mWantedAction = IntakeStateMachine.WantedAction.WANT_MANUAL;
     private IntakeState.JawState mJawState;
@@ -57,10 +54,6 @@ public class Intake extends Subsystem {
         mRightMaster.setInverted(false);
         mRightMaster.configVoltageCompSaturation(12.0, Constants.kLongCANTimeoutMs);
         mRightMaster.enableVoltageCompensation(true);
-
-        mLeftBanner = new DigitalInput(Constants.kIntakeLeftBannerId);
-        mRightBanner = new DigitalInput(Constants.kIntakeRightBannerId);
-
     }
 
     @Override
@@ -148,20 +141,21 @@ public class Intake extends Subsystem {
     }
 
     private boolean getLeftBannerSensor() {
-        return !mCanifier.getGeneralInput(CANifier.GeneralPin.LIMF);
+        return mCanifier.getLeftBannerSensor();
     }
 
     private boolean getRightBannerSensor() {
-        return !mCanifier.getGeneralInput(CANifier.GeneralPin.LIMR);
+        return mCanifier.getRightBannerSensor();
     }
 
     public void setLEDsOn(double blue, double green, double red) {
         // A: Blue
         // B: Green
         // C: Red
-        mCanifier.setLEDOutput(blue, CANifier.LEDChannel.LEDChannelA);
-        mCanifier.setLEDOutput(green, CANifier.LEDChannel.LEDChannelB);
-        mCanifier.setLEDOutput(red, CANifier.LEDChannel.LEDChannelC);
+        mCanifier.setLEDColor(red, green, blue);
+//        mCanifier.setLEDOutput(blue, CANifier.LEDChannel.LEDChannelA);
+//        mCanifier.setLEDOutput(green, CANifier.LEDChannel.LEDChannelB);
+//        mCanifier.setLEDOutput(red, CANifier.LEDChannel.LEDChannelC);
     }
 
     public IntakeState.JawState getJawState() {
