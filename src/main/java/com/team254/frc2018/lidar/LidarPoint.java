@@ -14,7 +14,6 @@ class LidarPoint {
     public final double timestamp;
     public final double angle;
     public final double distance;
-    private double excludeRectMinX, excludeRectMinY, excludeRectMaxX, excludeRectMaxY; // TODO set values
     private RobotState mRobotState = RobotState.getInstance();
     
     private final static int MAX_ENTRIES = 10;
@@ -37,8 +36,7 @@ class LidarPoint {
         double radians = Math.toRadians(angle);
         Translation2d cartesian = new Translation2d(Math.cos(radians) * distance, Math.sin(radians) * distance);
 
-        if (cartesian.x() < excludeRectMinX || cartesian.y() < excludeRectMinY || cartesian.x() > excludeRectMaxX ||
-                cartesian.y() > excludeRectMaxY) {
+        if (excludePoint(cartesian.x(), cartesian.y())) {
             return null;
         }
 
@@ -52,5 +50,17 @@ class LidarPoint {
 
         robotPose.transformBy(Pose2d.fromTranslation(cartesian));
         return robotPose.getTranslation();
+    }
+
+
+    private static final double FIELD_WIDTH = 27*12, FIELD_HEIGHT = 54*12;
+    private static final double RECT_RX = FIELD_WIDTH/5, RECT_RY = FIELD_HEIGHT/2;
+    private static final double FIELD_CX = FIELD_WIDTH/2, FIELD_CY = FIELD_HEIGHT/2;
+    private static final double RECT_X_MIN = FIELD_CX-RECT_RX, RECT_X_MAX = FIELD_CX+RECT_RX,
+                                RECT_Y_MIN = FIELD_CY-RECT_RY, RECT_Y_MAX = FIELD_CY+RECT_RY;
+
+    public static boolean excludePoint(double x, double y) {
+        return x < RECT_X_MIN || x > RECT_X_MAX ||
+               y < RECT_Y_MIN || y > RECT_Y_MAX;
     }
 }
