@@ -47,6 +47,10 @@ public class SuperstructureStateMachine {
         mScoringAngle = angle;
     }
 
+    public synchronized double getScoringAngle() {
+        return mScoringAngle;
+    }
+
     public synchronized void jogElevator(double relative_inches) {
         mScoringHeight += relative_inches;
         mScoringHeight = Math.min(mScoringHeight, SuperstructureConstants.kElevatorMaxHeight);

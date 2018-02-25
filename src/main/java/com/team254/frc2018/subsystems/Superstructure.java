@@ -115,6 +115,10 @@ public class Superstructure extends Subsystem {
         });
     }
 
+    public synchronized double getScoringAngle() {
+        return mStateMachine.getScoringAngle();
+    }
+
     public synchronized double getScoringHeight() {
         return mStateMachine.getScoringHeight();
     }

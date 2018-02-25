@@ -268,7 +268,16 @@ public class Robot extends IterativeRobot {
             } else if (mControlBoard.goToScoringWrist()) {
                 desired_angle = SuperstructureConstants.kScoreBackwardsAngle;
             } else if (mControlBoard.goToScoringAngledWrist()) {
-                 desired_angle = SuperstructureConstants.kScoreForwardAngledAngle;
+                desired_angle = SuperstructureConstants.kScoreForwardAngledAngle;
+            }
+
+            // Attempt to fix wrist angle if we will be in an invalid state.
+            if (!Double.isNaN(desired_height) && Double.isNaN(desired_angle) &&
+                    desired_height > SuperstructureConstants.kClearFirstStageMaxHeight) {
+                if (mSuperstructure.getScoringAngle() <
+                        SuperstructureConstants.kClearFirstStageMinWristAngle) {
+                    desired_angle = SuperstructureConstants.kClearFirstStageMinWristAngle;
+                }
             }
 
             if (Double.isNaN(desired_angle) && Double.isNaN(desired_height)) {
