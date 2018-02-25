@@ -25,10 +25,12 @@ class LidarPoint {
         }
     };
 
+    public static final double MM_TO_IN = 1 / 25.4; // 1 inch = 25.4 millimeters
+
     public LidarPoint(double timestamp, double angle, double distance) {
         this.timestamp = timestamp;
         this.angle = angle;
-        this.distance = distance;
+        this.distance = distance * MM_TO_IN;
     }
 
     public Translation2d toCartesian() {
@@ -44,7 +46,7 @@ class LidarPoint {
         if (mRobotPoseMap.containsKey(timestamp)) {
             robotPose = mRobotPoseMap.get(timestamp);
         } else {
-            robotPose = mRobotState.getFieldToVehicle(timestamp);
+            robotPose = mRobotState.getFieldToLidar(timestamp);
             mRobotPoseMap.put(timestamp, robotPose);
         }
 

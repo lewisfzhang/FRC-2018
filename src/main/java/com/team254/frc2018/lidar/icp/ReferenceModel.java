@@ -4,9 +4,8 @@ import java.util.Collection;
 
 public class ReferenceModel {
     
-    public static final double IN_TO_MM = 25.4; // 1 inch = 25.4 millimeters
-    public static final double TOWER_WIDTH = 17 * IN_TO_MM;
-    public static final double TOWER_DEPTH = 21.5 * IN_TO_MM;
+    public static final double TOWER_WIDTH = 17;
+    public static final double TOWER_DEPTH = 21.5;
     private static final Point TOWER00 = new Point(0, -TOWER_WIDTH/2);
     private static final Point TOWER01 = new Point(0, +TOWER_WIDTH/2);
     private static final Point TOWER10 = new Point(TOWER_DEPTH, -TOWER_WIDTH/2);
