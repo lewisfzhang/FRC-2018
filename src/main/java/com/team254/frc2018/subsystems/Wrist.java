@@ -9,6 +9,7 @@ import com.team254.frc2018.loops.Loop;
 import com.team254.frc2018.loops.Looper;
 import com.team254.lib.drivers.TalonSRXChecker;
 import com.team254.lib.drivers.TalonSRXFactory;
+import com.team254.lib.drivers.TalonSRXUtil;
 import com.team254.lib.util.Util;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -104,6 +105,20 @@ public class Wrist extends Subsystem {
         errorCode = mMaster.configMotionCruiseVelocity(Constants.kWristCruiseVelocity, Constants.kLongCANTimeoutMs);
         if (errorCode != ErrorCode.OK)
             DriverStation.reportError("Could not set wrist cruise velocity: " + errorCode, false);
+
+       TalonSRXUtil.checkError(
+               mMaster.configContinuousCurrentLimit(20, Constants.kLongCANTimeoutMs),
+               "Could not set wrist continuous current limit.");
+
+       TalonSRXUtil.checkError(
+               mMaster.configPeakCurrentLimit(40, Constants.kLongCANTimeoutMs),
+               "Could not set wrist peak current limit.");
+
+       TalonSRXUtil.checkError(
+               mMaster.configPeakCurrentDuration(200, Constants.kLongCANTimeoutMs),
+            "Could not set wrist peak current duration.");
+
+        mMaster.enableCurrentLimit(true);
 
         mMaster.selectProfileSlot(0, 0);
 
