@@ -20,82 +20,41 @@ public class SuperstructureConstants {
     public static final double kElevatorApproachingThreshold = 12.0;
 
     public final static double kStowedAngle = 90.0;
-    public final static double kStowedWithCubeAngle = 0.0;
-    public final static double kIntakeAngle = 180.0;
 
-    public final static double kPlacingMinAngle = 145.0;
-    public final static double kMinTimePlacing = 0.25;
-    public final static double kMinTimeShooting = 0.25;
+    public final static double kElevatorJogUpThrottle = 24.0 / 50.0;
+    public final static double kElevatorJogDownThrottle = -24.0 / 50.0;
 
-    public final static double kEarlyIntakeStartHeight = 10.0;
-    public final static double kEarlyIntakeStartAngle = 135.0;
+    public final static double kWristJogUpThrottle = 90.0 / 50.0;
+    public final static double kWristJogDownThrottle = -90.0 / 50.0;
 
-    // Should be -
-    public final static double kJogUpPercent = -0.4;
-    public final static double kJogDownPercent = 0.25;
+    // In inches, the height to use the kPlacingHighAngle.
+    public final static double kPlacingHighThreshold = 5.0;
 
-    public enum SuperstructurePositionID {
-        INTAKE,
-        VERTICAL,
-        STOW,
-        SWITCH,
-        SWITCH_BACKWARDS,
-        SCALE_LOW,
-        SCALE_LOW_BACKWARDS,
-        SCALE_NEUTRAL,
-        SCALE_NEUTRAL_BACKWARDS,
-        SCALE_HIGH,
-        SCALE_HIGH_BACKWARDS,
-        INTAKE_FLOOR_LEVEL,
-        INTAKE_SECOND_LEVEL,
-        INTAKE_THIRD_LEVEL,
-    }
+    // Presets.
 
-    public static class SuperstructurePosition {
-        public double height = Elevator.kHomePositionInches;
-        public double angle = kStowedAngle;
+    // Combinations.
+    public final static double kStowedPositionHeight = 0.0;
+    public final static double kStowedPositionAngle = 0.0;
 
-        public SuperstructurePosition(double in_height, double in_angle) {
-            height = in_height;
-            angle = in_angle;
-        }
-    }
+    public final static double kIntakePositionHeight = 0.0;
+    public final static double kIntakePositionAngle = 175.0;
 
-    // TODO refactor?
-    public static HashMap<SuperstructurePositionID, SuperstructurePosition> kScoringPositions =
-            new HashMap<SuperstructurePositionID, SuperstructurePosition>() {
-                {
-                    put(SuperstructurePositionID.INTAKE, new SuperstructurePosition(0.0, 175.0));
-                    put(SuperstructurePositionID.INTAKE_FLOOR_LEVEL, new SuperstructurePosition(0.0, 175.0));
-                    put(SuperstructurePositionID.INTAKE_SECOND_LEVEL, new SuperstructurePosition(14.5, 175.0));
-                    put(SuperstructurePositionID.INTAKE_THIRD_LEVEL, new SuperstructurePosition(25.5, 175.0));
-                    put(SuperstructurePositionID.VERTICAL, new SuperstructurePosition(0.0, 90.0));
-                    put(SuperstructurePositionID.STOW, new SuperstructurePosition(0.0, 0.0));
+    // Elevator Heights.
+    public final static double kScaleHighHeight = 80.0;
+    public final static double kScaleNeutralHeight = 70.0;
+    public final static double kScaleLowHeight = 60.0;
 
-                    put(SuperstructurePositionID.SWITCH, new SuperstructurePosition(30.0, 165.0));
-                    put(SuperstructurePositionID.SWITCH_BACKWARDS,
-                            new SuperstructurePosition(30.0, 0.0));
+    public final static double kIntakeThirdLevelHeight = 25.5;
+    public final static double kIntakeSecondLevelHeight = 14.5;
+    public final static double kIntakeFloorLevelHeight = 0.0;
 
-                    put(SuperstructurePositionID.SCALE_LOW, new SuperstructurePosition(60.0, 165.0));
-                    put(SuperstructurePositionID.SCALE_LOW_BACKWARDS,
-                            new SuperstructurePosition(60.0, 45.0));
+    public final static double kSwitchHeight = 30.0;
 
-                    put(SuperstructurePositionID.SCALE_NEUTRAL,
-                            new SuperstructurePosition(70.0, 165.0));
-                    put(SuperstructurePositionID.SCALE_NEUTRAL_BACKWARDS,
-                            new SuperstructurePosition(70.0, 45.0));
+    // Wrist Angles.
+    public final static double kVerticalAngle = 90.0;
+    public final static double kScoreBackwardsAngle = 45.0;
+    public final static double kScoreForwardAngledAngle = 135.0;
 
-                    put(SuperstructurePositionID.SCALE_HIGH, new SuperstructurePosition(80.0, 165.0));
-                    put(SuperstructurePositionID.SCALE_HIGH_BACKWARDS,
-                            new SuperstructurePosition(80.0, 45.0));
-                }
-    };
-
-    public static double getHeight(SuperstructurePositionID id) {
-        return kScoringPositions.get(id).height;
-    }
-
-    public static double getAngle(SuperstructurePositionID id) {
-        return kScoringPositions.get(id).angle;
-    }
+    public final static double kPlacingLowAngle = 175.0;
+    public final static double kPlacingHighAngle = 155.0;
 }

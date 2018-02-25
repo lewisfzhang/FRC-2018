@@ -223,49 +223,49 @@ public class Robot extends IterativeRobot {
             double desired_angle = Double.NaN;
 
             if (mControlBoard.getGoToStowHeight()) {
-                desired_height = SuperstructureConstants.getHeight(SuperstructureConstants.SuperstructurePositionID.STOW);
-                desired_angle = SuperstructureConstants.getAngle(SuperstructureConstants.SuperstructurePositionID.STOW);
+                desired_height = SuperstructureConstants.kStowedPositionHeight;
+                desired_angle = SuperstructureConstants.kStowedPositionAngle;
             }
 
             if (mRunIntakePressed.update(mControlBoard.getIntakePosition())) {
-                desired_height = SuperstructureConstants.getHeight(SuperstructureConstants.SuperstructurePositionID.STOW);
-                desired_angle = SuperstructureConstants.getAngle(SuperstructureConstants.SuperstructurePositionID.INTAKE);
+                desired_height = SuperstructureConstants.kIntakePositionHeight;
+                desired_angle = SuperstructureConstants.kIntakePositionAngle;
             }
 
             // Elevator.
             if (mControlBoard.getGoToHighScaleHeight() && !mControlBoard.getIntakePosition()) {
-                desired_height = SuperstructureConstants.getHeight(SuperstructureConstants.SuperstructurePositionID.SCALE_HIGH);
+                desired_height = SuperstructureConstants.kScaleHighHeight;
             } else if (mControlBoard.getGoToNeutralScaleHeight() && !mControlBoard.getIntakePosition()) {
-                desired_height = SuperstructureConstants.getHeight(SuperstructureConstants.SuperstructurePositionID.SCALE_NEUTRAL);
+                desired_height = SuperstructureConstants.kScaleNeutralHeight;
             } else if (mControlBoard.getGoToLowScaleHeight() && !mControlBoard.getIntakePosition()) {
-                desired_height = SuperstructureConstants.getHeight(SuperstructureConstants.SuperstructurePositionID.SCALE_LOW);
+                desired_height = SuperstructureConstants.kScaleLowHeight;
             } else if (mControlBoard.getGoToHighScaleHeight() && mControlBoard.getIntakePosition()) {
-                desired_height = SuperstructureConstants.getHeight(SuperstructureConstants.SuperstructurePositionID.INTAKE_THIRD_LEVEL);
+                desired_height = SuperstructureConstants.kIntakeThirdLevelHeight;
             } else if (mControlBoard.getGoToNeutralScaleHeight() && mControlBoard.getIntakePosition()) {
-                desired_height = SuperstructureConstants.getHeight(SuperstructureConstants.SuperstructurePositionID.INTAKE_SECOND_LEVEL);
+                desired_height = SuperstructureConstants.kIntakeSecondLevelHeight;
             } else if (mControlBoard.getGoToLowScaleHeight() && mControlBoard.getIntakePosition()) {
-                desired_height = SuperstructureConstants.getHeight(SuperstructureConstants.SuperstructurePositionID.INTAKE_FLOOR_LEVEL);
+                desired_height = SuperstructureConstants.kIntakeFloorLevelHeight;
             }  else if (mControlBoard.getGoToSwitchHeight()) {
-                desired_height = SuperstructureConstants.getHeight(SuperstructureConstants.SuperstructurePositionID.SWITCH);
+                desired_height = SuperstructureConstants.kSwitchHeight;
             } else if (mControlBoard.getHangMode()) {
                 mSuperstructure.setHangThrottle(mControlBoard.getHangThrottle());
             }
 
             // Wrist.
             if (mControlBoard.goToStowWrist()) {
-                desired_angle = SuperstructureConstants.getAngle(SuperstructureConstants.SuperstructurePositionID.STOW);
+                desired_angle = SuperstructureConstants.kStowedPositionAngle;
             } else if (mControlBoard.goToIntakingWrist()) {
-                if (mSuperstructure.getScoringHeight() > 5.0) {
-                    desired_angle = 155.0;
+                if (mSuperstructure.getScoringHeight() > SuperstructureConstants.kPlacingHighThreshold) {
+                    desired_angle = SuperstructureConstants.kPlacingHighAngle;
                 } else {
-                    desired_angle = 175.0;
+                    desired_angle = SuperstructureConstants.kPlacingLowAngle;
                 }
             } else if (mControlBoard.goToVerticalWrist()) {
-                desired_angle = SuperstructureConstants.getAngle(SuperstructureConstants.SuperstructurePositionID.VERTICAL);
+                desired_angle = SuperstructureConstants.kVerticalAngle;
             } else if (mControlBoard.goToScoringWrist()) {
-                desired_angle = SuperstructureConstants.getAngle(SuperstructureConstants.SuperstructurePositionID.SCALE_HIGH_BACKWARDS);
+                desired_angle = SuperstructureConstants.kScoreBackwardsAngle;
             } else if (mControlBoard.goToScoringAngledWrist()) {
-                 desired_angle = 135.0;
+                 desired_angle = SuperstructureConstants.kScoreForwardAngledAngle;
             }
 
             if (Double.isNaN(desired_angle) && Double.isNaN(desired_height)) {
@@ -279,17 +279,16 @@ public class Robot extends IterativeRobot {
                 mSuperstructure.setDesiredHeight(desired_height);
             }
 
-            // TODO jogging
             if (mControlBoard.getJogElevatorUp()) {
-                mSuperstructure.setElevatorJog(24. / 50.);
+                mSuperstructure.setElevatorJog(SuperstructureConstants.kElevatorJogUpThrottle);
             } else if (mControlBoard.getJogElevatorDown()) {
-                mSuperstructure.setElevatorJog(-24. / 50.);
+                mSuperstructure.setElevatorJog(SuperstructureConstants.kElevatorJogDownThrottle);
             }
 
             if (mControlBoard.getJogWristForward()) {
-                mSuperstructure.setWristJog(90. / 50.);
+                mSuperstructure.setWristJog(SuperstructureConstants.kWristJogUpThrottle);
             } else if (mControlBoard.getJogWristBack()) {
-                mSuperstructure.setWristJog(-90. / 50.);
+                mSuperstructure.setWristJog(SuperstructureConstants.kWristJogDownThrottle);
             }
 
             outputToSmartDashboard();

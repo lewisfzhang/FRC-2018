@@ -115,18 +115,6 @@ public class Superstructure extends Subsystem {
         });
     }
 
-    public synchronized void setDesiredPosition(SuperstructureConstants.SuperstructurePositionID position_id) {
-        SuperstructureConstants.SuperstructurePosition position =
-                SuperstructureConstants.kScoringPositions.get(position_id);
-        mStateMachine.setScoringPosition(position.height, position.angle);
-        mWantedAction = SuperstructureStateMachine.WantedAction.GO_TO_POSITION;
-    }
-
-    public synchronized void setDesiredPosition(double height, double angle) {
-        mStateMachine.setScoringPosition(height, angle);
-        mWantedAction = SuperstructureStateMachine.WantedAction.GO_TO_POSITION;
-    }
-
     public synchronized double getScoringHeight() {
         return mStateMachine.getScoringHeight();
     }

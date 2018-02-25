@@ -54,11 +54,6 @@ public class SuperstructureStateMachine {
 
     public synchronized void jogWrist(double relative_degrees) { mScoringAngle += relative_degrees; }
 
-    public synchronized void setScoringPosition(double inches, double angle) {
-        mScoringHeight = inches;
-        mScoringAngle = angle;
-    }
-
     public synchronized boolean scoringPositionChanged() {
         return !Util.epsilonEquals(mDesiredEndState.angle, mScoringAngle) ||
                 !Util.epsilonEquals(mDesiredEndState.height, mScoringHeight);
