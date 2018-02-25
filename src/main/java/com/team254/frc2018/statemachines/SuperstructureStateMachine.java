@@ -136,7 +136,11 @@ public class SuperstructureStateMachine {
 
     private SystemState handleDefaultTransitions(WantedAction wantedAction, SuperstructureState currentState) {
         if (wantedAction == WantedAction.GO_TO_POSITION) {
-            if (scoringPositionChanged()) updateMotionPlannerDesired(currentState);
+            if (scoringPositionChanged()) {
+                updateMotionPlannerDesired(currentState);
+            } else if (mPlanner.isFinished(currentState)) {
+                return SystemState.HOLDING_POSITION;
+            }
             return SystemState.MOVING_TO_POSITION;
         } else if (wantedAction == WantedAction.HANG) {
             return SystemState.HANGING;

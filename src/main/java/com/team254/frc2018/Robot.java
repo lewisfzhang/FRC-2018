@@ -29,6 +29,7 @@ public class Robot extends IterativeRobot {
                     FollowerWheels.getInstance(),
                     Intake.getInstance(),
                     Superstructure.getInstance(),
+                    Wrist.getInstance(),
                     Infrastructure.getInstance()
             )
     );
@@ -56,7 +57,6 @@ public class Robot extends IterativeRobot {
             mSubsystemManager.registerEnabledLoops(mEnabledLooper);
             mEnabledLooper.register(RobotStateEstimator.getInstance());
 
-            Wrist.getInstance().zeroSensors();
             Elevator.getInstance().zeroSensors();
 
             mRunIntakeReleased.update(true);
