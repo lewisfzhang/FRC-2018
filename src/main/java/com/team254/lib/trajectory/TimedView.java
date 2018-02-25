@@ -26,22 +26,22 @@ public class TimedView<S extends State<S>> implements TrajectoryView<TimedState<
     }
 
     @Override
-    public TrajectorySamplePoint<TimedState<S>> sample(double interpolant) {
-        if (interpolant >= end_t_) {
-            return new TrajectorySamplePoint<TimedState<S>>(trajectory_.getPoint(trajectory_.length() - 1));
+    public TrajectorySamplePoint<TimedState<S>> sample(double t) {
+        if (t >= end_t_) {
+            return new TrajectorySamplePoint<>(trajectory_.getPoint(trajectory_.length() - 1));
         }
-        if (interpolant <= start_t_) {
-            return new TrajectorySamplePoint<TimedState<S>>(trajectory_.getPoint(0));
+        if (t <= start_t_) {
+            return new TrajectorySamplePoint<>(trajectory_.getPoint(0));
         }
         for (int i = 1; i < trajectory_.length(); ++i) {
             final TrajectoryPoint<TimedState<S>> s = trajectory_.getPoint(i);
-            if (s.state().t() >= interpolant) {
+            if (s.state().t() >= t) {
                 final TrajectoryPoint<TimedState<S>> prev_s = trajectory_.getPoint(i - 1);
-                if (Util.epsilonEquals(s.state().t(), prev_s.state().t()) || prev_s.state().t() > s.state().t()) {
-                    return new TrajectorySamplePoint<TimedState<S>>(s);
+                if (Util.epsilonEquals(s.state().t(), prev_s.state().t())) {
+                    return new TrajectorySamplePoint<>(s);
                 }
-                return new TrajectorySamplePoint<TimedState<S>>(prev_s.state().interpolate(s.state(),
-                        (interpolant - prev_s.state().t()) / (s.state().t() - prev_s.state().t())), i - 1, i);
+                return new TrajectorySamplePoint<>(prev_s.state().interpolate(s.state(),
+                        (t - prev_s.state().t()) / (s.state().t() - prev_s.state().t())), i - 1, i);
             }
         }
         throw new RuntimeException();

@@ -1,7 +1,7 @@
 package com.team254.lib.trajectory;
 
-import com.team254.lib.geometry.Pose2dWithCurvature;
 import com.team254.lib.geometry.Pose2d;
+import com.team254.lib.geometry.Pose2dWithCurvature;
 import com.team254.lib.geometry.Rotation2d;
 import com.team254.lib.geometry.Translation2d;
 import com.team254.lib.physics.DCMotorTransmission;
@@ -11,12 +11,11 @@ import com.team254.lib.trajectory.timing.TimedState;
 import com.team254.lib.trajectory.timing.TimingUtil;
 import com.team254.lib.util.Units;
 import org.junit.jupiter.api.Test;
-import org.opencv.video.KalmanFilter;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class IntegrationTest {
@@ -59,8 +58,8 @@ public class IntegrationTest {
                 new Pose2d(200.0, 70, Rotation2d.fromDegrees(45.0)));
 
         // Create a trajectory from splines.
-        Trajectory<Pose2dWithCurvature> trajectory = TrajectoryUtil.trajectoryFromSplineWaypoints(waypoints, 3.0,
-                0.25, Math.toRadians(5.0));
+        Trajectory<Pose2dWithCurvature> trajectory = TrajectoryUtil.trajectoryFromSplineWaypoints(waypoints, 2.0,
+                0.2, Math.toRadians(5.0));
         // System.out.println(trajectory.toCSV());
         // Create a differential drive.
         final double kRobotMassKg = 60.0;
@@ -78,15 +77,26 @@ public class IntegrationTest {
 
         // Generate the timed trajectory.
         Trajectory<TimedState<Pose2dWithCurvature>> timed_trajectory = TimingUtil.timeParameterizeTrajectory(new
-                        DistanceView<>(trajectory), 3.0, Arrays.asList(drive_constraints),
+                        DistanceView<>(trajectory), 2.0, Arrays.asList(drive_constraints),
                 0.0, 0.0, 12.0 * 14.0, 12.0 * 10.0);
 
-        System.out.println(timed_trajectory.toCSV());
+        // System.out.println(timed_trajectory.toCSV());
+        for (int i = 1; i < timed_trajectory.length(); ++i) {
+            TrajectoryPoint<TimedState<Pose2dWithCurvature>> prev = timed_trajectory.getPoint(i - 1);
+            TrajectoryPoint<TimedState<Pose2dWithCurvature>> next = timed_trajectory.getPoint(i);
+            assertEquals(prev.state().acceleration(), (next.state().velocity() - prev.state().velocity()) / (next
+                    .state().t() - prev.state().t()), 1E-9);
+            final double dt = next.state().t() - prev.state().t();
+            assertEquals(next.state().velocity(), prev.state().velocity() + prev.state().acceleration() * dt, 1E-9);
+            assertEquals(next.state().distance(prev.state()), prev.state().velocity() * dt + 0.5 * prev.state()
+                    .acceleration() * dt * dt, 1E-9);
+        }
 
         // "Follow" the trajectory.
         final double kDt = 0.01;
         boolean first = true;
-        TrajectoryIterator<TimedState<Pose2dWithCurvature>> it = new TrajectoryIterator<>(new TimedView<>(timed_trajectory));
+        TrajectoryIterator<TimedState<Pose2dWithCurvature>> it = new TrajectoryIterator<>(new TimedView<>
+                (timed_trajectory));
         while (!it.isDone()) {
             TrajectorySamplePoint<TimedState<Pose2dWithCurvature>> sample;
             if (first) {
@@ -98,10 +108,12 @@ public class IntegrationTest {
             final TimedState<Pose2dWithCurvature> state = sample.state();
 
             final DifferentialDrive.DriveDynamics dynamics = drive.solveInverseDynamics(
-                    new DifferentialDrive.ChassisState(Units.inches_to_meters(state.velocity()), state.velocity() * state.state().getCurvature()),
-                    new DifferentialDrive.ChassisState(Units.inches_to_meters(state.acceleration()), state.acceleration() * state.state().getCurvature()));
+                    new DifferentialDrive.ChassisState(Units.inches_to_meters(state.velocity()), state.velocity() *
+                            state.state().getCurvature()),
+                    new DifferentialDrive.ChassisState(Units.inches_to_meters(state.acceleration()), state
+                            .acceleration() * state.state().getCurvature()));
 
-            System.out.println(state.t() + ", " + dynamics.toCSV());
+            System.out.println(state.toCSV() + ", " + dynamics.toCSV());
         }
     }
 

@@ -17,7 +17,8 @@ public class DifferentialDriveDynamicsConstraint<S extends IPose2d<S> & ICurvatu
 
     @Override
     public double getMaxVelocity(S state) {
-        return Units.meters_to_inches(drive_.getMaxAbsVelocity(1.0 / (Units.inches_to_meters(1.0 / state.getCurvature())), abs_voltage_limit_));
+        return Units.meters_to_inches(drive_.getMaxAbsVelocity(1.0 / (Units.inches_to_meters(1.0 / state.getCurvature
+                ())), abs_voltage_limit_));
     }
 
     @Override
@@ -27,7 +28,8 @@ public class DifferentialDriveDynamicsConstraint<S extends IPose2d<S> & ICurvatu
         // NOTE: units cancel on angular velocity.
         DifferentialDrive.MinMax min_max = drive_.getMinMaxAcceleration(new DifferentialDrive.ChassisState(
                 Units.inches_to_meters(velocity),
-                state.getCurvature() * velocity), 1.0 / (Units.inches_to_meters(1.0 / state.getCurvature())), abs_voltage_limit_);
+                state.getCurvature() * velocity), 1.0 / (Units.inches_to_meters(1.0 / state.getCurvature())),
+                abs_voltage_limit_);
         return new MinMaxAcceleration(Units.meters_to_inches(min_max.min), Units.meters_to_inches(min_max.max));
     }
 }

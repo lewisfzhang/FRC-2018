@@ -3,6 +3,10 @@ package com.team254.lib.trajectory.timing;
 import com.team254.lib.geometry.State;
 
 public interface TimingConstraint<S extends State<S>> {
+    double getMaxVelocity(S state);
+
+    MinMaxAcceleration getMinMaxAcceleration(S state, double velocity);
+
     public static class MinMaxAcceleration {
         protected final double min_acceleration_;
         protected final double max_acceleration_;
@@ -30,8 +34,4 @@ public interface TimingConstraint<S extends State<S>> {
             return min_acceleration() <= max_acceleration();
         }
     }
-
-    double getMaxVelocity(S state);
-
-    MinMaxAcceleration getMinMaxAcceleration(S state, double velocity);
 }

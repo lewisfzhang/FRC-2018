@@ -4,59 +4,11 @@ import com.team254.lib.geometry.*;
 import com.team254.lib.util.Util;
 
 public class PurePursuitController<S extends ITranslation2d<S>> implements IPathFollower {
-    protected static class Arc<S extends ITranslation2d<S>> {
-        public Translation2d center;
-        public double radius;
-        public double length;
-
-        public Arc(final Pose2d pose, final S point) {
-            center = getCenter(pose, point);
-            radius = new Translation2d(center, point.getTranslation()).norm();
-            length = getLength(pose, point, center, radius);
-        }
-
-        protected Translation2d getCenter(Pose2d pose, S point) {
-            final Translation2d poseToPointHalfway = pose.getTranslation().interpolate(point.getTranslation(), 0.5);
-            final Rotation2d normal = pose.getTranslation().inverse().translateBy(poseToPointHalfway).direction()
-                    .normal();
-            final Pose2d perpendicularBisector = new Pose2d(poseToPointHalfway, normal);
-            final Pose2d normalFromPose = new Pose2d(pose.getTranslation(),
-                    pose.getRotation().normal());
-            if (normalFromPose.isColinear(perpendicularBisector.normal())) {
-                // Special case: center is poseToPointHalfway.
-                return poseToPointHalfway;
-            }
-            return normalFromPose.intersection(perpendicularBisector);
-        }
-
-        protected double getRadius(Pose2d pose, S point) {
-            Translation2d center = getCenter(pose, point);
-            return new Translation2d(center, point.getTranslation()).norm();
-        }
-
-        protected double getLength(Pose2d pose, S point, Translation2d center, double radius) {
-            if (radius < Double.MAX_VALUE) {
-                final Translation2d centerToPoint = new Translation2d(center, point.getTranslation());
-                final Translation2d centerToPose = new Translation2d(center, pose.getTranslation());
-                // If the point is behind pose, we want the opposite of this angle. To determine if the point is behind,
-                // check the sign of the cross-product between the normal vector and the vector from pose to point.
-                final boolean behind = Math.signum(
-                        Translation2d.cross(pose.getRotation().normal().toTranslation(),
-                                new Translation2d(pose.getTranslation(), point.getTranslation()))) > 0.0;
-                final Rotation2d angle = Translation2d.getAngle(centerToPose, centerToPoint);
-                return radius * (behind ? 2.0 * Math.PI - Math.abs(angle.getRadians()) : Math.abs(angle.getRadians()));
-            } else {
-                return new Translation2d(pose.getTranslation(), point.getTranslation()).norm();
-            }
-        }
-    }
-
     protected final TrajectoryIterator<S> iterator_;
     protected final double sampling_dist_;
     protected final double lookahead_;
     protected final double goal_tolerance_;
     protected boolean done_ = false;
-
     public PurePursuitController(final DistanceView<S> path, double sampling_dist, double lookahead,
                                  double goal_tolerance) {
         sampling_dist_ = sampling_dist;
@@ -110,5 +62,52 @@ public class PurePursuitController<S extends ITranslation2d<S>> implements IPath
         Translation2d robot = pose.getRotation().toTranslation();
         double cross = robot.x() * poseToPoint.y() - robot.y() * poseToPoint.x();
         return (cross < 0) ? -1 : 1; // if robot < pose turn left
+    }
+
+    protected static class Arc<S extends ITranslation2d<S>> {
+        public Translation2d center;
+        public double radius;
+        public double length;
+
+        public Arc(final Pose2d pose, final S point) {
+            center = getCenter(pose, point);
+            radius = new Translation2d(center, point.getTranslation()).norm();
+            length = getLength(pose, point, center, radius);
+        }
+
+        protected Translation2d getCenter(Pose2d pose, S point) {
+            final Translation2d poseToPointHalfway = pose.getTranslation().interpolate(point.getTranslation(), 0.5);
+            final Rotation2d normal = pose.getTranslation().inverse().translateBy(poseToPointHalfway).direction()
+                    .normal();
+            final Pose2d perpendicularBisector = new Pose2d(poseToPointHalfway, normal);
+            final Pose2d normalFromPose = new Pose2d(pose.getTranslation(),
+                    pose.getRotation().normal());
+            if (normalFromPose.isColinear(perpendicularBisector.normal())) {
+                // Special case: center is poseToPointHalfway.
+                return poseToPointHalfway;
+            }
+            return normalFromPose.intersection(perpendicularBisector);
+        }
+
+        protected double getRadius(Pose2d pose, S point) {
+            Translation2d center = getCenter(pose, point);
+            return new Translation2d(center, point.getTranslation()).norm();
+        }
+
+        protected double getLength(Pose2d pose, S point, Translation2d center, double radius) {
+            if (radius < Double.MAX_VALUE) {
+                final Translation2d centerToPoint = new Translation2d(center, point.getTranslation());
+                final Translation2d centerToPose = new Translation2d(center, pose.getTranslation());
+                // If the point is behind pose, we want the opposite of this angle. To determine if the point is behind,
+                // check the sign of the cross-product between the normal vector and the vector from pose to point.
+                final boolean behind = Math.signum(
+                        Translation2d.cross(pose.getRotation().normal().toTranslation(),
+                                new Translation2d(pose.getTranslation(), point.getTranslation()))) > 0.0;
+                final Rotation2d angle = Translation2d.getAngle(centerToPose, centerToPoint);
+                return radius * (behind ? 2.0 * Math.PI - Math.abs(angle.getRadians()) : Math.abs(angle.getRadians()));
+            } else {
+                return new Translation2d(pose.getTranslation(), point.getTranslation()).norm();
+            }
+        }
     }
 }
