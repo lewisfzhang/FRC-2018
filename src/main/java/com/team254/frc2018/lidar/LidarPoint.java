@@ -33,13 +33,11 @@ class LidarPoint {
     }
 
     public Translation2d toCartesian() {
+        // convert the polar coords to cartesian coords
         double radians = Math.toRadians(angle);
         Translation2d cartesian = new Translation2d(Math.cos(radians) * distance, Math.sin(radians) * distance);
 
-        if (excludePoint(cartesian.x(), cartesian.y())) {
-            return null;
-        }
-
+        // transform by the robot's pose
         Pose2d robotPose;
         if (mRobotPoseMap.containsKey(timestamp)) {
             robotPose = mRobotPoseMap.get(timestamp);
@@ -49,7 +47,13 @@ class LidarPoint {
         }
 
         robotPose.transformBy(Pose2d.fromTranslation(cartesian));
-        return robotPose.getTranslation();
+        cartesian = robotPose.getTranslation();
+
+        // test for exclusion and return
+        if (excludePoint(cartesian.x(), cartesian.y())) {
+            return null;
+        }
+        return cartesian;
     }
 
 
