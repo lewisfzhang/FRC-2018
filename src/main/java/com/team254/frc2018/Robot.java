@@ -171,9 +171,12 @@ public class Robot extends IterativeRobot {
         try {
             double throttle = mControlBoard.getThrottle();
             double turn = mControlBoard.getTurn();
-            if (mElevator.getInchesOffGround() > 50.0) {
-                turn /= 4.0;
+
+            // When elevator is up, tune sensitivity on tune a little.
+            if (mElevator.getInchesOffGround() > Constants.kElevatorLowSensitivityThreshold) {
+                turn *= Constants.kLowSensitivityFactor;
             }
+
             mDrive.setOpenLoop(mCheesyDriveHelper.cheesyDrive(throttle, turn, mControlBoard.getQuickTurn(),
                     mDrive.isHighGear()));
 

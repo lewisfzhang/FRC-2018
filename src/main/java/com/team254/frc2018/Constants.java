@@ -165,6 +165,10 @@ public class Constants {
     public static final int kMainTurnJoystickPort = 1;
     public static final double kJoystickThreshold = 0.5;
 
+    // Height in in after applying turn factor.
+    public static final double kElevatorLowSensitivityThreshold = 50.0;
+    public static final double kLowSensitivityFactor = 1.0 / 4.0;
+
     /**
      * Make an {@link Solenoid} instance for the single-number ID of the solenoid
      * <p>
