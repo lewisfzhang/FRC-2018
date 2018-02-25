@@ -2,6 +2,7 @@ package com.team254.frc2018;
 
 import com.team254.frc2018.auto.AutoModeExecuter;
 import com.team254.frc2018.auto.modes.CharacterizeHighGearStraight;
+import com.team254.frc2018.auto.modes.TestIntakeThenScore;
 import com.team254.frc2018.loops.Looper;
 import com.team254.frc2018.loops.RobotStateEstimator;
 import com.team254.frc2018.statemachines.IntakeStateMachine;
@@ -93,10 +94,12 @@ public class Robot extends IterativeRobot {
             CrashTracker.logAutoInit();
 
             RobotState.getInstance().reset(Timer.getFPGATimestamp(), Pose2d.identity());
+            mInfrastructure.setIsDuringAuto(true);
 
+            mEnabledLooper.start();
 
             AutoModeExecuter mAutoModeExecuter = new AutoModeExecuter();
-            mAutoModeExecuter.setAutoMode(new CharacterizeHighGearStraight());
+            mAutoModeExecuter.setAutoMode(new TestIntakeThenScore());
             mAutoModeExecuter.start();
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
@@ -111,6 +114,7 @@ public class Robot extends IterativeRobot {
         try {
             CrashTracker.logTeleopInit();
             FollowerWheels.getInstance().zeroSensors();
+            mInfrastructure.setIsDuringAuto(false);
 
             RobotState.getInstance().reset(Timer.getFPGATimestamp(), Pose2d.identity());
             mEnabledLooper.start();
@@ -156,6 +160,7 @@ public class Robot extends IterativeRobot {
     public void autonomousPeriodic() {
         SmartDashboard.putString("Match Cycle", "AUTONOMOUS");
 
+        outputToSmartDashboard();
         try {
 
         } catch (Throwable t) {

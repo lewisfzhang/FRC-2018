@@ -13,6 +13,8 @@ public class Infrastructure extends Subsystem {
     private Superstructure mSuperstructure;
     private Compressor mCompressor;
 
+    private boolean mIsDuringAuto = false;
+
     public static Infrastructure getInstance() {
         return mInstance;
     }
@@ -51,6 +53,10 @@ public class Infrastructure extends Subsystem {
         mCompressor.stop();
     }
 
+    public void setIsDuringAuto(boolean isDuringAuto) {
+        mIsDuringAuto = isDuringAuto;
+    }
+
     @Override
     public void registerEnabledLoops(Looper enabledLooper) {
         enabledLooper.register(new Loop() {
@@ -64,7 +70,7 @@ public class Infrastructure extends Subsystem {
                 synchronized (Infrastructure.this) {
                     boolean elevatorMoving = mSuperstructure.getSuperStructureState() ==
                             SuperstructureStateMachine.SystemState.MOVING_TO_POSITION;
-                    if (elevatorMoving) {
+                    if (elevatorMoving || mIsDuringAuto) {
                         stopCompressor();
                     } else {
                         startCompressor();
