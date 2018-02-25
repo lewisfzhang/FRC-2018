@@ -18,7 +18,7 @@ import java.util.ArrayList;
 public class Elevator extends Subsystem {
     private static final int kHighGearSlot = 0;
     private static final int kLowGearSlot = 1;
-    private final int kReverseSoftLimit = -96000; // Encoder ticks (used to be -151000)
+    private final int kReverseSoftLimit = -99000; // Encoder ticks (used to be -151000)
     private final int kForwardSoftLimit = 500; // Encoder ticks.  TODO set to ~0 once skipping is fixed.
     private final double kEncoderTicksPerInch = -1271.0;
     public static final double kHomePositionInches = 5.0;
@@ -206,6 +206,7 @@ public class Elevator extends Subsystem {
         SmartDashboard.putNumber("Elevator Error", mMaster.getClosedLoopError(0) / kEncoderTicksPerInch);
         SmartDashboard.putNumber("Elevator Height", getInchesOffGround());
         SmartDashboard.putBoolean("Elevator Limit", mMaster.getSensorCollection().isFwdLimitSwitchClosed());
+        SmartDashboard.putNumber("Elevator Sensor Height", mMaster.getSelectedSensorPosition(0));
     }
 
     @Override
