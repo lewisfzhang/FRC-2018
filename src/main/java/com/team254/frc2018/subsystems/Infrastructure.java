@@ -2,6 +2,7 @@ package com.team254.frc2018.subsystems;
 
 import com.team254.frc2018.loops.Loop;
 import com.team254.frc2018.loops.Looper;
+import com.team254.frc2018.statemachines.IntakeStateMachine;
 import com.team254.frc2018.statemachines.SuperstructureStateMachine;
 import com.team254.lib.util.LatchedBoolean;
 import edu.wpi.first.wpilibj.Compressor;
@@ -11,6 +12,7 @@ public class Infrastructure extends Subsystem {
 
     private static Infrastructure mInstance = new Infrastructure();
     private Superstructure mSuperstructure;
+    private Intake mIntake;
     private Compressor mCompressor;
 
     private boolean mIsDuringAuto = false;
@@ -24,6 +26,7 @@ public class Infrastructure extends Subsystem {
         mCompressor.start();
 
         mSuperstructure = Superstructure.getInstance();
+        mIntake = Intake.getInstance();
     }
 
     @Override
@@ -70,7 +73,9 @@ public class Infrastructure extends Subsystem {
                 synchronized (Infrastructure.this) {
                     boolean elevatorMoving = mSuperstructure.getSuperStructureState() ==
                             SuperstructureStateMachine.SystemState.MOVING_TO_POSITION;
-                    if (elevatorMoving || mIsDuringAuto) {
+                    boolean isIntaking = mIntake.getWantedAction() == IntakeStateMachine.WantedAction.WANT_CUBE
+                            && !mIntake.hasCube();
+                    if (elevatorMoving || mIsDuringAuto || isIntaking) {
                         stopCompressor();
                     } else {
                         startCompressor();

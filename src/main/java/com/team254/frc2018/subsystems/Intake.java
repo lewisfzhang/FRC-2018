@@ -175,6 +175,10 @@ public class Intake extends Subsystem {
         setPower(IntakeStateMachine.kShootSetpoint);
     }
 
+    public IntakeStateMachine.WantedAction getWantedAction() {
+        return mWantedAction;
+    }
+
     public synchronized void getOrKeepCube() {
         setState(IntakeStateMachine.WantedAction.WANT_CUBE);
     }
