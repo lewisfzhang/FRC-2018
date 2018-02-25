@@ -42,13 +42,13 @@ public class LidarProcessor implements Loop {
 
     int count = 0;
 
-    public void addPoint(LidarPoint point, boolean newScan) {
+    public synchronized void addPoint(LidarPoint point, boolean newScan) {
         if (newScan) { // crosses the 360-0 threshold. start a new scan
             prev_timestamp = Timer.getFPGATimestamp();
             count++;
             if (count > 10) {
                 count = 0;
-                // SmartDashboard.putString("lidarScan", mScans.getLast().toJsonString());
+                // SmartDashboard.putString("lidarScan", getCurrentScan().toJsonString());
                 // //output to lidar visualizer
             }
 
@@ -64,21 +64,17 @@ public class LidarProcessor implements Loop {
         }
     }
 
-    public LinkedList<LidarScan> getAllScans() {
-        return mScans;
-    }
-
-    public LidarScan getCurrentScan() {
+    private LidarScan getCurrentScan() {
         return mScans.getLast();
     }
-
-    public LidarScan getLatestCompleteScan() {
-        return mScans.size() > 1? mScans.get(mScans.size() - 2) : null;
+    
+    private synchronized Iterator<LidarScan> getScansIterator() {
+        return mScans.iterator();
     }
     
     private final Iterable<Point> allPoints = () -> {
         return new Iterator<Point>() {
-            Iterator<LidarScan> scanIt = mScans.iterator();
+            Iterator<LidarScan> scanIt = getScansIterator();
             Iterator<Point> pointIt = null;
             
             @Override
@@ -95,11 +91,11 @@ public class LidarProcessor implements Loop {
             }
         };
     };
-    public Iterable<Point> getAllPoints() {
+    private Iterable<Point> getAllPoints() {
         return allPoints;
     }
     
-    protected Point getAveragePoint() {
+    private Point getAveragePoint() {
         double sumX = 0, sumY = 0;
         int n = 0;
         for (Point p : getAllPoints()) {
@@ -110,24 +106,25 @@ public class LidarProcessor implements Loop {
         return new Point(sumX/n, sumY/n);
     }
 
-    public Pose2d doICP() {
+    public synchronized Pose2d doICP() {
         Pose2d guess = mRobotState.getFieldToLidar(getCurrentScan().getTimestamp());
         return icp.doICP(getAllPoints(), new Transform(guess).inverse()).inverse().toPose2d();
     }
-    
-    public Translation2d getTowerPosition() {
+
+    public synchronized Translation2d getTowerPosition() {
+        // TODO: avoid ConcurrentModificationException
         Point avg = getAveragePoint();
         Transform trans = icp.doICP(getAllPoints(), new Transform(0, avg.x, avg.y));
         return trans.apply(icp.reference).getMidpoint().toTranslation2d();
     }
 
     @Override
-    public void onStart(double timestamp) {
+    public synchronized void onStart(double timestamp) {
         prev_timestamp = Double.MAX_VALUE;
     }
 
     @Override
-    public void onLoop(double timestamp) {
+    public synchronized void onLoop(double timestamp) {
         if (Timer.getFPGATimestamp() - prev_timestamp > Constants.kChezyLidarRestartTime) {
             if (mLidarServer.isRunning()) {
                 System.out.println("Lidar timed out. Restarting");

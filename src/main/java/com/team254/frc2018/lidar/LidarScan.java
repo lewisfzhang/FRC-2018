@@ -8,7 +8,7 @@ import java.util.ArrayList;
 /**
  * Holds a single 360 degree scan from the lidar
  */
-public class LidarScan {
+class LidarScan {
     private ArrayList<Point> points = new ArrayList<>(Constants.kChezyLidarScanSize);
     private double timestamp = 0;
 
