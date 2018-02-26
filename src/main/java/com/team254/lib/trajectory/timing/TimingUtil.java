@@ -214,7 +214,7 @@ public class TimingUtil {
 
             v = constrained_state.max_velocity;
             s = constrained_state.distance;
-            timed_states.add(new TimedState<S>(constrained_state.state, t, v, accel));
+            timed_states.add(new TimedState<>(constrained_state.state, t, v, accel));
         }
         return new Trajectory<>(timed_states);
     }
