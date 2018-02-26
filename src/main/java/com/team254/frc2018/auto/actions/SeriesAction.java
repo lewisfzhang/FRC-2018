@@ -12,12 +12,7 @@ public class SeriesAction implements Action {
     private final ArrayList<Action> mRemainingActions;
 
     public SeriesAction(List<Action> actions) {
-        mRemainingActions = new ArrayList<>(actions.size());
-
-        for (Action action : actions) {
-            mRemainingActions.add(action);
-        }
-
+        mRemainingActions = new ArrayList<>(actions);
         mCurAction = null;
     }
 

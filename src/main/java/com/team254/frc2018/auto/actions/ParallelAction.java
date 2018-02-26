@@ -13,21 +13,17 @@ public class ParallelAction implements Action {
     private final ArrayList<Action> mActions;
 
     public ParallelAction(List<Action> actions) {
-        mActions = new ArrayList<>(actions.size());
-        for (Action action : actions) {
-            mActions.add(action);
-        }
+        mActions = new ArrayList<>(actions);
     }
 
     @Override
     public boolean isFinished() {
-        boolean all_finished = true;
         for (Action action : mActions) {
             if (!action.isFinished()) {
-                all_finished = false;
+                return false;
             }
         }
-        return all_finished;
+        return true;
     }
 
     @Override
