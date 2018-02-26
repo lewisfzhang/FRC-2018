@@ -116,7 +116,8 @@ public class LidarServer {
                 double normalizedTs = curFPGATime - (ms_ago / 1000.0f);
                 double angle = Double.parseDouble(parts[1]);
                 double distance = Double.parseDouble(parts[2]);
-                mLidarProcessor.addPoint(new LidarPoint(normalizedTs, angle, distance), isNewScan);
+                if (distance != 0)
+                    mLidarProcessor.addPoint(new LidarPoint(normalizedTs, angle, distance), isNewScan);
             } catch (java.lang.NumberFormatException e) {
                 e.printStackTrace();
             }
