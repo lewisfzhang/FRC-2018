@@ -35,7 +35,6 @@ public class LidarProcessor implements Loop {
         return mInstance;
     }
 
-    private LidarServer mLidarServer = LidarServer.getInstance();
     private RobotState mRobotState = RobotState.getInstance();
 
     private LinkedList<LidarScan> mScans = new LinkedList<>();
@@ -59,6 +58,7 @@ public class LidarProcessor implements Loop {
     }
 
     public void addPoint(LidarPoint point, boolean newScan) {
+        SmartDashboard.putNumber("LIDAR last_angle", point.angle);
         Translation2d cartesian = point.toCartesian();
         dataLogFile.println(point.angle+" "+point.distance+" "+cartesian.x()+" "+cartesian.y());
         lock.writeLock().lock();
@@ -145,8 +145,11 @@ public class LidarProcessor implements Loop {
 
     public void setPrevTimestamp(double time) {
         lock.writeLock().lock();
-        prev_timestamp = time;
-        lock.writeLock().unlock();
+        try {
+            prev_timestamp = time;
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
 
     public double getPrevTimestamp() {
@@ -165,16 +168,13 @@ public class LidarProcessor implements Loop {
 
     @Override
     public void onLoop(double timestamp) {
+        LidarServer lidarServer = LidarServer.getInstance();
         if (Timer.getFPGATimestamp() - getPrevTimestamp() > Constants.kChezyLidarRestartTime) {
-            if (mLidarServer.isRunning()) {
-                System.out.println("Lidar timed out. Restarting");
-                mLidarServer.stop();
-            } else {
-                if (!mLidarServer.isEnding()) {
-                    if (mLidarServer.start()) {
-                        setPrevTimestamp(Timer.getFPGATimestamp());
-                    }
-                }
+            if (lidarServer.isRunning()) {
+                System.err.println("Lidar timed out. Restarting");
+                lidarServer.stop();
+            } else if (!lidarServer.isEnding() && lidarServer.start()) {
+                setPrevTimestamp(Timer.getFPGATimestamp());
             }
         }
     }
