@@ -81,6 +81,7 @@ public class Drive extends Subsystem {
                         System.out.println("Unexpected drive control state: " + mDriveControlState);
                         break;
                 }
+                updateDrivePositions();
                 if (mAutoShift && false) { // TODO: fix this (tom)
                     handleAutoShift();
                 } else {
@@ -150,6 +151,30 @@ public class Drive extends Subsystem {
         // Force a CAN message across.
         mIsBrakeMode = true;
         setBrakeMode(false);
+    }
+
+    double mLeftTicks, mRightTicks, mLeftDistance, mRightDistance;
+
+    public void updateDrivePositions() {
+        //Left drive
+        double currentLeftTicks = mLeftMaster.getSelectedSensorPosition(0);
+        double deltaLeftTicks = ((currentLeftTicks - mLeftTicks) / 4096.0) * Math.PI;
+        if(deltaLeftTicks > 0.0) {
+            mLeftDistance += deltaLeftTicks * Constants.kDriveWheelDiameterInchesForwards;
+        } else {
+            mLeftDistance += deltaLeftTicks * Constants.kDriveWheelDiameterInchesReverse;
+        }
+        mLeftTicks = currentLeftTicks;
+
+        //Right drive
+        double currentRightTicks = mRightMaster.getSelectedSensorPosition(0);
+        double deltaRightTicks = ((currentRightTicks - mRightTicks) / 4096.0) * Math.PI;
+        if(deltaRightTicks > 0.0) {
+            mRightDistance += deltaRightTicks * Constants.kDriveWheelDiameterInchesForwards;
+        } else {
+            mRightDistance += deltaRightTicks * Constants.kDriveWheelDiameterInchesReverse;
+        }
+        mRightTicks = currentRightTicks;
     }
 
     @Override
@@ -233,8 +258,10 @@ public class Drive extends Subsystem {
 
     @Override
     public void outputToSmartDashboard() {
-        SmartDashboard.putNumber("Right Drive Distance", getRightEncoderDistance());
-        SmartDashboard.putNumber("Left Drive Distance", getLeftEncoderDistance());
+        SmartDashboard.putNumber("Right Drive Distance", mRightDistance);
+        SmartDashboard.putNumber("Right Drive Ticks", mRightMaster.getSelectedSensorPosition(0));
+        SmartDashboard.putNumber("Left Drive Ticks", mLeftMaster.getSelectedSensorPosition(0));
+        SmartDashboard.putNumber("Left Drive Distance", mLeftDistance);
         SmartDashboard.putNumber("Right Linear Velocity", getRightLinearVelocity());
         SmartDashboard.putNumber("Left Linear Velocity", getLeftLinearVelocity());
         SmartDashboard.putNumber("Gyro Heading", getHeading().getDegrees());
@@ -247,6 +274,10 @@ public class Drive extends Subsystem {
         mRightMaster.setSelectedSensorPosition(0, 0, 0);
         mLeftSlaveA.setSelectedSensorPosition(0, 0, 0);
         mRightSlaveA.setSelectedSensorPosition(0, 0, 0);
+        mLeftDistance = 0.0;
+        mRightDistance = 0.0;
+        mLeftTicks = 0.0;
+        mRightTicks = 0.0;
     }
 
     @Override

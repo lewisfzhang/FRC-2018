@@ -19,12 +19,12 @@ public class Constants {
     public static final double kFollowerWheelTrackWidthInches = 25.624;
     public static final double kFollowerWheelBackOffset = 14.19;
     public static final double kFollowerWheelDiameterInches = 2.28;
-    public static final double kFollowerWheelDiameterInchesForwards = 2.19809459784;
-    public static final double kFollowerWheelDiameterInchesReverse = 2.36983336671;
+    public static final double kFollowerWheelDiameterInchesForwards = 2.34221109187;
+    public static final double kFollowerWheelDiameterInchesReverse = 2.2729397275;
     public static final double kDriveWheelTrackWidthInches = 26.0;  // TODO: measure
     public static final double kDriveWheelDiameterInches = 4; // TODO: measure
-    public static final double kDriveWheelDiameterInchesForwards = 3.8914785807;
-    public static final double kDriveWheelDiameterInchesReverse = 4.07731790636;
+    public static final double kDriveWheelDiameterInchesForwards = 4.03281749583;
+    public static final double kDriveWheelDiameterInchesReverse = 3.92657668983;
     public static final double kTrackScrubFactor = 1.0;  // Tune me!
 
     // Geometry

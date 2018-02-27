@@ -1,6 +1,7 @@
 package com.team254.frc2018.subsystems;
 
 import com.team254.frc2018.Constants;
+import com.team254.frc2018.loops.Loop;
 import com.team254.frc2018.loops.Looper;
 import edu.wpi.first.wpilibj.CounterBase;
 import edu.wpi.first.wpilibj.Encoder;
@@ -11,6 +12,8 @@ public class FollowerWheels extends Subsystem {
     private final Encoder mLeftFollower, mRightFollower, mRearFollower;
     private final Solenoid mDeploySolenoid;
     public static double kMagEncoderCPR = 1024;
+    private double mLeftDistance, mRightDistance, mRearDistance;
+    private double mLeftTicks, mRightTicks, mRearTicks;
 
     private static FollowerWheels sInstance = new FollowerWheels();
 
@@ -47,6 +50,10 @@ public class FollowerWheels extends Subsystem {
         SmartDashboard.putNumber("Right Follower Distance", getRightDistance());
         SmartDashboard.putNumber("Rear Follower Distance", getRearDistance());
         SmartDashboard.putNumber("Follower Wheel Heading", getHeading());
+        SmartDashboard.putNumber("Left Ticks", mLeftFollower.getRaw());
+        SmartDashboard.putNumber("Right Ticks", mRightFollower.getRaw());
+        SmartDashboard.putNumber("Rear Ticks", mRearFollower.getRaw());
+
     }
 
     @Override
@@ -59,10 +66,56 @@ public class FollowerWheels extends Subsystem {
         mLeftFollower.reset();
         mRearFollower.reset();
         mRightFollower.reset();
+        mLeftDistance = 0.0;
+        mRightDistance = 0.0;
+        mRearDistance = 0.0;
+        mLeftTicks = 0.0;
+        mRightTicks = 0.0;
+        mRearTicks = 0.0;
     }
 
     @Override
     public void registerEnabledLoops(Looper enabledLooper) {
+        enabledLooper.register(new Loop() {
+            @Override
+            public void onStart(double timestamp) {
+                zeroSensors();
+            }
+
+            @Override
+            public void onLoop(double timestamp) {
+                synchronized (FollowerWheels.this) {
+                    //Left follower
+                    double currentLeftTicks = mLeftFollower.getRaw();
+                    double deltaLeftTicks = ((currentLeftTicks - mLeftTicks) / 4096.0) * Math.PI;
+                    if(deltaLeftTicks > 0.0) {
+                        mLeftDistance += deltaLeftTicks * Constants.kFollowerWheelDiameterInchesForwards;
+                    } else {
+                        mLeftDistance += deltaLeftTicks * Constants.kFollowerWheelDiameterInchesReverse;
+                    }
+                    mLeftTicks = currentLeftTicks;
+
+                    //Right follower
+                    double currentRightTicks = mRightFollower.getRaw();
+                    double deltaRightTicks = ((currentRightTicks - mRightTicks) / 4096.0) * Math.PI;
+                    if(deltaRightTicks > 0.0) {
+                        mRightDistance += deltaRightTicks * Constants.kFollowerWheelDiameterInchesForwards;
+                    } else {
+                        mRightDistance += deltaRightTicks * Constants.kFollowerWheelDiameterInchesReverse;
+                    }
+                    mRightTicks = currentRightTicks;
+
+                    //Back follower, just use standard distance for now.  Might want to check rotation to apply different wheel radii
+                    double rearDistanceRadians = (mRearFollower.getRaw() / 4096.0) * Math.PI;
+                    mRearDistance = rearDistanceRadians * Constants.kFollowerWheelDiameterInches;
+                }
+            }
+
+            @Override
+            public void onStop(double timestamp) {
+
+            }
+        });
 
     }
 
@@ -75,7 +128,7 @@ public class FollowerWheels extends Subsystem {
     }
 
     public double getLeftDistance() {
-        return mLeftFollower.getDistance();
+        return mLeftDistance;
     }
 
     public double getLeftVelocity() {
@@ -83,7 +136,7 @@ public class FollowerWheels extends Subsystem {
     }
 
     public double getRightDistance() {
-        return mRightFollower.getDistance();
+        return mRightDistance;
     }
 
     public double getRightVelocity() {
@@ -91,7 +144,7 @@ public class FollowerWheels extends Subsystem {
     }
 
     public double getRearDistance() {
-        return mRearFollower.getDistance();
+        return mRearDistance;
     }
 
     public double getRearVelocity() {
@@ -99,7 +152,7 @@ public class FollowerWheels extends Subsystem {
     }
 
     public double getHeading() {
-        return Math.toDegrees((mRightFollower.getDistance() - mLeftFollower.getDistance()) / Constants
+        return Math.toDegrees((getRightDistance() - getLeftDistance()) / Constants
                 .kFollowerWheelTrackWidthInches);
     }
 }
