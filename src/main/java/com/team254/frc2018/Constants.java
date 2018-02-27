@@ -44,6 +44,7 @@ public class Constants {
     public static final int kChezyLidarNumScansToStore = 10;
     public static final String kChezyLidarPath = "/home/root/chezy_lidar";
     public static final double kChezyLidarRestartTime = 2.5;
+    public static final String kLidarLogPath = "/home/lvuser/lidarLog.txt";
 
     /* CONTROL LOOP GAINS */
 

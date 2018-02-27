@@ -10,7 +10,8 @@ import com.team254.frc2018.loops.Loop;
 import com.team254.lib.geometry.Pose2d;
 import com.team254.lib.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Timer;
-
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -37,14 +38,24 @@ public class LidarProcessor implements Loop {
     private double prev_timestamp = Double.MAX_VALUE;
 
     private ICP icp = new ICP(ReferenceModel.TOWER, 100);
-    
+
+    private PrintWriter dataLogFile;
+
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
-    public LidarProcessor() {
+    private LidarProcessor() {
         mScans.add(new LidarScan());
+        try {
+			dataLogFile = new PrintWriter(Constants.kLidarLogPath);
+		} catch (FileNotFoundException e) {
+            System.err.println("Failed to open lidar log file:");
+            e.printStackTrace();
+		}
     }
 
     public void addPoint(LidarPoint point, boolean newScan) {
+        Translation2d cartesian = point.toCartesian();
+        dataLogFile.println(point.angle+" "+point.distance+" "+cartesian.x()+" "+cartesian.y());
         lock.writeLock().lock();
         try {
             if (newScan) { // crosses the 360-0 threshold. start a new scan
@@ -56,7 +67,6 @@ public class LidarProcessor implements Loop {
                 }
             }
             
-            Translation2d cartesian = point.toCartesian();
             if (cartesian != null) {
                 getCurrentScan().addPoint(new Point(cartesian), point.timestamp);
             }
