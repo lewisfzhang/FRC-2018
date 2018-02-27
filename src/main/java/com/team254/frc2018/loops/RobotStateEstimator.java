@@ -44,7 +44,8 @@ public class RobotStateEstimator implements Loop {
                 delta_left, delta_right, delta_back, gyro_angle);
         final Twist2d predicted_velocity = Kinematics.forwardKinematics(followers_.getLeftVelocity(),
                 followers_.getRightVelocity(), followers_.getRearVelocity());
-        robot_state_.addObservations(timestamp, odometry_velocity, predicted_velocity);
+        robot_state_.addObservations(timestamp, new Twist2d(odometry_velocity.dx, 0.0, odometry_velocity.dtheta),
+                new Twist2d(predicted_velocity.dx, 0.0, odometry_velocity.dtheta));
         left_encoder_prev_distance_ = left_distance;
         right_encoder_prev_distance_ = right_distance;
         back_encoder_prev_distance_ = back_distance;
