@@ -1,6 +1,5 @@
 package com.team254.frc2018.subsystems;
 
-import com.ctre.phoenix.ErrorCode;
 import com.ctre.phoenix.ParamEnum;
 import com.ctre.phoenix.motorcontrol.*;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
@@ -8,8 +7,9 @@ import com.team254.frc2018.Constants;
 import com.team254.frc2018.loops.Looper;
 import com.team254.lib.drivers.TalonSRXFactory;
 import com.team254.lib.drivers.TalonSRXChecker;
+import com.team254.lib.drivers.TalonSRXUtil;
 import com.team254.lib.util.Util;
-import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import java.util.ArrayList;
@@ -18,7 +18,7 @@ import java.util.ArrayList;
 public class Elevator extends Subsystem {
     private static final int kHighGearSlot = 0;
     private static final int kLowGearSlot = 1;
-    private final int kReverseSoftLimit = -96000; // Encoder ticks (used to be -151000)
+    private final int kReverseSoftLimit = -99000; // Encoder ticks (used to be -151000)
     private final int kForwardSoftLimit = 500; // Encoder ticks.  TODO set to ~0 once skipping is fixed.
     private final double kEncoderTicksPerInch = -1271.0;
     public static final double kHomePositionInches = 5.0;
@@ -34,118 +34,134 @@ public class Elevator extends Subsystem {
 
     private final TalonSRX mMaster, mRightSlave, mLeftSlaveA, mLeftSlaveB;
 
+    private final Solenoid mShifter;
+
     private double mLastTrajectoryPoint = Double.NaN;
 
     private Elevator() {
         mMaster = TalonSRXFactory.createDefaultTalon(Constants.kElevatorMasterId);
-        ErrorCode errorCode =
-                mMaster.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative,
-                        0, 100);
-        if (errorCode != ErrorCode.OK)
-            DriverStation.reportError("Could not detect elevator encoder: " + errorCode, false);
-        errorCode = mMaster.configForwardLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal
-                .NormallyOpen, Constants.kLongCANTimeoutMs);
-        if (errorCode != ErrorCode.OK)
-            DriverStation.reportError("Could not set forward (down) limit switch elevator: " + errorCode, false);
-        errorCode = mMaster.configReverseLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal
-                .NormallyOpen, Constants.kLongCANTimeoutMs);
-        if (errorCode != ErrorCode.OK)
-            DriverStation.reportError("Could not set reverse (up) limit switch elevator: " + errorCode, false);
-        errorCode = mMaster.configForwardSoftLimitThreshold(kForwardSoftLimit, Constants.kLongCANTimeoutMs);
-        if (errorCode != ErrorCode.OK)
-            DriverStation.reportError("Could not set forward (down) soft limit switch elevator: " + errorCode, false);
-        errorCode = mMaster.configForwardSoftLimitEnable(true, Constants.kLongCANTimeoutMs);
-        if (errorCode != ErrorCode.OK)
-            DriverStation.reportError("Could not enable forward (down) soft limit switch elevator: " + errorCode, false);
-        errorCode = mMaster.configVoltageCompSaturation(12.0, Constants.kLongCANTimeoutMs);
-        errorCode = mMaster.configReverseSoftLimitThreshold(kReverseSoftLimit, Constants.kLongCANTimeoutMs);
-        if (errorCode != ErrorCode.OK)
-            DriverStation.reportError("Could not set reverse (up) soft limit switch elevator: " + errorCode, false);
-        errorCode = mMaster.configReverseSoftLimitEnable(true, Constants.kLongCANTimeoutMs);
-        if (errorCode != ErrorCode.OK)
-            DriverStation.reportError("Could not enable reverse (up) soft limit switch elevator: " + errorCode, false);
-        if (errorCode != ErrorCode.OK)
-            DriverStation.reportError("Could not set elevator voltage compensation: " + errorCode, false);
+
+        TalonSRXUtil.checkError(
+                mMaster.configSelectedFeedbackSensor(
+                        FeedbackDevice.CTRE_MagEncoder_Relative, 0, 100),
+            "Could not detect elevator encoder: ");
+
+        TalonSRXUtil.checkError(
+                mMaster.configForwardLimitSwitchSource(
+                        LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyOpen,
+                        Constants.kLongCANTimeoutMs),
+            "Could not set forward (down) limit switch elevator: ");
+
+         TalonSRXUtil.checkError(
+                 mMaster.configForwardSoftLimitThreshold(
+                         kForwardSoftLimit, Constants.kLongCANTimeoutMs),
+            "Could not set forward (down) soft limit switch elevator: ");
+
+         TalonSRXUtil.checkError(
+                 mMaster.configForwardSoftLimitEnable(true, Constants.kLongCANTimeoutMs),
+                 "Could not enable forward (down) soft limit switch elevator: ");
+
+         TalonSRXUtil.checkError(
+                 mMaster.configVoltageCompSaturation(12.0, Constants.kLongCANTimeoutMs),
+                 "Could not set voltage compensation saturation elevator: ");
+
+         TalonSRXUtil.checkError(
+                 mMaster.configReverseSoftLimitThreshold(
+                         kReverseSoftLimit, Constants.kLongCANTimeoutMs),
+                 "Could not set reverse (up) soft limit switch elevator: ");
+
+        TalonSRXUtil.checkError(
+                mMaster.configReverseSoftLimitEnable(
+                        true, Constants.kLongCANTimeoutMs),
+                "Could not enable reverse (up) soft limit switch elevator: ");
 
         //configure magic motion
-        errorCode = mMaster.config_kP(kHighGearSlot, Constants.kElevatorHighGearKp, Constants.kLongCANTimeoutMs);
-        if (errorCode != ErrorCode.OK)
-            DriverStation.reportError("Could not set elevator kp: " + errorCode, false);
+        TalonSRXUtil.checkError(
+                mMaster.config_kP(
+                        kHighGearSlot, Constants.kElevatorHighGearKp, Constants.kLongCANTimeoutMs),
+                "Could not set elevator kp: ");
 
-        errorCode = mMaster.config_kI(kHighGearSlot, Constants.kElevatorHighGearKi, Constants.kLongCANTimeoutMs);
-        if (errorCode != ErrorCode.OK)
-            DriverStation.reportError("Could not set elevator ki: " + errorCode, false);
+        TalonSRXUtil.checkError(
+              mMaster.config_kI(
+                      kHighGearSlot, Constants.kElevatorHighGearKi, Constants.kLongCANTimeoutMs),
+                "Could not set elevator ki: ");
 
-        errorCode = mMaster.config_kD(kHighGearSlot, Constants.kElevatorHighGearKd, Constants.kLongCANTimeoutMs);
-        if (errorCode != ErrorCode.OK)
-            DriverStation.reportError("Could not set elevator kd: " + errorCode, false);
+        TalonSRXUtil.checkError(
+                mMaster.config_kD(
+                        kHighGearSlot, Constants.kElevatorHighGearKd, Constants.kLongCANTimeoutMs),
+                "Could not set elevator kd: ");
 
-        errorCode = mMaster.config_kF(kHighGearSlot, Constants.kElevatorHighGearKf, Constants.kLongCANTimeoutMs);
-        if (errorCode != ErrorCode.OK)
-            DriverStation.reportError("Could not set elevator kf: " + errorCode, false);
+        TalonSRXUtil.checkError(
+                mMaster.config_kF(
+                        kHighGearSlot, Constants.kElevatorHighGearKf, Constants.kLongCANTimeoutMs),
+                "Could not set elevator kf: ");
 
-        errorCode = mMaster.configMaxIntegralAccumulator(kHighGearSlot, Constants.kElevatorHighGearMaxIntegralAccumulator,
-                Constants.kLongCANTimeoutMs);
-        if (errorCode != ErrorCode.OK)
-            DriverStation.reportError("Could not set elevator max integral: " + errorCode, false);
+         TalonSRXUtil.checkError(
+                 mMaster.configMaxIntegralAccumulator(
+                         kHighGearSlot, Constants.kElevatorHighGearMaxIntegralAccumulator, Constants.kLongCANTimeoutMs),
+            "Could not set elevator max integral: ");
 
-        errorCode = mMaster.config_IntegralZone(kHighGearSlot, Constants.kElevatorHighGearIZone, Constants.kLongCANTimeoutMs);
-        if (errorCode != ErrorCode.OK)
-            DriverStation.reportError("Could not set elevator i zone: " + errorCode, false);
+        TalonSRXUtil.checkError(
+                mMaster.config_IntegralZone(
+                        kHighGearSlot, Constants.kElevatorHighGearIZone, Constants.kLongCANTimeoutMs),
+            "Could not set elevator i zone: ");
 
-        errorCode = mMaster.configAllowableClosedloopError(kHighGearSlot, Constants.kElevatorHighGearDeadband, Constants
-                .kLongCANTimeoutMs);
-        if (errorCode != ErrorCode.OK)
-            DriverStation.reportError("Could not set elevator deadband: " + errorCode, false);
+        TalonSRXUtil.checkError(
+                mMaster.configAllowableClosedloopError(
+                        kHighGearSlot, Constants.kElevatorHighGearDeadband, Constants.kLongCANTimeoutMs),
+            "Could not set elevator deadband: ");
 
-        errorCode = mMaster.configMotionAcceleration(Constants.kElevatorHighGearAcceleration, Constants.kLongCANTimeoutMs);
-        if (errorCode != ErrorCode.OK)
-            DriverStation.reportError("Could not set elevator acceleration: " + errorCode, false);
+        TalonSRXUtil.checkError(
+                mMaster.configMotionAcceleration(
+                        Constants.kElevatorHighGearAcceleration, Constants.kLongCANTimeoutMs),
+            "Could not set elevator acceleration: ");
 
-        errorCode = mMaster.configMotionCruiseVelocity(Constants.kElevatorHighGearCruiseVelocity, Constants.kLongCANTimeoutMs);
-        if (errorCode != ErrorCode.OK)
-            DriverStation.reportError("Could not set elevator cruise velocity: " + errorCode, false);
+        TalonSRXUtil.checkError(
+                mMaster.configMotionCruiseVelocity(
+                        Constants.kElevatorHighGearCruiseVelocity, Constants.kLongCANTimeoutMs),
+            "Could not set elevator cruise velocity: ");
 
-        errorCode = mMaster.configSetParameter(ParamEnum.eClearPositionOnLimitF, 1, 0, 0, Constants.kLongCANTimeoutMs);
-        if (errorCode != ErrorCode.OK)
-            DriverStation.reportError("Could not set elevator reset on limit f: " + errorCode, false);
+        TalonSRXUtil.checkError(
+                mMaster.configClosedloopRamp(
+                        Constants.kElevatorRampRate, Constants.kLongCANTimeoutMs),
+                "Could not set elevator voltage ramp rate: ");
+
+        mMaster.configSetParameter(ParamEnum.eClearPositionOnLimitF, 0, 0, 0, 0);
+        mMaster.configSetParameter(ParamEnum.eClearPositionOnLimitR, 0, 0, 0, 0);
 
         // TODO add low gear gains
 
         mMaster.selectProfileSlot(0, 0);
 
-        mMaster.setInverted(false);
-        mMaster.setSensorPhase(true);
-        mMaster.setNeutralMode(NeutralMode.Brake);
         mMaster.overrideLimitSwitchesEnable(true);
         mMaster.overrideSoftLimitsEnable(true);
 
         mMaster.enableVoltageCompensation(true);
-        mMaster.set(ControlMode.PercentOutput, 0);
 
-        mMaster.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0,10, 10);
-        mMaster.setInverted(false);
+        mMaster.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0,10, 20);
+        mMaster.setStatusFramePeriod(StatusFrameEnhanced.Status_9_MotProfBuffer,10, 20);
+
+        mMaster.setInverted(true);
         mMaster.setSensorPhase(true);
-        mMaster.setNeutralMode(NeutralMode.Brake);
-
-        // Re-zero on limit
-        // TODO: determine if we want this on?
-        // mMaster.configSetParameter(ParamEnum.eClearPositionOnLimitF, 1, 0, 0, 0);
 
         mRightSlave = TalonSRXFactory.createPermanentSlaveTalon(Constants.kElevatorRightSlaveId,
                 Constants.kElevatorMasterId);
-        mRightSlave.setInverted(false);
-        mRightSlave.setNeutralMode(NeutralMode.Brake);
+        mRightSlave.setInverted(true);
 
         mLeftSlaveA = TalonSRXFactory.createPermanentSlaveTalon(Constants.kElevatorLeftSlaveAId,
                 Constants.kElevatorMasterId);
-        mLeftSlaveA.setInverted(true);
-        mLeftSlaveA.setNeutralMode(NeutralMode.Brake);
+        mLeftSlaveA.setInverted(false);
 
         mLeftSlaveB = TalonSRXFactory.createPermanentSlaveTalon(Constants.kElevatorLeftSlaveBId,
                 Constants.kElevatorMasterId);
-        mLeftSlaveB.setInverted(true);
-        mLeftSlaveB.setNeutralMode(NeutralMode.Brake);
+        mLeftSlaveB.setInverted(false);
+
+        mShifter = Constants.makeSolenoidForId(Constants.kElevatorShifterSolenoidId);
+        mShifter.set(true);
+
+        // Start with zero power.
+        mMaster.set(ControlMode.PercentOutput, 0);
+        setNeutralMode(NeutralMode.Brake);
     }
 
     public synchronized void setOpenLoop(double percentage) {
@@ -170,6 +186,10 @@ public class Elevator extends Subsystem {
         return false;
     }
 
+    public synchronized void setHangMode(boolean hang_mode) {
+        mShifter.set(!hang_mode);
+    }
+
     public synchronized double getRPM() {
         // We are using a CTRE mag encoder which is 4096 native units per revolution.
         // GetVelocity is in native units per 100ms.
@@ -180,13 +200,23 @@ public class Elevator extends Subsystem {
         return (mMaster.getSelectedSensorPosition(0) / kEncoderTicksPerInch) + kHomePositionInches;
     }
 
+    public synchronized double getSetpoint() {
+        return mLastTrajectoryPoint / kEncoderTicksPerInch + kHomePositionInches;
+    }
+
     @Override
     public void outputToSmartDashboard() {
-        SmartDashboard.putNumber("Elevator Master Output", mMaster.getMotorOutputPercent());
-        SmartDashboard.putNumber("Elevator Master RPM", getRPM());
-        SmartDashboard.putNumber("Elevator error", mMaster.getClosedLoopError(0));
-        SmartDashboard.putNumber("Elevator Master Position",
-                mMaster.getSelectedSensorPosition(0));
+        SmartDashboard.putNumber("Elevator Output %", mMaster.getMotorOutputPercent());
+        SmartDashboard.putNumber("Elevator RPM", getRPM());
+        SmartDashboard.putNumber("Elevator Error", mMaster.getClosedLoopError(0) / kEncoderTicksPerInch);
+        SmartDashboard.putNumber("Elevator Height", getInchesOffGround());
+        SmartDashboard.putBoolean("Elevator Limit", mMaster.getSensorCollection().isFwdLimitSwitchClosed());
+        SmartDashboard.putNumber("Elevator Sensor Height", mMaster.getSelectedSensorPosition(0));
+
+
+        SmartDashboard.putNumber("Elevator Last Expected Trajectory", mLastTrajectoryPoint);
+        SmartDashboard.putNumber("Elevator Current Trajectory Point", mMaster.getActiveTrajectoryPosition());
+        SmartDashboard.putBoolean("Elevator Has Sent Trajectory", hasFinishedTrajectory());
     }
 
     @Override
@@ -199,13 +229,29 @@ public class Elevator extends Subsystem {
         mMaster.setSelectedSensorPosition(0,0, 10);
     }
 
+    public synchronized void resetIfAtLimit() {
+        if (mMaster.getSensorCollection().isFwdLimitSwitchClosed()) {
+            zeroSensors();
+        }
+    }
+
     @Override
     public void registerEnabledLoops(Looper enabledLooper) {
     }
 
+    private void setNeutralMode(NeutralMode neutralMode) {
+        mLeftSlaveA.setNeutralMode(neutralMode);
+        mLeftSlaveB.setNeutralMode(neutralMode);
+        mMaster.setNeutralMode(neutralMode);
+        mRightSlave.setNeutralMode(neutralMode);
+    }
+
     @Override
     public boolean checkSystem() {
-        boolean rightSide =
+        setNeutralMode(NeutralMode.Coast);
+        setHangMode(true);
+
+        boolean leftSide =
                 TalonSRXChecker.CheckTalons(this,
                         new ArrayList<TalonSRXChecker.TalonSRXConfig>() {
                             {
@@ -217,15 +263,15 @@ public class Elevator extends Subsystem {
                         }, new TalonSRXChecker.CheckerConfig() {
                             {
                                 mCurrentFloor = 2;
-                                mRPMFloor = 1500;
+                                mRPMFloor = 200;
                                 mCurrentEpsilon = 2.0;
                                 mRPMEpsilon = 250;
-                                mRunTimeSec = 1.0;
-                                mRunOutputPercentage = 0.25;
-                                mRPMSupplier = () -> mMaster.getSelectedSensorVelocity(0);
+                                mRunTimeSec = 0.4;
+                                mRunOutputPercentage = -0.4;
+                                mRPMSupplier = () -> -mMaster.getSelectedSensorVelocity(0);
                             }
                         });
-        boolean leftSide =
+        boolean rightSide =
                 TalonSRXChecker.CheckTalons(this,
                         new ArrayList<TalonSRXChecker.TalonSRXConfig>() {
                             {
@@ -235,14 +281,17 @@ public class Elevator extends Subsystem {
                         }, new TalonSRXChecker.CheckerConfig() {
                             {
                                 mCurrentFloor = 2;
-                                mRPMFloor = 1500;
+                                mRPMFloor = 200;
                                 mCurrentEpsilon = 2.0;
                                 mRPMEpsilon = 250;
-                                mRunTimeSec = 1.0;
-                                mRunOutputPercentage = 0.25;
-                                mRPMSupplier = () -> mMaster.getSelectedSensorVelocity(0);
+                                mRunTimeSec = 0.4;
+                                mRunOutputPercentage = -0.4;
+                                mRPMSupplier = () -> -mMaster.getSelectedSensorVelocity(0);
                             }
                         });
+
+        setHangMode(false);
+        setNeutralMode(NeutralMode.Brake);
         return leftSide && rightSide;
     }
 

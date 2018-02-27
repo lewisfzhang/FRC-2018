@@ -5,7 +5,7 @@ import com.team254.frc2018.loops.Looper;
 import edu.wpi.first.wpilibj.Solenoid;
 
 public class Forklift extends Subsystem {
-    private static final boolean kDeploySolenoidState = false;
+    private static final boolean kDeploySolenoidState = true;
 
     private static Forklift mInstance = null;
 

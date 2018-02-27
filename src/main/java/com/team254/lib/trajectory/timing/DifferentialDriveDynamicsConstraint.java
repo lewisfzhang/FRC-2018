@@ -3,6 +3,7 @@ package com.team254.lib.trajectory.timing;
 import com.team254.lib.geometry.ICurvature;
 import com.team254.lib.geometry.IPose2d;
 import com.team254.lib.physics.DifferentialDrive;
+import com.team254.lib.util.Units;
 
 public class DifferentialDriveDynamicsConstraint<S extends IPose2d<S> & ICurvature<S>> implements TimingConstraint<S> {
 
@@ -16,14 +17,19 @@ public class DifferentialDriveDynamicsConstraint<S extends IPose2d<S> & ICurvatu
 
     @Override
     public double getMaxVelocity(S state) {
-        return drive_.getMaxAbsVelocity(state.getCurvature(), abs_voltage_limit_);
+        return Units.meters_to_inches(drive_.getMaxAbsVelocity(1.0 / (Units.inches_to_meters(1.0 / state.getCurvature
+                ())), abs_voltage_limit_));
     }
 
     @Override
     public MinMaxAcceleration getMinMaxAcceleration(S state,
                                                     double velocity) {
-        DifferentialDrive.MinMax min_max = drive_.getMinMaxAcceleration(new DifferentialDrive.ChassisState(velocity,
-                state.getCurvature() * velocity), state.getCurvature(), abs_voltage_limit_);
-        return new MinMaxAcceleration(min_max.min, min_max.max);
+        // TODO figure out a units convention for generic states.  Traditionally we use inches...
+        // NOTE: units cancel on angular velocity.
+        DifferentialDrive.MinMax min_max = drive_.getMinMaxAcceleration(new DifferentialDrive.ChassisState(
+                Units.inches_to_meters(velocity),
+                state.getCurvature() * velocity), 1.0 / (Units.inches_to_meters(1.0 / state.getCurvature())),
+                abs_voltage_limit_);
+        return new MinMaxAcceleration(Units.meters_to_inches(min_max.min), Units.meters_to_inches(min_max.max));
     }
 }

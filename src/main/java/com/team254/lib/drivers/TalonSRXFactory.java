@@ -1,5 +1,6 @@
 package com.team254.lib.drivers;
 
+import com.ctre.phoenix.ParamEnum;
 import com.ctre.phoenix.motorcontrol.*;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import edu.wpi.first.wpilibj.Talon;
@@ -83,6 +84,12 @@ public class TalonSRXFactory {
                 LimitSwitchNormal.NormallyOpen, kTimeoutMs);
         talon.overrideLimitSwitchesEnable(config.ENABLE_LIMIT_SWITCH);
 
+        // Turn off re-zeroing by default.
+        talon.configSetParameter(
+                ParamEnum.eClearPositionOnLimitF, 0, 0, 0, kTimeoutMs);
+        talon.configSetParameter(
+                ParamEnum.eClearPositionOnLimitR, 0, 0, 0, kTimeoutMs);
+
         talon.configNominalOutputForward(0, kTimeoutMs);
         talon.configNominalOutputReverse(0, kTimeoutMs);
         talon.configNeutralDeadband(config.NEUTRAL_DEADBAND, kTimeoutMs);
@@ -110,7 +117,6 @@ public class TalonSRXFactory {
 
         talon.configOpenloopRamp(config.OPEN_LOOP_RAMP_RATE, kTimeoutMs);
         talon.configClosedloopRamp(config.CLOSED_LOOP_RAMP_RATE, kTimeoutMs);
-
 
         talon.configVoltageCompSaturation(0.0, kTimeoutMs);
         talon.configVoltageMeasurementFilter(32, kTimeoutMs);

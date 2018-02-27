@@ -11,65 +11,50 @@ public class SuperstructureConstants {
     public static final double kElevatorMinHeight = 4.9; // ?
     public static final double kWristStowedPosition = 90.0;
 
-    public static final double kMinMovingFarDistance = 35.0;
-
-    public static final double kIllegalCrossbarStowMinHeight = 30.5;
-    public static final double kIllegalCrossbarStowMaxHeight = 43.5;
-    public static final double kIllegalCrossbarStowMinAngle = 90.0;
-
-    public static final double kClearFirstStageMinHeight = 43.5;
+    public static final double kClearFirstStageMaxHeight = 33.0;
     public static final double kClearFirstStageMinWristAngle = 45.0;
 
     public static final double kAlwaysNeedsJawClampMinAngle = kClearFirstStageMinWristAngle;
 
+    public static final double kElevatorLongRaiseDistance = 24.0;
+    public static final double kElevatorApproachingThreshold = 12.0;
+
     public final static double kStowedAngle = 90.0;
-    public final static double kStowedWithCubeAngle = 0.0;
-    public final static double kIntakeAngle = 180.0;
 
-    public final static double kPlacingMinAngle = 145.0;
-    public final static double kMinTimePlacing = 0.25;
-    public final static double kMinTimeShooting = 0.25;
+    public final static double kElevatorJogUpThrottle = 24.0 / 50.0;
+    public final static double kElevatorJogDownThrottle = -24.0 / 50.0;
 
-    public enum ScoringPositionID {
-        SWITCH,
-        SWITCH_BACKWARDS,
-        SCALE_LOW,
-        SCALE_LOW_BACKWARDS,
-        SCALE_NEUTRAL,
-        SCALE_NEUTRAL_BACKWARDS,
-        SCALE_HIGH,
-        SCALE_HIGH_BACKWARDS,
-    }
+    public final static double kWristJogUpThrottle = 90.0 / 50.0;
+    public final static double kWristJogDownThrottle = -90.0 / 50.0;
 
-    public static class ScoringPosition {
-        public double height = Elevator.kHomePositionInches;
-        public double angle = kStowedAngle;
+    // In inches, the height to use the kPlacingHighAngle.
+    public final static double kPlacingHighThreshold = 5.0;
 
-        public ScoringPosition(double in_height, double in_angle) {
-            height = in_height;
-            angle = in_angle;
-        }
-    }
+    // Presets.
 
-    public static HashMap<ScoringPositionID, ScoringPosition> kScoringPositions =
-            new HashMap<ScoringPositionID, ScoringPosition>() {
-                {
-                    put(ScoringPositionID.SWITCH, new ScoringPosition(30.0, 165.0));
-                    put(ScoringPositionID.SWITCH_BACKWARDS,
-                            new ScoringPosition(30.0, 0.0));
+    // Combinations.
+    public final static double kStowedPositionHeight = 0.0;
+    public final static double kStowedPositionAngle = 0.0;
 
-                    put(ScoringPositionID.SCALE_LOW, new ScoringPosition(60.0, 165.0));
-                    put(ScoringPositionID.SCALE_LOW_BACKWARDS,
-                            new ScoringPosition(60.0, 45.0));
+    public final static double kIntakePositionHeight = 0.0;
+    public final static double kIntakePositionAngle = 175.0;
 
-                    put(ScoringPositionID.SCALE_NEUTRAL,
-                            new ScoringPosition(70.0, 165.0));
-                    put(ScoringPositionID.SCALE_NEUTRAL_BACKWARDS,
-                            new ScoringPosition(70.0, 45.0));
+    // Elevator Heights.
+    public final static double kScaleHighHeight = 80.0;
+    public final static double kScaleNeutralHeight = 70.0;
+    public final static double kScaleLowHeight = 60.0;
 
-                    put(ScoringPositionID.SCALE_HIGH, new ScoringPosition(80.0, 165.0));
-                    put(ScoringPositionID.SCALE_HIGH_BACKWARDS,
-                            new ScoringPosition(80.0, 45.0));
-                }
-    };
+    public final static double kIntakeThirdLevelHeight = 25.5;
+    public final static double kIntakeSecondLevelHeight = 14.5;
+    public final static double kIntakeFloorLevelHeight = 0.0;
+
+    public final static double kSwitchHeight = 30.0;
+
+    // Wrist Angles.
+    public final static double kVerticalAngle = 90.0;
+    public final static double kScoreBackwardsAngle = 45.0;
+    public final static double kScoreForwardAngledAngle = 135.0;
+
+    public final static double kPlacingLowAngle = 175.0;
+    public final static double kPlacingHighAngle = 155.0;
 }

@@ -3,14 +3,11 @@ package com.team254.frc2018.subsystems;
 import com.team254.frc2018.Robot;
 import com.team254.frc2018.loops.Loop;
 import com.team254.frc2018.loops.Looper;
-import com.team254.frc2018.planners.SuperstructureMotionPlanner;
-import com.team254.frc2018.statemachines.IntakeStateMachine;
 import com.team254.frc2018.statemachines.SuperstructureStateMachine;
 import com.team254.frc2018.states.IntakeState;
+import com.team254.frc2018.states.SuperstructureCommand;
 import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.frc2018.states.SuperstructureState;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * The superstructure subsystem is the overarching superclass containing all components of the superstructure: the
@@ -29,7 +26,7 @@ public class Superstructure extends Subsystem {
 
     static Superstructure mInstance = null;
 
-    public static Superstructure getInstance() {
+    public synchronized static Superstructure getInstance() {
         if (mInstance == null) {
             mInstance = new Superstructure();
         }
@@ -65,27 +62,39 @@ public class Superstructure extends Subsystem {
 
     }
 
+    public synchronized SuperstructureStateMachine.SystemState getSuperStructureState() {
+        return mStateMachine.getSystemState();
+    }
+
     private synchronized void updateObservedState(SuperstructureState state) {
         state.height = mElevator.getInchesOffGround();
         state.angle = mWrist.getAngle();
         state.jawClamped = mIntake.getJawState() == IntakeState.JawState.CLAMPED;
-        state.hasCube = mIntake.hasCube();
 
         state.elevatorSentLastTrajectory = mElevator.hasFinishedTrajectory();
         state.wristSentLastTrajectory = mWrist.hasFinishedTrajectory();
     }
 
     // Update subsystems from planner
-    synchronized void setFromCommandState(SuperstructureState commandState) {
-        mElevator.setClosedLoopPosition(commandState.height);
-        mWrist.setClosedLoopAngle(commandState.angle);
-
-        mIntake.setState(commandState.intakeAction);
+    synchronized void setFromCommandState(SuperstructureCommand commandState) {
+        if (commandState.openLoopElevator) {
+            mElevator.setOpenLoop(commandState.openLoopElevatorPercent);
+        } else {
+            mElevator.setClosedLoopPosition(commandState.height);
+        }
+        if (commandState.elevatorLowGear) {
+            mElevator.setHangMode(true);
+        } else {
+            mElevator.setHangMode(false);
+        }
+        mWrist.setClosedLoopAngle(commandState.wristAngle);
     }
 
     @Override
     public void registerEnabledLoops(Looper enabledLooper) {
         enabledLooper.register(new Loop() {
+            private SuperstructureCommand mCommand;
+
             @Override
             public void onStart(double timestamp) {
             }
@@ -94,9 +103,8 @@ public class Superstructure extends Subsystem {
             public void onLoop(double timestamp) {
                 synchronized (Superstructure.this) {
                     updateObservedState(mState);
-                    SuperstructureState commandState =
-                            mStateMachine.update(timestamp, mWantedAction, mState);
-                    setFromCommandState(commandState);
+                    mCommand = mStateMachine.update(timestamp, mWantedAction, mState);
+                    setFromCommandState(mCommand);
                 }
             }
 
@@ -107,21 +115,38 @@ public class Superstructure extends Subsystem {
         });
     }
 
-    public synchronized void setScoringPosition(SuperstructureConstants.ScoringPositionID position_id) {
-        SuperstructureConstants.ScoringPosition position =
-                SuperstructureConstants.kScoringPositions.get(position_id);
-        mStateMachine.setScoringPosition(position.height, position.angle);
-        mWantedAction = SuperstructureStateMachine.WantedAction.GOTO_SCORE_POSITION;
+    public synchronized double getScoringAngle() {
+        return mStateMachine.getScoringAngle();
     }
 
-    public synchronized void setArmIn() {
-        mStateMachine.setScoringPosition(mState.height, 0.0);
-        mWantedAction = SuperstructureStateMachine.WantedAction.GOTO_SCORE_POSITION;
+    public synchronized double getScoringHeight() {
+        return mStateMachine.getScoringHeight();
     }
 
-    public synchronized void setJogPosition(double amount) {
-        mStateMachine.setScoringPosition(mState.height + amount, mState.angle);
-        mWantedAction = SuperstructureStateMachine.WantedAction.GOTO_SCORE_POSITION;
+    public synchronized void setDesiredHeight(double height) {
+        mStateMachine.setScoringHeight(height);
+        mWantedAction = SuperstructureStateMachine.WantedAction.GO_TO_POSITION;
+    }
+
+    public synchronized void setDesiredAngle(double angle) {
+        mStateMachine.setScoringAngle(angle);
+        mWantedAction = SuperstructureStateMachine.WantedAction.GO_TO_POSITION;
+    }
+
+    public synchronized void setElevatorJog(double relative_inches) {
+        mStateMachine.jogElevator(relative_inches);
+        mWantedAction = SuperstructureStateMachine.WantedAction.GO_TO_POSITION;
+    }
+
+    public synchronized void setWristJog(double relative_degrees) {
+        mStateMachine.jogWrist(relative_degrees);
+        mWantedAction = SuperstructureStateMachine.WantedAction.GO_TO_POSITION;
+    }
+
+
+    public synchronized void setHangThrottle(double throttle) {
+        mStateMachine.setOpenLoopPower(throttle);
+        mWantedAction = SuperstructureStateMachine.WantedAction.HANG;
     }
 
     public synchronized void setWantedAction(SuperstructureStateMachine.WantedAction wantedAction) {

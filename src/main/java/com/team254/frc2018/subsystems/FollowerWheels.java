@@ -4,11 +4,13 @@ import com.team254.frc2018.Constants;
 import com.team254.frc2018.loops.Looper;
 import edu.wpi.first.wpilibj.CounterBase;
 import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class FollowerWheels extends Subsystem {
     private final Encoder mLeftFollower, mRightFollower, mRearFollower;
-    public static double kCTREEnocderCPR = 1024;
+    private final Solenoid mDeploySolenoid;
+    public static double kMagEncoderCPR = 1024;
 
     private static FollowerWheels sInstance = new FollowerWheels();
 
@@ -19,16 +21,19 @@ public class FollowerWheels extends Subsystem {
     private FollowerWheels() {
         mLeftFollower = new Encoder(Constants.kFollowerLeftAChannelId, Constants.kFollowerLeftBChannelId, true,
                 CounterBase.EncodingType.k4X);
+        mLeftFollower.setName("LeftFollower");
         mRightFollower = new Encoder(Constants.kFollowerRightAChannelId, Constants.kFollowerRightBChannelId, false,
                 CounterBase.EncodingType.k4X);
+        mRightFollower.setName("RightFollower");
         mRearFollower = new Encoder(Constants.kFollowerRearAChannelId, Constants.kFollowerRearBChannelId, true,
                 CounterBase.EncodingType.k4X);
+        mRearFollower.setName("RearFollower");
 
+        mLeftFollower.setDistancePerPulse(Math.PI * Constants.kFollowerWheelDiameterInches * (1.0 / kMagEncoderCPR));
+        mRightFollower.setDistancePerPulse(Math.PI * Constants.kFollowerWheelDiameterInches * (1.0 / kMagEncoderCPR));
+        mRearFollower.setDistancePerPulse(Math.PI * Constants.kFollowerWheelDiameterInches * (1.0 / kMagEncoderCPR));
 
-        mLeftFollower.setDistancePerPulse(Math.PI * Constants.kFollowerWheelDiameterInches * (1.0 / kCTREEnocderCPR));
-        mRightFollower.setDistancePerPulse(Math.PI * Constants.kFollowerWheelDiameterInches * (1.0 / kCTREEnocderCPR));
-        mRearFollower.setDistancePerPulse(Math.PI * Constants.kFollowerWheelDiameterInches * (1.0 / kCTREEnocderCPR));
-
+        mDeploySolenoid = Constants.makeSolenoidForId(Constants.kFollowerWheelSolenoid);
     }
 
     @Override
@@ -38,10 +43,10 @@ public class FollowerWheels extends Subsystem {
 
     @Override
     public void outputToSmartDashboard() {
-        SmartDashboard.putNumber("leftFollowerDistance", getLeftDistance());
-        SmartDashboard.putNumber("rightFollowerDistance", getRightDistance());
-        SmartDashboard.putNumber("rearFollowerDistance", getRearDistance());
-        SmartDashboard.putNumber("headingFollower", getHeading());
+        SmartDashboard.putNumber("Left Follower Distance", getLeftDistance());
+        SmartDashboard.putNumber("Right Follower Distance", getRightDistance());
+        SmartDashboard.putNumber("Rear Follower Distance", getRearDistance());
+        SmartDashboard.putNumber("Follower Wheel Heading", getHeading());
     }
 
     @Override
@@ -59,6 +64,14 @@ public class FollowerWheels extends Subsystem {
     @Override
     public void registerEnabledLoops(Looper enabledLooper) {
 
+    }
+
+    public void deploy() {
+        mDeploySolenoid.set(true);
+    }
+
+    public void retract() {
+        mDeploySolenoid.set(false);
     }
 
     public double getLeftDistance() {

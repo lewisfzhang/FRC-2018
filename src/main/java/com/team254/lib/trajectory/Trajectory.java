@@ -6,26 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Trajectory<S extends State<S>> {
-    public class IndexView implements TrajectoryView<S> {
-        @Override
-        public TrajectorySamplePoint<S> sample(double index) {
-            return Trajectory.this.getInterpolated(index);
-        }
-
-        @Override
-        public double last_interpolant() {
-            return Math.max(0.0, Trajectory.this.length() - 1);
-        }
-
-        @Override
-        public double first_interpolant() {
-            return 0.0;
-        }
-    }
-
     protected final List<TrajectoryPoint<S>> points_;
     protected final IndexView index_view_ = new IndexView();
-
     /**
      * Create an empty trajectory.
      */
@@ -106,5 +88,22 @@ public class Trajectory<S extends State<S>> {
             builder.append(System.lineSeparator());
         }
         return builder.toString();
+    }
+
+    public class IndexView implements TrajectoryView<S> {
+        @Override
+        public TrajectorySamplePoint<S> sample(double index) {
+            return Trajectory.this.getInterpolated(index);
+        }
+
+        @Override
+        public double last_interpolant() {
+            return Math.max(0.0, Trajectory.this.length() - 1);
+        }
+
+        @Override
+        public double first_interpolant() {
+            return 0.0;
+        }
     }
 }

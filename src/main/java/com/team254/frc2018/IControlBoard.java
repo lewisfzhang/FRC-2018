@@ -1,41 +1,10 @@
 package com.team254.frc2018;
 
-interface IControlBoard {
-    double getThrottle();
+import com.team254.frc2018.controlboard.IDriveControlBoard;
+import com.team254.frc2018.controlboard.IButtonControlBoard;
 
-    double getTurn();
+public interface IControlBoard extends IDriveControlBoard, IButtonControlBoard {
+    boolean getHangMode();
 
-    boolean getQuickTurn();
-
-    boolean getLowGear();
-
-    boolean getJogWristStow();
-
-    boolean getJogWristExtend();
-
-    boolean getScore();
-
-    boolean getFarScore();
-
-    boolean getIntake();
-
-    boolean getBackwardsModifier();
-
-    boolean getHighScale();
-
-    boolean getSwitch();
-
-    boolean getStow();
-
-    boolean getArmIn();
-
-    boolean getNeutralScale();
-
-    boolean getJogElevatorUp();
-
-    boolean getExchange();
-
-    boolean getLowScale();
-
-    boolean getJogElevatorDown();
+    double getHangThrottle();
 }

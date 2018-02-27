@@ -9,7 +9,6 @@ public class SuperstructureState {
     public boolean jawClamped = true;
 
     // This isnt touched by planner
-    public IntakeStateMachine.WantedAction intakeAction = IntakeStateMachine.WantedAction.IDLE;
     public boolean hasCube = false;
     public boolean elevatorSentLastTrajectory = false;
     public boolean wristSentLastTrajectory = false;
@@ -38,9 +37,8 @@ public class SuperstructureState {
         double kAllowableWristAngleError = allowSmallErrors ? 5.5 : 0;
         double kAllowableElevatorHeightError = allowSmallErrors ? 1 : 0;
 
-        if (height >= SuperstructureConstants.kIllegalCrossbarStowMinHeight + kAllowableElevatorHeightError &&
-                height < SuperstructureConstants.kIllegalCrossbarStowMaxHeight - kAllowableElevatorHeightError &&
-                angle < SuperstructureConstants.kIllegalCrossbarStowMinAngle - kAllowableWristAngleError) {
+        if (height >= SuperstructureConstants.kClearFirstStageMaxHeight + kAllowableElevatorHeightError &&
+                angle < SuperstructureConstants.kClearFirstStageMinWristAngle - kAllowableWristAngleError) {
             return true;
         }
 

@@ -1,15 +1,18 @@
 package com.team254.frc2018;
 
 import com.team254.frc2018.auto.AutoModeExecuter;
-import com.team254.frc2018.auto.modes.CharacterizeDrivetrainMode;
+import com.team254.frc2018.auto.modes.CharacterizeHighGearStraight;
+import com.team254.frc2018.auto.modes.TestIntakeThenScore;
 import com.team254.frc2018.loops.Looper;
 import com.team254.frc2018.loops.RobotStateEstimator;
+import com.team254.frc2018.statemachines.IntakeStateMachine;
 import com.team254.frc2018.statemachines.SuperstructureStateMachine;
 import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.frc2018.subsystems.*;
 import com.team254.lib.geometry.Pose2d;
 import com.team254.lib.util.CheesyDriveHelper;
 import com.team254.lib.util.CrashTracker;
+import com.team254.lib.util.LatchedBoolean;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -26,14 +29,22 @@ public class Robot extends IterativeRobot {
                     Drive.getInstance(),
                     FollowerWheels.getInstance(),
                     Intake.getInstance(),
-                    Superstructure.getInstance()
+                    Superstructure.getInstance(),
+                    Wrist.getInstance(),
+                    Infrastructure.getInstance()
             )
     );
 
     private Drive mDrive = Drive.getInstance();
     private Intake mIntake = Intake.getInstance();
     private Wrist mWrist = Wrist.getInstance();
+    private Infrastructure mInfrastructure = Infrastructure.getInstance();
     private Superstructure mSuperstructure = Superstructure.getInstance();
+    private Elevator mElevator = Elevator.getInstance();
+
+    private LatchedBoolean mRunIntakeReleased = new LatchedBoolean();
+    private LatchedBoolean mShootReleased = new LatchedBoolean();
+    private LatchedBoolean mRunIntakePressed = new LatchedBoolean();
 
     public Robot() {
         CrashTracker.logRobotConstruction();
@@ -47,8 +58,10 @@ public class Robot extends IterativeRobot {
             mSubsystemManager.registerEnabledLoops(mEnabledLooper);
             mEnabledLooper.register(RobotStateEstimator.getInstance());
 
-            Wrist.getInstance().zeroSensors();
             Elevator.getInstance().zeroSensors();
+
+            mRunIntakeReleased.update(true);
+            mShootReleased.update(true);
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
             throw t;
@@ -81,10 +94,12 @@ public class Robot extends IterativeRobot {
             CrashTracker.logAutoInit();
 
             RobotState.getInstance().reset(Timer.getFPGATimestamp(), Pose2d.identity());
+            mInfrastructure.setIsDuringAuto(true);
 
+            mEnabledLooper.start();
 
             AutoModeExecuter mAutoModeExecuter = new AutoModeExecuter();
-            mAutoModeExecuter.setAutoMode(new CharacterizeDrivetrainMode());
+            mAutoModeExecuter.setAutoMode(new TestIntakeThenScore());
             mAutoModeExecuter.start();
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
@@ -99,6 +114,7 @@ public class Robot extends IterativeRobot {
         try {
             CrashTracker.logTeleopInit();
             FollowerWheels.getInstance().zeroSensors();
+            mInfrastructure.setIsDuringAuto(false);
 
             RobotState.getInstance().reset(Timer.getFPGATimestamp(), Pose2d.identity());
             mEnabledLooper.start();
@@ -114,7 +130,12 @@ public class Robot extends IterativeRobot {
 
         try {
             System.out.println("Starting check systems.");
+
             mDrive.checkSystem();
+            mIntake.checkSystem();
+            mWrist.checkSystem();
+            mElevator.checkSystem();
+
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
             throw t;
@@ -127,6 +148,8 @@ public class Robot extends IterativeRobot {
 
         try {
             outputToSmartDashboard();
+            mWrist.resetIfAtLimit();
+            mElevator.resetIfAtLimit();
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
             throw t;
@@ -137,6 +160,7 @@ public class Robot extends IterativeRobot {
     public void autonomousPeriodic() {
         SmartDashboard.putString("Match Cycle", "AUTONOMOUS");
 
+        outputToSmartDashboard();
         try {
 
         } catch (Throwable t) {
@@ -153,60 +177,136 @@ public class Robot extends IterativeRobot {
             double throttle = mControlBoard.getThrottle();
             double turn = mControlBoard.getTurn();
 
-            mDrive.setOpenLoop(mCheesyDriveHelper.cheesyDrive(throttle, turn, mControlBoard.getQuickTurn(),
-                    !mControlBoard.getLowGear()));
-            mDrive.setHighGear(!mControlBoard.getLowGear());
-
-            if (mControlBoard.getScore()) {
-                mSuperstructure.setWantedAction(SuperstructureStateMachine.WantedAction.PLACE);
-            } else if (mControlBoard.getFarScore()) {
-                mSuperstructure.setWantedAction(SuperstructureStateMachine.WantedAction.SHOOT);
-            } else if (mControlBoard.getIntake()) {
-                mSuperstructure.setWantedAction(SuperstructureStateMachine.WantedAction.INTAKE);
-            } else if (mControlBoard.getSwitch()) {
-                if (mControlBoard.getBackwardsModifier()) {
-                    mSuperstructure.setScoringPosition(
-                            SuperstructureConstants.ScoringPositionID.SWITCH_BACKWARDS);
-                } else {
-                    mSuperstructure.setScoringPosition(
-                            SuperstructureConstants.ScoringPositionID.SWITCH);
-                }
-            } else if (mControlBoard.getHighScale()) {
-                if (mControlBoard.getBackwardsModifier()) {
-                    mSuperstructure.setScoringPosition(
-                            SuperstructureConstants.ScoringPositionID.SCALE_HIGH_BACKWARDS);
-                } else {
-                    mSuperstructure.setScoringPosition(
-                            SuperstructureConstants.ScoringPositionID.SCALE_HIGH);
-                }
-            } else if (mControlBoard.getNeutralScale()) {
-                if (mControlBoard.getBackwardsModifier()) {
-                    mSuperstructure.setScoringPosition(
-                            SuperstructureConstants.ScoringPositionID.SCALE_NEUTRAL_BACKWARDS);
-                } else {
-                    mSuperstructure.setScoringPosition(
-                            SuperstructureConstants.ScoringPositionID.SCALE_NEUTRAL);
-                }
-            } else if (mControlBoard.getLowScale()) {
-                if (mControlBoard.getBackwardsModifier()) {
-                    mSuperstructure.setScoringPosition(
-                            SuperstructureConstants.ScoringPositionID.SCALE_LOW_BACKWARDS);
-                } else {
-                    mSuperstructure.setScoringPosition(
-                            SuperstructureConstants.ScoringPositionID.SCALE_LOW);
-                }
-            } else if (mControlBoard.getJogElevatorDown()) {
-                mSuperstructure.setJogPosition(-5.0);
-            } else if (mControlBoard.getJogElevatorUp()) {
-                mSuperstructure.setJogPosition(5.0);
-            } else if (mControlBoard.getArmIn()) {
-                mSuperstructure.setArmIn();
-            } else if (mControlBoard.getStow()) {
-                mSuperstructure.setWantedAction(SuperstructureStateMachine.WantedAction.STOW);
-            } else {
-                mSuperstructure.setWantedAction(SuperstructureStateMachine.WantedAction.IDLE);
+            // When elevator is up, tune sensitivity on tune a little.
+            if (mElevator.getInchesOffGround() > Constants.kElevatorLowSensitivityThreshold) {
+                turn *= Constants.kLowSensitivityFactor;
             }
 
+            mDrive.setOpenLoop(mCheesyDriveHelper.cheesyDrive(throttle, turn, mControlBoard.getQuickTurn(),
+                    mDrive.isHighGear()));
+
+            // Intake/Shoot
+            boolean runIntake = mControlBoard.getRunIntake() || mControlBoard.getIntakePosition();
+            boolean shoot = mControlBoard.getShoot();
+            boolean runIntakeReleased = mRunIntakeReleased.update(!runIntake);
+            boolean shootReleased = mShootReleased.update(!shoot);
+            boolean intakeAction = false;
+            if (runIntake) {
+                mIntake.getOrKeepCube();
+                intakeAction = true;
+            } else if (shoot) {
+                intakeAction = true;
+                mIntake.shoot();
+            } else if (runIntakeReleased || shootReleased) {
+                if (mIntake.hasCube()) {
+                    mIntake.getOrKeepCube();
+                } else {
+                    mIntake.setState(IntakeStateMachine.WantedAction.WANT_MANUAL);
+                    mIntake.setPower(0.0);
+                }
+                intakeAction = true;
+            }
+
+            // Manual jaw inputs.
+            if (mControlBoard.getOpenJaw()) {
+                mIntake.tryOpenJaw();
+                if (!intakeAction) {
+                    mIntake.setState(IntakeStateMachine.WantedAction.WANT_MANUAL);
+                    mIntake.setPower(0.0);
+                }
+            } else {
+                mIntake.clampJaw();
+            }
+
+
+            // Rumble
+            if (runIntake && mIntake.hasCube()) {
+                mControlBoard.setRumble(true);
+            } else {
+                mControlBoard.setRumble(false);
+            }
+
+            // Presets.
+            double desired_height = Double.NaN;
+            double desired_angle = Double.NaN;
+
+            if (mControlBoard.getGoToStowHeight()) {
+                desired_height = SuperstructureConstants.kStowedPositionHeight;
+                desired_angle = SuperstructureConstants.kStowedPositionAngle;
+            }
+
+            if (mRunIntakePressed.update(mControlBoard.getIntakePosition())) {
+                desired_height = SuperstructureConstants.kIntakePositionHeight;
+                desired_angle = SuperstructureConstants.kIntakePositionAngle;
+            }
+
+            // Elevator.
+            if (mControlBoard.getGoToHighScaleHeight() && !mControlBoard.getIntakePosition()) {
+                desired_height = SuperstructureConstants.kScaleHighHeight;
+            } else if (mControlBoard.getGoToNeutralScaleHeight() && !mControlBoard.getIntakePosition()) {
+                desired_height = SuperstructureConstants.kScaleNeutralHeight;
+            } else if (mControlBoard.getGoToLowScaleHeight() && !mControlBoard.getIntakePosition()) {
+                desired_height = SuperstructureConstants.kScaleLowHeight;
+            } else if (mControlBoard.getGoToHighScaleHeight() && mControlBoard.getIntakePosition()) {
+                desired_height = SuperstructureConstants.kIntakeThirdLevelHeight;
+            } else if (mControlBoard.getGoToNeutralScaleHeight() && mControlBoard.getIntakePosition()) {
+                desired_height = SuperstructureConstants.kIntakeSecondLevelHeight;
+            } else if (mControlBoard.getGoToLowScaleHeight() && mControlBoard.getIntakePosition()) {
+                desired_height = SuperstructureConstants.kIntakeFloorLevelHeight;
+            }  else if (mControlBoard.getGoToSwitchHeight()) {
+                desired_height = SuperstructureConstants.kSwitchHeight;
+            } else if (mControlBoard.getHangMode()) {
+                mSuperstructure.setHangThrottle(mControlBoard.getHangThrottle());
+            }
+
+            // Wrist.
+            if (mControlBoard.goToStowWrist()) {
+                desired_angle = SuperstructureConstants.kStowedPositionAngle;
+            } else if (mControlBoard.goToIntakingWrist()) {
+                if (mSuperstructure.getScoringHeight() > SuperstructureConstants.kPlacingHighThreshold) {
+                    desired_angle = SuperstructureConstants.kPlacingHighAngle;
+                } else {
+                    desired_angle = SuperstructureConstants.kPlacingLowAngle;
+                }
+            } else if (mControlBoard.goToVerticalWrist()) {
+                desired_angle = SuperstructureConstants.kVerticalAngle;
+            } else if (mControlBoard.goToScoringWrist()) {
+                desired_angle = SuperstructureConstants.kScoreBackwardsAngle;
+            } else if (mControlBoard.goToScoringAngledWrist()) {
+                desired_angle = SuperstructureConstants.kScoreForwardAngledAngle;
+            }
+
+            // Attempt to fix wrist angle if we will be in an invalid state.
+            if (!Double.isNaN(desired_height) && Double.isNaN(desired_angle) &&
+                    desired_height > SuperstructureConstants.kClearFirstStageMaxHeight) {
+                if (mSuperstructure.getScoringAngle() <
+                        SuperstructureConstants.kClearFirstStageMinWristAngle) {
+                    desired_angle = SuperstructureConstants.kClearFirstStageMinWristAngle;
+                }
+            }
+
+            if (Double.isNaN(desired_angle) && Double.isNaN(desired_height)) {
+                mSuperstructure.setWantedAction(SuperstructureStateMachine.WantedAction.IDLE);
+            } else if (Double.isNaN(desired_angle)) {
+                mSuperstructure.setDesiredHeight(desired_height);
+            } else if (Double.isNaN(desired_height)) {
+                mSuperstructure.setDesiredAngle(desired_angle);
+            } else if (!Double.isNaN(desired_angle) && !Double.isNaN(desired_height)) {
+                mSuperstructure.setDesiredAngle(desired_angle);
+                mSuperstructure.setDesiredHeight(desired_height);
+            }
+
+            if (mControlBoard.getJogElevatorUp()) {
+                mSuperstructure.setElevatorJog(SuperstructureConstants.kElevatorJogUpThrottle);
+            } else if (mControlBoard.getJogElevatorDown()) {
+                mSuperstructure.setElevatorJog(SuperstructureConstants.kElevatorJogDownThrottle);
+            }
+
+            if (mControlBoard.getJogWristForward()) {
+                mSuperstructure.setWristJog(SuperstructureConstants.kWristJogUpThrottle);
+            } else if (mControlBoard.getJogWristBack()) {
+                mSuperstructure.setWristJog(SuperstructureConstants.kWristJogDownThrottle);
+            }
 
             outputToSmartDashboard();
         } catch (Throwable t) {
@@ -227,5 +327,8 @@ public class Robot extends IterativeRobot {
         Wrist.getInstance().outputToSmartDashboard();
         Intake.getInstance().outputToSmartDashboard();
         Elevator.getInstance().outputToSmartDashboard();
+        Infrastructure.getInstance().outputToSmartDashboard();
+        mEnabledLooper.outputToSmartDashboard();
+        // SmartDashboard.updateValues();
     }
 }

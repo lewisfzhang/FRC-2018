@@ -19,7 +19,12 @@ public class Constants {
     public static final double kFollowerWheelTrackWidthInches = 25.624;
     public static final double kFollowerWheelBackOffset = 14.19; // Tune me!
     public static final double kFollowerWheelDiameterInches = 2.28;  // Tune me!
+    public static final double kFollowerWheelDiameterInchesForwards = 2.19809459784;  // Tune me!
+    public static final double kFollowerWheelDiameterInchesReverse = 2.36983336671;  // Tune me!
+    public static final double kDriveWheelTrackWidthInches = 26.0;  // TODO: measure
     public static final double kDriveWheelDiameterInches = 4; // TODO: measure
+    public static final double kDriveWheelDiameterInchesForwards = 3.8914785807;
+    public static final double kDriveWheelDiameterInchesReverse = 4.07731790636;
     public static final double kTrackScrubFactor = 1.0;  // Tune me!
 
     // Geometry
@@ -27,9 +32,6 @@ public class Constants {
     public static final double kCenterToIntakeDistance = 23.11;
     public static final double kCenterToRearBumperDistance = 16.99;
     public static final double kCenterToSideBumperDistance = 17.225;
-
-    // Gearing
-    // TODO
 
     // Pose of the LIDAR frame w.r.t. the robot frame
     // TUNE ME
@@ -44,6 +46,11 @@ public class Constants {
     public static final double kChezyLidarRestartTime = 2.5;
 
     /* CONTROL LOOP GAINS */
+
+    // Gearing and mechanical constants.
+    public static final double kDriveDownShiftVelocity = 9.5 * 12.0;  // inches per second
+    public static final double kDriveDownShiftAngularVelocity = Math.PI / 2.0; // rad/sec
+    public static final double kDriveUpShiftVelocity = 11.0 * 12.0;  // inches per second
 
     // PID gains for drive velocity loop (HIGH GEAR)
     // Units: setpoint, error, and output are in inches per second.
@@ -82,6 +89,7 @@ public class Constants {
     public static final int kElevatorHighGearDeadband = 0;
     public static final int kElevatorHighGearCruiseVelocity = 12500;
     public static final int kElevatorHighGearAcceleration = 33000;//33000;
+    public static final double kElevatorRampRate = 0.1;
 
     public static final double kWristKp = 1.7; //todo: tune me
     public static final double kWristKi = 0.0; //todo: tune me
@@ -92,6 +100,7 @@ public class Constants {
     public static final int kWristDeadband = 25; //todo: tune me
     public static final int kWristCruiseVelocity = 650; //todo: tune me
     public static final int kWristAcceleration = 700; //todo: tune me
+    public static final double kWristRampRate = 0.1;
 
     // Do not change anything after this line unless you rewire the robot and
     // update the spreadsheet!
@@ -125,6 +134,7 @@ public class Constants {
     // Intake
     public static final int kIntakeLeftMasterId = 9;
     public static final int kIntakeRightMasterId = 10;
+    public static final int kCanifierId = 0;
 
     // Elevator
     public static final int kElevatorMasterId = 11;
@@ -137,14 +147,30 @@ public class Constants {
 
     // Solenoids
     public static final int kShifterSolenoidId = 12; // PCM 0, Solenoid 4
-    public static final int kIntakeCloseSolenoid = 11; //todo: get actual value
-    public static final int kIntakeClampSolenoid = 10; //todo: get actual value
-    public static final int kForkliftDeploySolenoid = 3; //todo: get actual value
+    public static final int kIntakeCloseSolenoid = 10;
+    public static final int kIntakeClampSolenoid = 9;
+    public static final int kForkliftDeploySolenoid = 7;  // CURRENTLY 6 ON PRACTICE!!!
+    public static final int kHangerReleaseSolenoid = 6;
+    public static final int kFollowerWheelSolenoid = 11;
+    public static final int kElevatorShifterSolenoidId = 8;
 
     // Sensors
     public static final int kIntakeLeftBannerId = 9; //todo: get actual value
     public static final int kIntakeRightBannerId = 10; //todo: get actual value
 
+    // Control Board
+    public static final boolean kUseGamepadForDriving = false;
+    public static final boolean kUseGamepadForButtons = true;
+
+    public static final int kDriveGamepadPort = 0;
+    public static final int kButtonGamepadPort = 2;
+    public static final int kMainThrottleJoystickPort = 0;
+    public static final int kMainTurnJoystickPort = 1;
+    public static final double kJoystickThreshold = 0.5;
+
+    // Height in in after applying turn factor.
+    public static final double kElevatorLowSensitivityThreshold = 50.0;
+    public static final double kLowSensitivityFactor = 1.0 / 4.0;
 
     /**
      * Make an {@link Solenoid} instance for the single-number ID of the solenoid

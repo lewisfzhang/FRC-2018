@@ -8,9 +8,9 @@ import com.team254.lib.geometry.Translation2d;
 
 public class QuinticHermiteSpline extends Spline {
     private static final double kEpsilon = 1e-5;
-    private static final double kStepSize = 1;
-    private static final double kMinDelta = 0.005;
-    private static final int kSamples = 50;
+    private static final double kStepSize = 1.0;
+    private static final double kMinDelta = 0.001;
+    private static final int kSamples = 100;
     private static final int kMaxIterations = 100;
 
     private double x0, x1, dx0, dx1, ddx0, ddx1, y0, y1, dy0, dy1, ddy0, ddy1;
@@ -90,6 +90,20 @@ public class QuinticHermiteSpline extends Spline {
         fy = y0;
     }
 
+    public Pose2d getStartPose() {
+        return new Pose2d(
+                new Translation2d(x0, y0),
+                new Rotation2d(dx0, dy0, true)
+        );
+    }
+
+    public Pose2d getEndPose() {
+        return new Pose2d(
+                new Translation2d(x1, y1),
+                new Rotation2d(dx1, dy1, true)
+        );
+    }
+
     /**
      * @param t ranges from 0 to 1
      * @return the point on the spline for that t value
@@ -117,13 +131,24 @@ public class QuinticHermiteSpline extends Spline {
         return 20 * ay * t * t * t + 12 * by * t * t + 6 * cy * t + 2 * dy;
     }
 
+    private double dddx(double t) {
+        return 60 * ax * t * t + 24 * bx * t + 6 * cx;
+    }
+
+    private double dddy(double t) {
+        return 60 * ay * t * t + 24 * by * t + 6 * cy;
+    }
+
     public double getCurvature(double t) {
         return (dx(t) * ddy(t) - ddx(t) * dy(t)) / ((dx(t) * dx(t) + dy(t) * dy(t)) * Math.sqrt((dx(t) * dx(t) + dy
                 (t) * dy(t))));
     }
 
-    private double dCurvature(double t) {
-        return (getCurvature(t + kEpsilon) - getCurvature(t - kEpsilon)) / (2 * kEpsilon);
+    private double dCurvature2(double t) {
+        double dx2dy2 = (dx(t) * dx(t) + dy(t) * dy(t));
+        double num = (dx(t)*dddy(t) - dddx(t)*dy(t)) * dx2dy2 - 3 * (dx(t) * ddy(t) - ddx(t) * dy(t)) * (dx(t) * ddx(t) + dy(t) * ddy(t));
+
+        return num * num / (dx2dy2 * dx2dy2 * dx2dy2 * dx2dy2 * dx2dy2);
     }
 
     @Override
@@ -138,7 +163,7 @@ public class QuinticHermiteSpline extends Spline {
         double dt = 1.0 / kSamples;
         double sum = 0;
         for (double t = 0; t < 1.0; t += dt) {
-            sum += (dt * dCurvature(t) * dCurvature(t));
+            sum += (dt * dCurvature2(t));
         }
         return sum;
     }
@@ -146,7 +171,7 @@ public class QuinticHermiteSpline extends Spline {
     /**
      * @return integral of dCurvature^2 over the length of multiple splines
      */
-    private static double sumDCurvature2(List<QuinticHermiteSpline> splines) {
+    public static double sumDCurvature2(List<QuinticHermiteSpline> splines) {
         double sum = 0;
         for (QuinticHermiteSpline s : splines) {
             sum += s.sumDCurvature2();
@@ -178,7 +203,6 @@ public class QuinticHermiteSpline extends Spline {
                 return current;
             prev = current;
             count++;
-            System.out.println(count);
         }
         return prev;
     }
@@ -197,6 +221,10 @@ public class QuinticHermiteSpline extends Spline {
         double magnitude = 0;
 
         for (int i = 0; i < splines.size() - 1; ++i) {
+            //don't try to optimize colinear points
+            if(splines.get(i).getStartPose().isColinear(splines.get(i + 1).getStartPose()) || splines.get(i).getEndPose().isColinear(splines.get(i + 1).getEndPose())) {
+                continue;
+            }
             double original = sumDCurvature2(splines);
             QuinticHermiteSpline temp, temp1;
 
@@ -229,6 +257,9 @@ public class QuinticHermiteSpline extends Spline {
         p2 = new Translation2d(0, sumDCurvature2(splines)); //middle point is at the current location
 
         for (int i = 0; i < splines.size() - 1; ++i) { //first point is offset from the middle location by -stepSize
+            if(splines.get(i).getStartPose().isColinear(splines.get(i + 1).getStartPose()) || splines.get(i).getEndPose().isColinear(splines.get(i + 1).getEndPose())) {
+                continue;
+            }
             //normalize to step size
             controlPoints[i].ddx *= kStepSize / magnitude;
             controlPoints[i].ddy *= kStepSize / magnitude;
@@ -246,6 +277,9 @@ public class QuinticHermiteSpline extends Spline {
         p1 = new Translation2d(-kStepSize, sumDCurvature2(splines));
 
         for (int i = 0; i < splines.size() - 1; ++i) { //last point is offset from the middle location by +stepSize
+            if(splines.get(i).getStartPose().isColinear(splines.get(i + 1).getStartPose()) || splines.get(i).getEndPose().isColinear(splines.get(i + 1).getEndPose())) {
+                continue;
+            }
             //move along the gradient by 2 times the step size amount (to return to original location and move by 1
             // step)
             splines.get(i).ddx1 += 2 * controlPoints[i].ddx;
@@ -263,6 +297,9 @@ public class QuinticHermiteSpline extends Spline {
         double stepSize = fitParabola(p1, p2, p3); //approximate step size to minimize sumDCurvature2 along the gradient
 
         for (int i = 0; i < splines.size() - 1; ++i) {
+            if(splines.get(i).getStartPose().isColinear(splines.get(i + 1).getStartPose()) || splines.get(i).getEndPose().isColinear(splines.get(i + 1).getEndPose())) {
+                continue;
+            }
             //move by the step size calculated by the parabola fit (+1 to offset for the final transformation to find
             // p3)
             controlPoints[i].ddx *= 1 + stepSize / kStepSize;

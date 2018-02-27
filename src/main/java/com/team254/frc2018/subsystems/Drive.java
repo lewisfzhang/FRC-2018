@@ -38,6 +38,12 @@ public class Drive extends Subsystem {
         PATH_FOLLOWING, // velocity PID control
     }
 
+    public enum ShifterState {
+        FORCE_LOW_GEAR,
+        FORCE_HIGH_GEAR,
+        AUTO_SHIFT
+    }
+
     // Control states
     private DriveControlState mDriveControlState;
 
@@ -47,6 +53,7 @@ public class Drive extends Subsystem {
     private PigeonIMU mPigeon;
 
     // Hardware states
+    private boolean mAutoShift;
     private boolean mIsHighGear;
     private boolean mIsBrakeMode;
 
@@ -65,13 +72,18 @@ public class Drive extends Subsystem {
             synchronized (Drive.this) {
                 switch (mDriveControlState) {
                     case OPEN_LOOP:
-                        return;
+                        break;
                     case PATH_FOLLOWING:
                         updatePathFollower();
-                        return;
+                        break;
                     default:
                         System.out.println("Unexpected drive control state: " + mDriveControlState);
                         break;
+                }
+                if (mAutoShift && false) { // TODO: fix this (tom)
+                    handleAutoShift();
+                } else {
+                    setHighGear(false);
                 }
             }
         }
@@ -128,7 +140,10 @@ public class Drive extends Subsystem {
 
         mPigeon = new PigeonIMU(mLeftSlaveB);
 
-        setHighGear(true);
+        // Force a solenoid message.
+        mIsHighGear = true;
+        setHighGear(false);
+
         setOpenLoop(DriveSignal.NEUTRAL);
 
         // Force a CAN message across.
@@ -147,6 +162,7 @@ public class Drive extends Subsystem {
     public synchronized void setOpenLoop(DriveSignal signal) {
         if (mDriveControlState != DriveControlState.OPEN_LOOP) {
             setBrakeMode(false);
+            mAutoShift = true;
 
             mDriveControlState = DriveControlState.OPEN_LOOP;
         }
@@ -161,6 +177,7 @@ public class Drive extends Subsystem {
         if (mDriveControlState != DriveControlState.PATH_FOLLOWING) {
             // We entered a velocity control state.
             setBrakeMode(true);
+            mAutoShift = false;
             mLeftMaster.selectProfileSlot(kHighGearVelocityControlSlot, 0);
             mRightMaster.selectProfileSlot(kHighGearVelocityControlSlot, 0);
 
@@ -178,7 +195,7 @@ public class Drive extends Subsystem {
     public synchronized void setHighGear(boolean wantsHighGear) {
         if (wantsHighGear != mIsHighGear) {
             mIsHighGear = wantsHighGear;
-            mShifter.set(!wantsHighGear);
+            mShifter.set(wantsHighGear);
         }
     }
 
@@ -215,9 +232,11 @@ public class Drive extends Subsystem {
 
     @Override
     public void outputToSmartDashboard() {
-        SmartDashboard.putNumber("driveRight: ", getRightEncoderDistance());
-        SmartDashboard.putNumber("driveLeft: ", getLeftEncoderDistance());
-        SmartDashboard.putNumber("Heading: ", getHeading().getDegrees());
+        SmartDashboard.putNumber("Right Drive Distance", getRightEncoderDistance());
+        SmartDashboard.putNumber("Left Drive Distance", getLeftEncoderDistance());
+        SmartDashboard.putNumber("Right Linear Velocity", getRightLinearVelocity());
+        SmartDashboard.putNumber("Left Linear Velocity", getLeftLinearVelocity());
+        SmartDashboard.putNumber("Gyro Heading", getHeading().getDegrees());
     }
 
     public synchronized void resetEncoders() {
@@ -233,6 +252,7 @@ public class Drive extends Subsystem {
     public void zeroSensors() {
         setHeading(new Rotation2d());
         resetEncoders();
+        mAutoShift = true;
     }
 
     private static double rotationsToInches(double rotations) {
@@ -251,29 +271,58 @@ public class Drive extends Subsystem {
         return inchesToRotations(inches_per_second) * 60;
     }
 
-    public double getLeftEncoderDistance() {
-        // TODO: Convert this to inches, currently just rotations
-        return -mLeftMaster.getSelectedSensorPosition(0) / DRIVE_ENCODER_PPR;
+    public double getLeftEncoderRotations() {
+        return mLeftMaster.getSelectedSensorPosition(0) / DRIVE_ENCODER_PPR;
     }
 
-    public double getRightEncoderDistance() {
-        // TODO: Convert this to inches, currently just rotations
+    public double getRightEncoderRotations() {
         return mRightMaster.getSelectedSensorPosition(0) / DRIVE_ENCODER_PPR;
     }
 
-    public double getRightVelocity() {
-        // TODO: Convert this to inches, currently just rotations
+    public double getLeftEncoderDistance() {
+        return rotationsToInches(getLeftEncoderRotations());
+    }
+
+    public double getRightEncoderDistance() {
+        return rotationsToInches(getRightEncoderRotations());
+    }
+
+    public double getRightVelocityNativeUnits() {
         return mRightMaster.getSelectedSensorVelocity(0);
     }
 
-    public double getLeftVelocity() {
-        // TODO: Convert this to inches, currently just rotations
-        return mRightMaster.getSelectedSensorVelocity(0) ;
+    public double getLeftVelocityNativeUnits() {
+        return mLeftMaster.getSelectedSensorVelocity(0) ;
+    }
+    public double getRightLinearVelocity() {
+        return rotationsToInches(getRightVelocityNativeUnits() * 10.0 / DRIVE_ENCODER_PPR);
+    }
+
+    public double getLeftLinearVelocity() {
+        return rotationsToInches(getLeftVelocityNativeUnits() *  10.0 / DRIVE_ENCODER_PPR);
+    }
+
+    public double getLinearVelocity() {
+        return (getLeftLinearVelocity() + getRightLinearVelocity()) / 2.0;
+    }
+
+    public double getAngularVelocity() {
+        return (getRightLinearVelocity() - getLeftLinearVelocity()) / Constants.kDriveWheelTrackWidthInches;
     }
 
     private void updatePathFollower() {
         DriveSignal signal = new DriveSignal(0, 0); // TODO get this from path follower
         setVelocity(signal);
+    }
+
+    private void handleAutoShift() {
+        final double linear_velocity = Math.abs(getLinearVelocity());
+        final double angular_velocity = Math.abs(getAngularVelocity());
+        if (mIsHighGear && linear_velocity < Constants.kDriveDownShiftVelocity && angular_velocity < Constants.kDriveDownShiftAngularVelocity) {
+            setHighGear(false);
+        } else if (!mIsHighGear && linear_velocity > Constants.kDriveUpShiftVelocity) {
+            setHighGear(true);
+        }
     }
 
     public synchronized void reloadGains() {

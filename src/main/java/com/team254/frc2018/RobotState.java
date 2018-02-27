@@ -109,9 +109,9 @@ public class RobotState {
 
     public void outputToSmartDashboard() {
         Pose2d odometry = getLatestFieldToVehicle().getValue();
-        SmartDashboard.putNumber("robot_pose_x", odometry.getTranslation().x());
-        SmartDashboard.putNumber("robot_pose_y", odometry.getTranslation().y());
-        SmartDashboard.putNumber("robot_pose_theta", odometry.getRotation().getDegrees());
-        SmartDashboard.putNumber("robot velocity", vehicle_velocity_measured_.dx);
+        SmartDashboard.putNumber("Robot Pose X", odometry.getTranslation().x());
+        SmartDashboard.putNumber("Robot Pose Y", odometry.getTranslation().y());
+        SmartDashboard.putNumber("Robot Pose Theta", odometry.getRotation().getDegrees());
+        SmartDashboard.putNumber("Robot Linear Velocity", vehicle_velocity_measured_.dx);
     }
 }
