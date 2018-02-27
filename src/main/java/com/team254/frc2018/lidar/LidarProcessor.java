@@ -22,8 +22,14 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
- * Stores a set amount of lidar scans. All interfacing with the lidar should be
- * done through this class.
+ * Receives LIDAR points from the {@link LidarServer}, stores a set number
+ * of scans/revolutions, and provides methods for processing the data.
+ * <p>
+ * All interfacing with the LIDAR should be done through this class.
+ * 
+ * @see Constants.kChezyLidarNumScansToStore
+ * @see doICP()
+ * @see getTowerPosition()
  */
 public class LidarProcessor implements Loop {
     private static LidarProcessor mInstance = null;

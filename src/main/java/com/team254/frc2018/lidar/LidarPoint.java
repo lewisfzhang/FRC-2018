@@ -8,7 +8,8 @@ import com.team254.lib.geometry.Pose2d;
 import com.team254.lib.geometry.Translation2d;
 
 /**
- * Represents a single point from the lidar
+ * Represents a single point from the LIDAR sensor. This consists of
+ * an angle, distance, and timestamp.
  */
 class LidarPoint {
     public final double timestamp;
@@ -32,6 +33,11 @@ class LidarPoint {
         this.distance = distance * MM_TO_IN;
     }
 
+    /**
+     * Convert this point into a {@link Translation2d} in cartesian (x, y)
+     * coordinates. The point's timestamp is used along with the {@link RobotState}
+     * to take into account the robot's pose at the time the point was detected.
+     */
     public Translation2d toCartesian() {
         // convert the polar coords to cartesian coords
         double radians = Math.toRadians(angle);

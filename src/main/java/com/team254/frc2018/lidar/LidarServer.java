@@ -8,6 +8,15 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+/**
+ * Starts the <code>chezy_lidar</code> C++ program, parses its
+ * output, and feeds the LIDAR points to the {@link LidarProcessor}.
+ * <p>
+ * Once started, a separate thread reads the stdout of the
+ * <code>chezy_lidar</code> process and parses the (angle, distance)
+ * values in each line. Each resulting {@link LidarPoint} is passed
+ * to {@link LidarProcessor.addPoint(...)}.
+ */
 public class LidarServer {
     private static LidarServer mInstance = null;
     private final LidarProcessor mLidarProcessor = LidarProcessor.getInstance();
