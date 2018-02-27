@@ -10,6 +10,8 @@ import com.team254.frc2018.loops.Loop;
 import com.team254.lib.geometry.Pose2d;
 import com.team254.lib.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.Iterator;
@@ -60,6 +62,10 @@ public class LidarProcessor implements Loop {
         try {
             if (newScan) { // crosses the 360-0 threshold. start a new scan
                 prev_timestamp = Timer.getFPGATimestamp();
+                
+                Translation2d towerPos = getTowerPosition();
+                SmartDashboard.putNumber("towerPosX", towerPos.x());
+                SmartDashboard.putNumber("towerPosY", towerPos.y());
 
                 mScans.add(new LidarScan());
                 if (mScans.size() > Constants.kChezyLidarNumScansToStore) {
