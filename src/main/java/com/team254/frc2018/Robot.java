@@ -94,6 +94,9 @@ public class Robot extends IterativeRobot {
             CrashTracker.logAutoInit();
 
             RobotState.getInstance().reset(Timer.getFPGATimestamp(), Pose2d.identity());
+
+            Drive.getInstance().zeroSensors();
+            FollowerWheels.getInstance().zeroSensors();
             mInfrastructure.setIsDuringAuto(true);
 
             mEnabledLooper.start();
