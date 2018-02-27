@@ -24,8 +24,8 @@ public class SuperstructureConstants {
     public final static double kElevatorJogUpThrottle = 24.0 / 50.0;
     public final static double kElevatorJogDownThrottle = -24.0 / 50.0;
 
-    public final static double kWristJogUpThrottle = 90.0 / 50.0;
-    public final static double kWristJogDownThrottle = -90.0 / 50.0;
+    public final static double kWristJogUpThrottle = 90.0 / 25.0;
+    public final static double kWristJogDownThrottle = -90.0 / 25.0;
 
     // In inches, the height to use the kPlacingHighAngle.
     public final static double kPlacingHighThreshold = 5.0;

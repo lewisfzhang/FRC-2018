@@ -140,6 +140,10 @@ public class Intake extends Subsystem {
         return getLeftBannerSensor() || getRightBannerSensor();
     }
 
+    public synchronized boolean definitelyHasCube() {
+        return getLeftBannerSensor() && getRightBannerSensor();
+    }
+
     private boolean getLeftBannerSensor() {
         return mCanifier.getLeftBannerSensor();
     }

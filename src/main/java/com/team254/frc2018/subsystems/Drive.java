@@ -10,6 +10,7 @@ import com.team254.frc2018.Constants;
 import com.team254.frc2018.loops.Loop;
 import com.team254.frc2018.loops.Looper;
 import com.team254.lib.drivers.TalonSRXFactory;
+import com.team254.lib.drivers.TalonSRXUtil;
 import com.team254.lib.geometry.Rotation2d;
 import com.team254.lib.util.DriveSignal;
 import com.team254.lib.drivers.TalonSRXChecker;
@@ -208,7 +209,7 @@ public class Drive extends Subsystem {
     }
 
     public void setHeading(Rotation2d heading) {
-        mPigeon.setFusedHeading(0, 0);
+        mPigeon.setFusedHeading(heading.getDegrees(), 10);
     }
 
     public synchronized void setBrakeMode(boolean on) {
