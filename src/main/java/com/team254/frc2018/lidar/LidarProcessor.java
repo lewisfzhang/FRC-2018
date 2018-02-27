@@ -55,8 +55,7 @@ public class LidarProcessor implements Loop {
     private LidarProcessor() {
         mScans.add(new LidarScan());
         try {
-            String dateStr = new SimpleDateFormat("MM-dd-HH_mm_ss").format(new Date());
-            dataLogFile = new PrintWriter(Constants.kLidarLogPath+dateStr+".txt");
+            dataLogFile = new PrintWriter(Constants.kLidarLogPath);
         } catch (FileNotFoundException e) {
             System.err.println("Failed to open lidar log file:");
             e.printStackTrace();
