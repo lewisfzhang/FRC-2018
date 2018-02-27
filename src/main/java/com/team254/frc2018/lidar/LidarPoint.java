@@ -47,24 +47,6 @@ class LidarPoint {
         }
 
         robotPose.transformBy(Pose2d.fromTranslation(cartesian));
-        cartesian = robotPose.getTranslation();
-
-        // test for exclusion and return
-        if (excludePoint(cartesian.x(), cartesian.y())) {
-            return null;
-        }
-        return cartesian;
-    }
-
-
-    private static final double FIELD_WIDTH = 27*12, FIELD_HEIGHT = 54*12;
-    private static final double RECT_RX = FIELD_WIDTH/5, RECT_RY = FIELD_HEIGHT/2;
-    private static final double FIELD_CX = FIELD_WIDTH/2, FIELD_CY = FIELD_HEIGHT/2;
-    private static final double RECT_X_MIN = FIELD_CX-RECT_RX, RECT_X_MAX = FIELD_CX+RECT_RX,
-                                RECT_Y_MIN = FIELD_CY-RECT_RY, RECT_Y_MAX = FIELD_CY+RECT_RY;
-
-    public static boolean excludePoint(double x, double y) {
-        return x < RECT_X_MIN || x > RECT_X_MAX ||
-               y < RECT_Y_MIN || y > RECT_Y_MAX;
+        return robotPose.getTranslation();
     }
 }

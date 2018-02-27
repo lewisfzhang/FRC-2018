@@ -59,8 +59,10 @@ public class LidarProcessor implements Loop {
 
     public void addPoint(LidarPoint point, boolean newScan) {
         SmartDashboard.putNumber("LIDAR last_angle", point.angle);
+        
         Translation2d cartesian = point.toCartesian();
         dataLogFile.println(point.angle+" "+point.distance+" "+cartesian.x()+" "+cartesian.y());
+        
         lock.writeLock().lock();
         try {
             if (newScan) { // crosses the 360-0 threshold. start a new scan
@@ -79,12 +81,23 @@ public class LidarProcessor implements Loop {
                 }
             }
             
-            if (cartesian != null) {
+            if (!excludePoint(cartesian.x(), cartesian.y())) {
                 getCurrentScan().addPoint(new Point(cartesian), point.timestamp);
             }
         } finally {
             lock.writeLock().unlock();
         }
+    }
+    
+    private static final double FIELD_WIDTH = 27*12, FIELD_HEIGHT = 54*12;
+    private static final double RECT_RX = FIELD_WIDTH/5, RECT_RY = FIELD_HEIGHT/2;
+    private static final double FIELD_CX = FIELD_WIDTH/2, FIELD_CY = FIELD_HEIGHT/2;
+    private static final double RECT_X_MIN = FIELD_CX-RECT_RX, RECT_X_MAX = FIELD_CX+RECT_RX,
+                                RECT_Y_MIN = FIELD_CY-RECT_RY, RECT_Y_MAX = FIELD_CY+RECT_RY;
+    
+    private static boolean excludePoint(double x, double y) {
+        return x < RECT_X_MIN || x > RECT_X_MAX ||
+               y < RECT_Y_MIN || y > RECT_Y_MAX;
     }
 
     private LidarScan getCurrentScan() {
