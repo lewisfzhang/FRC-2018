@@ -14,6 +14,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -48,11 +50,12 @@ public class LidarProcessor implements Loop {
     private LidarProcessor() {
         mScans.add(new LidarScan());
         try {
-			dataLogFile = new PrintWriter(Constants.kLidarLogPath);
-		} catch (FileNotFoundException e) {
+            String dateStr = new SimpleDateFormat("MM-dd-HH_mm_ss").format(new Date());
+            dataLogFile = new PrintWriter(Constants.kLidarLogPath+dateStr+".txt");
+        } catch (FileNotFoundException e) {
             System.err.println("Failed to open lidar log file:");
             e.printStackTrace();
-		}
+        }
     }
 
     public void addPoint(LidarPoint point, boolean newScan) {
