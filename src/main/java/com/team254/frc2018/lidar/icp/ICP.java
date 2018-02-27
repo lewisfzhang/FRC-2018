@@ -1,5 +1,7 @@
 package com.team254.frc2018.lidar.icp;
 
+import com.team254.frc2018.Constants;
+
 public class ICP {
     
     public static final double OUTLIER_THRESH = 1.0; // multiplier of the mean distance
@@ -86,14 +88,20 @@ public class ICP {
             final double tx = mean_x_a - mean_x_b * ccos + mean_y_b * csin;
             final double ty = mean_y_a - mean_x_b * csin - mean_y_b * ccos;
             
-            if (theta==trans.theta && tx==trans.tx && ty==trans.ty) {
-                // converged; double values have stopped changing
+            Transform prevTrans = trans;
+            trans = new Transform(theta, tx, ty, csin, ccos);
+            if (isConverged(prevTrans, trans)) {
                 break;
             }
-            trans = new Transform(theta, tx, ty, csin, ccos);
         }
         
         return trans;
+    }
+    
+    private boolean isConverged(Transform prev, Transform cur) {
+        return Math.abs(prev.theta - cur.theta) < Constants.kLidarICPAngleEpsilon &&
+               Math.abs(prev.tx - cur.tx)       < Constants.kLidarICPTranslationEpsilon &&
+               Math.abs(prev.ty - cur.ty)       < Constants.kLidarICPTranslationEpsilon;
     }
     
 }

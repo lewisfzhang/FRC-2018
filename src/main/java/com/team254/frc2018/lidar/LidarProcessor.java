@@ -63,7 +63,10 @@ public class LidarProcessor implements Loop {
             if (newScan) { // crosses the 360-0 threshold. start a new scan
                 prev_timestamp = Timer.getFPGATimestamp();
                 
+                long start = System.nanoTime();
                 Translation2d towerPos = getTowerPosition();
+                long end = System.nanoTime();
+                SmartDashboard.putNumber("towerPos_ms", (end-start)/1000000);
                 SmartDashboard.putNumber("towerPosX", towerPos.x());
                 SmartDashboard.putNumber("towerPosY", towerPos.y());
 
