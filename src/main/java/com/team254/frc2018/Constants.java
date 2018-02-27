@@ -11,16 +11,16 @@ import java.util.Enumeration;
  * determined through calibrations.
  */
 public class Constants {
-    public static final double kLooperDt = 0.005;
+    public static final double kLooperDt = 0.01;
 
     /* ROBOT PHYSICAL CONSTANTS */
 
     // Wheels
     public static final double kFollowerWheelTrackWidthInches = 25.624;
-    public static final double kFollowerWheelBackOffset = 14.19; // Tune me!
-    public static final double kFollowerWheelDiameterInches = 2.28;  // Tune me!
-    public static final double kFollowerWheelDiameterInchesForwards = 2.19809459784;  // Tune me!
-    public static final double kFollowerWheelDiameterInchesReverse = 2.36983336671;  // Tune me!
+    public static final double kFollowerWheelBackOffset = 14.19;
+    public static final double kFollowerWheelDiameterInches = 2.28;
+    public static final double kFollowerWheelDiameterInchesForwards = 2.19809459784;
+    public static final double kFollowerWheelDiameterInchesReverse = 2.36983336671;
     public static final double kDriveWheelTrackWidthInches = 26.0;  // TODO: measure
     public static final double kDriveWheelDiameterInches = 4; // TODO: measure
     public static final double kDriveWheelDiameterInchesForwards = 3.8914785807;
