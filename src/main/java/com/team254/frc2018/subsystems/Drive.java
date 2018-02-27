@@ -251,7 +251,7 @@ public class Drive extends Subsystem {
 
     @Override
     public void zeroSensors() {
-        setHeading(new Rotation2d());
+        setHeading(Rotation2d.identity());
         resetEncoders();
         mAutoShift = true;
     }
