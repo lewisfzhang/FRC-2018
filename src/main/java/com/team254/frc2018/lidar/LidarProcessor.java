@@ -44,7 +44,7 @@ public class LidarProcessor implements Loop {
     private RobotState mRobotState = RobotState.getInstance();
 
     private LinkedList<LidarScan> mScans = new LinkedList<>();
-    private double prev_timestamp = Double.MAX_VALUE;
+    private double prev_timestamp;
 
     private ICP icp = new ICP(ReferenceModel.TOWER, 100);
 
@@ -182,18 +182,18 @@ public class LidarProcessor implements Loop {
 
     @Override
     public void onStart(double timestamp) {
-        setPrevTimestamp(Double.MAX_VALUE);
+        setPrevTimestamp(Double.NEGATIVE_INFINITY);
     }
 
     @Override
     public void onLoop(double timestamp) {
         LidarServer lidarServer = LidarServer.getInstance();
-        if (Timer.getFPGATimestamp() - getPrevTimestamp() > Constants.kChezyLidarRestartTime) {
+        if (timestamp - getPrevTimestamp() > Constants.kChezyLidarRestartTime) {
             if (lidarServer.isRunning()) {
                 System.err.println("Lidar timed out. Restarting");
                 lidarServer.stop();
             } else if (!lidarServer.isEnding() && lidarServer.start()) {
-                setPrevTimestamp(Timer.getFPGATimestamp());
+                setPrevTimestamp(timestamp);
             }
         }
     }
