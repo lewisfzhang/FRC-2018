@@ -4,6 +4,7 @@ import com.ctre.phoenix.ErrorCode;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.sensors.PigeonIMU;
 import com.team254.frc2018.Constants;
@@ -141,6 +142,7 @@ public class Drive extends Subsystem {
         reloadGains();
 
         mPigeon = new PigeonIMU(mLeftSlaveB);
+        mLeftSlaveB.setStatusFramePeriod(StatusFrameEnhanced.Status_11_UartGadgeteer, 10, 10);
 
         // Force a solenoid message.
         mIsHighGear = true;
@@ -268,12 +270,8 @@ public class Drive extends Subsystem {
     }
 
     public synchronized void resetEncoders() {
-        mLeftMaster.getSensorCollection().setQuadraturePosition(0, 0);
         mLeftMaster.setSelectedSensorPosition(0, 0, 0);
-        mRightMaster.getSensorCollection().setQuadraturePosition(0, 0);
         mRightMaster.setSelectedSensorPosition(0, 0, 0);
-        mLeftSlaveA.setSelectedSensorPosition(0, 0, 0);
-        mRightSlaveA.setSelectedSensorPosition(0, 0, 0);
         mLeftDistance = 0.0;
         mRightDistance = 0.0;
         mLeftTicks = 0.0;
