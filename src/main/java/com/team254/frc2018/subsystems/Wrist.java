@@ -321,7 +321,7 @@ public class Wrist extends Subsystem {
             DriverStation.reportError("Wrist Talon Reset! ",false);
         }
         StickyFaults faults = new StickyFaults();
-        mMaster.getStickyFaults(StickyFaults faults);
+        mMaster.getStickyFaults(faults);
         if (faults.hasAnyFault()) {
             DriverStation.reportError("Wrist Talon Fault! " + faults.toString(),false);
         }
