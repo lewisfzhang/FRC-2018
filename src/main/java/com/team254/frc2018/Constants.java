@@ -23,9 +23,17 @@ public class Constants {
     public static final double kFollowerWheelDiameterInchesReverse = 2.34640434375;
     public static final double kDriveWheelTrackWidthInches = 26.0;  // TODO: measure
     public static final double kDriveWheelDiameterInches = 4; // TODO: measure
+    public static final double kDriveWheelRadiusInches = kDriveWheelDiameterInches / 2.0; // TODO: measure
     public static final double kDriveWheelDiameterInchesForwards = 3.82694495937;
     public static final double kDriveWheelDiameterInchesReverse = 3.94000307575;
     public static final double kTrackScrubFactor = 1.0;  // Tune me!
+
+    // Tuned dynamics
+    public static final double kRobotLinearInertia = 60.0;  // kg TODO tune
+    public static final double kRobotAngularInertia = 80.0;  // kg m TODO tune
+    public static final double kDriveVIntercept = 0.9;  // V
+    public static final double kDriveKv = 0.15;  // V per rad/s
+    public static final double kDriveKa = 0.02;  // V per rad/s^2
 
     // Geometry
     public static final double kCenterToFrontBumperDistance = 16.33;
