@@ -14,13 +14,13 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -176,12 +176,35 @@ public class LidarProcessor implements Loop {
         }
         return new Point(sumX/n, sumY/n);
     }
+    
+    private static final double BUCKET_SIZE = 3.0; // inches
+    
+    /** Cantor pairing function (to bucket & hash two doubles) */
+    private int getBucket(double x, double y) {
+        int ix = (int)(x/BUCKET_SIZE);
+        int iy = (int)(y/BUCKET_SIZE);
+        int a = ix >= 0? 2*ix : -2*ix - 1;
+        int b = iy >= 0? 2*iy : -2*iy - 1;
+        int sum = a + b;
+        return sum*(sum+1)/2 + a;
+    }
+    
+    /** Returns a list of points that have been thinned roughly uniformly. */
+    private ArrayList<Point> getCulledPoints() {
+        ArrayList<Point> list = new ArrayList<>();
+        HashSet<Integer> buckets = new HashSet<>();
+        for (Point p : allPoints) {
+            if (buckets.add(getBucket(p.x, p.y)))
+                list.add(p);
+        }
+        return list;
+    }
 
     public Pose2d doICP() {
         lock.readLock().lock();
         try {
             Pose2d guess = mRobotState.getFieldToLidar(getCurrentScan().getTimestamp());
-            return icp.doICP(allPoints, new Transform(guess).inverse()).inverse().toPose2d();
+            return icp.doICP(getCulledPoints(), new Transform(guess).inverse()).inverse().toPose2d();
         } finally {
             lock.readLock().unlock();
         }
@@ -191,7 +214,7 @@ public class LidarProcessor implements Loop {
         lock.readLock().lock();
         try {
             Point avg = getAveragePoint();
-            Transform trans = icp.doICP(allPoints, new Transform(0, avg.x, avg.y));
+            Transform trans = icp.doICP(getCulledPoints(), new Transform(0, avg.x, avg.y));
             return trans.apply(icp.reference).getMidpoint().toTranslation2d();
         } finally {
             lock.readLock().unlock();
