@@ -12,14 +12,15 @@ import com.team254.lib.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.io.DataOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * Receives LIDAR points from the {@link LidarServer}, stores a set number
@@ -48,16 +49,30 @@ public class LidarProcessor implements Loop {
 
     private ICP icp = new ICP(ReferenceModel.TOWER, 100);
 
-    private PrintWriter dataLogFile;
+    private DataOutputStream dataLogFile;
 
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
     private LidarProcessor() {
         mScans.add(new LidarScan());
         try {
-            dataLogFile = new PrintWriter(Constants.kLidarLogPath);
-        } catch (FileNotFoundException e) {
+            OutputStream fileOut = new FileOutputStream(Constants.kLidarLogPath);
+            dataLogFile = new DataOutputStream(new GZIPOutputStream(fileOut));
+        } catch (IOException e) {
             System.err.println("Failed to open lidar log file:");
+            e.printStackTrace();
+        }
+    }
+
+    private double lastAngle = 0;
+    private void logPoint(double angle, double dist, double x, double y) {
+        try {
+            dataLogFile.writeInt((int)((angle-lastAngle)*100));
+            dataLogFile.writeInt((int)(dist*256));
+            dataLogFile.writeInt((int)(x*256));
+            dataLogFile.writeInt((int)(y*256));
+            lastAngle = angle;
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -66,7 +81,7 @@ public class LidarProcessor implements Loop {
         SmartDashboard.putNumber("LIDAR last_angle", point.angle);
         
         Translation2d cartesian = point.toCartesian();
-        dataLogFile.println(point.angle+" "+point.distance+" "+cartesian.x()+" "+cartesian.y());
+        logPoint(point.angle, point.distance, cartesian.x(), cartesian.y());
         
         lock.writeLock().lock();
         try {
