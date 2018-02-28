@@ -3,8 +3,8 @@ package com.team254.frc2018.subsystems;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.team254.frc2018.Constants;
+import com.team254.frc2018.loops.ILooper;
 import com.team254.frc2018.loops.Loop;
-import com.team254.frc2018.loops.Looper;
 import com.team254.frc2018.statemachines.IntakeStateMachine;
 import com.team254.frc2018.states.IntakeState;
 import com.team254.lib.drivers.TalonSRXChecker;
@@ -20,22 +20,11 @@ public class Intake extends Subsystem {
     private final static boolean kClamped = false;
 
     private static Intake mInstance;
-
-    public synchronized static Intake getInstance() {
-        if (mInstance == null) {
-            mInstance = new Intake();
-        }
-        return mInstance;
-    }
-
     private final Solenoid mCloseSolenoid, mClampSolenoid; //open->false, false; close->true, false; clamp->true, true;
     private final TalonSRX mLeftMaster, mRightMaster;
-
     private final CarriageCanifier mCanifier = CarriageCanifier.getInstance();
-
     private IntakeStateMachine.WantedAction mWantedAction = IntakeStateMachine.WantedAction.WANT_MANUAL;
     private IntakeState.JawState mJawState;
-
     private IntakeState mCurrentState = new IntakeState();
     private IntakeStateMachine mStateMachine = new IntakeStateMachine();
 
@@ -54,6 +43,13 @@ public class Intake extends Subsystem {
         mRightMaster.setInverted(false);
         mRightMaster.configVoltageCompSaturation(12.0, Constants.kLongCANTimeoutMs);
         mRightMaster.enableVoltageCompensation(true);
+    }
+
+    public synchronized static Intake getInstance() {
+        if (mInstance == null) {
+            mInstance = new Intake();
+        }
+        return mInstance;
     }
 
     @Override
@@ -79,7 +75,7 @@ public class Intake extends Subsystem {
     }
 
     @Override
-    public void registerEnabledLoops(Looper enabledLooper) {
+    public void registerEnabledLoops(ILooper enabledLooper) {
         Loop loop = new Loop() {
 
 
@@ -92,7 +88,8 @@ public class Intake extends Subsystem {
             public void onLoop(double timestamp) {
 
                 synchronized (Intake.this) {
-                    IntakeState newState = mStateMachine.update(Timer.getFPGATimestamp(), mWantedAction, getCurrentState());
+                    IntakeState newState = mStateMachine.update(Timer.getFPGATimestamp(), mWantedAction,
+                            getCurrentState());
                     updateActuatorFromState(newState);
                 }
 
@@ -193,6 +190,16 @@ public class Intake extends Subsystem {
 
     public synchronized void clampJaw() {
         mStateMachine.setWantedJawState(IntakeState.JawState.CLAMPED);
+    }
+
+    @Override
+    public void readPeriodicInputs() {
+        mCanifier.readPeriodicInputs();
+    }
+
+    @Override
+    public void writePeriodicOutputs() {
+        mCanifier.writePeriodicOutputs();
     }
 
     @Override

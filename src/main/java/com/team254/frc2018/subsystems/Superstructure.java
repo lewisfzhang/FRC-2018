@@ -1,12 +1,11 @@
 package com.team254.frc2018.subsystems;
 
 import com.team254.frc2018.Robot;
+import com.team254.frc2018.loops.ILooper;
 import com.team254.frc2018.loops.Loop;
-import com.team254.frc2018.loops.Looper;
 import com.team254.frc2018.statemachines.SuperstructureStateMachine;
 import com.team254.frc2018.states.IntakeState;
 import com.team254.frc2018.states.SuperstructureCommand;
-import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.frc2018.states.SuperstructureState;
 
 /**
@@ -25,6 +24,13 @@ import com.team254.frc2018.states.SuperstructureState;
 public class Superstructure extends Subsystem {
 
     static Superstructure mInstance = null;
+    private SuperstructureState mState = new SuperstructureState();
+    private Elevator mElevator = Elevator.getInstance();
+    private Wrist mWrist = Wrist.getInstance();
+    private Intake mIntake = Intake.getInstance();
+    private SuperstructureStateMachine mStateMachine = new SuperstructureStateMachine();
+    private SuperstructureStateMachine.WantedAction mWantedAction =
+            SuperstructureStateMachine.WantedAction.IDLE;
 
     public synchronized static Superstructure getInstance() {
         if (mInstance == null) {
@@ -32,15 +38,6 @@ public class Superstructure extends Subsystem {
         }
         return mInstance;
     }
-
-    private SuperstructureState mState = new SuperstructureState();
-    private Elevator mElevator = Elevator.getInstance();
-    private Wrist mWrist = Wrist.getInstance();
-    private Intake mIntake = Intake.getInstance();
-
-    private SuperstructureStateMachine mStateMachine = new SuperstructureStateMachine();
-    private SuperstructureStateMachine.WantedAction mWantedAction =
-            SuperstructureStateMachine.WantedAction.IDLE;
 
     @Override
     public boolean checkSystem() {
@@ -91,7 +88,7 @@ public class Superstructure extends Subsystem {
     }
 
     @Override
-    public void registerEnabledLoops(Looper enabledLooper) {
+    public void registerEnabledLoops(ILooper enabledLooper) {
         enabledLooper.register(new Loop() {
             private SuperstructureCommand mCommand;
 

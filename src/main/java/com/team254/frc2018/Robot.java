@@ -1,10 +1,9 @@
 package com.team254.frc2018;
 
 import com.team254.frc2018.auto.AutoModeExecuter;
-import com.team254.frc2018.auto.modes.CharacterizeHighGearStraight;
 import com.team254.frc2018.auto.modes.TestIntakeThenScore;
 import com.team254.frc2018.loops.Looper;
-import com.team254.frc2018.loops.RobotStateEstimator;
+import com.team254.frc2018.subsystems.RobotStateEstimator;
 import com.team254.frc2018.statemachines.IntakeStateMachine;
 import com.team254.frc2018.statemachines.SuperstructureStateMachine;
 import com.team254.frc2018.states.SuperstructureConstants;
@@ -21,16 +20,19 @@ import java.util.Arrays;
 
 public class Robot extends IterativeRobot {
     private Looper mEnabledLooper = new Looper();
+    private Looper mDisabledLooper = new Looper();
     private CheesyDriveHelper mCheesyDriveHelper = new CheesyDriveHelper();
     private IControlBoard mControlBoard = ControlBoard.getInstance();
 
     private final SubsystemManager mSubsystemManager = new SubsystemManager(
             Arrays.asList(
+                    RobotStateEstimator.getInstance(),
                     Drive.getInstance(),
                     FollowerWheels.getInstance(),
-                    Intake.getInstance(),
                     Superstructure.getInstance(),
+                    Intake.getInstance(),
                     Wrist.getInstance(),
+                    Elevator.getInstance(),
                     Infrastructure.getInstance()
             )
     );
@@ -56,7 +58,7 @@ public class Robot extends IterativeRobot {
             CrashTracker.logRobotInit();
 
             mSubsystemManager.registerEnabledLoops(mEnabledLooper);
-            mEnabledLooper.register(RobotStateEstimator.getInstance());
+            mSubsystemManager.registerDisabledLoops(mDisabledLooper);
 
             Elevator.getInstance().zeroSensors();
 
@@ -74,12 +76,13 @@ public class Robot extends IterativeRobot {
 
         try {
             CrashTracker.logDisabledInit();
+            mEnabledLooper.stop();
 
             Drive.getInstance().zeroSensors();
             FollowerWheels.getInstance().zeroSensors();
             RobotState.getInstance().reset(Timer.getFPGATimestamp(), Pose2d.identity());
 
-            mEnabledLooper.stop();
+            mDisabledLooper.start();
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
             throw t;
@@ -92,6 +95,7 @@ public class Robot extends IterativeRobot {
 
         try {
             CrashTracker.logAutoInit();
+            mDisabledLooper.stop();
 
             RobotState.getInstance().reset(Timer.getFPGATimestamp(), Pose2d.identity());
 
@@ -99,11 +103,11 @@ public class Robot extends IterativeRobot {
             FollowerWheels.getInstance().zeroSensors();
             mInfrastructure.setIsDuringAuto(true);
 
-            mEnabledLooper.start();
-
             AutoModeExecuter mAutoModeExecuter = new AutoModeExecuter();
             mAutoModeExecuter.setAutoMode(new TestIntakeThenScore());
             mAutoModeExecuter.start();
+
+            mEnabledLooper.start();
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
             throw t;
@@ -116,6 +120,8 @@ public class Robot extends IterativeRobot {
 
         try {
             CrashTracker.logTeleopInit();
+            mDisabledLooper.stop();
+
             FollowerWheels.getInstance().zeroSensors();
             mInfrastructure.setIsDuringAuto(false);
 

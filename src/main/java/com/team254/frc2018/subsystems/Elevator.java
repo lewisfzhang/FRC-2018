@@ -4,9 +4,8 @@ import com.ctre.phoenix.ParamEnum;
 import com.ctre.phoenix.motorcontrol.*;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.team254.frc2018.Constants;
-import com.team254.frc2018.loops.Looper;
-import com.team254.lib.drivers.TalonSRXFactory;
 import com.team254.lib.drivers.TalonSRXChecker;
+import com.team254.lib.drivers.TalonSRXFactory;
 import com.team254.lib.drivers.TalonSRXUtil;
 import com.team254.lib.util.Util;
 import edu.wpi.first.wpilibj.Solenoid;
@@ -16,27 +15,18 @@ import java.util.ArrayList;
 
 // Top Soft limit : -151288
 public class Elevator extends Subsystem {
+    public static final double kHomePositionInches = 5.0;
     private static final int kHighGearSlot = 0;
     private static final int kLowGearSlot = 1;
-    private final int kReverseSoftLimit = -99000; // Encoder ticks (used to be -151000)
-    private final int kForwardSoftLimit = 500; // Encoder ticks.  TODO set to ~0 once skipping is fixed.
-    private final double kEncoderTicksPerInch = -1271.0;
-    public static final double kHomePositionInches = 5.0;
-
+    private static final int kReverseSoftLimit = -99000; // Encoder ticks (used to be -151000)
+    private static final int kForwardSoftLimit = 500; // Encoder ticks.  TODO set to ~0 once skipping is fixed.
+    private static final double kEncoderTicksPerInch = -1271.0;
     private static Elevator mInstance = null;
-
-    public synchronized static Elevator getInstance() {
-        if (mInstance == null) {
-            mInstance = new Elevator();
-        }
-        return mInstance;
-    }
-
     private final TalonSRX mMaster, mRightSlave, mLeftSlaveA, mLeftSlaveB;
-
     private final Solenoid mShifter;
-
-    private double mLastTrajectoryPoint = Double.NaN;
+    private PeriodicInputs mPeriodicInputs = new PeriodicInputs();
+    private PeriodicOutputs mPeriodicOutputs = new PeriodicOutputs();
+    private ElevatorControlState mElevatorControlState = ElevatorControlState.MOTION_MAGIC.OPEN_LOOP;
 
     private Elevator() {
         mMaster = TalonSRXFactory.createDefaultTalon(Constants.kElevatorMasterId);
@@ -44,31 +34,31 @@ public class Elevator extends Subsystem {
         TalonSRXUtil.checkError(
                 mMaster.configSelectedFeedbackSensor(
                         FeedbackDevice.CTRE_MagEncoder_Relative, 0, 100),
-            "Could not detect elevator encoder: ");
+                "Could not detect elevator encoder: ");
 
         TalonSRXUtil.checkError(
                 mMaster.configForwardLimitSwitchSource(
                         LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyOpen,
                         Constants.kLongCANTimeoutMs),
-            "Could not set forward (down) limit switch elevator: ");
+                "Could not set forward (down) limit switch elevator: ");
 
-         TalonSRXUtil.checkError(
-                 mMaster.configForwardSoftLimitThreshold(
-                         kForwardSoftLimit, Constants.kLongCANTimeoutMs),
-            "Could not set forward (down) soft limit switch elevator: ");
+        TalonSRXUtil.checkError(
+                mMaster.configForwardSoftLimitThreshold(
+                        kForwardSoftLimit, Constants.kLongCANTimeoutMs),
+                "Could not set forward (down) soft limit switch elevator: ");
 
-         TalonSRXUtil.checkError(
-                 mMaster.configForwardSoftLimitEnable(true, Constants.kLongCANTimeoutMs),
-                 "Could not enable forward (down) soft limit switch elevator: ");
+        TalonSRXUtil.checkError(
+                mMaster.configForwardSoftLimitEnable(true, Constants.kLongCANTimeoutMs),
+                "Could not enable forward (down) soft limit switch elevator: ");
 
-         TalonSRXUtil.checkError(
-                 mMaster.configVoltageCompSaturation(12.0, Constants.kLongCANTimeoutMs),
-                 "Could not set voltage compensation saturation elevator: ");
+        TalonSRXUtil.checkError(
+                mMaster.configVoltageCompSaturation(12.0, Constants.kLongCANTimeoutMs),
+                "Could not set voltage compensation saturation elevator: ");
 
-         TalonSRXUtil.checkError(
-                 mMaster.configReverseSoftLimitThreshold(
-                         kReverseSoftLimit, Constants.kLongCANTimeoutMs),
-                 "Could not set reverse (up) soft limit switch elevator: ");
+        TalonSRXUtil.checkError(
+                mMaster.configReverseSoftLimitThreshold(
+                        kReverseSoftLimit, Constants.kLongCANTimeoutMs),
+                "Could not set reverse (up) soft limit switch elevator: ");
 
         TalonSRXUtil.checkError(
                 mMaster.configReverseSoftLimitEnable(
@@ -82,8 +72,8 @@ public class Elevator extends Subsystem {
                 "Could not set elevator kp: ");
 
         TalonSRXUtil.checkError(
-              mMaster.config_kI(
-                      kHighGearSlot, Constants.kElevatorHighGearKi, Constants.kLongCANTimeoutMs),
+                mMaster.config_kI(
+                        kHighGearSlot, Constants.kElevatorHighGearKi, Constants.kLongCANTimeoutMs),
                 "Could not set elevator ki: ");
 
         TalonSRXUtil.checkError(
@@ -96,30 +86,30 @@ public class Elevator extends Subsystem {
                         kHighGearSlot, Constants.kElevatorHighGearKf, Constants.kLongCANTimeoutMs),
                 "Could not set elevator kf: ");
 
-         TalonSRXUtil.checkError(
-                 mMaster.configMaxIntegralAccumulator(
-                         kHighGearSlot, Constants.kElevatorHighGearMaxIntegralAccumulator, Constants.kLongCANTimeoutMs),
-            "Could not set elevator max integral: ");
+        TalonSRXUtil.checkError(
+                mMaster.configMaxIntegralAccumulator(
+                        kHighGearSlot, Constants.kElevatorHighGearMaxIntegralAccumulator, Constants.kLongCANTimeoutMs),
+                "Could not set elevator max integral: ");
 
         TalonSRXUtil.checkError(
                 mMaster.config_IntegralZone(
                         kHighGearSlot, Constants.kElevatorHighGearIZone, Constants.kLongCANTimeoutMs),
-            "Could not set elevator i zone: ");
+                "Could not set elevator i zone: ");
 
         TalonSRXUtil.checkError(
                 mMaster.configAllowableClosedloopError(
                         kHighGearSlot, Constants.kElevatorHighGearDeadband, Constants.kLongCANTimeoutMs),
-            "Could not set elevator deadband: ");
+                "Could not set elevator deadband: ");
 
         TalonSRXUtil.checkError(
                 mMaster.configMotionAcceleration(
                         Constants.kElevatorHighGearAcceleration, Constants.kLongCANTimeoutMs),
-            "Could not set elevator acceleration: ");
+                "Could not set elevator acceleration: ");
 
         TalonSRXUtil.checkError(
                 mMaster.configMotionCruiseVelocity(
                         Constants.kElevatorHighGearCruiseVelocity, Constants.kLongCANTimeoutMs),
-            "Could not set elevator cruise velocity: ");
+                "Could not set elevator cruise velocity: ");
 
         TalonSRXUtil.checkError(
                 mMaster.configClosedloopRamp(
@@ -138,8 +128,8 @@ public class Elevator extends Subsystem {
 
         mMaster.enableVoltageCompensation(true);
 
-        mMaster.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0,10, 20);
-        mMaster.setStatusFramePeriod(StatusFrameEnhanced.Status_9_MotProfBuffer,10, 20);
+        mMaster.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 10, 20);
+        mMaster.setStatusFramePeriod(StatusFrameEnhanced.Status_9_MotProfBuffer, 10, 20);
 
         mMaster.setInverted(true);
         mMaster.setSensorPhase(true);
@@ -164,8 +154,16 @@ public class Elevator extends Subsystem {
         setNeutralMode(NeutralMode.Brake);
     }
 
+    public synchronized static Elevator getInstance() {
+        if (mInstance == null) {
+            mInstance = new Elevator();
+        }
+        return mInstance;
+    }
+
     public synchronized void setOpenLoop(double percentage) {
-        mMaster.set(ControlMode.PercentOutput, percentage);
+        mElevatorControlState = ElevatorControlState.OPEN_LOOP;
+        mPeriodicOutputs.output_ = percentage;
     }
 
     public synchronized void setClosedLoopPosition(double positionInchesOffGround) {
@@ -175,15 +173,13 @@ public class Elevator extends Subsystem {
     }
 
     private synchronized void setClosedLoopRawPosition(double encoderPosition) {
-        mMaster.set(ControlMode.MotionMagic, encoderPosition);
-        mLastTrajectoryPoint = encoderPosition;
+        mElevatorControlState = ElevatorControlState.MOTION_MAGIC;
+        mPeriodicOutputs.output_ = encoderPosition;
     }
 
     public synchronized boolean hasFinishedTrajectory() {
-        if (Util.epsilonEquals(mMaster.getActiveTrajectoryPosition(), mLastTrajectoryPoint, 5)) {
-            return true;
-        }
-        return false;
+        return mElevatorControlState == ElevatorControlState.MOTION_MAGIC &&
+                Util.epsilonEquals(mPeriodicInputs.active_trajectory_position_, mPeriodicOutputs.output_, 5);
     }
 
     public synchronized void setHangMode(boolean hang_mode) {
@@ -192,30 +188,30 @@ public class Elevator extends Subsystem {
 
     public synchronized double getRPM() {
         // We are using a CTRE mag encoder which is 4096 native units per revolution.
-        // GetVelocity is in native units per 100ms.
-        return mMaster.getSelectedSensorVelocity(0) * 10.0 / 4096.0 * 60.0;
+        return mPeriodicInputs.velocity_ticks_per_100ms_ * 10.0 / 4096.0 * 60.0;
     }
 
     public synchronized double getInchesOffGround() {
-        return (mMaster.getSelectedSensorPosition(0) / kEncoderTicksPerInch) + kHomePositionInches;
+        return (mPeriodicInputs.position_ticks_ / kEncoderTicksPerInch) + kHomePositionInches;
     }
 
     public synchronized double getSetpoint() {
-        return mLastTrajectoryPoint / kEncoderTicksPerInch + kHomePositionInches;
+        return mElevatorControlState == ElevatorControlState.MOTION_MAGIC ?
+                mPeriodicOutputs.output_ / kEncoderTicksPerInch + kHomePositionInches : Double.NaN;
     }
 
     @Override
     public void outputToSmartDashboard() {
-        SmartDashboard.putNumber("Elevator Output %", mMaster.getMotorOutputPercent());
+        SmartDashboard.putNumber("Elevator Output %", mPeriodicInputs.output_percent_);
         SmartDashboard.putNumber("Elevator RPM", getRPM());
-        SmartDashboard.putNumber("Elevator Error", mMaster.getClosedLoopError(0) / kEncoderTicksPerInch);
+        // SmartDashboard.putNumber("Elevator Error", mMaster.getClosedLoopError(0) / kEncoderTicksPerInch);
         SmartDashboard.putNumber("Elevator Height", getInchesOffGround());
-        SmartDashboard.putBoolean("Elevator Limit", mMaster.getSensorCollection().isFwdLimitSwitchClosed());
-        SmartDashboard.putNumber("Elevator Sensor Height", mMaster.getSelectedSensorPosition(0));
+        SmartDashboard.putBoolean("Elevator Limit", mPeriodicInputs.limit_switch_);
+        SmartDashboard.putNumber("Elevator Sensor Height", mPeriodicInputs.position_ticks_);
 
 
-        SmartDashboard.putNumber("Elevator Last Expected Trajectory", mLastTrajectoryPoint);
-        SmartDashboard.putNumber("Elevator Current Trajectory Point", mMaster.getActiveTrajectoryPosition());
+        SmartDashboard.putNumber("Elevator Last Expected Trajectory", getSetpoint());
+        SmartDashboard.putNumber("Elevator Current Trajectory Point", mPeriodicInputs.active_trajectory_position_);
         SmartDashboard.putBoolean("Elevator Has Sent Trajectory", hasFinishedTrajectory());
     }
 
@@ -226,17 +222,13 @@ public class Elevator extends Subsystem {
 
     @Override
     public void zeroSensors() {
-        mMaster.setSelectedSensorPosition(0,0, 10);
+        mMaster.setSelectedSensorPosition(0, 0, 10);
     }
 
     public synchronized void resetIfAtLimit() {
-        if (mMaster.getSensorCollection().isFwdLimitSwitchClosed()) {
+        if (mPeriodicInputs.limit_switch_) {
             zeroSensors();
         }
-    }
-
-    @Override
-    public void registerEnabledLoops(Looper enabledLooper) {
     }
 
     private void setNeutralMode(NeutralMode neutralMode) {
@@ -244,6 +236,25 @@ public class Elevator extends Subsystem {
         mLeftSlaveB.setNeutralMode(neutralMode);
         mMaster.setNeutralMode(neutralMode);
         mRightSlave.setNeutralMode(neutralMode);
+    }
+
+    @Override
+    public synchronized void readPeriodicInputs() {
+        mPeriodicInputs.position_ticks_ = mMaster.getSelectedSensorPosition(0);
+        mPeriodicInputs.velocity_ticks_per_100ms_ = mMaster.getSelectedSensorVelocity(0);
+        if (mMaster.getControlMode() == ControlMode.MotionMagic) {
+            mPeriodicInputs.active_trajectory_position_ = mMaster.getActiveTrajectoryPosition();
+        } else {
+            mPeriodicInputs.active_trajectory_position_ = Integer.MIN_VALUE;
+        }
+        mPeriodicInputs.output_percent_ = mMaster.getMotorOutputPercent();
+        mPeriodicInputs.limit_switch_ = mMaster.getSensorCollection().isFwdLimitSwitchClosed();
+    }
+
+    @Override
+    public synchronized void writePeriodicOutputs() {
+        mMaster.set(mElevatorControlState == ElevatorControlState.MOTION_MAGIC ? ControlMode.MotionMagic :
+                ControlMode.PercentOutput, mPeriodicOutputs.output_);
     }
 
     @Override
@@ -293,6 +304,23 @@ public class Elevator extends Subsystem {
         setHangMode(false);
         setNeutralMode(NeutralMode.Brake);
         return leftSide && rightSide;
+    }
+
+    private enum ElevatorControlState {
+        OPEN_LOOP,
+        MOTION_MAGIC
+    }
+
+    private static class PeriodicInputs {
+        public int position_ticks_;
+        public int velocity_ticks_per_100ms_;
+        public int active_trajectory_position_;
+        public double output_percent_;
+        public boolean limit_switch_;
+    }
+
+    private static class PeriodicOutputs {
+        public double output_;
     }
 
 }

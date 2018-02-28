@@ -1,25 +1,17 @@
 package com.team254.frc2018.subsystems;
 
 import com.team254.frc2018.Constants;
-import com.team254.frc2018.loops.Loop;
-import com.team254.frc2018.loops.Looper;
 import edu.wpi.first.wpilibj.CounterBase;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class FollowerWheels extends Subsystem {
+    public static double kMagEncoderCPR = 1024;
+    private static FollowerWheels sInstance = new FollowerWheels();
     private final Encoder mLeftFollower, mRightFollower, mRearFollower;
     private final Solenoid mDeploySolenoid;
-    public static double kMagEncoderCPR = 1024;
-    private double mLeftDistance, mRightDistance, mRearDistance;
-    private double mLeftTicks, mRightTicks, mRearTicks;
-
-    private static FollowerWheels sInstance = new FollowerWheels();
-
-    public static FollowerWheels getInstance() {
-        return sInstance;
-    }
+    private PeriodicInputs mPeriodicInputs = new PeriodicInputs();
 
     private FollowerWheels() {
         mLeftFollower = new Encoder(Constants.kFollowerLeftAChannelId, Constants.kFollowerLeftBChannelId, true,
@@ -32,11 +24,47 @@ public class FollowerWheels extends Subsystem {
                 CounterBase.EncodingType.k4X);
         mRearFollower.setName("RearFollower");
 
-        mLeftFollower.setDistancePerPulse(Math.PI * Constants.kFollowerWheelDiameterInches * (1.0 / kMagEncoderCPR));
-        mRightFollower.setDistancePerPulse(Math.PI * Constants.kFollowerWheelDiameterInches * (1.0 / kMagEncoderCPR));
-        mRearFollower.setDistancePerPulse(Math.PI * Constants.kFollowerWheelDiameterInches * (1.0 / kMagEncoderCPR));
+        mLeftFollower.setDistancePerPulse(1);
+        mRightFollower.setDistancePerPulse(1);
+        mRearFollower.setDistancePerPulse(1);
 
         mDeploySolenoid = Constants.makeSolenoidForId(Constants.kFollowerWheelSolenoid);
+    }
+
+    public static FollowerWheels getInstance() {
+        return sInstance;
+    }
+
+    @Override
+    public synchronized void readPeriodicInputs() {
+        //Left follower
+        int currentLeftTicks = mLeftFollower.getRaw();
+        double deltaLeftTicks = ((currentLeftTicks - mPeriodicInputs.left_position_ticks_) / 4096.0) * Math.PI;
+        if (deltaLeftTicks > 0.0) {
+            mPeriodicInputs.left_distance_ += deltaLeftTicks * Constants.kFollowerWheelDiameterInchesForwards;
+        } else {
+            mPeriodicInputs.left_distance_ += deltaLeftTicks * Constants.kFollowerWheelDiameterInchesReverse;
+        }
+        mPeriodicInputs.left_position_ticks_ = currentLeftTicks;
+        mPeriodicInputs.left_velocity_ticks_per_s = mLeftFollower.getRate();
+
+        //Right follower
+        int currentRightTicks = mRightFollower.getRaw();
+        double deltaRightTicks = ((currentRightTicks - mPeriodicInputs.right_position_ticks_) / 4096.0) * Math.PI;
+        if (deltaRightTicks > 0.0) {
+            mPeriodicInputs.right_distance_ += deltaRightTicks * Constants.kFollowerWheelDiameterInchesForwards;
+        } else {
+            mPeriodicInputs.right_distance_ += deltaRightTicks * Constants.kFollowerWheelDiameterInchesReverse;
+        }
+        mPeriodicInputs.right_distance_ = currentRightTicks;
+        mPeriodicInputs.right_velocity_ticks_per_s = mRightFollower.getRate();
+
+        //Back follower, just use standard distance for now.  Might want to check rotation to apply different wheel
+        // radii
+        mPeriodicInputs.rear_position_ticks_ = mRearFollower.getRaw();
+        double rearDistanceRadians = (mPeriodicInputs.rear_position_ticks_ / 4096.0) * Math.PI;
+        mPeriodicInputs.rear_distance_ = rearDistanceRadians * Constants.kFollowerWheelDiameterInches;
+        mPeriodicInputs.rear_velocity_ticks_per_s = mRearFollower.getRate();
     }
 
     @Override
@@ -50,9 +78,9 @@ public class FollowerWheels extends Subsystem {
         SmartDashboard.putNumber("Right Follower Distance", getRightDistance());
         SmartDashboard.putNumber("Rear Follower Distance", getRearDistance());
         SmartDashboard.putNumber("Follower Wheel Heading", getHeading());
-        SmartDashboard.putNumber("Left Ticks", mLeftFollower.getRaw());
-        SmartDashboard.putNumber("Right Ticks", mRightFollower.getRaw());
-        SmartDashboard.putNumber("Rear Ticks", mRearFollower.getRaw());
+        SmartDashboard.putNumber("Left Ticks", getLeftTicks());
+        SmartDashboard.putNumber("Right Ticks", getRightTicks());
+        SmartDashboard.putNumber("Rear Ticks", getRearTicks());
 
     }
 
@@ -66,57 +94,7 @@ public class FollowerWheels extends Subsystem {
         mLeftFollower.reset();
         mRearFollower.reset();
         mRightFollower.reset();
-        mLeftDistance = 0.0;
-        mRightDistance = 0.0;
-        mRearDistance = 0.0;
-        mLeftTicks = 0.0;
-        mRightTicks = 0.0;
-        mRearTicks = 0.0;
-    }
-
-    @Override
-    public void registerEnabledLoops(Looper enabledLooper) {
-        enabledLooper.register(new Loop() {
-            @Override
-            public void onStart(double timestamp) {
-                zeroSensors();
-            }
-
-            @Override
-            public void onLoop(double timestamp) {
-                synchronized (FollowerWheels.this) {
-                    //Left follower
-                    double currentLeftTicks = mLeftFollower.getRaw();
-                    double deltaLeftTicks = ((currentLeftTicks - mLeftTicks) / 4096.0) * Math.PI;
-                    if(deltaLeftTicks > 0.0) {
-                        mLeftDistance += deltaLeftTicks * Constants.kFollowerWheelDiameterInchesForwards;
-                    } else {
-                        mLeftDistance += deltaLeftTicks * Constants.kFollowerWheelDiameterInchesReverse;
-                    }
-                    mLeftTicks = currentLeftTicks;
-
-                    //Right follower
-                    double currentRightTicks = mRightFollower.getRaw();
-                    double deltaRightTicks = ((currentRightTicks - mRightTicks) / 4096.0) * Math.PI;
-                    if(deltaRightTicks > 0.0) {
-                        mRightDistance += deltaRightTicks * Constants.kFollowerWheelDiameterInchesForwards;
-                    } else {
-                        mRightDistance += deltaRightTicks * Constants.kFollowerWheelDiameterInchesReverse;
-                    }
-                    mRightTicks = currentRightTicks;
-
-                    //Back follower, just use standard distance for now.  Might want to check rotation to apply different wheel radii
-                    double rearDistanceRadians = (mRearFollower.getRaw() / 4096.0) * Math.PI;
-                    mRearDistance = rearDistanceRadians * Constants.kFollowerWheelDiameterInches;
-                }
-            }
-
-            @Override
-            public void onStop(double timestamp) {
-
-            }
-        });
-
+        mPeriodicInputs = new PeriodicInputs();
     }
 
     public void deploy() {
@@ -127,32 +105,56 @@ public class FollowerWheels extends Subsystem {
         mDeploySolenoid.set(false);
     }
 
+    public int getLeftTicks() {
+        return mPeriodicInputs.left_position_ticks_;
+    }
+
     public double getLeftDistance() {
-        return mLeftDistance;
+        return mPeriodicInputs.left_distance_;
     }
 
     public double getLeftVelocity() {
-        return mLeftFollower.getRate();
+        return mPeriodicInputs.left_velocity_ticks_per_s;
+    }
+
+    public int getRightTicks() {
+        return mPeriodicInputs.right_position_ticks_;
     }
 
     public double getRightDistance() {
-        return mRightDistance;
+        return mPeriodicInputs.right_distance_;
     }
 
     public double getRightVelocity() {
-        return mRightFollower.getRate();
+        return mPeriodicInputs.right_velocity_ticks_per_s;
+    }
+
+    public int getRearTicks() {
+        return mPeriodicInputs.rear_position_ticks_;
     }
 
     public double getRearDistance() {
-        return mRearDistance;
+        return mPeriodicInputs.rear_distance_;
     }
 
     public double getRearVelocity() {
-        return mRearFollower.getRate();
+        return mPeriodicInputs.rear_velocity_ticks_per_s;
     }
 
     public double getHeading() {
         return Math.toDegrees((getRightDistance() - getLeftDistance()) / Constants
                 .kFollowerWheelTrackWidthInches);
+    }
+
+    private static class PeriodicInputs {
+        public double left_distance_;
+        public double right_distance_;
+        public double rear_distance_;
+        public int left_position_ticks_;
+        public int right_position_ticks_;
+        public int rear_position_ticks_;
+        public double left_velocity_ticks_per_s;
+        public double right_velocity_ticks_per_s;
+        public double rear_velocity_ticks_per_s;
     }
 }
