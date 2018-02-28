@@ -58,10 +58,11 @@ public class LidarProcessor implements Loop {
 
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
     
-    private static FileOutputStream newLogFile() throws FileNotFoundException {
+    private static FileOutputStream newLogFile() throws IOException {
         // delete old files if we're over the limit
         File logDir = new File(Constants.kLidarLogDir);
         File[] logFiles = logDir.listFiles();
+        if (logFiles == null) throw new IOException("List files in "+Constants.kLidarLogDir);
         Arrays.sort(logFiles, (f1, f2) -> {
             return Long.compare(f1.lastModified(), f2.lastModified());
         });
