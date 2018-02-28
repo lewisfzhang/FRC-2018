@@ -66,7 +66,7 @@ public class IntegrationTest {
         final double kRobotAngularInertia = 80.0;
         final double kWheelRadius = Units.inches_to_meters(2.0);
         DCMotorTransmission transmission = new DCMotorTransmission(1.0 / 0.143, (kWheelRadius * kWheelRadius *
-                kRobotMassKg / 2.0) / 0.12, 0.75);
+                kRobotMassKg / 2.0) / 0.02, 0.8);
         DifferentialDrive drive = new DifferentialDrive(kRobotMassKg, kRobotAngularInertia, kWheelRadius, Units
                 .inches_to_meters(26.0 / 2.0), transmission, transmission);
 
