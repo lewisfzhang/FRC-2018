@@ -317,8 +317,22 @@ public class Wrist extends Subsystem {
 
     @Override
     public synchronized void readPeriodicInputs() {
+        if (mMaster.hasResetOccurred()) {
+            DriverStation.reportError("Wrist Talon Reset! ",false);
+        }
+        StickyFaults faults = new StickyFaults();
+        mMaster.getStickyFaults(StickyFaults faults);
+        if (faults.hasAnyFault()) {
+            DriverStation.reportError("Wrist Talon Fault! " + faults.toString(),false);
+        }
         if (mMaster.getControlMode() == ControlMode.MotionMagic) {
             mPeriodicInputs.active_trajectory_position_ = mMaster.getActiveTrajectoryPosition();
+
+            if (mPeriodicInputs.active_trajectory_position_ < kReverseSoftLimit) {
+                DriverStation.reportError("Active trajectory past reverse soft limit!", false);
+            } else if (mPeriodicInputs.active_trajectory_position_ > kForwardSoftLimit) {
+                DriverStation.reportError("Active trajectory past forward soft limit!", false);
+            }
         } else {
             mPeriodicInputs.active_trajectory_position_ = Integer.MIN_VALUE;
         }
