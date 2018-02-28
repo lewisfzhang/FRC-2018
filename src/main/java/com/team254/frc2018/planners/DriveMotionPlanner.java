@@ -47,8 +47,8 @@ public class DriveMotionPlanner {
 
     public Trajectory<TimedState<Pose2dWithCurvature>> generateTrajectory(
             final List<Pose2d> waypoints,
-            double max_vel,
-            double max_accel,
+            double max_vel,  // inches/s
+            double max_accel,  // inches/s^2
             double max_voltage,
             double timestamp) {
         // Create a trajectory from splines.
@@ -63,7 +63,7 @@ public class DriveMotionPlanner {
         // Generate the timed trajectory.
         Trajectory<TimedState<Pose2dWithCurvature>> timed_trajectory = TimingUtil.timeParameterizeTrajectory(new
                         DistanceView<>(trajectory), kMaxDx, Arrays.asList(drive_constraints),
-                0.0, 0.0, 12.0 * max_vel, 12.0 * max_accel);
+                0.0, 0.0, max_vel, max_accel);
         return timed_trajectory;
     }
 
