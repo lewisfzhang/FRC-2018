@@ -13,9 +13,14 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -52,12 +57,28 @@ public class LidarProcessor implements Loop {
     private DataOutputStream dataLogFile;
 
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
+    
+    private static FileOutputStream newLogFile() throws FileNotFoundException {
+        // delete old files if we're over the limit
+        File logDir = new File(Constants.kLidarLogDir);
+        File[] logFiles = logDir.listFiles();
+        Arrays.sort(logFiles, (f1, f2) -> {
+            return Long.compare(f1.lastModified(), f2.lastModified());
+        });
+        for (int i = 0; i < logFiles.length - Constants.kNumLidarLogsToKeep + 1; i++) {
+            logFiles[i].delete();
+        }
+        
+        // create the new file and return
+        String dateStr = new SimpleDateFormat("MM-dd-HH_mm_ss").format(new Date());
+        String newFile = "lidarLog-"+dateStr+".dat";
+        return new FileOutputStream(new File(logDir, newFile), false);
+    }
 
     private LidarProcessor() {
         mScans.add(new LidarScan());
         try {
-            OutputStream fileOut = new FileOutputStream(Constants.kLidarLogPath);
-            dataLogFile = new DataOutputStream(new GZIPOutputStream(fileOut));
+            dataLogFile = new DataOutputStream(new GZIPOutputStream(newLogFile()));
         } catch (IOException e) {
             System.err.println("Failed to open lidar log file:");
             e.printStackTrace();

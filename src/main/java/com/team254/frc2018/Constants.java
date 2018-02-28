@@ -45,7 +45,8 @@ public class Constants {
     public static final String kChezyLidarPath = "/home/root/chezy_lidar";
     public static final double kChezyLidarRestartTime = 2.5;
     
-    public static final String kLidarLogPath = "/home/lvuser/lidarLog.dat";
+    public static final String kLidarLogDir = "/home/lvuser/lidarLogs/";
+    public static final int kNumLidarLogsToKeep = 10;
     public static final double kLidarICPTranslationEpsilon = 0.01; // convergence threshold for tx,ty
     public static final double kLidarICPAngleEpsilon = 0.01;       // convergence threshold for theta
 
