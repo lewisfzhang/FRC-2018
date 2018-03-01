@@ -16,6 +16,7 @@ public class CarriageCanifier extends Subsystem {
     private CarriageCanifier() {
         mCanifier = new CANifier(Constants.kCanifierId);
         mCanifier.setStatusFramePeriod(CANifierStatusFrame.Status_1_General, 10, Constants.kLongCANTimeoutMs);
+        // TODO maybe go to 5ms on status 2 (quadrature)?
         mCanifier.setStatusFramePeriod(CANifierStatusFrame.Status_2_General, 10, Constants.kLongCANTimeoutMs);
         mPeriodicInputs = new PeriodicInputs();
         mPeriodicOutputs = new PeriodicOutputs();
@@ -41,7 +42,7 @@ public class CarriageCanifier extends Subsystem {
     }
 
     public boolean getLimR() {
-        return !mCanifier.getGeneralInput(CANifier.GeneralPin.LIMR);
+        return mPeriodicInputs.limr_;
     }
 
     public void resetWristEncoder() {
@@ -63,8 +64,11 @@ public class CarriageCanifier extends Subsystem {
 
     @Override
     public synchronized void readPeriodicInputs() {
-        mPeriodicInputs.left_sensor_state_ = !mCanifier.getGeneralInput(CANifier.GeneralPin.LIMF);
-        mPeriodicInputs.right_sensor_state_ = !mCanifier.getGeneralInput(CANifier.GeneralPin.SDA );
+        CANifier.PinValues pins = new CANifier.PinValues();
+        mCanifier.getGeneralInputs(pins);
+        mPeriodicInputs.left_sensor_state_ = !pins.LIMF;
+        mPeriodicInputs.right_sensor_state_ = !pins.SDA;
+        mPeriodicInputs.limr_ = !pins.LIMR;
     }
 
     @Override
@@ -105,6 +109,7 @@ public class CarriageCanifier extends Subsystem {
     private static class PeriodicInputs {
         public boolean left_sensor_state_;
         public boolean right_sensor_state_;
+        public boolean limr_;
     }
 
     private static class PeriodicOutputs {
