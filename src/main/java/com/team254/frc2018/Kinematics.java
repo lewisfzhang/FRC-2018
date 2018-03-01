@@ -22,6 +22,11 @@ public class Kinematics {
         return forwardKinematics(left_wheel_delta, right_wheel_delta, back_wheel_delta, delta_rotation);
     }
 
+    public static Twist2d forwardKinematics(double left_wheel_delta, double right_wheel_delta) {
+        double delta_rotation = (right_wheel_delta - left_wheel_delta) / Constants.kFollowerWheelTrackWidthInches;
+        return forwardKinematics(left_wheel_delta, right_wheel_delta, delta_rotation);
+    }
+
     /**
      * Forward kinematics using follower wheel encoders and explicitly measured rotation (ex. from gyro)
      */
@@ -30,6 +35,13 @@ public class Kinematics {
         final double dx = (left_wheel_delta + right_wheel_delta) / 2.0;
         final double dy = (back_wheel_delta) - Constants.kFollowerWheelBackOffset * delta_rotation_rads;
         return new Twist2d(dx, dy, delta_rotation_rads);
+    }
+
+    public static Twist2d forwardKinematics(Rotation2d prev_heading, double left_wheel_delta, double right_wheel_delta,
+                                            Rotation2d current_heading) {
+        final double dx = (left_wheel_delta + right_wheel_delta) / 2.0;
+        final double dy = 0.0;
+        return new Twist2d(dx, dy, prev_heading.inverse().rotateBy(current_heading).getRadians());
     }
 
     /**

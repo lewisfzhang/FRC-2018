@@ -22,7 +22,7 @@ public class Constants {
     public static final double kFollowerWheelDiameterInchesForwards = 2.26317884466;
     public static final double kFollowerWheelDiameterInchesReverse = 2.34640434375;
     public static final double kDriveWheelTrackWidthInches = 26.0;  // TODO: measure
-    public static final double kDriveWheelDiameterInches = 4; // TODO: measure
+    public static final double kDriveWheelDiameterInches = 3.92820959548; // TODO: measure
     public static final double kDriveWheelRadiusInches = kDriveWheelDiameterInches / 2.0; // TODO: measure
     public static final double kDriveWheelDiameterInchesForwards = 3.82694495937;
     public static final double kDriveWheelDiameterInchesReverse = 3.94000307575;
@@ -88,26 +88,36 @@ public class Constants {
     // PID gains for elevator velocity loop (HIGH GEAR)
     // Units: setpoint, error, and output are in native units per 100ms.
     // Elevator encoder is CTRE mag encoder which is 4096 native units per revolution.
-    public static final double kElevatorHighGearKp =  0.18;//0.15;
-    public static final double kElevatorHighGearKi = 0.0;
-    public static final double kElevatorHighGearKd = 0; //0.1;
-    public static final double kElevatorHighGearKf = 0.082; // lower speed:  0.08;
+    public static final double kElevatorHighGearKp =  0.18;
+    public static final double kElevatorHighGearKi = 0.0;//0.0;
+    public static final double kElevatorHighGearKd = 1.8;
+    public static final double kElevatorHighGearKf = 0.06; // lower speed:  0.08;
+    public static final double kElevatorFeedforwardNoCube = -0.06;//33000;
+    public static final double kElevatorFeedforwardWithCube = -0.07;//33000;
+
     public static final int kElevatorHighGearMaxIntegralAccumulator = 500000; //todo: tune me
     public static final int kElevatorHighGearIZone = 0;
     public static final int kElevatorHighGearDeadband = 0;
     public static final int kElevatorHighGearCruiseVelocity = 12500;
     public static final int kElevatorHighGearAcceleration = 33000;//33000;
+    public static final double kElevatorEpsilon = 1.0;//33000;
     public static final double kElevatorRampRate = 0.1;
 
-    public static final double kWristKp = 1.7; //todo: tune me
+    public static final double kWristKp = 1.5; //todo: tune me
     public static final double kWristKi = 0.0; //todo: tune me
-    public static final double kWristKd = 40.0; //todo: tune me
-    public static final double kWristKf = 1.7; //todo: tune me
+    public static final double kWristKd = 80.0; //todo: tune me
+    public static final double kWristKf = 1.1; //todo: tune me
+    public static final double kWristKfMultiplierWithCube = 0.15; //todo: tune me
+    public static final double kWristKfMultiplierWithoutCube = 0.1; //todo: tune me
+    public static final double kWristElevatorAccelerationMultiplier = 0.0;
+    public static final double kWristEpsilon = 3.0; //todo: tune me
+
+
     public static final int kWristMaxIntegralAccumulator = 500000; //todo: tune me
     public static final int kWristIZone = 500; //todo: tune me
     public static final int kWristDeadband = 25; //todo: tune me
     public static final int kWristCruiseVelocity = 650; //todo: tune me
-    public static final int kWristAcceleration = 700; //todo: tune me
+    public static final int kWristAcceleration = 1000; //todo: tune me
     public static final double kWristRampRate = 0.1;
 
     // Do not change anything after this line unless you rewire the robot and
