@@ -103,8 +103,8 @@ public class SuperstructureMotionPlanner {
 
         if (currentState.angle < SuperstructureConstants.kClearFirstStageMinWristAngle && desiredState.height > SuperstructureConstants.kClearFirstStageMaxHeight) {
             // PRECONDITION: wrist is unsafe, want to go high
-            mCommandQueue.add(new WaitForWristSafeSubcommand(new SuperstructureState(SuperstructureConstants.kClearFirstStageMaxHeight, Math.max(SuperstructureConstants
-                    .kClearFirstStageMinWristAngle, firstWristAngle), true)));
+            // mCommandQueue.add(new WaitForWristSafeSubcommand(new SuperstructureState(SuperstructureConstants.kClearFirstStageMaxHeight, Math.max(SuperstructureConstants
+            //        .kClearFirstStageMinWristAngle, firstWristAngle), true)));
             // POSTCONDITION: wrist is safe (either at desired angle, or the cruise angle), elevator is as close as possible to goal.
         } else if (desiredState.angle < SuperstructureConstants.kClearFirstStageMinWristAngle && currentState.height > SuperstructureConstants.kClearFirstStageMaxHeight) {
             // PRECONDITION: wrist is safe, want to go low.
