@@ -9,6 +9,7 @@ import com.team254.lib.drivers.TalonSRXFactory;
 import com.team254.lib.drivers.TalonSRXUtil;
 import com.team254.lib.util.Util;
 import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import java.util.ArrayList;
@@ -200,6 +201,10 @@ public class Elevator extends Subsystem {
                 mPeriodicOutputs.output_ / kEncoderTicksPerInch + kHomePositionInches : Double.NaN;
     }
 
+    public synchronized double getActiveTrajectoryAccelG() {
+        return mPeriodicInputs.active_trajectory_accel_g_;
+    }
+
     @Override
     public void outputToSmartDashboard() {
         SmartDashboard.putNumber("Elevator Output %", mPeriodicInputs.output_percent_);
@@ -240,15 +245,26 @@ public class Elevator extends Subsystem {
 
     @Override
     public synchronized void readPeriodicInputs() {
+        final double t = Timer.getFPGATimestamp();
         mPeriodicInputs.position_ticks_ = mMaster.getSelectedSensorPosition(0);
         mPeriodicInputs.velocity_ticks_per_100ms_ = mMaster.getSelectedSensorVelocity(0);
         if (mMaster.getControlMode() == ControlMode.MotionMagic) {
             mPeriodicInputs.active_trajectory_position_ = mMaster.getActiveTrajectoryPosition();
+            final int newVel = mMaster.getActiveTrajectoryVelocity();
+            mPeriodicInputs.active_trajectory_accel_g_ =
+                    10.0 * (newVel - mPeriodicInputs.active_trajectory_velocity_) / (kEncoderTicksPerInch * (t - mPeriodicInputs.t_) * 386.09);
+            if (Double.isNaN(mPeriodicInputs.active_trajectory_accel_g_) || Double.isInfinite(mPeriodicInputs.active_trajectory_accel_g_)) {
+                mPeriodicInputs.active_trajectory_accel_g_ = 0.0;
+            }
+            mPeriodicInputs.active_trajectory_velocity_ = newVel;
         } else {
             mPeriodicInputs.active_trajectory_position_ = Integer.MIN_VALUE;
+            mPeriodicInputs.active_trajectory_velocity_ = 0;
+            mPeriodicInputs.active_trajectory_accel_g_ = 0.0;
         }
         mPeriodicInputs.output_percent_ = mMaster.getMotorOutputPercent();
         mPeriodicInputs.limit_switch_ = mMaster.getSensorCollection().isFwdLimitSwitchClosed();
+        mPeriodicInputs.t_ = t;
     }
 
     @Override
@@ -314,9 +330,12 @@ public class Elevator extends Subsystem {
     private static class PeriodicInputs {
         public int position_ticks_;
         public int velocity_ticks_per_100ms_;
+        public double active_trajectory_accel_g_;
+        public int active_trajectory_velocity_;
         public int active_trajectory_position_;
         public double output_percent_;
         public boolean limit_switch_;
+        public double t_;
     }
 
     private static class PeriodicOutputs {
