@@ -15,7 +15,7 @@ public class CarriageCanifier extends Subsystem {
 
     private CarriageCanifier() {
         mCanifier = new CANifier(Constants.kCanifierId);
-        mCanifier.setStatusFramePeriod(CANifierStatusFrame.Status_1_General, 10, Constants.kLongCANTimeoutMs);
+        mCanifier.setStatusFramePeriod(CANifierStatusFrame.Status_1_General, 100, Constants.kLongCANTimeoutMs);
         // TODO maybe go to 5ms on status 2 (quadrature)?
         mCanifier.setStatusFramePeriod(CANifierStatusFrame.Status_2_General, 10, Constants.kLongCANTimeoutMs);
         mPeriodicInputs = new PeriodicInputs();
