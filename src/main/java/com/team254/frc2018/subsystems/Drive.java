@@ -245,7 +245,9 @@ public class Drive extends Subsystem {
         SmartDashboard.putNumber("Left Drive Distance", mPeriodicInputs.left_distance_);
         SmartDashboard.putNumber("Right Linear Velocity", getRightLinearVelocity());
         SmartDashboard.putNumber("Left Linear Velocity", getLeftLinearVelocity());
-        SmartDashboard.putNumber("Gyro Heading", getHeading().getDegrees());
+        if(getHeading() != null) {
+            SmartDashboard.putNumber("Gyro Heading", getHeading().getDegrees());
+        }
     }
 
     public synchronized void resetEncoders() {
