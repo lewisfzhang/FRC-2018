@@ -72,8 +72,9 @@ public class LidarProcessor implements Loop {
         
         // create the new file and return
         String dateStr = new SimpleDateFormat("MM-dd-HH_mm_ss").format(new Date());
-        String newFile = "lidarLog-"+dateStr+".dat";
-        return new FileOutputStream(new File(logDir, newFile), false);
+        File newFile = new File(logDir, "lidarLog-"+dateStr+".dat");
+        newFile.createNewFile();
+        return new FileOutputStream(newFile, false);
     }
 
     private LidarProcessor() {
@@ -86,14 +87,12 @@ public class LidarProcessor implements Loop {
         }
     }
 
-    private double lastAngle = 0;
     private void logPoint(double angle, double dist, double x, double y) {
         try {
-            dataLogFile.writeInt((int)((angle-lastAngle)*100));
+            dataLogFile.writeInt((int)(angle*100));
             dataLogFile.writeInt((int)(dist*256));
             dataLogFile.writeInt((int)(x*256));
             dataLogFile.writeInt((int)(y*256));
-            lastAngle = angle;
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -110,12 +109,12 @@ public class LidarProcessor implements Loop {
             if (newScan) { // crosses the 360-0 threshold. start a new scan
                 prev_timestamp = Timer.getFPGATimestamp();
                 
-                long start = System.nanoTime();
-                Translation2d towerPos = getTowerPosition();
-                long end = System.nanoTime();
-                SmartDashboard.putNumber("towerPos_ms", (end-start)/1000000);
-                SmartDashboard.putNumber("towerPosX", towerPos.x());
-                SmartDashboard.putNumber("towerPosY", towerPos.y());
+                // long start = System.nanoTime();
+                // Translation2d towerPos = getTowerPosition();
+                // long end = System.nanoTime();
+                // SmartDashboard.putNumber("towerPos_ms", (end-start)/1000000);
+                // SmartDashboard.putNumber("towerPosX", towerPos.x());
+                // SmartDashboard.putNumber("towerPosY", towerPos.y());
 
                 mScans.add(new LidarScan());
                 if (mScans.size() > Constants.kChezyLidarNumScansToStore) {
@@ -146,30 +145,18 @@ public class LidarProcessor implements Loop {
         return mScans.getLast();
     }
     
-    private final Iterable<Point> allPoints = () -> {
-        return new Iterator<Point>() {
-            Iterator<LidarScan> scanIt = mScans.iterator();
-            Iterator<Point> pointIt = null;
-            
-            @Override
-            public Point next() {
-                while (pointIt == null || !pointIt.hasNext()) {
-                    pointIt = scanIt.next().getPoints().iterator();
-                }
-                return pointIt.next();
-            }
-            
-            @Override
-            public boolean hasNext() {
-                return scanIt.hasNext() || pointIt.hasNext();
-            }
-        };
-    };
+    private ArrayList<Point> getAllPoints() {
+        ArrayList<Point> list = new ArrayList<>();
+        for (LidarScan scan : mScans) {
+            list.addAll(scan.getPoints());
+        }
+        return list;
+    }
     
     private Point getAveragePoint() {
         double sumX = 0, sumY = 0;
         int n = 0;
-        for (Point p : allPoints) {
+        for (Point p : getAllPoints()) {
             sumX += p.x;
             sumY += p.y;
             n++;
@@ -193,7 +180,7 @@ public class LidarProcessor implements Loop {
     private ArrayList<Point> getCulledPoints() {
         ArrayList<Point> list = new ArrayList<>();
         HashSet<Integer> buckets = new HashSet<>();
-        for (Point p : allPoints) {
+        for (Point p : getAllPoints()) {
             if (buckets.add(getBucket(p.x, p.y)))
                 list.add(p);
         }
