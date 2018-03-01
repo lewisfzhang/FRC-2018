@@ -28,7 +28,7 @@ public class Elevator extends Subsystem {
     private final Solenoid mShifter;
     private PeriodicInputs mPeriodicInputs = new PeriodicInputs();
     private PeriodicOutputs mPeriodicOutputs = new PeriodicOutputs();
-    private ElevatorControlState mElevatorControlState = ElevatorControlState.MOTION_MAGIC.OPEN_LOOP;
+    private ElevatorControlState mElevatorControlState = ElevatorControlState.OPEN_LOOP;
 
     private Elevator() {
         mMaster = TalonSRXFactory.createDefaultTalon(Constants.kElevatorMasterId);
@@ -252,10 +252,19 @@ public class Elevator extends Subsystem {
         if (mMaster.getControlMode() == ControlMode.MotionMagic) {
             mPeriodicInputs.active_trajectory_position_ = mMaster.getActiveTrajectoryPosition();
             final int newVel = mMaster.getActiveTrajectoryVelocity();
-            mPeriodicInputs.active_trajectory_accel_g_ =
-                    10.0 * (newVel - mPeriodicInputs.active_trajectory_velocity_) / (kEncoderTicksPerInch * (t - mPeriodicInputs.t_) * 386.09);
-            if (Double.isNaN(mPeriodicInputs.active_trajectory_accel_g_) || Double.isInfinite(mPeriodicInputs.active_trajectory_accel_g_)) {
+            // TODO check sign of elevator accel
+            if (Util.epsilonEquals(newVel, Constants.kElevatorHighGearCruiseVelocity, 5) ||
+                    Util.epsilonEquals(newVel, mPeriodicInputs.active_trajectory_velocity_, 5)) {
+                // Elevator is ~constant velocity.
                 mPeriodicInputs.active_trajectory_accel_g_ = 0.0;
+            } else if (newVel > mPeriodicInputs.active_trajectory_velocity_) {
+                // Elevator is accelerating downwards.
+                mPeriodicInputs.active_trajectory_accel_g_ = -Constants.kElevatorHighGearAcceleration * 10.0 /
+                        (kEncoderTicksPerInch * 386.09);
+            } else {
+                // Elevator is accelerating upwards.
+                mPeriodicInputs.active_trajectory_accel_g_ = Constants.kElevatorHighGearAcceleration * 10.0 /
+                        (kEncoderTicksPerInch * 386.09);
             }
             mPeriodicInputs.active_trajectory_velocity_ = newVel;
         } else {
@@ -267,8 +276,9 @@ public class Elevator extends Subsystem {
         mPeriodicInputs.limit_switch_ = mMaster.getSensorCollection().isFwdLimitSwitchClosed();
         mPeriodicInputs.t_ = t;
 
-        if(getInchesOffGround() > Constants.kElevatorEpsilon && mShifter.get()) {
-            mPeriodicInputs.feedforward_ = mIntake.hasCube() ? Constants.kElevatorFeedforwardWithCube : Constants.kElevatorFeedforwardNoCube;
+        if (getInchesOffGround() > Constants.kElevatorEpsilon && mShifter.get()) {
+            mPeriodicInputs.feedforward_ = mIntake.hasCube() ? Constants.kElevatorFeedforwardWithCube : Constants
+                    .kElevatorFeedforwardNoCube;
         } else {
             mPeriodicInputs.feedforward_ = 0.0;
         }
@@ -277,7 +287,8 @@ public class Elevator extends Subsystem {
     @Override
     public synchronized void writePeriodicOutputs() {
         mMaster.set(mElevatorControlState == ElevatorControlState.MOTION_MAGIC ? ControlMode.MotionMagic :
-                ControlMode.PercentOutput, mPeriodicOutputs.output_, DemandType.ArbitraryFeedForward, mPeriodicInputs.feedforward_);
+                ControlMode.PercentOutput, mPeriodicOutputs.output_, DemandType.ArbitraryFeedForward, mPeriodicInputs
+                .feedforward_);
     }
 
     @Override
