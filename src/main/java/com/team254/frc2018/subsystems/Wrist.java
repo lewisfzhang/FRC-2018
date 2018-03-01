@@ -189,6 +189,8 @@ public class Wrist extends Subsystem {
         SmartDashboard.putBoolean("Wrist Limit Switch", mPeriodicInputs.limit_switch_);
         SmartDashboard.putNumber("Wrist Last Expected Trajectory", getSetpoint());
         SmartDashboard.putNumber("Wrist Current Trajectory Point", mPeriodicInputs.active_trajectory_position_);
+        SmartDashboard.putNumber("Wrist Traj Vel", mPeriodicInputs.active_trajectory_velocity_);
+        SmartDashboard.putNumber("Wrist Traj Accel", mPeriodicInputs.active_trajectory_acceleration_rad_per_s2_);
         SmartDashboard.putBoolean("Wrist Has Sent Trajectory", hasFinishedTrajectory());
         SmartDashboard.putNumber("elevator accel G", mElevator.getActiveTrajectoryAccelG());
 
@@ -368,8 +370,23 @@ public class Wrist extends Subsystem {
             } else if (mPeriodicInputs.active_trajectory_position_ > kForwardSoftLimit) {
                 DriverStation.reportError("Active trajectory past forward soft limit!", false);
             }
+            final int newVel = mMaster.getActiveTrajectoryVelocity();
+            // TODO check sign of accel
+            if (Util.epsilonEquals(newVel, Constants.kWristCruiseVelocity, 5) ||
+                    Util.epsilonEquals(newVel, mPeriodicInputs.active_trajectory_velocity_, 5)) {
+                // Wrist is ~constant velocity.
+                mPeriodicInputs.active_trajectory_acceleration_rad_per_s2_ = 0.0;
+            } else {
+                // Wrist is accelerating.
+                mPeriodicInputs.active_trajectory_acceleration_rad_per_s2_ = Math.signum(newVel - mPeriodicInputs
+                        .active_trajectory_velocity_) * Constants.kWristAcceleration * 20.0 * Math.PI /
+                        4096;
+            }
+            mPeriodicInputs.active_trajectory_velocity_ = newVel;
         } else {
             mPeriodicInputs.active_trajectory_position_ = Integer.MIN_VALUE;
+            mPeriodicInputs.active_trajectory_velocity_ = 0;
+            mPeriodicInputs.active_trajectory_acceleration_rad_per_s2_ = 0.0;
         }
 //        mPeriodicInputs.limit_switch_ = mMaster.getSensorCollection().isRevLimitSwitchClosed();
         mPeriodicInputs.limit_switch_ = mCanifier.getLimR();
@@ -424,6 +441,8 @@ public class Wrist extends Subsystem {
         public int position_ticks_;
         public int velocity_ticks_per_100ms_;
         public int active_trajectory_position_;
+        public int active_trajectory_velocity_;
+        public double active_trajectory_acceleration_rad_per_s2_;
         public double output_percent_;
         public double feedforward_;
         public boolean limit_switch_;

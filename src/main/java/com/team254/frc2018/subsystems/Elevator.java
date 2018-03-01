@@ -218,6 +218,8 @@ public class Elevator extends Subsystem {
 
         SmartDashboard.putNumber("Elevator Last Expected Trajectory", getSetpoint());
         SmartDashboard.putNumber("Elevator Current Trajectory Point", mPeriodicInputs.active_trajectory_position_);
+        SmartDashboard.putNumber("Elevator Traj Vel", mPeriodicInputs.active_trajectory_velocity_);
+        SmartDashboard.putNumber("Elevator Traj Accel", mPeriodicInputs.active_trajectory_accel_g_);
         SmartDashboard.putBoolean("Elevator Has Sent Trajectory", hasFinishedTrajectory());
     }
 
