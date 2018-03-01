@@ -1,6 +1,9 @@
 package com.team254.frc2018.subsystems;
 
 import com.ctre.phoenix.CANifier;
+import com.ctre.phoenix.CANifierControlFrame;
+import com.ctre.phoenix.CANifierStatusFrame;
+import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 import com.team254.frc2018.Constants;
 
 public class CarriageCanifier extends Subsystem {
@@ -12,6 +15,8 @@ public class CarriageCanifier extends Subsystem {
 
     private CarriageCanifier() {
         mCanifier = new CANifier(Constants.kCanifierId);
+        mCanifier.setStatusFramePeriod(CANifierStatusFrame.Status_1_General, 10, Constants.kLongCANTimeoutMs);
+        mCanifier.setStatusFramePeriod(CANifierStatusFrame.Status_2_General, 10, Constants.kLongCANTimeoutMs);
         mPeriodicInputs = new PeriodicInputs();
         mPeriodicOutputs = new PeriodicOutputs();
     }
@@ -23,12 +28,28 @@ public class CarriageCanifier extends Subsystem {
         return mInstance;
     }
 
+    public int getWristTicks() {
+        return mCanifier.getQuadraturePosition();
+    }
+
     public boolean getLeftBannerSensor() {
         return mPeriodicInputs.left_sensor_state_;
     }
 
     public boolean getRightBannerSensor() {
         return mPeriodicInputs.right_sensor_state_;
+    }
+
+    public boolean getLimR() {
+        return !mCanifier.getGeneralInput(CANifier.GeneralPin.LIMR);
+    }
+
+    public void resetWristEncoder() {
+        mCanifier.setQuadraturePosition(0, 0 );
+    }
+
+    public int getDeviceId() {
+        return mCanifier.getDeviceID();
     }
 
     public synchronized void setLEDColor(double red, double green, double blue) {
@@ -43,7 +64,7 @@ public class CarriageCanifier extends Subsystem {
     @Override
     public synchronized void readPeriodicInputs() {
         mPeriodicInputs.left_sensor_state_ = !mCanifier.getGeneralInput(CANifier.GeneralPin.LIMF);
-        mPeriodicInputs.right_sensor_state_ = !mCanifier.getGeneralInput(CANifier.GeneralPin.LIMR);
+        mPeriodicInputs.right_sensor_state_ = !mCanifier.getGeneralInput(CANifier.GeneralPin.SDA );
     }
 
     @Override

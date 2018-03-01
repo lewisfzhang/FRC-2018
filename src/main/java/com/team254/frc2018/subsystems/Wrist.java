@@ -12,6 +12,7 @@ import com.team254.lib.drivers.TalonSRXFactory;
 import com.team254.lib.drivers.TalonSRXUtil;
 import com.team254.lib.util.Util;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import java.util.ArrayList;
@@ -24,6 +25,8 @@ public class Wrist extends Subsystem {
     private static final double kHomingOutput = -0.25;
 
     private static Wrist mInstance;
+    private final Intake mIntake = Intake.getInstance();
+    private final Elevator mElevator = Elevator.getInstance();
     private final TalonSRX mMaster;
     private PeriodicInputs mPeriodicInputs = new PeriodicInputs();
     private PeriodicOutputs mPeriodicOutputs = new PeriodicOutputs();
@@ -36,16 +39,22 @@ public class Wrist extends Subsystem {
         ErrorCode errorCode;
 
         //configure talon
-        errorCode = mMaster.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, 0, Constants
+        errorCode = mMaster.configRemoteFeedbackFilter(Constants.kCanifierId, RemoteSensorSource.CANifier_Quadrature, 0, Constants.kLongCANTimeoutMs);
+        if (errorCode != ErrorCode.OK)
+            DriverStation.reportError("Could not set wrist encoder!!!: " + errorCode, false);
+
+
+        errorCode = mMaster.configSelectedFeedbackSensor(RemoteFeedbackDevice.RemoteSensor0, 0, Constants
                 .kLongCANTimeoutMs);
         if (errorCode != ErrorCode.OK)
             DriverStation.reportError("Could not detect wrist encoder: " + errorCode, false);
+
         errorCode = mMaster.configForwardLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal
                 .NormallyOpen, Constants.kLongCANTimeoutMs);
         if (errorCode != ErrorCode.OK)
             DriverStation.reportError("Could not set forward limit switch wrist: " + errorCode, false);
-        errorCode = mMaster.configReverseLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal
-                .NormallyOpen, Constants.kLongCANTimeoutMs);
+        errorCode = mMaster.configReverseLimitSwitchSource(RemoteLimitSwitchSource.RemoteCANifier, LimitSwitchNormal
+                .NormallyOpen, CarriageCanifier.getInstance().getDeviceId(), Constants.kLongCANTimeoutMs);
         if (errorCode != ErrorCode.OK)
             DriverStation.reportError("Could not set reverse limit switch wrist: " + errorCode, false);
 
@@ -127,7 +136,7 @@ public class Wrist extends Subsystem {
         mMaster.selectProfileSlot(0, 0);
 
         mMaster.setInverted(false);
-        mMaster.setSensorPhase(true);
+        mMaster.setSensorPhase(false);
         mMaster.setNeutralMode(NeutralMode.Brake);
         mMaster.overrideLimitSwitchesEnable(true);
         mMaster.overrideSoftLimitsEnable(true);
@@ -162,10 +171,16 @@ public class Wrist extends Subsystem {
 
     @Override
     public synchronized void outputToSmartDashboard() {
-        if (!Double.isNaN(mZeroPosition)) {
+//        if (!Double.isNaN(mZeroPosition)) {
             SmartDashboard.putNumber("Wrist Angle", getAngle());
             SmartDashboard.putNumber("Wrist Position", getPosition());
-        }
+//        }
+//        SmartDashboard.putNumber("Wrist Ticks", mMaster.getSelectedSensorPosition(0));
+        SmartDashboard.putNumber("Wrist Ticks", CarriageCanifier.getInstance().getWristTicks());
+        SmartDashboard.putNumber("Wrist Target", mMaster.getClosedLoopTarget(0));
+        SmartDashboard.putNumber("Wrist periodic output_", mPeriodicOutputs.output_);
+        SmartDashboard.putBoolean("LIMR", CarriageCanifier.getInstance().getLimR());
+
         SmartDashboard.putNumber("Wrist RPM", getRPM());
         SmartDashboard.putNumber("Wrist Power %", mPeriodicInputs.output_percent_);
         // SmartDashboard.putNumber("Wrist Error", sensorUnitsToDegrees(mMaster.getClosedLoopError(0)));
@@ -173,6 +188,10 @@ public class Wrist extends Subsystem {
         SmartDashboard.putNumber("Wrist Last Expected Trajectory", getSetpoint());
         SmartDashboard.putNumber("Wrist Current Trajectory Point", mPeriodicInputs.active_trajectory_position_);
         SmartDashboard.putBoolean("Wrist Has Sent Trajectory", hasFinishedTrajectory());
+        SmartDashboard.putNumber("elevator accel G", mElevator.getActiveTrajectoryAccelG());
+
+        SmartDashboard.putNumber("Wrist feedforward", mPeriodicInputs.feedforward_);
+
     }
 
     @Override
@@ -182,13 +201,17 @@ public class Wrist extends Subsystem {
 
     @Override
     public synchronized void zeroSensors() {
-        mZeroPosition = mPeriodicInputs.position_ticks_;
+//        mZeroPosition = mPeriodicInputs.position_ticks_;
+        mMaster.setSelectedSensorPosition(0, 0, 0);
+        CarriageCanifier.getInstance().resetWristEncoder();
 
         // TODO is this needed?
-        mMaster.configForwardSoftLimitThreshold((int) relativeToAbsolute(kForwardSoftLimit), 0);
+//        mMaster.configForwardSoftLimitThreshold((int) relativeToAbsolute(kForwardSoftLimit), 0);
+        mMaster.configForwardSoftLimitThreshold(kForwardSoftLimit, 0);
         mMaster.configForwardSoftLimitEnable(false, 0);
 
-        mMaster.configReverseSoftLimitThreshold((int) relativeToAbsolute(kReverseSoftLimit), 0);
+//        mMaster.configReverseSoftLimitThreshold((int) relativeToAbsolute(kReverseSoftLimit), 0);
+        mMaster.configReverseSoftLimitThreshold(kReverseSoftLimit, 0);
         mMaster.configReverseSoftLimitEnable(false, 0);
     }
 
@@ -217,12 +240,14 @@ public class Wrist extends Subsystem {
                             // mMaster.set(ControlMode.PercentOutput, mOutputValue);
                             break;
                         case CLOSED_LOOP:
-                            // mMaster.set(ControlMode.MotionMagic, mOutputValue);
+//                             mMaster.set( ControlMode.MotionMagic, mOutputValue);
                             break;
                         case HOMING:
-                            if (Double.isNaN(mZeroPosition)) {
-                                mPeriodicOutputs.output_ = resetIfAtLimit() ? 0.0 : kHomingOutput;
-                            }
+//                            if (Double.isNaN(mZeroPosition)) {
+//                                mPeriodicOutputs.output_ = resetIfAtLimit() ? 0.0 : kHomingOutput;
+//                            } else {
+                            mSystemState = SystemState.OPEN_LOOP;
+                            
                             break;
                         default:
                             System.out.println("Fell through on Wrist states!");
@@ -243,7 +268,8 @@ public class Wrist extends Subsystem {
     }
 
     public synchronized boolean resetIfAtLimit() {
-        if (mMaster.getSensorCollection().isRevLimitSwitchClosed()) {
+//        if (mMaster.getSensorCollection().isRevLimitSwitchClosed()) {
+        if(CarriageCanifier.getInstance().getLimR()) {
             zeroSensors();
             return true;
         }
@@ -254,7 +280,8 @@ public class Wrist extends Subsystem {
      * @param position the target position of the wrist in sensor units
      */
     public void setClosedLoop(int position) {
-        mPeriodicOutputs.output_ = relativeToAbsolute(position);
+//        mPeriodicOutputs.output_ = relativeToAbsolute(position);
+        mPeriodicOutputs.output_ = (position);
         mDesiredState = SystemState.CLOSED_LOOP;
     }
 
@@ -262,7 +289,8 @@ public class Wrist extends Subsystem {
      * @param angle the target position of the wrist in degrees.  0 is full back, 180 is facing forwards
      */
     public synchronized void setClosedLoopAngle(double angle) {
-        mPeriodicOutputs.output_ = relativeToAbsolute(degreesToSensorUnits(angle));
+//        mPeriodicOutputs.output_ = relativeToAbsolute(degreesToSensorUnits(angle));
+        mPeriodicOutputs.output_ = (degreesToSensorUnits(angle));
         mDesiredState = SystemState.CLOSED_LOOP;
     }
 
@@ -270,14 +298,16 @@ public class Wrist extends Subsystem {
      * @return current position of the wrist in sensor units
      */
     public synchronized double getPosition() { //returns angle of wrist in degrees
-        return absoluteToRelative(mPeriodicInputs.position_ticks_);
+//        return absoluteToRelative(mPeriodicInputs.position_ticks_);
+        return (mPeriodicInputs.position_ticks_);
     }
 
     /**
      * @return current angle of the wrist in degrees
      */
     public synchronized double getAngle() { //returns angle of wrist in degrees
-        return sensorUnitsToDegrees(absoluteToRelative(mPeriodicInputs.position_ticks_));
+//        return sensorUnitsToDegrees(absoluteToRelative(mPeriodicInputs.position_ticks_));
+        return sensorUnitsToDegrees((mPeriodicInputs.position_ticks_));
     }
 
     /**
@@ -303,7 +333,8 @@ public class Wrist extends Subsystem {
     }
 
     public synchronized double getSetpoint() {
-        return mDesiredState == SystemState.CLOSED_LOOP ? sensorUnitsToDegrees(absoluteToRelative(mPeriodicOutputs
+//        return mDesiredState == SystemState.CLOSED_LOOP ? sensorUnitsToDegrees(absoluteToRelative(mPeriodicOutputs
+        return mDesiredState == SystemState.CLOSED_LOOP ? sensorUnitsToDegrees((mPeriodicOutputs
                 .output_)) : Double.NaN;
     }
 
@@ -324,6 +355,7 @@ public class Wrist extends Subsystem {
         mMaster.getStickyFaults(faults);
         if (faults.hasAnyFault()) {
             DriverStation.reportError("Wrist Talon Fault! " + faults.toString(),false);
+            mMaster.clearStickyFaults(0);
         }
         if (mMaster.getControlMode() == ControlMode.MotionMagic) {
             mPeriodicInputs.active_trajectory_position_ = mMaster.getActiveTrajectoryPosition();
@@ -336,16 +368,25 @@ public class Wrist extends Subsystem {
         } else {
             mPeriodicInputs.active_trajectory_position_ = Integer.MIN_VALUE;
         }
-        mPeriodicInputs.limit_switch_ = mMaster.getSensorCollection().isRevLimitSwitchClosed();
+//        mPeriodicInputs.limit_switch_ = mMaster.getSensorCollection().isRevLimitSwitchClosed();
+        mPeriodicInputs.limit_switch_ = CarriageCanifier.getInstance().getLimR();
         mPeriodicInputs.output_percent_ = mMaster.getMotorOutputPercent();
         mPeriodicInputs.position_ticks_ = mMaster.getSelectedSensorPosition(0);
         mPeriodicInputs.velocity_ticks_per_100ms_ = mMaster.getSelectedSensorVelocity(0);
+
+        if(getAngle() > Constants.kWristEpsilon) {
+            double wristGravityComponent = Math.cos(Math.toRadians(getAngle())) * (mIntake.hasCube() ? Constants.kWristKfMultiplierWithCube : Constants.kWristKfMultiplierWithoutCube);
+            double elevatorAccelerationComponent = mElevator.getActiveTrajectoryAccelG() * Constants.kWristElevatorAccelerationMultiplier;
+            mPeriodicInputs.feedforward_ = (elevatorAccelerationComponent + 1.0) * wristGravityComponent;
+        } else {
+            mPeriodicInputs.feedforward_ = 0.0;
+        }
     }
 
     @Override
     public synchronized void writePeriodicOutputs() {
         mMaster.set(mDesiredState == SystemState.CLOSED_LOOP ? ControlMode.MotionMagic : ControlMode.PercentOutput,
-                mPeriodicOutputs.output_);
+                mPeriodicOutputs.output_, DemandType.ArbitraryFeedForward, mPeriodicInputs.feedforward_);
     }
 
     @Override
@@ -379,6 +420,7 @@ public class Wrist extends Subsystem {
         public int velocity_ticks_per_100ms_;
         public int active_trajectory_position_;
         public double output_percent_;
+        public double feedforward_;
         public boolean limit_switch_;
     }
 
@@ -386,3 +428,4 @@ public class Wrist extends Subsystem {
         public double output_;
     }
 }
+
