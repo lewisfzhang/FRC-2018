@@ -81,6 +81,11 @@ public class Intake extends Subsystem {
 
             @Override
             public void onStart(double timestamp) {
+                if (hasCube()) {
+                    mWantedAction = IntakeStateMachine.WantedAction.WANT_CUBE;
+                } else {
+                    mWantedAction = IntakeStateMachine.WantedAction.WANT_MANUAL;
+                }
 
             }
 
@@ -154,9 +159,6 @@ public class Intake extends Subsystem {
         // B: Green
         // C: Red
         mCanifier.setLEDColor(red, green, blue);
-//        mCanifier.setLEDOutput(blue, CANifier.LEDChannel.LEDChannelA);
-//        mCanifier.setLEDOutput(green, CANifier.LEDChannel.LEDChannelB);
-//        mCanifier.setLEDOutput(red, CANifier.LEDChannel.LEDChannelC);
     }
 
     public IntakeState.JawState getJawState() {
