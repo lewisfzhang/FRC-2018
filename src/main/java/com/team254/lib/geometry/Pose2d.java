@@ -197,8 +197,9 @@ public class Pose2d implements IPose2d<Pose2d> {
     }
 
     @Override
-    public boolean isEqual(final Pose2d other) {
-        return epsilonEquals(other, Util.kEpsilon);
+    public boolean equals(final Object other) {
+        if (other == null || !(other instanceof Pose2d)) return false;
+        return epsilonEquals((Pose2d)other, Util.kEpsilon);
     }
 
     @Override

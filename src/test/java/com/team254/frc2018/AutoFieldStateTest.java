@@ -17,11 +17,11 @@ public class AutoFieldStateTest {
     public void test() {
         Pose2d startPose = new Pose2d(1, 2, new Rotation2d(3, 4, true));
         AutoFieldState state = new AutoFieldState(startPose);
-        assertTrue(startPose.isEqual(state.getStartPose()));
+        assertEquals(startPose, state.getStartPose());
         
         startPose = new Pose2d(5, 6, new Rotation2d(7, 8, true));
         state.setStartPose(startPose);
-        assertTrue(startPose.isEqual(state.getStartPose()));
+        assertEquals(startPose, state.getStartPose());
         
         String[] badStates = new String[] {null, "dakjfhaksdjh", "", "foo", "LRQ"};
         for (String str : badStates) {

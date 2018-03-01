@@ -6,7 +6,6 @@ import com.team254.lib.util.Util;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TimedStateTest {
     public static final double kTestEpsilon = Util.kEpsilon;
@@ -21,11 +20,11 @@ public class TimedStateTest {
         final TimedState<Pose2d> end_state = new TimedState<>(Pose2d.fromTranslation(new Translation2d(0.5, 0.0)), 1.0,
                 1.0, 0.0);
 
-        assertTrue(start_state.interpolate(end_state, 0.0).isEqual(start_state));
-        assertTrue(start_state.interpolate(end_state, 1.0).isEqual(end_state));
-        assertTrue(end_state.interpolate(start_state, 0.0).isEqual(end_state));
+        assertEquals(start_state, start_state.interpolate(end_state, 0.0));
+        assertEquals(end_state, start_state.interpolate(end_state, 1.0));
+        assertEquals(end_state, end_state.interpolate(start_state, 0.0));
         System.out.println(end_state.interpolate(start_state, 1.0));
-        assertTrue(end_state.interpolate(start_state, 1.0).isEqual(start_state));
+        assertEquals(start_state, end_state.interpolate(start_state, 1.0));
 
         final TimedState<Pose2d> intermediate_state = start_state.interpolate(end_state, 0.5);
         assertEquals(0.5, intermediate_state.t(), kTestEpsilon);

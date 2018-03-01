@@ -148,8 +148,9 @@ public class Rotation2d implements IRotation2d<Rotation2d> {
     }
 
     @Override
-    public boolean isEqual(final Rotation2d other) {
-        return distance(other) < Util.kEpsilon;
+    public boolean equals(final Object other) {
+        if (other == null || !(other instanceof Rotation2d)) return false;
+        return distance((Rotation2d)other) < Util.kEpsilon;
     }
 
     @Override
