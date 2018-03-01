@@ -23,6 +23,7 @@ public class Elevator extends Subsystem {
     private static final int kForwardSoftLimit = 500; // Encoder ticks.  TODO set to ~0 once skipping is fixed.
     private static final double kEncoderTicksPerInch = -1271.0;
     private static Elevator mInstance = null;
+    private Intake mIntake = Intake.getInstance();
     private final TalonSRX mMaster, mRightSlave, mLeftSlaveA, mLeftSlaveB;
     private final Solenoid mShifter;
     private PeriodicInputs mPeriodicInputs = new PeriodicInputs();
@@ -265,12 +266,18 @@ public class Elevator extends Subsystem {
         mPeriodicInputs.output_percent_ = mMaster.getMotorOutputPercent();
         mPeriodicInputs.limit_switch_ = mMaster.getSensorCollection().isFwdLimitSwitchClosed();
         mPeriodicInputs.t_ = t;
+
+        if(getInchesOffGround() > Constants.kElevatorEpsilon && mShifter.get()) {
+            mPeriodicInputs.feedforward_ = mIntake.hasCube() ? Constants.kElevatorFeedforwardWithCube : Constants.kElevatorFeedforwardNoCube;
+        } else {
+            mPeriodicInputs.feedforward_ = 0.0;
+        }
     }
 
     @Override
     public synchronized void writePeriodicOutputs() {
         mMaster.set(mElevatorControlState == ElevatorControlState.MOTION_MAGIC ? ControlMode.MotionMagic :
-                ControlMode.PercentOutput, mPeriodicOutputs.output_);
+                ControlMode.PercentOutput, mPeriodicOutputs.output_, DemandType.ArbitraryFeedForward, mPeriodicInputs.feedforward_);
     }
 
     @Override
@@ -335,6 +342,7 @@ public class Elevator extends Subsystem {
         public int active_trajectory_position_;
         public double output_percent_;
         public boolean limit_switch_;
+        public double feedforward_;
         public double t_;
     }
 
