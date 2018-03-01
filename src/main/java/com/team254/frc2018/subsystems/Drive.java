@@ -174,9 +174,8 @@ public class Drive extends Subsystem {
 
             mDriveControlState = DriveControlState.OPEN_LOOP;
         }
-        // TODO: wtf?
-        mPeriodicOutputs.left_output_ = signal.getRight();
-        mPeriodicOutputs.right_output_ = signal.getLeft();
+        mPeriodicOutputs.left_output_ = signal.getLeft();
+        mPeriodicOutputs.right_output_ = signal.getRight();
     }
 
     /**
@@ -192,9 +191,8 @@ public class Drive extends Subsystem {
 
             mDriveControlState = DriveControlState.PATH_FOLLOWING;
         }
-        // TODO: wtf?
-        mPeriodicOutputs.left_output_ = signal.getRight();
-        mPeriodicOutputs.right_output_ = signal.getLeft();
+        mPeriodicOutputs.left_output_ = signal.getLeft();
+        mPeriodicOutputs.right_output_ = signal.getRight();
     }
 
     public boolean isHighGear() {

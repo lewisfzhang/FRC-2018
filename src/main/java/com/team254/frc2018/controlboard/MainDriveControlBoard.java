@@ -28,7 +28,7 @@ public class MainDriveControlBoard implements IDriveControlBoard {
 
     @Override
     public double getTurn() {
-        return mTurnStick.getRawAxis(1);
+        return -mTurnStick.getRawAxis(1);
     }
 
     @Override
