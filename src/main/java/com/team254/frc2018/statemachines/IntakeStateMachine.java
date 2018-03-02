@@ -5,7 +5,8 @@ import com.team254.frc2018.states.SuperstructureConstants;
 
 public class IntakeStateMachine {
     public final static double kActuationTime = 0.0;
-    public final static double kShootSetpoint = 1.0;
+    public final static double kStrongShootSetpoint = 1.0;
+    public final static double kWeakShootSetpoint = .65;
     public final static double kIntakeCubeSetpoint = -1.0;
     public final static double kHoldSetpoint = 0.0;
     public final static double kLostCubeTime = 0.5;

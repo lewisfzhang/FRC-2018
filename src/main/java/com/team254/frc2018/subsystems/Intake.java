@@ -7,6 +7,7 @@ import com.team254.frc2018.loops.ILooper;
 import com.team254.frc2018.loops.Loop;
 import com.team254.frc2018.statemachines.IntakeStateMachine;
 import com.team254.frc2018.states.IntakeState;
+import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.lib.drivers.TalonSRXChecker;
 import com.team254.lib.drivers.TalonSRXFactory;
 import edu.wpi.first.wpilibj.Solenoid;
@@ -175,7 +176,12 @@ public class Intake extends Subsystem {
 
     public synchronized void shoot() {
         setState(IntakeStateMachine.WantedAction.WANT_MANUAL);
-        setPower(IntakeStateMachine.kShootSetpoint);
+
+        if(mCurrentState.wristAngle > SuperstructureConstants.kWeakShootAngle) {
+            setPower(IntakeStateMachine.kWeakShootSetpoint);
+        } else {
+            setPower(IntakeStateMachine.kStrongShootSetpoint);
+        }
     }
 
     public IntakeStateMachine.WantedAction getWantedAction() {
