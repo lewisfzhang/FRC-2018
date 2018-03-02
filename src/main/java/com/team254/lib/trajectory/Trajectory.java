@@ -1,11 +1,12 @@
 package com.team254.lib.trajectory;
 
 import com.team254.lib.geometry.State;
+import com.team254.lib.util.CSVWritable;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Trajectory<S extends State<S>> {
+public class Trajectory<S extends State<S>> implements CSVWritable {
     protected final List<TrajectoryPoint<S>> points_;
     protected final IndexView index_view_ = new IndexView();
     /**
@@ -79,6 +80,7 @@ public class Trajectory<S extends State<S>> {
         return builder.toString();
     }
 
+    @Override
     public String toCSV() {
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < length(); ++i) {

@@ -90,7 +90,7 @@ public class CarriageCanifier extends Subsystem {
     }
 
     @Override
-    public void outputToSmartDashboard() {
+    public void outputTelemetry() {
 
     }
 

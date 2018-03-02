@@ -45,7 +45,7 @@ public class Superstructure extends Subsystem {
     }
 
     @Override
-    public void outputToSmartDashboard() {
+    public void outputTelemetry() {
 
     }
 

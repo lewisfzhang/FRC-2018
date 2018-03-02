@@ -207,7 +207,7 @@ public class Elevator extends Subsystem {
     }
 
     @Override
-    public void outputToSmartDashboard() {
+    public void outputTelemetry() {
         SmartDashboard.putNumber("Elevator Output %", mPeriodicInputs.output_percent_);
         SmartDashboard.putNumber("Elevator RPM", getRPM());
         // SmartDashboard.putNumber("Elevator Error", mMaster.getClosedLoopError(0) / kEncoderTicksPerInch);

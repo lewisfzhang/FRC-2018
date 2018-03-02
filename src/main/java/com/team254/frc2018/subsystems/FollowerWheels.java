@@ -1,6 +1,7 @@
 package com.team254.frc2018.subsystems;
 
 import com.team254.frc2018.Constants;
+import com.team254.lib.util.ReflectingCSVWriter;
 import edu.wpi.first.wpilibj.CounterBase;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Solenoid;
@@ -12,6 +13,7 @@ public class FollowerWheels extends Subsystem {
     private final Encoder mLeftFollower, mRightFollower, mRearFollower;
     private final Solenoid mDeploySolenoid;
     private PeriodicInputs mPeriodicInputs = new PeriodicInputs();
+    private ReflectingCSVWriter<PeriodicInputs> mCSVWriter = null;
 
     private FollowerWheels() {
         mLeftFollower = new Encoder(Constants.kFollowerLeftAChannelId, Constants.kFollowerLeftBChannelId, true,
@@ -65,6 +67,10 @@ public class FollowerWheels extends Subsystem {
         double rearDistanceRadians = (mPeriodicInputs.rear_position_ticks_ / 4096.0) * Math.PI;
         mPeriodicInputs.rear_distance_ = rearDistanceRadians * Constants.kFollowerWheelDiameterInches;
         mPeriodicInputs.rear_velocity_ticks_per_s = mRearFollower.getRate();
+
+        if (mCSVWriter != null) {
+            mCSVWriter.add(mPeriodicInputs);
+        }
     }
 
     @Override
@@ -73,7 +79,7 @@ public class FollowerWheels extends Subsystem {
     }
 
     @Override
-    public void outputToSmartDashboard() {
+    public void outputTelemetry() {
         SmartDashboard.putNumber("Left Follower Distance", getLeftDistance());
         SmartDashboard.putNumber("Right Follower Distance", getRightDistance());
         SmartDashboard.putNumber("Rear Follower Distance", getRearDistance());
@@ -82,6 +88,9 @@ public class FollowerWheels extends Subsystem {
         SmartDashboard.putNumber("Right Ticks", getRightTicks());
         SmartDashboard.putNumber("Rear Ticks", getRearTicks());
 
+        if (mCSVWriter != null) {
+            mCSVWriter.write();
+        }
     }
 
     @Override
@@ -144,6 +153,19 @@ public class FollowerWheels extends Subsystem {
     public double getHeading() {
         return Math.toDegrees((getRightDistance() - getLeftDistance()) / Constants
                 .kFollowerWheelTrackWidthInches);
+    }
+
+    public synchronized void startLogging() {
+        if (mCSVWriter == null) {
+            mCSVWriter = new ReflectingCSVWriter<>("/home/lvuser/ELEVATOR-LOGS.csv", PeriodicInputs.class);
+        }
+    }
+
+    public synchronized void stopLogging() {
+        if (mCSVWriter != null) {
+            mCSVWriter.flush();
+            mCSVWriter = null;
+        }
     }
 
     private static class PeriodicInputs {

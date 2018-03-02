@@ -26,7 +26,7 @@ public abstract class Subsystem {
 
     public abstract boolean checkSystem();
 
-    public abstract void outputToSmartDashboard();
+    public abstract void outputTelemetry();
 
     public abstract void stop();
 

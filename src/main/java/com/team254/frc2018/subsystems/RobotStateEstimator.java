@@ -29,7 +29,7 @@ public class RobotStateEstimator extends Subsystem {
     }
 
     @Override
-    public void outputToSmartDashboard() {
+    public void outputTelemetry() {
         // No-op
     }
 

@@ -1,5 +1,6 @@
 package com.team254.lib.physics;
 
+import com.team254.lib.util.CSVWritable;
 import com.team254.lib.util.Util;
 
 import java.text.DecimalFormat;
@@ -333,7 +334,7 @@ public class DifferentialDrive {
 
     // Full state dynamics of the drivetrain.
     // TODO maybe make these all optional fields and have a single solveDynamics() method that fills in the blanks?
-    public static class DriveDynamics {
+    public static class DriveDynamics implements CSVWritable {
         public ChassisState chassis_velocity = new ChassisState();  // m/s
         public ChassisState chassis_acceleration = new ChassisState();  // m/s^2
         public WheelState wheel_velocity = new WheelState();  // rad/s
@@ -341,6 +342,7 @@ public class DifferentialDrive {
         public WheelState voltage = new WheelState();  // V
         public WheelState wheel_torque = new WheelState();  // N m
 
+        @Override
         public String toCSV() {
             return chassis_velocity + ", " + chassis_acceleration + ", " + wheel_velocity + ", " + wheel_acceleration
                     + ", " + voltage + ", " + wheel_torque;

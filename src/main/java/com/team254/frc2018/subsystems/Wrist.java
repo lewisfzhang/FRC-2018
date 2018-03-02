@@ -10,6 +10,7 @@ import com.team254.frc2018.loops.Loop;
 import com.team254.lib.drivers.TalonSRXChecker;
 import com.team254.lib.drivers.TalonSRXFactory;
 import com.team254.lib.drivers.TalonSRXUtil;
+import com.team254.lib.util.ReflectingCSVWriter;
 import com.team254.lib.util.Util;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -34,6 +35,7 @@ public class Wrist extends Subsystem {
     private double mZeroPosition = Double.NaN;
     private SystemState mSystemState = SystemState.HOMING;
     private SystemState mDesiredState = SystemState.CLOSED_LOOP;
+    private ReflectingCSVWriter<PeriodicInputs> mCSVWriter = null;
 
     private Wrist() {
         mMaster = TalonSRXFactory.createDefaultTalon(Constants.KWristMasterId);
@@ -172,7 +174,7 @@ public class Wrist extends Subsystem {
     }
 
     @Override
-    public synchronized void outputToSmartDashboard() {
+    public synchronized void outputTelemetry() {
 //        if (!Double.isNaN(mZeroPosition)) {
         SmartDashboard.putNumber("Wrist Angle", getAngle());
         SmartDashboard.putNumber("Wrist Position", getPosition());
@@ -195,6 +197,10 @@ public class Wrist extends Subsystem {
         SmartDashboard.putNumber("elevator accel G", mElevator.getActiveTrajectoryAccelG());
 
         SmartDashboard.putNumber("Wrist feedforward", mPeriodicInputs.feedforward_);
+
+        if (mCSVWriter != null) {
+            mCSVWriter.write();
+        }
 
     }
 
@@ -390,6 +396,7 @@ public class Wrist extends Subsystem {
         }
 //        mPeriodicInputs.limit_switch_ = mMaster.getSensorCollection().isRevLimitSwitchClosed();
         mPeriodicInputs.limit_switch_ = mCanifier.getLimR();
+        mPeriodicInputs.output_voltage_ = mMaster.getMotorOutputVoltage();
         mPeriodicInputs.output_percent_ = mMaster.getMotorOutputPercent();
         mPeriodicInputs.position_ticks_ = mMaster.getSelectedSensorPosition(0);
         mPeriodicInputs.velocity_ticks_per_100ms_ = mMaster.getSelectedSensorVelocity(0);
@@ -403,6 +410,9 @@ public class Wrist extends Subsystem {
             mPeriodicInputs.feedforward_ = (elevatorAccelerationComponent + 1.0) * wristGravityComponent;
         } else {
             mPeriodicInputs.feedforward_ = 0.0;
+        }
+        if (mCSVWriter != null) {
+            mCSVWriter.add(mPeriodicInputs);
         }
     }
 
@@ -432,6 +442,19 @@ public class Wrist extends Subsystem {
                 });
     }
 
+    public synchronized void startLogging() {
+        if (mCSVWriter == null) {
+            mCSVWriter = new ReflectingCSVWriter<>("/home/lvuser/WRIST-LOGS.csv", PeriodicInputs.class);
+        }
+    }
+
+    public synchronized void stopLogging() {
+        if (mCSVWriter != null) {
+            mCSVWriter.flush();
+            mCSVWriter = null;
+        }
+    }
+
     public enum SystemState {
         HOMING,
         CLOSED_LOOP,
@@ -445,6 +468,7 @@ public class Wrist extends Subsystem {
         public int active_trajectory_velocity_;
         public double active_trajectory_acceleration_rad_per_s2_;
         public double output_percent_;
+        public double output_voltage_;
         public double feedforward_;
         public boolean limit_switch_;
     }

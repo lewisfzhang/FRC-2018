@@ -331,12 +331,12 @@ public class Robot extends IterativeRobot {
 
     public void outputToSmartDashboard() {
         RobotState.getInstance().outputToSmartDashboard();
-        FollowerWheels.getInstance().outputToSmartDashboard();
-        Drive.getInstance().outputToSmartDashboard();
-        Wrist.getInstance().outputToSmartDashboard();
-        Intake.getInstance().outputToSmartDashboard();
-        Elevator.getInstance().outputToSmartDashboard();
-        Infrastructure.getInstance().outputToSmartDashboard();
+        FollowerWheels.getInstance().outputTelemetry();
+        Drive.getInstance().outputTelemetry();
+        Wrist.getInstance().outputTelemetry();
+        Intake.getInstance().outputTelemetry();
+        Elevator.getInstance().outputTelemetry();
+        Infrastructure.getInstance().outputTelemetry();
         mEnabledLooper.outputToSmartDashboard();
         // SmartDashboard.updateValues();
     }

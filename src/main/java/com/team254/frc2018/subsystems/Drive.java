@@ -14,6 +14,7 @@ import com.team254.lib.drivers.TalonSRXChecker;
 import com.team254.lib.drivers.TalonSRXFactory;
 import com.team254.lib.geometry.Rotation2d;
 import com.team254.lib.util.DriveSignal;
+import com.team254.lib.util.ReflectingCSVWriter;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -38,6 +39,8 @@ public class Drive extends Subsystem {
     private boolean mAutoShift;
     private boolean mIsHighGear;
     private boolean mIsBrakeMode;
+    private ReflectingCSVWriter<PeriodicInputs> mCSVWriter = null;
+
     private final Loop mLoop = new Loop() {
         @Override
         public void onStart(double timestamp) {
@@ -238,7 +241,7 @@ public class Drive extends Subsystem {
     }
 
     @Override
-    public void outputToSmartDashboard() {
+    public void outputTelemetry() {
         SmartDashboard.putNumber("Right Drive Distance", mPeriodicInputs.right_distance_);
         SmartDashboard.putNumber("Right Drive Ticks", mPeriodicInputs.right_position_ticks_);
         SmartDashboard.putNumber("Left Drive Ticks", mPeriodicInputs.left_position_ticks_);
@@ -247,6 +250,9 @@ public class Drive extends Subsystem {
         SmartDashboard.putNumber("Left Linear Velocity", getLeftLinearVelocity());
         if(getHeading() != null) {
             SmartDashboard.putNumber("Gyro Heading", getHeading().getDegrees());
+        }
+        if (mCSVWriter != null) {
+            mCSVWriter.write();
         }
     }
 
@@ -350,6 +356,10 @@ public class Drive extends Subsystem {
         } else {
             mPeriodicInputs.right_distance_ += deltaRightTicks * Constants.kDriveWheelDiameterInchesReverse;
         }
+
+        if (mCSVWriter != null) {
+            mCSVWriter.add(mPeriodicInputs);
+        }
     }
 
     @Override
@@ -395,6 +405,19 @@ public class Drive extends Subsystem {
                     }
                 });
         return leftSide && rightSide;
+    }
+
+    public synchronized void startLogging() {
+        if (mCSVWriter == null) {
+            mCSVWriter = new ReflectingCSVWriter<>("/home/lvuser/DRIVE-LOGS.csv", PeriodicInputs.class);
+        }
+    }
+
+    public synchronized void stopLogging() {
+        if (mCSVWriter != null) {
+            mCSVWriter.flush();
+            mCSVWriter = null;
+        }
     }
 
     // The robot drivetrain's various states.

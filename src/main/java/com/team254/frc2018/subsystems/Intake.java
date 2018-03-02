@@ -54,7 +54,7 @@ public class Intake extends Subsystem {
     }
 
     @Override
-    public void outputToSmartDashboard() {
+    public void outputTelemetry() {
         SmartDashboard.putBoolean("LeftBanner", getLeftBannerSensor());
         SmartDashboard.putBoolean("RightBanner", getRightBannerSensor());
     }

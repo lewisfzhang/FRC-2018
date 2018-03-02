@@ -48,7 +48,7 @@ public class Forklift extends Subsystem {
     }
 
     @Override
-    public void outputToSmartDashboard() {
+    public void outputTelemetry() {
     }
 
     @Override

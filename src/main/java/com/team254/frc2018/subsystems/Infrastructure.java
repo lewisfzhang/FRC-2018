@@ -33,7 +33,7 @@ public class Infrastructure extends Subsystem {
     }
 
     @Override
-    public void outputToSmartDashboard() {
+    public void outputTelemetry() {
     }
 
     @Override
