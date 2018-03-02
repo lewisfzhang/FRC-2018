@@ -394,7 +394,8 @@ public class Wrist extends Subsystem {
         mPeriodicInputs.position_ticks_ = mMaster.getSelectedSensorPosition(0);
         mPeriodicInputs.velocity_ticks_per_100ms_ = mMaster.getSelectedSensorVelocity(0);
 
-        if (getAngle() > Constants.kWristEpsilon) {
+        if (getAngle() > Constants.kWristEpsilon ||
+                sensorUnitsToDegrees(mPeriodicInputs.active_trajectory_position_) > Constants.kWristEpsilon) {
             double wristGravityComponent = Math.cos(Math.toRadians(getAngle())) * (mIntake.hasCube() ? Constants
                     .kWristKfMultiplierWithCube : Constants.kWristKfMultiplierWithoutCube);
             double elevatorAccelerationComponent = mElevator.getActiveTrajectoryAccelG() * Constants
