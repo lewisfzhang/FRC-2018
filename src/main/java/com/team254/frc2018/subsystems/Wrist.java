@@ -336,7 +336,7 @@ public class Wrist extends Subsystem {
 
     public synchronized boolean hasFinishedTrajectory() {
         if (Util.epsilonEquals(mPeriodicInputs.active_trajectory_position_,
-                getSetpoint(), 2)) {
+                degreesToSensorUnits(getSetpoint()), 2)) {
             return true;
         }
         return false;
@@ -460,7 +460,7 @@ public class Wrist extends Subsystem {
         OPEN_LOOP,
     }
 
-    private static class PeriodicInputs {
+    public static class PeriodicInputs {
         public int position_ticks_;
         public int velocity_ticks_per_100ms_;
         public int active_trajectory_position_;

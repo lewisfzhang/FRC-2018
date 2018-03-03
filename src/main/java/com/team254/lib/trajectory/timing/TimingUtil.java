@@ -203,8 +203,10 @@ public class TimingUtil {
                 timed_states.get(i - 1).set_acceleration(accel);
                 if (Math.abs(accel) > Util.kEpsilon) {
                     dt = (constrained_state.max_velocity - v) / accel;
-                } else {
+                } else if (Math.abs(v) > Util.kEpsilon) {
                     dt = ds / v;
+                } else {
+                    throw new RuntimeException();
                 }
             }
             t += dt;

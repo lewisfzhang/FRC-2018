@@ -200,6 +200,10 @@ public class Intake extends Subsystem {
         mStateMachine.setWantedJawState(IntakeState.JawState.CLAMPED);
     }
 
+    public synchronized void closeJaw() {
+        mStateMachine.setWantedJawState(IntakeState.JawState.CLOSED);
+    }
+
     @Override
     public void readPeriodicInputs() {
         mCanifier.readPeriodicInputs();

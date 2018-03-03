@@ -85,6 +85,7 @@ public class Robot extends IterativeRobot {
             FollowerWheels.getInstance().zeroSensors();
             RobotState.getInstance().reset(Timer.getFPGATimestamp(), Pose2d.identity());
 
+            mDrive.stopLogging();
             mDisabledLooper.start();
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
@@ -112,6 +113,7 @@ public class Robot extends IterativeRobot {
             mAutoModeExecuter.setAutoMode(AutoModeSelector.getSelectedAutoMode());
             mAutoModeExecuter.start();
 
+            mDrive.startLogging();
             mEnabledLooper.start();
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
@@ -131,6 +133,7 @@ public class Robot extends IterativeRobot {
             mInfrastructure.setIsDuringAuto(false);
 
             RobotState.getInstance().reset(Timer.getFPGATimestamp(), Pose2d.identity());
+            mDrive.stopLogging();
             mEnabledLooper.start();
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
@@ -231,7 +234,7 @@ public class Robot extends IterativeRobot {
                     mIntake.setPower(0.0);
                 }
             } else {
-                mIntake.clampJaw();
+                mIntake.closeJaw();
             }
 
 

@@ -122,7 +122,7 @@ public class SuperstructureMotionPlannerTest {
             assertEquals(PIVOT_MAX_ANGLE, command.angle, EPSILON, "wrist must not go past max limit");
         }
     }
-
+/*
     @Test
     public void testWristStowsForBigMovements() {
         // Start with intake on ground
@@ -158,7 +158,6 @@ public class SuperstructureMotionPlannerTest {
         }
     }
 
-    /*
     @Test
     public void testCantCommandToIllegalCrossBarZone() {
         // Start with intake on ground

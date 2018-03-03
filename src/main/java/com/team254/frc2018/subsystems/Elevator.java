@@ -347,7 +347,7 @@ public class Elevator extends Subsystem {
         MOTION_MAGIC
     }
 
-    private static class PeriodicInputs {
+    public static class PeriodicInputs {
         public int position_ticks_;
         public int velocity_ticks_per_100ms_;
         public double active_trajectory_accel_g_;
