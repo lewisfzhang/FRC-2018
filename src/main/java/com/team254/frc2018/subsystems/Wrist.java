@@ -193,8 +193,6 @@ public class Wrist extends Subsystem {
         SmartDashboard.putNumber("Wrist Traj Vel", mPeriodicInputs.active_trajectory_velocity_);
         SmartDashboard.putNumber("Wrist Traj Accel", mPeriodicInputs.active_trajectory_acceleration_rad_per_s2_);
         SmartDashboard.putBoolean("Wrist Has Sent Trajectory", hasFinishedTrajectory());
-        SmartDashboard.putNumber("elevator accel G", mElevator.getActiveTrajectoryAccelG());
-
         SmartDashboard.putNumber("Wrist feedforward", mPeriodicInputs.feedforward_);
 
         if (mCSVWriter != null) {
