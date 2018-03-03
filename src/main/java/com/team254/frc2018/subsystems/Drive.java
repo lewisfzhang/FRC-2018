@@ -103,6 +103,8 @@ public class Drive extends Subsystem {
         mLeftMaster.setSensorPhase(true);
         mLeftMaster.enableVoltageCompensation(true);
         mLeftMaster.configVoltageCompSaturation(12.0, Constants.kLongCANTimeoutMs);
+        mLeftMaster.configVelocityMeasurementPeriod(VelocityMeasPeriod.Period_10Ms, Constants.kLongCANTimeoutMs);
+        mLeftMaster.configVelocityMeasurementWindow(32, Constants.kLongCANTimeoutMs);
 
         mLeftSlaveA = TalonSRXFactory.createPermanentSlaveTalon(Constants.kLeftDriveSlaveAId,
                 Constants.kLeftDriveMasterId);
@@ -122,6 +124,8 @@ public class Drive extends Subsystem {
         mRightMaster.setSensorPhase(true);
         mRightMaster.enableVoltageCompensation(true);
         mRightMaster.configVoltageCompSaturation(12.0, Constants.kLongCANTimeoutMs);
+        mRightMaster.configVelocityMeasurementPeriod(VelocityMeasPeriod.Period_10Ms, Constants.kLongCANTimeoutMs);
+        mRightMaster.configVelocityMeasurementWindow(32, Constants.kLongCANTimeoutMs);
 
         mRightSlaveA = TalonSRXFactory.createPermanentSlaveTalon(Constants.kRightDriveSlaveAId,
                 Constants.kRightDriveMasterId);
