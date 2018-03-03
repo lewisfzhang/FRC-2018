@@ -181,6 +181,10 @@ public class Drive extends Subsystem {
         return inchesToRotations(inches_per_second) * 60;
     }
 
+    private static double radiansPerSecondToTicksPer100ms(double rad_s) {
+        return (rad_s / Math.PI * 2.0) * 4096.0 / 10.0;
+    }
+
     @Override
     public void registerEnabledLoops(ILooper in) {
         in.register(mLoop);
@@ -210,33 +214,16 @@ public class Drive extends Subsystem {
             // We entered a velocity control state.
             setBrakeMode(true);
             mAutoShift = false;
-            mLeftMaster.selectProfileSlot(kHighGearVelocityControlSlot, 0);
-            mRightMaster.selectProfileSlot(kHighGearVelocityControlSlot, 0);
+            mLeftMaster.selectProfileSlot(kLowGearVelocityControlSlot, 0);
+            mRightMaster.selectProfileSlot(kLowGearVelocityControlSlot, 0);
 
             mDriveControlState = DriveControlState.PATH_FOLLOWING;
         }
         mPeriodicOutputs.left_output_ = signal.getLeft();
         mPeriodicOutputs.right_output_ = signal.getRight();
-        mPeriodicOutputs.left_feedforward_ = feedforward.getLeft();
-        mPeriodicOutputs.right_feedforward_ = feedforward.getRight();
-    }
-
-    private synchronized void setVelocity(DriveSignal signal) {
-        if (mDriveControlState != DriveControlState.PATH_FOLLOWING) {
-            // We entered a velocity control state.
-            setBrakeMode(true);
-            mAutoShift = false;
-            mLeftMaster.selectProfileSlot(kHighGearVelocityControlSlot, 0);
-            mRightMaster.selectProfileSlot(kHighGearVelocityControlSlot, 0);
-
-            mDriveControlState = DriveControlState.PATH_FOLLOWING;
-        }
-        mPeriodicOutputs.left_output_ = signal.getLeft();
-        mPeriodicOutputs.right_output_ = signal.getRight();
-        mPeriodicOutputs.left_feedforward_ = 0.0;
-        mPeriodicOutputs.right_feedforward_ = 0.0;
-//        mPeriodicOutputs.left_feedforward_ = Constants.kDriveVIntercept + Constants.kDriveKv * mPeriodicOutputs.left_output_;
-//        mPeriodicOutputs.right_feedforward_ = Constants.kDriveVIntercept + Constants.kDriveKv * mPeriodicOutputs.right_output_;
+        // TODO reenable after tuning!
+        // mPeriodicOutputs.left_feedforward_ = feedforward.getLeft();
+        // mPeriodicOutputs.right_feedforward_ = feedforward.getRight();
     }
 
     public synchronized void setTrajectory(TrajectoryIterator<TimedState<Pose2dWithCurvature>> trajectory) {
@@ -366,13 +353,11 @@ public class Drive extends Subsystem {
 
     private void updatePathFollower() {
         if(mDriveControlState == DriveControlState.PATH_FOLLOWING) {
-            if(!mMotionPlanner.isDone()) {
-                DriveMotionPlanner.Output output = mMotionPlanner.update(Timer.getFPGATimestamp());
-                DriveSignal signal = new DriveSignal(output.left_feedforward_voltage / 12.0, output.right_feedforward_voltage / 12.0);
-                setVelocity(signal);
-            } else {
-                setOpenLoop(DriveSignal.BRAKE);
-            }
+            DriveMotionPlanner.Output output = mMotionPlanner.update(Timer.getFPGATimestamp());
+            // DriveSignal signal = new DriveSignal(output.left_feedforward_voltage / 12.0, output.right_feedforward_voltage / 12.0);
+
+            setVelocity(new DriveSignal(radiansPerSecondToTicksPer100ms(output.left_velocity), radiansPerSecondToTicksPer100ms(output.right_velocity)),
+                    new DriveSignal(output.left_feedforward_voltage / 12.0, output.right_feedforward_voltage / 12.0));
         } else {
             DriverStation.reportError("Drive is not in path following state", false);
         }
@@ -438,12 +423,10 @@ public class Drive extends Subsystem {
 
     @Override
     public synchronized void writePeriodicOutputs() {
-//        mLeftMaster.set(mDriveControlState == DriveControlState.OPEN_LOOP ? ControlMode.PercentOutput :
-//                ControlMode.Velocity, mPeriodicOutputs.left_output_, DemandType.ArbitraryFeedForward, mPeriodicOutputs.left_feedforward_);
-//        mRightMaster.set(mDriveControlState == DriveControlState.OPEN_LOOP ? ControlMode.PercentOutput :
-//                ControlMode.Velocity, mPeriodicOutputs.right_output_, DemandType.ArbitraryFeedForward, mPeriodicOutputs.right_feedforward_);
-        mLeftMaster.set(ControlMode.PercentOutput, mPeriodicOutputs.left_output_);
-        mRightMaster.set(ControlMode.PercentOutput, mPeriodicOutputs.right_output_);
+        mLeftMaster.set(mDriveControlState == DriveControlState.OPEN_LOOP ? ControlMode.PercentOutput :
+                ControlMode.Velocity, mPeriodicOutputs.left_output_, DemandType.ArbitraryFeedForward, mPeriodicOutputs.left_feedforward_);
+        mRightMaster.set(mDriveControlState == DriveControlState.OPEN_LOOP ? ControlMode.PercentOutput :
+                ControlMode.Velocity, mPeriodicOutputs.right_output_, DemandType.ArbitraryFeedForward, mPeriodicOutputs.right_feedforward_);
         mPeriodicInputs.left_velocity_setpoint_ = mPeriodicOutputs.left_output_;
         mPeriodicInputs.right_velocity_setpoint_ = mPeriodicOutputs.right_output_;
 

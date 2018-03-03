@@ -21,7 +21,7 @@ public class Constants {
     public static final double kFollowerWheelDiameterInches = 2.28;
     public static final double kFollowerWheelDiameterInchesForwards = 2.26317884466;
     public static final double kFollowerWheelDiameterInchesReverse = 2.34640434375;
-    public static final double kDriveWheelTrackWidthInches = 26.0;  // TODO: measure
+    public static final double kDriveWheelTrackWidthInches = 25.5;  // TODO: measure
     public static final double kDriveWheelDiameterInches = 3.92820959548; // TODO: measure
     public static final double kDriveWheelRadiusInches = kDriveWheelDiameterInches / 2.0; // TODO: measure
     public static final double kDriveWheelDiameterInchesForwards = 3.82694495937;
