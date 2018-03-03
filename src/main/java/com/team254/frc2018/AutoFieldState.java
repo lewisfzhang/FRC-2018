@@ -91,5 +91,14 @@ public class AutoFieldState {
     public Pose2d getStartPose() {
         return startPose;
     }
-    
+
+    @Override
+    public String toString() {
+        return "AutoFieldState{" +
+                "ourSwitchSide=" + ourSwitchSide +
+                ", scaleSide=" + scaleSide +
+                ", opponentSwitchSide=" + opponentSwitchSide +
+                ", startPose=" + startPose +
+                '}';
+    }
 }

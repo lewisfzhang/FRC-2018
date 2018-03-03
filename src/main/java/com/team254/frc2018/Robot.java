@@ -12,6 +12,7 @@ import com.team254.lib.geometry.Pose2d;
 import com.team254.lib.util.CheesyDriveHelper;
 import com.team254.lib.util.CrashTracker;
 import com.team254.lib.util.LatchedBoolean;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -23,6 +24,7 @@ public class Robot extends IterativeRobot {
     private Looper mDisabledLooper = new Looper();
     private CheesyDriveHelper mCheesyDriveHelper = new CheesyDriveHelper();
     private IControlBoard mControlBoard = ControlBoard.getInstance();
+    private AutoFieldState mAutoFieldState = new AutoFieldState();
 
     private final SubsystemManager mSubsystemManager = new SubsystemManager(
             Arrays.asList(
@@ -159,6 +161,8 @@ public class Robot extends IterativeRobot {
             outputToSmartDashboard();
             mWrist.resetIfAtLimit();
             mElevator.resetIfAtLimit();
+
+            mAutoFieldState.setSides(DriverStation.getInstance().getGameSpecificMessage());
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
             throw t;
