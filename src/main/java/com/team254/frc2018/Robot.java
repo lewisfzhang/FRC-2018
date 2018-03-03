@@ -233,7 +233,7 @@ public class Robot extends IterativeRobot {
                     mIntake.setPower(0.0);
                 }
             } else {
-                mIntake.clampJaw();
+                mIntake.closeJaw();
             }
 
 
