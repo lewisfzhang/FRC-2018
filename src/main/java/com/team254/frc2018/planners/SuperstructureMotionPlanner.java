@@ -97,7 +97,7 @@ public class SuperstructureMotionPlanner {
         swapJaw.jawClamped = desiredState.jawClamped;
 
         // Immediate return, totally illegal commands.
-        if (desiredState.inIllegalZone() || desiredState.inIllegalJawZone() || swapJaw.inIllegalJawZone()) {
+        if (desiredState.inIllegalJawZone() || swapJaw.inIllegalJawZone()) {
             // Desired state is not legal.  Return false, let the caller deal with it.
             return false;
         }
