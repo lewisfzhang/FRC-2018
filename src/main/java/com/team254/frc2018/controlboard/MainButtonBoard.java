@@ -71,24 +71,14 @@ public class MainButtonBoard implements IButtonControlBoard {
 
     //Jog Elevator
     @Override
-    public boolean getJogElevatorUp() {
-    		return mButtonBoard.getRawButton(1);
-    }
-
-    @Override
-    public boolean getJogElevatorDown() {
-        return mButtonBoard.getRawButton(2);
+    public double getJogElevatorThrottle() {
+        return mButtonBoard.getRawButton(1) ? 0.5 : (mButtonBoard.getRawButton(2) ? -0.5 : 0.0);
     }
 
     //Jog Wrist
     @Override
-    public boolean getJogWristBack() {
-        return mButtonBoard.getRawButton(11);
-    }
-
-    @Override
-    public boolean getJogWristForward() {
-        return mButtonBoard.getRawButton(12);
+    public double getJogWristThrottle() {
+        return mButtonBoard.getRawButton(11) ? 0.5 : (mButtonBoard.getRawButton(12) ? -0.5 : 0.0);
     }
 
     //Intake

@@ -314,16 +314,16 @@ public class Robot extends IterativeRobot {
                 mSuperstructure.setDesiredHeight(desired_height);
             }
 
-            if (mControlBoard.getJogElevatorUp()) {
-                mSuperstructure.setElevatorJog(SuperstructureConstants.kElevatorJogUpThrottle);
-            } else if (mControlBoard.getJogElevatorDown()) {
-                mSuperstructure.setElevatorJog(SuperstructureConstants.kElevatorJogDownThrottle);
+            double elevator_jog =  mControlBoard.getJogElevatorThrottle();
+            if (Math.abs(elevator_jog) > Constants.kJoystickJogThreshold) {
+                mSuperstructure.setElevatorJog(
+                        elevator_jog * SuperstructureConstants.kElevatorJogThrottle);
             }
 
-            if (mControlBoard.getJogWristForward()) {
-                mSuperstructure.setWristJog(SuperstructureConstants.kWristJogUpThrottle);
-            } else if (mControlBoard.getJogWristBack()) {
-                mSuperstructure.setWristJog(SuperstructureConstants.kWristJogDownThrottle);
+            double wrist_jog = mControlBoard.getJogWristThrottle();
+            if (Math.abs(wrist_jog) > Constants.kJoystickJogThreshold) {
+                mSuperstructure.setWristJog(
+                        wrist_jog * SuperstructureConstants.kWristJogThrottle);
             }
 
             outputToSmartDashboard();

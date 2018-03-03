@@ -24,14 +24,10 @@ public interface IButtonControlBoard {
     boolean getGoToStowHeight();
 
     //Jog Elevator
-    boolean getJogElevatorUp();
-
-    boolean getJogElevatorDown();
+    double getJogElevatorThrottle();
 
     //Jog Wrist
-    boolean getJogWristBack();
-
-    boolean getJogWristForward();
+    double getJogWristThrottle();
 
     //Intake
     boolean getRunIntake();
