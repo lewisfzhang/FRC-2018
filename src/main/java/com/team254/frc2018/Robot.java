@@ -32,7 +32,6 @@ public class Robot extends IterativeRobot {
             Arrays.asList(
                     RobotStateEstimator.getInstance(),
                     Drive.getInstance(),
-                    FollowerWheels.getInstance(),
                     Superstructure.getInstance(),
                     Intake.getInstance(),
                     Wrist.getInstance(),
@@ -83,7 +82,6 @@ public class Robot extends IterativeRobot {
             mEnabledLooper.stop();
 
             Drive.getInstance().zeroSensors();
-            FollowerWheels.getInstance().zeroSensors();
             RobotState.getInstance().reset(Timer.getFPGATimestamp(), Pose2d.identity());
 
             mDrive.stopLogging();
@@ -105,7 +103,6 @@ public class Robot extends IterativeRobot {
             RobotState.getInstance().reset(Timer.getFPGATimestamp(), Pose2d.identity());
 
             Drive.getInstance().zeroSensors();
-            FollowerWheels.getInstance().zeroSensors();
             mInfrastructure.setIsDuringAuto(true);
 
             AutoModeExecuter mAutoModeExecuter = new AutoModeExecuter();
@@ -128,7 +125,6 @@ public class Robot extends IterativeRobot {
             CrashTracker.logTeleopInit();
             mDisabledLooper.stop();
 
-            FollowerWheels.getInstance().zeroSensors();
             mInfrastructure.setIsDuringAuto(false);
 
             RobotState.getInstance().reset(Timer.getFPGATimestamp(), Pose2d.identity());
@@ -340,7 +336,6 @@ public class Robot extends IterativeRobot {
 
     public void outputToSmartDashboard() {
         RobotState.getInstance().outputToSmartDashboard();
-        FollowerWheels.getInstance().outputTelemetry();
         Drive.getInstance().outputTelemetry();
         Wrist.getInstance().outputTelemetry();
         Intake.getInstance().outputTelemetry();
