@@ -33,19 +33,19 @@ public class CarriageCanifier extends Subsystem {
         return mCanifier.getQuadraturePosition();
     }
 
-    public boolean getLeftBannerSensor() {
+    public synchronized boolean getLeftBannerSensor() {
         return mPeriodicInputs.left_sensor_state_;
     }
 
-    public boolean getRightBannerSensor() {
+    public synchronized boolean getRightBannerSensor() {
         return mPeriodicInputs.right_sensor_state_;
     }
 
-    public boolean getLimR() {
+    public synchronized boolean getLimR() {
         return mPeriodicInputs.limr_;
     }
 
-    public void resetWristEncoder() {
+    public synchronized void resetWristEncoder() {
         mCanifier.setQuadraturePosition(0, 0 );
     }
 
