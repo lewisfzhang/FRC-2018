@@ -24,6 +24,7 @@ public class Intake extends Subsystem {
     private final Solenoid mCloseSolenoid, mClampSolenoid; //open->false, false; close->true, false; clamp->true, true;
     private final TalonSRX mLeftMaster, mRightMaster;
     private final CarriageCanifier mCanifier = CarriageCanifier.getInstance();
+    private final LED mLED = LED.getInstance();
     private IntakeStateMachine.WantedAction mWantedAction = IntakeStateMachine.WantedAction.WANT_MANUAL;
     private IntakeState.JawState mJawState;
     private IntakeState mCurrentState = new IntakeState();
@@ -136,7 +137,8 @@ public class Intake extends Subsystem {
         mLeftMaster.set(ControlMode.PercentOutput, state.leftMotor);
         mRightMaster.set(ControlMode.PercentOutput, state.rightMotor);
         setJaw(state.jawState);
-        setLEDsOn(state.ledState.blue, state.ledState.green, state.ledState.red);
+
+        mLED.setIntakeLEDState(state.ledState);
     }
 
     public synchronized boolean hasCube() {
@@ -153,13 +155,6 @@ public class Intake extends Subsystem {
 
     private boolean getRightBannerSensor() {
         return mCanifier.getRightBannerSensor();
-    }
-
-    public void setLEDsOn(double blue, double green, double red) {
-        // A: Blue
-        // B: Green
-        // C: Red
-        mCanifier.setLEDColor(red, green, blue);
     }
 
     public IntakeState.JawState getJawState() {

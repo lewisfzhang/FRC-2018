@@ -46,6 +46,7 @@ public class Robot extends IterativeRobot {
     private Drive mDrive = Drive.getInstance();
     private Intake mIntake = Intake.getInstance();
     private Forklift mForklift = Forklift.getInstance();
+    private LED mLED = LED.getInstance();
     private Wrist mWrist = Wrist.getInstance();
     private Infrastructure mInfrastructure = Infrastructure.getInstance();
     private Superstructure mSuperstructure = Superstructure.getInstance();
@@ -70,6 +71,9 @@ public class Robot extends IterativeRobot {
 
             mSubsystemManager.registerEnabledLoops(mEnabledLooper);
             mSubsystemManager.registerDisabledLoops(mDisabledLooper);
+
+            mLED.registerEnabledLoops(mEnabledLooper);
+            mLED.registerEnabledLoops(mDisabledLooper);
 
             Elevator.getInstance().zeroSensors();
 
@@ -262,6 +266,7 @@ public class Robot extends IterativeRobot {
             }
 
             if (mInHangMode) {
+                mLED.setWantedAction(LED.WantedAction.DISPLAY_HANG);
                 if (mControlBoard.getDeployForks()) {
                     // This is fire once only!
                     mForklift.deploy();
@@ -273,6 +278,7 @@ public class Robot extends IterativeRobot {
                    mSuperstructure.setElevatorLowGear();
                 }
             } else {
+                mLED.setWantedAction(LED.WantedAction.DISPLAY_INTAKE);
                 // Presets.
                 double desired_height = Double.NaN;
                 double desired_angle = Double.NaN;

@@ -1,6 +1,7 @@
 package com.team254.frc2018.statemachines;
 
 import com.team254.frc2018.states.IntakeState;
+import com.team254.frc2018.states.LEDState;
 import com.team254.frc2018.states.SuperstructureConstants;
 
 public class IntakeStateMachine {
@@ -93,7 +94,7 @@ public class IntakeStateMachine {
         } else {
             commandedState.jawState = mWantedJawState;
         }
-        commandedState.ledState = new IntakeState.LEDState(0.0,0.0,0.0);
+        commandedState.ledState.copyFrom(LEDState.kIntakeOpenLoop);
     }
 
     // KEEP_CUBE
@@ -112,11 +113,11 @@ public class IntakeStateMachine {
         if (currentState.seesCube()) {
             commandedState.setPower(kHoldSetpoint);
             commandedState.jawState = clamp ? IntakeState.JawState.CLAMPED : IntakeState.JawState.OPEN;
-            commandedState.ledState = new IntakeState.LEDState(1.0, 0.0, 0.0);
+            commandedState.ledState.copyFrom(LEDState.kIntakeHasCube);
         } else {
             commandedState.setPower(kIntakeCubeSetpoint);
             commandedState.jawState = clamp ? IntakeState.JawState.CLAMPED : (mWantedJawState == IntakeState.JawState.OPEN ? IntakeState.JawState.OPEN : IntakeState.JawState.CLOSED);
-            commandedState.ledState = new IntakeState.LEDState(0.0, 1.0, 0.0);
+            commandedState.ledState.copyFrom(LEDState.kIntakeIntaking);
         }
     }
 

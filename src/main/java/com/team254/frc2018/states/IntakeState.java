@@ -6,19 +6,7 @@ public class IntakeState {
         CLOSED,
         CLAMPED
     }
-    public static class LEDState {
-        public LEDState() {}
 
-        public LEDState(double b, double g, double r) {
-            blue = b;
-            green = g;
-            red = r;
-        }
-
-        public double blue;
-        public double green;
-        public double red;
-    }
     public JawState jawState = JawState.CLOSED;
     public double leftMotor = 0;
     public double rightMotor = 0;
