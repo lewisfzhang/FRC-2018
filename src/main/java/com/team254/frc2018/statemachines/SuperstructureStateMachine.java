@@ -59,8 +59,8 @@ public class SuperstructureStateMachine {
 
     public synchronized void jogWrist(double relative_degrees) {
         mScoringAngle += relative_degrees;
-        mScoringHeight = Math.min(mScoringAngle, SuperstructureConstants.kWristMaxAngle);
-        mScoringHeight = Math.max(mScoringAngle, SuperstructureConstants.kWristMinAngle);
+        mScoringAngle = Math.min(mScoringAngle, SuperstructureConstants.kWristMaxAngle);
+        mScoringAngle = Math.max(mScoringAngle, SuperstructureConstants.kWristMinAngle);
     }
 
     public synchronized boolean scoringPositionChanged() {
