@@ -106,6 +106,7 @@ public class Drive extends Subsystem {
         mLeftMaster.configVoltageCompSaturation(12.0, Constants.kLongCANTimeoutMs);
         mLeftMaster.configVelocityMeasurementPeriod(VelocityMeasPeriod.Period_10Ms, Constants.kLongCANTimeoutMs);
         mLeftMaster.configVelocityMeasurementWindow(32, Constants.kLongCANTimeoutMs);
+        mLeftMaster.configClosedloopRamp(Constants.kDriveVoltageRampRate, Constants.kLongCANTimeoutMs);
 
         mLeftSlaveA = TalonSRXFactory.createPermanentSlaveTalon(Constants.kLeftDriveSlaveAId,
                 Constants.kLeftDriveMasterId);
@@ -127,6 +128,7 @@ public class Drive extends Subsystem {
         mRightMaster.configVoltageCompSaturation(12.0, Constants.kLongCANTimeoutMs);
         mRightMaster.configVelocityMeasurementPeriod(VelocityMeasPeriod.Period_10Ms, Constants.kLongCANTimeoutMs);
         mRightMaster.configVelocityMeasurementWindow(32, Constants.kLongCANTimeoutMs);
+        mRightMaster.configClosedloopRamp(Constants.kDriveVoltageRampRate, Constants.kLongCANTimeoutMs);
 
         mRightSlaveA = TalonSRXFactory.createPermanentSlaveTalon(Constants.kRightDriveSlaveAId,
                 Constants.kRightDriveMasterId);
@@ -187,7 +189,7 @@ public class Drive extends Subsystem {
     }
 
     private static double radiansPerSecondToTicksPer100ms(double rad_s) {
-        return (rad_s / Math.PI * 2.0) * 4096.0 / 10.0;
+        return rad_s /(Math.PI * 2.0) * 4096.0 / 10.0;
     }
 
     @Override
@@ -226,9 +228,8 @@ public class Drive extends Subsystem {
         }
         mPeriodicOutputs.left_output_ = signal.getLeft();
         mPeriodicOutputs.right_output_ = signal.getRight();
-        // TODO reenable after tuning!
-        // mPeriodicOutputs.left_feedforward_ = feedforward.getLeft();
-        // mPeriodicOutputs.right_feedforward_ = feedforward.getRight();
+         mPeriodicOutputs.left_feedforward_ = feedforward.getLeft();
+         mPeriodicOutputs.right_feedforward_ = feedforward.getRight();
     }
 
     public synchronized void setTrajectory(TrajectoryIterator<TimedState<Pose2dWithCurvature>> trajectory) {
@@ -295,6 +296,10 @@ public class Drive extends Subsystem {
         SmartDashboard.putNumber("Left Drive Distance", mPeriodicInputs.left_distance_);
         SmartDashboard.putNumber("Right Linear Velocity", getRightLinearVelocity());
         SmartDashboard.putNumber("Left Linear Velocity", getLeftLinearVelocity());
+
+        SmartDashboard.putNumber("x err", mPeriodicInputs.error_.getTranslation().x());
+        SmartDashboard.putNumber("y err", mPeriodicInputs.error_.getTranslation().y());
+        SmartDashboard.putNumber("theta err", mPeriodicInputs.error_.getRotation().getDegrees());
         if(getHeading() != null) {
             SmartDashboard.putNumber("Gyro Heading", getHeading().getDegrees());
         }
@@ -360,6 +365,7 @@ public class Drive extends Subsystem {
         if(mDriveControlState == DriveControlState.PATH_FOLLOWING) {
             final double now = Timer.getFPGATimestamp();
             DriveMotionPlanner.Output output = mMotionPlanner.update(now, RobotState.getInstance().getFieldToVehicle(now));
+
             // DriveSignal signal = new DriveSignal(output.left_feedforward_voltage / 12.0, output.right_feedforward_voltage / 12.0);
 
             mPeriodicInputs.error_ = mMotionPlanner.getError();
