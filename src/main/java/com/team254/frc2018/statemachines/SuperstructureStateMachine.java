@@ -54,9 +54,14 @@ public class SuperstructureStateMachine {
     public synchronized void jogElevator(double relative_inches) {
         mScoringHeight += relative_inches;
         mScoringHeight = Math.min(mScoringHeight, SuperstructureConstants.kElevatorMaxHeight);
+        mScoringHeight = Math.max(mScoringHeight, SuperstructureConstants.kElevatorMinHeight);
     }
 
-    public synchronized void jogWrist(double relative_degrees) { mScoringAngle += relative_degrees; }
+    public synchronized void jogWrist(double relative_degrees) {
+        mScoringAngle += relative_degrees;
+        mScoringHeight = Math.min(mScoringAngle, SuperstructureConstants.kWristMaxAngle);
+        mScoringHeight = Math.max(mScoringAngle, SuperstructureConstants.kWristMinAngle);
+    }
 
     public synchronized boolean scoringPositionChanged() {
         return !Util.epsilonEquals(mDesiredEndState.angle, mScoringAngle) ||
