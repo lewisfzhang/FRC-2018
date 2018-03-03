@@ -362,6 +362,8 @@ public class Drive extends Subsystem {
             DriveMotionPlanner.Output output = mMotionPlanner.update(now, RobotState.getInstance().getFieldToVehicle(now));
             // DriveSignal signal = new DriveSignal(output.left_feedforward_voltage / 12.0, output.right_feedforward_voltage / 12.0);
 
+            mPeriodicInputs.error_ = mMotionPlanner.getError();
+
             setVelocity(new DriveSignal(radiansPerSecondToTicksPer100ms(output.left_velocity), radiansPerSecondToTicksPer100ms(output.right_velocity)),
                     new DriveSignal(output.left_feedforward_voltage / 12.0, output.right_feedforward_voltage / 12.0));
         } else {
@@ -512,6 +514,7 @@ public class Drive extends Subsystem {
         // TODO this is a hack
         public double left_velocity_setpoint_;
         public double right_velocity_setpoint_;
+        public Pose2d error_ = new Pose2d();
     }
 
     private static class PeriodicOutputs {

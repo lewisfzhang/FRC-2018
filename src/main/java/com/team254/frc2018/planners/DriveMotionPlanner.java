@@ -3,7 +3,6 @@ package com.team254.frc2018.planners;
 import com.team254.frc2018.Constants;
 import com.team254.lib.geometry.Pose2d;
 import com.team254.lib.geometry.Pose2dWithCurvature;
-import com.team254.lib.geometry.Rotation2d;
 import com.team254.lib.physics.DCMotorTransmission;
 import com.team254.lib.physics.DifferentialDrive;
 import com.team254.lib.trajectory.DistanceView;
@@ -27,6 +26,7 @@ public class DriveMotionPlanner {
 
     TrajectoryIterator<TimedState<Pose2dWithCurvature>> mCurrentTrajectory;
     double mLastTime = Double.POSITIVE_INFINITY;
+    Pose2d mError = Pose2d.identity();
 
     public DriveMotionPlanner() {
         final DCMotorTransmission transmission = new DCMotorTransmission(1.0 / Constants.kDriveKv,
@@ -104,13 +104,13 @@ public class DriveMotionPlanner {
                     new DifferentialDrive.ChassisState(Units.inches_to_meters(goal.acceleration()),
                             goal.acceleration() * goal.state().getCurvature()));
 
-            final Pose2d robot_to_goal = current_state.inverse().transformBy(goal.state().getPose());
+            mError = current_state.inverse().transformBy(goal.state().getPose());
             DifferentialDrive.ChassisState adjusted_velocity = new DifferentialDrive.ChassisState();
-            adjusted_velocity.linear = dynamics.chassis_velocity.linear * robot_to_goal.getRotation().cos() + Constants
-                    .kPathKX * robot_to_goal.getTranslation().x();
+            adjusted_velocity.linear = dynamics.chassis_velocity.linear * mError.getRotation().cos() + Constants
+                    .kPathKX * mError.getTranslation().x();
             adjusted_velocity.angular = dynamics.chassis_velocity.angular +
-                    (dynamics.chassis_velocity.linear >= 0.0 ? 1.0 : 0.0) * Constants.kPathKY * robot_to_goal
-                            .getTranslation().y() + Constants.kPathKTheta * robot_to_goal.getRotation().getRadians();
+                    (dynamics.chassis_velocity.linear >= 0.0 ? 1.0 : -1.0) * Constants.kPathKY * mError
+                            .getTranslation().y() + Constants.kPathKTheta * mError.getRotation().getRadians();
 
             // Compute adjusted left and right wheel velocities.
             final DifferentialDrive.WheelState wheel_velocities = mModel.solveInverseKinematics(adjusted_velocity);
@@ -127,5 +127,9 @@ public class DriveMotionPlanner {
 
     public boolean isDone() {
         return mCurrentTrajectory != null && mCurrentTrajectory.isDone();
+    }
+
+    public Pose2d getError() {
+        return mError;
     }
 }
