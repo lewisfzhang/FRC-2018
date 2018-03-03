@@ -23,6 +23,8 @@ public interface IButtonControlBoard {
 
     boolean getGoToStowHeight();
 
+    boolean getBackwardsModifier();
+
     //Jog Elevator
     double getJogElevatorThrottle();
 

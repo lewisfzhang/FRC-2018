@@ -254,23 +254,52 @@ public class Robot extends IterativeRobot {
                 desired_angle = SuperstructureConstants.kIntakePositionAngle;
             }
 
-            // Elevator.
-            if (mControlBoard.getGoToHighScaleHeight() && !mControlBoard.getIntakePosition()) {
-                desired_height = SuperstructureConstants.kScaleHighHeight;
-            } else if (mControlBoard.getGoToNeutralScaleHeight() && !mControlBoard.getIntakePosition()) {
-                desired_height = SuperstructureConstants.kScaleNeutralHeight;
-            } else if (mControlBoard.getGoToLowScaleHeight() && !mControlBoard.getIntakePosition()) {
-                desired_height = SuperstructureConstants.kScaleLowHeight;
-            } else if (mControlBoard.getGoToHighScaleHeight() && mControlBoard.getIntakePosition()) {
-                desired_height = SuperstructureConstants.kIntakeThirdLevelHeight;
-            } else if (mControlBoard.getGoToNeutralScaleHeight() && mControlBoard.getIntakePosition()) {
-                desired_height = SuperstructureConstants.kIntakeSecondLevelHeight;
-            } else if (mControlBoard.getGoToLowScaleHeight() && mControlBoard.getIntakePosition()) {
-                desired_height = SuperstructureConstants.kIntakeFloorLevelHeight;
-            }  else if (mControlBoard.getGoToSwitchHeight()) {
-                desired_height = SuperstructureConstants.kSwitchHeight;
-            } else if (mControlBoard.getHangMode()) {
-                mSuperstructure.setHangThrottle(mControlBoard.getHangThrottle());
+            // Intake Preset locations
+            boolean go_high_scale = mControlBoard.getGoToHighScaleHeight();
+            boolean go_neutral_scale = mControlBoard.getGoToNeutralScaleHeight();
+            boolean go_low_scale = mControlBoard.getGoToLowScaleHeight();
+            boolean go_switch = mControlBoard.getGoToSwitchHeight();
+            if (mControlBoard.getIntakePosition()) {
+                // Angle will come from mRunIntakePressed on first time.
+                if (go_high_scale) {
+                    desired_height = SuperstructureConstants.kIntakeThirdLevelHeight;
+                } else if (go_neutral_scale) {
+                    desired_height = SuperstructureConstants.kIntakeSecondLevelHeight;
+                } else if (go_low_scale) {
+                    desired_height = SuperstructureConstants.kIntakeFloorLevelHeight;
+                }
+            } else if (mControlBoard.getBackwardsModifier()) {
+                // These are score backwards
+                if (go_high_scale) {
+                    desired_height = SuperstructureConstants.kScaleHighHeight;
+                    desired_angle = SuperstructureConstants.kScoreBackwardsAngle;
+                } else if (go_neutral_scale) {
+                    desired_height = SuperstructureConstants.kScaleNeutralHeight;
+                    desired_angle = SuperstructureConstants.kScoreBackwardsAngle;
+                } else if (go_low_scale) {
+                    desired_height = SuperstructureConstants.kScaleLowHeight;
+                    desired_angle = SuperstructureConstants.kScoreBackwardsAngle;
+                } else if (go_switch) {
+                    desired_height = SuperstructureConstants.kSwitchHeight;
+                    desired_angle = SuperstructureConstants.kScoreSwitchBackwardsAngle;
+                }
+            } else {
+                // These are score forward
+                if (go_high_scale) {
+                    desired_height = SuperstructureConstants.kScaleHighHeight;
+                    desired_angle = SuperstructureConstants.kPlacingHighAngle;
+                } else if (go_neutral_scale) {
+                    desired_height = SuperstructureConstants.kScaleNeutralHeight;
+                    desired_angle = SuperstructureConstants.kPlacingHighAngle;
+                } else if (go_low_scale) {
+                    desired_height = SuperstructureConstants.kScaleLowHeight;
+                    desired_angle = SuperstructureConstants.kPlacingHighAngle;
+                } else if (go_switch) {
+                    desired_height = SuperstructureConstants.kSwitchHeight;
+                    desired_angle = SuperstructureConstants.kPlacingLowAngle;
+                } else if (mControlBoard.getHangMode()) {
+                    mSuperstructure.setHangThrottle(mControlBoard.getHangThrottle());
+                }
             }
 
             // Wrist.

@@ -69,6 +69,11 @@ public class MainButtonBoard implements IButtonControlBoard {
         return mButtonBoard.getRawButton(10);
     }
 
+    @Override
+    public boolean getBackwardsModifier() {
+        return false;
+    }
+
     //Jog Elevator
     @Override
     public double getJogElevatorThrottle() {

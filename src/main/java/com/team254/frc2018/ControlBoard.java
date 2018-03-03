@@ -103,6 +103,11 @@ public class ControlBoard implements IControlBoard {
     }
 
     @Override
+    public boolean getBackwardsModifier() {
+        return mButtonControlBoard.getBackwardsModifier();
+    }
+
+    @Override
     public double getJogElevatorThrottle() {
         return mButtonControlBoard.getJogElevatorThrottle();
     }
