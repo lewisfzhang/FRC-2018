@@ -10,12 +10,10 @@ import com.team254.lib.trajectory.DistanceView;
 import com.team254.lib.trajectory.Trajectory;
 import com.team254.lib.trajectory.TrajectoryIterator;
 import com.team254.lib.trajectory.TrajectoryUtil;
-import com.team254.lib.trajectory.timing.DifferentialDriveDynamicsConstraint;
-import com.team254.lib.trajectory.timing.TimedState;
-import com.team254.lib.trajectory.timing.TimingUtil;
-import com.team254.lib.trajectory.timing.VelocityLimitRegionConstraint;
+import com.team254.lib.trajectory.timing.*;
 import com.team254.lib.util.Units;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -50,6 +48,7 @@ public class DriveMotionPlanner {
 
     public Trajectory<TimedState<Pose2dWithCurvature>> generateTrajectory(
             final List<Pose2d> waypoints,
+            final List<TimingConstraint<Pose2dWithCurvature>> constraints,
             double max_vel,  // inches/s
             double max_accel,  // inches/s^2
             double max_voltage) {
@@ -61,14 +60,14 @@ public class DriveMotionPlanner {
         // than the specified voltage.
         final DifferentialDriveDynamicsConstraint<Pose2dWithCurvature> drive_constraints = new
                 DifferentialDriveDynamicsConstraint<>(mModel, max_voltage);
-        final VelocityLimitRegionConstraint<Pose2dWithCurvature> slow_region = new VelocityLimitRegionConstraint<>(
-                new Translation2d(150.0, 70.0), new Translation2d(300.0, 300.0), 60.0
-        );
-
+        List<TimingConstraint<Pose2dWithCurvature>> all_constraints = new ArrayList<>();
+        all_constraints.add(drive_constraints);
+        if (constraints != null) {
+            all_constraints.addAll(constraints);
+        }
         // Generate the timed trajectory.
         Trajectory<TimedState<Pose2dWithCurvature>> timed_trajectory = TimingUtil.timeParameterizeTrajectory(new
-                        DistanceView<>(trajectory), kMaxDx, Arrays.asList(drive_constraints, slow_region),
-                0.0, 0.0, max_vel, max_accel);
+                        DistanceView<>(trajectory), kMaxDx, all_constraints,0.0, 0.0, max_vel, max_accel);
         return timed_trajectory;
     }
 

@@ -5,8 +5,7 @@ import com.team254.lib.geometry.Pose2d;
 import com.team254.lib.geometry.Pose2dWithCurvature;
 import com.team254.lib.trajectory.TrajectoryIterator;
 import com.team254.lib.trajectory.timing.TimedState;
-import com.team254.lib.util.DriveSignal;
-import edu.wpi.first.wpilibj.Timer;
+import com.team254.lib.trajectory.timing.TimingConstraint;
 
 import java.util.List;
 
@@ -15,8 +14,9 @@ public class DriveTrajectory implements Action {
 
     private final TrajectoryIterator<TimedState<Pose2dWithCurvature>> mTrajectory;
 
-    public DriveTrajectory(List<Pose2d> waypoints, double max_vel, double max_accel, double max_voltage) {
-        mTrajectory = mDrive.generateTrajectory(waypoints, max_vel, max_accel, max_voltage);
+    public DriveTrajectory(final List<Pose2d> waypoints, final List<TimingConstraint<Pose2dWithCurvature>>
+            constraints, double max_vel, double max_accel, double max_voltage) {
+        mTrajectory = mDrive.generateTrajectory(waypoints, constraints, max_vel, max_accel, max_voltage);
     }
 
     @Override

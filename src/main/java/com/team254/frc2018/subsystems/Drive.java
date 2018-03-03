@@ -18,6 +18,7 @@ import com.team254.lib.trajectory.TimedView;
 import com.team254.lib.trajectory.Trajectory;
 import com.team254.lib.trajectory.TrajectoryIterator;
 import com.team254.lib.trajectory.timing.TimedState;
+import com.team254.lib.trajectory.timing.TimingConstraint;
 import com.team254.lib.util.DriveSignal;
 import com.team254.lib.util.ReflectingCSVWriter;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -162,10 +163,11 @@ public class Drive extends Subsystem {
 
     public TrajectoryIterator<TimedState<Pose2dWithCurvature>> generateTrajectory(
             final List<Pose2d> waypoints,
+            final List<TimingConstraint<Pose2dWithCurvature>> constraints,
             double max_vel,  // inches/s
             double max_accel,  // inches/s^2
             double max_voltage) {
-        Trajectory<TimedState<Pose2dWithCurvature>> trajectory = mMotionPlanner.generateTrajectory(waypoints, max_vel, max_accel, max_voltage);
+        Trajectory<TimedState<Pose2dWithCurvature>> trajectory = mMotionPlanner.generateTrajectory(waypoints, constraints, max_vel, max_accel, max_voltage);
         TrajectoryIterator<TimedState<Pose2dWithCurvature>> iterator = new TrajectoryIterator<>(new TimedView<>(trajectory));
         return iterator;
     }
