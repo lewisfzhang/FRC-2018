@@ -214,8 +214,7 @@ public class Elevator extends Subsystem {
         SmartDashboard.putBoolean("Elevator Limit", mPeriodicIO.limit_switch);
         SmartDashboard.putNumber("Elevator Sensor Height", mPeriodicIO.position_ticks);
 
-
-        SmartDashboard.putNumber("Elevator Last Expected Trajectory", getSetpoint());
+        SmartDashboard.putNumber("Elevator Last Expected Trajectory", mPeriodicIO.demand);
         SmartDashboard.putNumber("Elevator Current Trajectory Point", mPeriodicIO.active_trajectory_position);
         SmartDashboard.putNumber("Elevator Traj Vel", mPeriodicIO.active_trajectory_velocity);
         SmartDashboard.putNumber("Elevator Traj Accel", mPeriodicIO.active_trajectory_accel_g);

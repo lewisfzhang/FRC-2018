@@ -161,21 +161,10 @@ public class Wrist extends Subsystem {
         return mInstance;
     }
 
-    // Converts sensor units from [0, 4096 / 2] to a position based on zeroed position.
-    private double relativeToAbsolute(double position) {
-        return position + mZeroPosition;
-    }
-
-    // Inverse of above.
-    private double absoluteToRelative(double position) {
-        return position - mZeroPosition;
-    }
-
     @Override
-    public void outputTelemetry() {
+    public synchronized void outputTelemetry() {
         SmartDashboard.putNumber("Wrist Angle", getAngle());
         SmartDashboard.putNumber("Wrist Position", getPosition());
-//        }
         SmartDashboard.putNumber("Wrist Ticks", mPeriodicIO.position_ticks);
         SmartDashboard.putNumber("Wrist periodic demand", mPeriodicIO.demand);
         SmartDashboard.putBoolean("LIMR", mPeriodicIO.limit_switch);
@@ -203,7 +192,6 @@ public class Wrist extends Subsystem {
 
     @Override
     public synchronized void zeroSensors() {
-//        mZeroPosition = mPeriodicIO.position_ticks;
         mMaster.setSelectedSensorPosition(0, 0, 0);
         mCanifier.resetWristEncoder();
 
@@ -271,7 +259,6 @@ public class Wrist extends Subsystem {
     }
 
     public synchronized boolean resetIfAtLimit() {
-//        if (mMaster.getSensorCollection().isRevLimitSwitchClosed()) {
         if (mCanifier.getLimR()) {
             zeroSensors();
             return true;
@@ -283,7 +270,6 @@ public class Wrist extends Subsystem {
      * @param position the target position of the wrist in sensor units
      */
     public void setClosedLoop(int position) {
-//        mPeriodicOutputs.demand = relativeToAbsolute(position);
         mPeriodicIO.demand = (position);
         mDesiredState = SystemState.CLOSED_LOOP;
     }
@@ -292,7 +278,6 @@ public class Wrist extends Subsystem {
      * @param angle the target position of the wrist in degrees.  0 is full back, 180 is facing forwards
      */
     public synchronized void setClosedLoopAngle(double angle) {
-//        mPeriodicOutputs.demand = relativeToAbsolute(degreesToSensorUnits(angle));
         mPeriodicIO.demand = (degreesToSensorUnits(angle));
         mDesiredState = SystemState.CLOSED_LOOP;
     }
@@ -301,7 +286,6 @@ public class Wrist extends Subsystem {
      * @return current position of the wrist in sensor units
      */
     public synchronized double getPosition() { //returns angle of wrist in degrees
-//        return absoluteToRelative(mPeriodicIO.position_ticks);
         return (mPeriodicIO.position_ticks);
     }
 
@@ -309,7 +293,6 @@ public class Wrist extends Subsystem {
      * @return current angle of the wrist in degrees
      */
     public synchronized double getAngle() { //returns angle of wrist in degrees
-//        return sensorUnitsToDegrees(absoluteToRelative(mPeriodicIO.position_ticks));
         return sensorUnitsToDegrees((mPeriodicIO.position_ticks));
     }
 
@@ -336,7 +319,6 @@ public class Wrist extends Subsystem {
     }
 
     public synchronized double getSetpoint() {
-//        return mDesiredState == SystemState.CLOSED_LOOP ? sensorUnitsToDegrees(absoluteToRelative(mPeriodicOutputs
         return mDesiredState == SystemState.CLOSED_LOOP ? sensorUnitsToDegrees((mPeriodicIO
                 .demand)) : Double.NaN;
     }
@@ -386,7 +368,6 @@ public class Wrist extends Subsystem {
             mPeriodicIO.active_trajectory_velocity = 0;
             mPeriodicIO.active_trajectory_acceleration_rad_per_s2 = 0.0;
         }
-//        mPeriodicIO.limit_switch = mMaster.getSensorCollection().isRevLimitSwitchClosed();
         mPeriodicIO.limit_switch = mCanifier.getLimR();
         mPeriodicIO.output_voltage = mMaster.getMotorOutputVoltage();
         mPeriodicIO.output_percent = mMaster.getMotorOutputPercent();

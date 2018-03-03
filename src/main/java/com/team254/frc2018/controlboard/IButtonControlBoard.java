@@ -37,4 +37,13 @@ public interface IButtonControlBoard {
     boolean getIntakePosition();
 
     void setRumble(boolean on);
+
+    //Climbing
+    boolean getEnableHangMode();
+
+    double getElevatorThrottle();
+
+    boolean getDeployForks();
+
+    boolean getElevatorShift();
 }

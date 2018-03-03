@@ -94,6 +94,7 @@ public class Superstructure extends Subsystem {
 
             @Override
             public void onStart(double timestamp) {
+                mStateMachine.resetManual();
             }
 
             @Override
@@ -140,10 +141,14 @@ public class Superstructure extends Subsystem {
         mWantedAction = SuperstructureStateMachine.WantedAction.GO_TO_POSITION;
     }
 
+    public synchronized void setElevatorLowGear() {
+        mStateMachine.setManualWantsLowGear(true);
+        mWantedAction = SuperstructureStateMachine.WantedAction.WANT_MANUAL;
+    }
 
     public synchronized void setHangThrottle(double throttle) {
         mStateMachine.setOpenLoopPower(throttle);
-        mWantedAction = SuperstructureStateMachine.WantedAction.HANG;
+        mWantedAction = SuperstructureStateMachine.WantedAction.WANT_MANUAL;
     }
 
     public synchronized void setWantedAction(SuperstructureStateMachine.WantedAction wantedAction) {

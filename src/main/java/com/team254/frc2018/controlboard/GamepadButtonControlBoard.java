@@ -103,4 +103,25 @@ public class GamepadButtonControlBoard implements IButtonControlBoard {
     public void setRumble(boolean on) {
         mJoystick.setRumble(GenericHID.RumbleType.kRightRumble, on ? 1.0 : 0);
     }
+
+    //Climbing
+    @Override
+    public boolean getEnableHangMode() {
+        return mJoystick.getRawButton(8) && mJoystick.getRawButton(7);
+    }
+
+    @Override
+    public double getElevatorThrottle() {
+        return mJoystick.getRawAxis(5);
+    }
+
+    @Override
+    public boolean getDeployForks() {
+        return mJoystick.getRawButton(1);
+    }
+
+    @Override
+    public boolean getElevatorShift() {
+        return mJoystick.getRawButton(3);
+    }
 }
