@@ -3,6 +3,7 @@ package com.team254.frc2018.planners;
 import com.team254.frc2018.Constants;
 import com.team254.lib.geometry.Pose2d;
 import com.team254.lib.geometry.Pose2dWithCurvature;
+import com.team254.lib.geometry.Translation2d;
 import com.team254.lib.physics.DCMotorTransmission;
 import com.team254.lib.physics.DifferentialDrive;
 import com.team254.lib.trajectory.DistanceView;
@@ -104,6 +105,20 @@ public class DriveMotionPlanner {
                     new DifferentialDrive.ChassisState(Units.inches_to_meters(goal.acceleration()),
                             goal.acceleration() * goal.state().getCurvature()));
 
+            final double kBeta = 1.0;
+            final double kZeta = 0.5;
+
+            final double k1 = 2.0 * kZeta * Math.sqrt(dynamics.chassis_velocity.angular * dynamics.chassis_velocity.angular + kBeta * dynamics.chassis_velocity.linear * dynamics.chassis_velocity.linear);
+            final double k2 = kBeta * dynamics.chassis_velocity.linear;
+            DifferentialDrive.ChassisState adjusted_velocity = new DifferentialDrive.ChassisState();
+
+            final Pose2d error = current_state.inverse().transformBy(goal.state().getPose());
+            final Translation2d error_meters = error.getTranslation().scale(Units.inches_to_meters(1.0));
+            adjusted_velocity.linear = error.getRotation().cos() * dynamics.chassis_velocity.linear
+                    + k1 * (current_state.getRotation().cos() * error_meters.x() + current_state.getRotation().sin() * error_meters.y());
+            adjusted_velocity.angular = dynamics.chassis_velocity.angular + k2 * (dynamics.chassis_velocity.linear >= 0.0 ? 1.0 : -1.0) *
+                    (current_state.getRotation().cos() * error_meters.x() - current_state.getRotation().sin() * error_meters.y()) + k1 * error.getRotation().getRadians();
+                    /*
             mError = current_state.inverse().transformBy(goal.state().getPose());
             DifferentialDrive.ChassisState adjusted_velocity = new DifferentialDrive.ChassisState();
             adjusted_velocity.linear = dynamics.chassis_velocity.linear * mError.getRotation().cos() + Constants
@@ -111,6 +126,7 @@ public class DriveMotionPlanner {
             adjusted_velocity.angular = dynamics.chassis_velocity.angular +
                     (dynamics.chassis_velocity.linear >= 0.0 ? 1.0 : -1.0) * Constants.kPathKY * Units.inches_to_meters(mError
                             .getTranslation().y()) + Constants.kPathKTheta * mError.getRotation().getRadians();
+                            */
 
             // Compute adjusted left and right wheel velocities.
             final DifferentialDrive.WheelState wheel_velocities = mModel.solveInverseKinematics(adjusted_velocity);
