@@ -20,7 +20,8 @@ public class DriveMotionPlannerTest {
 
         double t = 0.0;
         while (!motion_planner.isDone()) {
-            DriveMotionPlanner.Output output = motion_planner.update(t);
+            // TODO fix pose
+            DriveMotionPlanner.Output output = motion_planner.update(t, Pose2d.identity());
             //System.out.println("t: " + t + ", leftv: " + output.left_feedforward_voltage + ", rightv: " + output
             //        .right_feedforward_voltage);
             t += 0.01;

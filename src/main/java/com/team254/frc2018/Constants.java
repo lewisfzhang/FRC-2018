@@ -21,11 +21,9 @@ public class Constants {
     public static final double kFollowerWheelDiameterInches = 2.28;
     public static final double kFollowerWheelDiameterInchesForwards = 2.26317884466;
     public static final double kFollowerWheelDiameterInchesReverse = 2.34640434375;
-    public static final double kDriveWheelTrackWidthInches = 25.5;  // TODO: measure
+    public static final double kDriveWheelTrackWidthInches = 25.54;
     public static final double kDriveWheelDiameterInches = 3.92820959548; // TODO: measure
     public static final double kDriveWheelRadiusInches = kDriveWheelDiameterInches / 2.0; // TODO: measure
-    public static final double kDriveWheelDiameterInchesForwards = 3.82694495937;
-    public static final double kDriveWheelDiameterInchesReverse = 3.94000307575;
     public static final double kTrackScrubFactor = 1.0;  // Tune me!
 
     // Tuned dynamics
@@ -59,6 +57,10 @@ public class Constants {
     public static final double kDriveDownShiftVelocity = 9.5 * 12.0;  // inches per second
     public static final double kDriveDownShiftAngularVelocity = Math.PI / 2.0; // rad/sec
     public static final double kDriveUpShiftVelocity = 11.0 * 12.0;  // inches per second
+
+    public static final double kPathKX = 1.0;  // m/s per meter of error
+    public static final double kPathKY = 1.0;  // rad/s per meter of error
+    public static final double kPathKTheta = 1.0;  // rad/s per rad of error
 
     // PID gains for drive velocity loop (LOW GEAR)
     // Units: setpoint, error, and output are in ticks per second.

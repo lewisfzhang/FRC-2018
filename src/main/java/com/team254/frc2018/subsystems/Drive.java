@@ -5,6 +5,7 @@ import com.ctre.phoenix.motorcontrol.*;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.sensors.PigeonIMU;
 import com.team254.frc2018.Constants;
+import com.team254.frc2018.RobotState;
 import com.team254.frc2018.loops.ILooper;
 import com.team254.frc2018.loops.Loop;
 import com.team254.frc2018.planners.DriveMotionPlanner;
@@ -357,7 +358,8 @@ public class Drive extends Subsystem {
 
     private void updatePathFollower() {
         if(mDriveControlState == DriveControlState.PATH_FOLLOWING) {
-            DriveMotionPlanner.Output output = mMotionPlanner.update(Timer.getFPGATimestamp());
+            final double now = Timer.getFPGATimestamp();
+            DriveMotionPlanner.Output output = mMotionPlanner.update(now, RobotState.getInstance().getFieldToVehicle(now));
             // DriveSignal signal = new DriveSignal(output.left_feedforward_voltage / 12.0, output.right_feedforward_voltage / 12.0);
 
             setVelocity(new DriveSignal(radiansPerSecondToTicksPer100ms(output.left_velocity), radiansPerSecondToTicksPer100ms(output.right_velocity)),
@@ -408,16 +410,16 @@ public class Drive extends Subsystem {
 
         double deltaLeftTicks = ((mPeriodicInputs.left_position_ticks_ - prevLeftTicks) / 4096.0) * Math.PI;
         if (deltaLeftTicks > 0.0) {
-            mPeriodicInputs.left_distance_ += deltaLeftTicks * Constants.kDriveWheelDiameterInchesForwards;
+            mPeriodicInputs.left_distance_ += deltaLeftTicks * Constants.kDriveWheelDiameterInches;
         } else {
-            mPeriodicInputs.left_distance_ += deltaLeftTicks * Constants.kDriveWheelDiameterInchesReverse;
+            mPeriodicInputs.left_distance_ += deltaLeftTicks * Constants.kDriveWheelDiameterInches;
         }
 
         double deltaRightTicks = ((mPeriodicInputs.right_position_ticks_ - prevRightTicks) / 4096.0) * Math.PI;
         if (deltaRightTicks > 0.0) {
-            mPeriodicInputs.right_distance_ += deltaRightTicks * Constants.kDriveWheelDiameterInchesForwards;
+            mPeriodicInputs.right_distance_ += deltaRightTicks * Constants.kDriveWheelDiameterInches;
         } else {
-            mPeriodicInputs.right_distance_ += deltaRightTicks * Constants.kDriveWheelDiameterInchesReverse;
+            mPeriodicInputs.right_distance_ += deltaRightTicks * Constants.kDriveWheelDiameterInches;
         }
 
         if (mCSVWriter != null) {
