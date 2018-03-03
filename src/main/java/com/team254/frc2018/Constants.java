@@ -59,7 +59,7 @@ public class Constants {
     public static final double kPathKTheta = 0.4;  // m^-1 of curvature per rad of error
 
     // PID gains for drive velocity loop (LOW GEAR)
-    // Units: setpoint, error, and output are in ticks per second.
+    // Units: setpoint, error, and demand are in ticks per second.
     public static final double kDriveLowGearVelocityKp = 0.3;
     public static final double kDriveLowGearVelocityKi = 0.0;
     public static final double kDriveLowGearVelocityKd = 2.5;
@@ -68,7 +68,7 @@ public class Constants {
     public static final double kDriveVoltageRampRate = 0.1;
 
     // PID gains for elevator velocity loop (HIGH GEAR)
-    // Units: setpoint, error, and output are in native units per 100ms.
+    // Units: setpoint, error, and demand are in native units per 100ms.
     // Elevator encoder is CTRE mag encoder which is 4096 native units per revolution.
     public static final double kElevatorHighGearKp =  0.18;
     public static final double kElevatorHighGearKi = 0.0;//0.0;

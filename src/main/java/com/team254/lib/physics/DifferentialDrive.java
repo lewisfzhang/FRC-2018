@@ -85,7 +85,7 @@ public class DifferentialDrive {
         return right_transmission_;
     }
 
-    // Input/output could be either velocity or acceleration...the math is the same.
+    // Input/demand could be either velocity or acceleration...the math is the same.
     public ChassisState solveForwardKinematics(final WheelState wheel_motion) {
         ChassisState chassis_motion = new ChassisState();
         chassis_motion.linear = wheel_radius_ * (wheel_motion.right + wheel_motion.left) / 2.0;
@@ -94,7 +94,7 @@ public class DifferentialDrive {
         return chassis_motion;
     }
 
-    // Input/output could be either velocity or acceleration...the math is the same.
+    // Input/demand could be either velocity or acceleration...the math is the same.
     public WheelState solveInverseKinematics(final ChassisState chassis_motion) {
         WheelState wheel_motion = new WheelState();
         wheel_motion.left = (chassis_motion.linear - effective_wheelbase_radius_ * chassis_motion.angular) /
