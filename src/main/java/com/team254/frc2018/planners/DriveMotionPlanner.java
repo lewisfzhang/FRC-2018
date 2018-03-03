@@ -107,10 +107,10 @@ public class DriveMotionPlanner {
             mError = current_state.inverse().transformBy(goal.state().getPose());
             DifferentialDrive.ChassisState adjusted_velocity = new DifferentialDrive.ChassisState();
             adjusted_velocity.linear = dynamics.chassis_velocity.linear * mError.getRotation().cos() + Constants
-                    .kPathKX * mError.getTranslation().x();
+                    .kPathKX * Units.inches_to_meters(mError.getTranslation().x());
             adjusted_velocity.angular = dynamics.chassis_velocity.angular +
-                    (dynamics.chassis_velocity.linear >= 0.0 ? 1.0 : -1.0) * Constants.kPathKY * mError
-                            .getTranslation().y() + Constants.kPathKTheta * mError.getRotation().getRadians();
+                    (dynamics.chassis_velocity.linear >= 0.0 ? 1.0 : -1.0) * Constants.kPathKY * Units.inches_to_meters(mError
+                            .getTranslation().y()) + Constants.kPathKTheta * mError.getRotation().getRadians();
 
             // Compute adjusted left and right wheel velocities.
             final DifferentialDrive.WheelState wheel_velocities = mModel.solveInverseKinematics(adjusted_velocity);
