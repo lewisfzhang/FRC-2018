@@ -1,9 +1,9 @@
 package com.team254.frc2018;
 
+import com.team254.frc2018.auto.AutoModeBase;
 import com.team254.frc2018.auto.AutoModeExecuter;
-import com.team254.frc2018.auto.modes.CharacterizeHighGearStraight;
+import com.team254.frc2018.auto.modes.DoNothingMode;
 import com.team254.frc2018.auto.modes.TestDriveStraightLine;
-import com.team254.frc2018.auto.modes.TestIntakeThenScore;
 import com.team254.frc2018.loops.Looper;
 import com.team254.frc2018.paths.TrajectoryGenerator;
 import com.team254.frc2018.subsystems.RobotStateEstimator;
@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 public class Robot extends IterativeRobot {
     private Looper mEnabledLooper = new Looper();
@@ -29,6 +30,7 @@ public class Robot extends IterativeRobot {
     private IControlBoard mControlBoard = ControlBoard.getInstance();
     private AutoFieldState mAutoFieldState = new AutoFieldState();
     private TrajectoryGenerator mTrajectoryGenerator = TrajectoryGenerator.getInstance();
+    private AutoModeSelector mAutoModeSelector = new AutoModeSelector();
 
     private final SubsystemManager mSubsystemManager = new SubsystemManager(
             Arrays.asList(
@@ -98,6 +100,8 @@ public class Robot extends IterativeRobot {
             Drive.getInstance().zeroSensors();
             RobotState.getInstance().reset(Timer.getFPGATimestamp(), Pose2d.identity());
 
+            mAutoModeSelector.reset();
+
             mDrive.stopLogging();
             mDisabledLooper.start();
         } catch (Throwable t) {
@@ -119,9 +123,14 @@ public class Robot extends IterativeRobot {
             Drive.getInstance().zeroSensors();
             mInfrastructure.setIsDuringAuto(true);
 
+            // Make a new auto mode executor and set auto mode
             AutoModeExecuter mAutoModeExecuter = new AutoModeExecuter();
-            mAutoModeExecuter.setAutoMode(new TestDriveStraightLine());
+            Optional<AutoModeBase> selectedMode = mAutoModeSelector.getAutoMode(mAutoFieldState);
+            AutoModeBase autoMode = selectedMode.isPresent() ? selectedMode.get() : new DoNothingMode();
+            mAutoModeExecuter.setAutoMode(autoMode);
+            System.out.println("Set auto mode to: " + autoMode.getClass().toString());
             mAutoModeExecuter.start();
+
 
             mDrive.startLogging();
             mEnabledLooper.start();
@@ -180,7 +189,9 @@ public class Robot extends IterativeRobot {
             mWrist.resetIfAtLimit();
             mElevator.resetIfAtLimit();
 
+            // Poll FMS auto mode info and update mode creator cache
             mAutoFieldState.setSides(DriverStation.getInstance().getGameSpecificMessage());
+            mAutoModeSelector.updateModeCreator();
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
             throw t;
@@ -406,6 +417,7 @@ public class Robot extends IterativeRobot {
         Elevator.getInstance().outputTelemetry();
         Infrastructure.getInstance().outputTelemetry();
         mEnabledLooper.outputToSmartDashboard();
+        mAutoModeSelector.outputToSmartDashboard();
         // SmartDashboard.updateValues();
     }
 }

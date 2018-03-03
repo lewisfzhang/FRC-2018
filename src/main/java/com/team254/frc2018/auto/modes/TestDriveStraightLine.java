@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-
 public class TestDriveStraightLine extends AutoModeBase {
 
     private static final TrajectoryGenerator mTrajectoryGenerator = TrajectoryGenerator.getInstance();
@@ -26,7 +25,6 @@ public class TestDriveStraightLine extends AutoModeBase {
     @Override
     protected void routine() throws AutoModeEndedException {
         //runAction(new SetIntaking(false, false));
-        runAction(new DriveTrajectory(mTrajectoryGenerator.getTestCurve(), false));
         //runAction(new SetSuperstructurePosition(SuperstructureConstants.kSwitchHeight, SuperstructureConstants.kPlacingLowAngle, true));
         //runAction(new PlaceCube());
 

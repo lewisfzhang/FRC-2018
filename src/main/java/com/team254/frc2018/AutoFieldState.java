@@ -14,7 +14,7 @@ public class AutoFieldState {
     public static final Pose2d CENTER = new Pose2d();
     public static final Pose2d RIGHT = new Pose2d();
     
-    public static enum Side { LEFT, RIGHT }
+    public enum Side { LEFT, RIGHT }
     
     protected Side ourSwitchSide, scaleSide, opponentSwitchSide;
     protected Pose2d startPose;
