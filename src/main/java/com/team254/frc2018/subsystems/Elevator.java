@@ -19,7 +19,7 @@ public class Elevator extends Subsystem {
     public static final double kHomePositionInches = 5.0;
     private static final int kHighGearSlot = 0;
     private static final int kLowGearSlot = 1;
-    private static final int kReverseSoftLimit = -99000; // Encoder ticks (used to be -151000)
+    private static final int kReverseSoftLimit = -99400; // Encoder ticks (used to be -151000)
     private static final int kForwardSoftLimit = 500; // Encoder ticks.  TODO set to ~0 once skipping is fixed.
     private static final double kEncoderTicksPerInch = -1271.0;
     private static Elevator mInstance = null;

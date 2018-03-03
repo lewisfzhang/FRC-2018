@@ -7,7 +7,7 @@ import java.util.HashMap;
 public class SuperstructureConstants {
     public static final double kWristMinAngle = 0.0;
     public static final double kWristMaxAngle = 180.0;
-    public static final double kElevatorMaxHeight = 83.5;
+    public static final double kElevatorMaxHeight = 83.0;
     public static final double kElevatorMinHeight = 5.0;
 
     public static final double kClearFirstStageMaxHeight = 33.0;
@@ -39,9 +39,13 @@ public class SuperstructureConstants {
     public final static double kIntakePositionAngle = 180.0;
 
     // Elevator Heights.
-    public final static double kScaleHighHeight = 80.0;
-    public final static double kScaleNeutralHeight = 70.0;
-    public final static double kScaleLowHeight = 60.0;
+    public final static double kScaleHighHeight = 82.0;
+    public final static double kScaleNeutralHeight = 75.0;
+    public final static double kScaleLowHeight = 63.0;
+
+    public final static double kScaleHighHeightBackwards = 75.0;
+    public final static double kScaleNeutralHeightBackwards = 65.0;
+    public final static double kScaleLowHeightBackwards = 55.0;
 
     public final static double kIntakeThirdLevelHeight = 25.5;
     public final static double kIntakeSecondLevelHeight = 14.5;

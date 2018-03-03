@@ -271,13 +271,13 @@ public class Robot extends IterativeRobot {
             } else if (mControlBoard.getBackwardsModifier()) {
                 // These are score backwards
                 if (go_high_scale) {
-                    desired_height = SuperstructureConstants.kScaleHighHeight;
+                    desired_height = SuperstructureConstants.kScaleHighHeightBackwards;
                     desired_angle = SuperstructureConstants.kScoreBackwardsAngle;
                 } else if (go_neutral_scale) {
-                    desired_height = SuperstructureConstants.kScaleNeutralHeight;
+                    desired_height = SuperstructureConstants.kScaleNeutralHeightBackwards;
                     desired_angle = SuperstructureConstants.kScoreBackwardsAngle;
                 } else if (go_low_scale) {
-                    desired_height = SuperstructureConstants.kScaleLowHeight;
+                    desired_height = SuperstructureConstants.kScaleLowHeightBackwards;
                     desired_angle = SuperstructureConstants.kScoreBackwardsAngle;
                 } else if (go_switch) {
                     desired_height = SuperstructureConstants.kSwitchHeight;
@@ -287,13 +287,10 @@ public class Robot extends IterativeRobot {
                 // These are score forward
                 if (go_high_scale) {
                     desired_height = SuperstructureConstants.kScaleHighHeight;
-                    desired_angle = SuperstructureConstants.kPlacingHighAngle;
                 } else if (go_neutral_scale) {
                     desired_height = SuperstructureConstants.kScaleNeutralHeight;
-                    desired_angle = SuperstructureConstants.kPlacingHighAngle;
                 } else if (go_low_scale) {
                     desired_height = SuperstructureConstants.kScaleLowHeight;
-                    desired_angle = SuperstructureConstants.kPlacingHighAngle;
                 } else if (go_switch) {
                     desired_height = SuperstructureConstants.kSwitchHeight;
                     desired_angle = SuperstructureConstants.kPlacingLowAngle;
