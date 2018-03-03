@@ -128,13 +128,23 @@ public class ControlBoard implements IControlBoard {
     }
 
     @Override
-    public boolean getHangMode() {
-        return false;
+    public boolean getEnableHangMode() {
+        return mButtonControlBoard.getEnableHangMode();
     }
 
     @Override
-    public double getHangThrottle() {
-        return 0.0;
+    public double getElevatorThrottle() {
+        return mButtonControlBoard.getElevatorThrottle();
+    }
+
+    @Override
+    public boolean getDeployForks() {
+        return mButtonControlBoard.getDeployForks();
+    }
+
+    @Override
+    public boolean getElevatorShift() {
+        return mButtonControlBoard.getElevatorShift();
     }
 
     public void setRumble(boolean on) {

@@ -99,4 +99,25 @@ public class MainButtonBoard implements IButtonControlBoard {
     public void setRumble(boolean on) {
 
     }
+
+    //Climbing
+    @Override
+    public boolean getEnableHangMode() {
+        return false;
+    }
+
+    @Override
+    public double getElevatorThrottle() {
+        return 0.0;
+    }
+
+    @Override
+    public boolean getDeployForks() {
+        return false;
+    }
+
+    @Override
+    public boolean getElevatorShift() {
+        return false;
+    }
 }
