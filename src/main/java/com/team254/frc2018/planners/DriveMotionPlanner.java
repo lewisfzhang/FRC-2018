@@ -28,7 +28,7 @@ public class DriveMotionPlanner {
     double mStartTime;
 
     public DriveMotionPlanner() {
-        final DCMotorTransmission transmission = new DCMotorTransmission(Constants.kDriveKv,
+        final DCMotorTransmission transmission = new DCMotorTransmission(1.0 / Constants.kDriveKv,
                 Constants.kDriveWheelRadiusInches * Constants.kDriveWheelRadiusInches *
                         Constants.kRobotLinearInertia / (2.0 * Constants.kDriveKa), Constants.kDriveVIntercept);
         mModel = new DifferentialDrive(
@@ -48,8 +48,7 @@ public class DriveMotionPlanner {
             final List<Pose2d> waypoints,
             double max_vel,  // inches/s
             double max_accel,  // inches/s^2
-            double max_voltage,
-            double timestamp) {
+            double max_voltage) {
         // Create a trajectory from splines.
         final Trajectory<Pose2dWithCurvature> trajectory = TrajectoryUtil.trajectoryFromSplineWaypoints(waypoints,
                 kMaxDx,
