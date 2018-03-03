@@ -30,10 +30,10 @@ public class Constants {
 
     // Tuned dynamics
     public static final double kRobotLinearInertia = 60.0;  // kg TODO tune
-    public static final double kRobotAngularInertia = 80.0;  // kg m TODO tune
-    public static final double kDriveVIntercept = 0.9;  // V
-    public static final double kDriveKv = 0.15;  // V per rad/s
-    public static final double kDriveKa = 0.02;  // V per rad/s^2
+    public static final double kRobotAngularInertia = 60.0;  // kg m TODO tune
+    public static final double kDriveVIntercept = 1.055;  // V
+    public static final double kDriveKv = 0.135;  // V per rad/s
+    public static final double kDriveKa = 0.012;  // V per rad/s^2
 
     // Geometry
     public static final double kCenterToFrontBumperDistance = 16.33;

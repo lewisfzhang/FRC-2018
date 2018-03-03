@@ -1,6 +1,8 @@
 package com.team254.frc2018;
 
 import com.team254.frc2018.auto.AutoModeExecuter;
+import com.team254.frc2018.auto.modes.CharacterizeHighGearStraight;
+import com.team254.frc2018.auto.modes.TestDriveStraightLine;
 import com.team254.frc2018.auto.modes.TestIntakeThenScore;
 import com.team254.frc2018.loops.Looper;
 import com.team254.frc2018.subsystems.RobotStateEstimator;
@@ -106,7 +108,7 @@ public class Robot extends IterativeRobot {
             mInfrastructure.setIsDuringAuto(true);
 
             AutoModeExecuter mAutoModeExecuter = new AutoModeExecuter();
-            mAutoModeExecuter.setAutoMode(new TestIntakeThenScore());
+            mAutoModeExecuter.setAutoMode(new TestDriveStraightLine());
             mAutoModeExecuter.start();
 
             mEnabledLooper.start();
