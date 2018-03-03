@@ -372,7 +372,7 @@ public class Drive extends Subsystem {
 
             // DriveSignal signal = new DriveSignal(output.left_feedforward_voltage / 12.0, output.right_feedforward_voltage / 12.0);
 
-            mPeriodicInputs.error_ = mMotionPlanner.getError();
+            mPeriodicInputs.error_ = mMotionPlanner.error();
 
             setVelocity(new DriveSignal(radiansPerSecondToTicksPer100ms(output.left_velocity), radiansPerSecondToTicksPer100ms(output.right_velocity)),
                     new DriveSignal(output.left_feedforward_voltage / 12.0, output.right_feedforward_voltage / 12.0));
