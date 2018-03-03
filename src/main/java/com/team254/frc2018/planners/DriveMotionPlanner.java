@@ -109,7 +109,7 @@ public class DriveMotionPlanner {
             final double kZeta = 0.5;
 
             final double k1 = 2.0 * kZeta * Math.sqrt(dynamics.chassis_velocity.angular * dynamics.chassis_velocity.angular + kBeta * dynamics.chassis_velocity.linear * dynamics.chassis_velocity.linear);
-            final double k2 = kBeta * dynamics.chassis_velocity.linear;
+            final double k2 = kBeta * Math.abs(dynamics.chassis_velocity.linear);
             DifferentialDrive.ChassisState adjusted_velocity = new DifferentialDrive.ChassisState();
 
             final Pose2d error = current_state.inverse().transformBy(goal.state().getPose());
