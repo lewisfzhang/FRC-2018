@@ -152,17 +152,6 @@ public class Drive extends Subsystem {
         mMotionPlanner = new DriveMotionPlanner();
     }
 
-    public TrajectoryIterator<TimedState<Pose2dWithCurvature>> generateTrajectory(
-            final List<Pose2d> waypoints,
-            final List<TimingConstraint<Pose2dWithCurvature>> constraints,
-            double max_vel,  // inches/s
-            double max_accel,  // inches/s^2
-            double max_voltage) {
-        Trajectory<TimedState<Pose2dWithCurvature>> trajectory = mMotionPlanner.generateTrajectory(waypoints, constraints, max_vel, max_accel, max_voltage);
-        TrajectoryIterator<TimedState<Pose2dWithCurvature>> iterator = new TrajectoryIterator<>(new TimedView<>(trajectory));
-        return iterator;
-    }
-
     public static Drive getInstance() {
         return mInstance;
     }

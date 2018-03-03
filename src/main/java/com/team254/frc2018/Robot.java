@@ -5,6 +5,7 @@ import com.team254.frc2018.auto.modes.CharacterizeHighGearStraight;
 import com.team254.frc2018.auto.modes.TestDriveStraightLine;
 import com.team254.frc2018.auto.modes.TestIntakeThenScore;
 import com.team254.frc2018.loops.Looper;
+import com.team254.frc2018.paths.TrajectoryGenerator;
 import com.team254.frc2018.subsystems.RobotStateEstimator;
 import com.team254.frc2018.statemachines.IntakeStateMachine;
 import com.team254.frc2018.statemachines.SuperstructureStateMachine;
@@ -27,6 +28,7 @@ public class Robot extends IterativeRobot {
     private CheesyDriveHelper mCheesyDriveHelper = new CheesyDriveHelper();
     private IControlBoard mControlBoard = ControlBoard.getInstance();
     private AutoFieldState mAutoFieldState = new AutoFieldState();
+    private TrajectoryGenerator mTrajectoryGenerator = TrajectoryGenerator.getInstance();
 
     private final SubsystemManager mSubsystemManager = new SubsystemManager(
             Arrays.asList(
@@ -69,6 +71,8 @@ public class Robot extends IterativeRobot {
             mSubsystemManager.registerDisabledLoops(mDisabledLooper);
 
             Elevator.getInstance().zeroSensors();
+
+            mTrajectoryGenerator.generateTrajectories();
 
             mRunIntakeReleased.update(true);
             mShootReleased.update(true);
