@@ -205,14 +205,10 @@ public class Intake extends Subsystem {
     }
 
     @Override
-    public void readPeriodicInputs() {
-        mCanifier.readPeriodicInputs();
-    }
+    public void readPeriodicInputs() {}
 
     @Override
-    public void writePeriodicOutputs() {
-        mCanifier.writePeriodicOutputs();
-    }
+    public void writePeriodicOutputs() {}
 
     @Override
     public boolean checkSystem() {

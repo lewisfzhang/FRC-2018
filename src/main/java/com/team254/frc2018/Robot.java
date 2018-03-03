@@ -38,6 +38,7 @@ public class Robot extends IterativeRobot {
                     Intake.getInstance(),
                     Wrist.getInstance(),
                     Elevator.getInstance(),
+                    CarriageCanifier.getInstance(),
                     Infrastructure.getInstance()
             )
     );
