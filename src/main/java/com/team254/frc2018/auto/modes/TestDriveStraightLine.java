@@ -26,7 +26,7 @@ public class TestDriveStraightLine extends AutoModeBase {
     @Override
     protected void routine() throws AutoModeEndedException {
         //runAction(new SetIntaking(false, false));
-        runAction(new DriveTrajectory(mTrajectoryGenerator.getTestCurve()));
+        runAction(new DriveTrajectory(mTrajectoryGenerator.getTestCurve(), false));
         //runAction(new SetSuperstructurePosition(SuperstructureConstants.kSwitchHeight, SuperstructureConstants.kPlacingLowAngle, true));
         //runAction(new PlaceCube());
 

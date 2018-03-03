@@ -1,8 +1,7 @@
 package com.team254.frc2018.planners;
 
 import com.team254.frc2018.Constants;
-import com.team254.lib.geometry.Pose2d;
-import com.team254.lib.geometry.Pose2dWithCurvature;
+import com.team254.lib.geometry.*;
 import com.team254.lib.physics.DCMotorTransmission;
 import com.team254.lib.physics.DifferentialDrive;
 import com.team254.lib.trajectory.DistanceView;
@@ -28,6 +27,7 @@ public class DriveMotionPlanner implements CSVWritable {
     final DifferentialDrive mModel;
 
     TrajectoryIterator<TimedState<Pose2dWithCurvature>> mCurrentTrajectory;
+    boolean mIsReversed = false;
     double mLastTime = Double.POSITIVE_INFINITY;
     TimedState<Pose2dWithCurvature> mSetpoint = new TimedState<>(Pose2dWithCurvature.identity());
     Pose2d mError = Pose2d.identity();
@@ -47,9 +47,10 @@ public class DriveMotionPlanner implements CSVWritable {
         );
     }
 
-    public void setTrajectory(final TrajectoryIterator<TimedState<Pose2dWithCurvature>> trajectory) {
+    public void setTrajectory(final TrajectoryIterator<TimedState<Pose2dWithCurvature>> trajectory, boolean isReversed) {
         mCurrentTrajectory = trajectory;
         mSetpoint = trajectory.getState();
+        mIsReversed = isReversed;
     }
 
     public Trajectory<TimedState<Pose2dWithCurvature>> generateTrajectory(
@@ -104,11 +105,14 @@ public class DriveMotionPlanner implements CSVWritable {
         public double right_feedforward_voltage;
     }
 
-    public Output update(double timestamp, final Pose2d current_state) {
+    public Output update(double timestamp, Pose2d current_state) {
         if (mCurrentTrajectory == null) return new Output();
 
         if (mCurrentTrajectory.getProgress() == 0.0 && !Double.isFinite(mLastTime)) {
             mLastTime = timestamp;
+        }
+        if(mIsReversed) {
+            current_state = current_state.transformBy(new Pose2d(Translation2d.identity(), Rotation2d.fromDegrees(180)));
         }
 
         final double t = timestamp - mLastTime;
@@ -123,6 +127,7 @@ public class DriveMotionPlanner implements CSVWritable {
                             mSetpoint.velocity() * mSetpoint.state().getCurvature()),
                     new DifferentialDrive.ChassisState(Units.inches_to_meters(mSetpoint.acceleration()),
                             mSetpoint.acceleration() * mSetpoint.state().getCurvature()));
+
 
             mError = current_state.inverse().transformBy(mSetpoint.state().getPose());
             final Pose2d lookahead_error = current_state.inverse().transformBy(lookahead_state.state().getPose());
@@ -150,7 +155,11 @@ public class DriveMotionPlanner implements CSVWritable {
                     .right) / mModel.right_transmission().speed_per_volt();
 
             // System.out.println(dynamics.toCSV());
-            mOutput = new Output(wheel_velocities.left, wheel_velocities.right, left_voltage, right_voltage);
+            if(mIsReversed) {
+                mOutput = new Output(-wheel_velocities.right, -wheel_velocities.left, -right_voltage, -left_voltage);
+            } else {
+                mOutput = new Output(wheel_velocities.left, wheel_velocities.right, left_voltage, right_voltage);
+            }
         } else {
             // Possibly switch to a pose stabilizing controller?
             mOutput = new Output();
