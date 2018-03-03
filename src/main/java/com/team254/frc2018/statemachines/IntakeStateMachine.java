@@ -88,8 +88,8 @@ public class IntakeStateMachine {
     }
     private synchronized void getOpenLoopCommandedState(IntakeState currentState, IntakeState commandedState) {
         commandedState.setPower(mWantedPower);
-        if (mustStayClamped(currentState)) {
-            commandedState.jawState = IntakeState.JawState.CLAMPED;
+        if (mustStayClosed(currentState)) {
+            commandedState.jawState = IntakeState.JawState.CLOSED;
         } else {
             commandedState.jawState = mWantedJawState;
         }
@@ -107,7 +107,7 @@ public class IntakeStateMachine {
     }
     private synchronized void getKeepingCubeCommandedState(IntakeState currentState, IntakeState commandedState) {
         commandedState.setPower(kIntakeCubeSetpoint);
-        final boolean clamp = (currentState.seesCube() && mWantedJawState != IntakeState.JawState.OPEN) || mustStayClamped(currentState);
+        final boolean clamp = (currentState.seesCube() && mWantedJawState != IntakeState.JawState.OPEN) || mustStayClosed(currentState);
         final boolean open = !clamp && mWantedJawState == IntakeState.JawState.OPEN;
         if (currentState.seesCube()) {
             commandedState.setPower(kHoldSetpoint);
@@ -120,7 +120,7 @@ public class IntakeStateMachine {
         }
     }
 
-    private boolean mustStayClamped(IntakeState state) {
+    private boolean mustStayClosed(IntakeState state) {
         return state.wristSetpoint < SuperstructureConstants.kAlwaysNeedsJawClampMinAngle ||
                 state.wristAngle < SuperstructureConstants.kAlwaysNeedsJawClampMinAngle;
     }
