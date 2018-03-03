@@ -1,7 +1,7 @@
 package com.team254.frc2018;
 
 import com.team254.frc2018.auto.AutoModeExecuter;
-import com.team254.frc2018.auto.modes.TestIntakeThenScore;
+import com.team254.frc2018.auto.AutoModeSelector;
 import com.team254.frc2018.loops.Looper;
 import com.team254.frc2018.subsystems.RobotStateEstimator;
 import com.team254.frc2018.statemachines.IntakeStateMachine;
@@ -24,7 +24,6 @@ public class Robot extends IterativeRobot {
     private Looper mDisabledLooper = new Looper();
     private CheesyDriveHelper mCheesyDriveHelper = new CheesyDriveHelper();
     private IControlBoard mControlBoard = ControlBoard.getInstance();
-    private AutoFieldState mAutoFieldState = new AutoFieldState();
 
     private final SubsystemManager mSubsystemManager = new SubsystemManager(
             Arrays.asList(
@@ -66,6 +65,8 @@ public class Robot extends IterativeRobot {
 
             mRunIntakeReleased.update(true);
             mShootReleased.update(true);
+
+            AutoModeSelector.initAutoModeSelector();
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
             throw t;
@@ -105,8 +106,10 @@ public class Robot extends IterativeRobot {
             FollowerWheels.getInstance().zeroSensors();
             mInfrastructure.setIsDuringAuto(true);
 
+            AutoFieldState.setStartPose(AutoModeSelector.getSelectedStartingPose());
+
             AutoModeExecuter mAutoModeExecuter = new AutoModeExecuter();
-            mAutoModeExecuter.setAutoMode(new TestIntakeThenScore());
+            mAutoModeExecuter.setAutoMode(AutoModeSelector.getSelectedAutoMode());
             mAutoModeExecuter.start();
 
             mEnabledLooper.start();
@@ -162,7 +165,7 @@ public class Robot extends IterativeRobot {
             mWrist.resetIfAtLimit();
             mElevator.resetIfAtLimit();
 
-            mAutoFieldState.setSides(DriverStation.getInstance().getGameSpecificMessage());
+            AutoFieldState.setSides(DriverStation.getInstance().getGameSpecificMessage());
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
             throw t;
