@@ -288,7 +288,7 @@ public class Robot extends IterativeRobot {
                 boolean go_low_scale = mControlBoard.getGoToLowScaleHeight();
                 boolean go_switch = mControlBoard.getGoToSwitchHeight();
                 if (mControlBoard.getIntakePosition()) {
-                    // Angle will come from mRunIntakePressed on first time.
+                    desired_angle = SuperstructureConstants.kIntakePositionAngle;
                     if (go_high_scale) {
                         desired_height = SuperstructureConstants.kIntakeThirdLevelHeight;
                     } else if (go_neutral_scale) {
