@@ -460,7 +460,7 @@ public class Wrist extends Subsystem {
         OPEN_LOOP,
     }
 
-    private static class PeriodicInputs {
+    public static class PeriodicInputs {
         public int position_ticks_;
         public int velocity_ticks_per_100ms_;
         public int active_trajectory_position_;

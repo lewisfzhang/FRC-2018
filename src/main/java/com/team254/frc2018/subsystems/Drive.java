@@ -494,7 +494,7 @@ public class Drive extends Subsystem {
         AUTO_SHIFT
     }
 
-    private static class PeriodicInputs {
+    public static class PeriodicInputs {
         public int left_position_ticks_;
         public int right_position_ticks_;
         public double left_distance_;

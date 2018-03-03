@@ -100,6 +100,7 @@ public class DriveMotionPlanner {
                     new DifferentialDrive.ChassisState(Units.inches_to_meters(goal.acceleration()),
                             goal.acceleration() * goal.state().getCurvature()));
             // TODO add feedback
+            // System.out.println(dynamics.toCSV());
             return new Output(dynamics.wheel_velocity.left, dynamics.wheel_velocity.right, dynamics.voltage.left, dynamics.voltage.right);
         } else {
             // Possibly switch to a pose stabilizing controller?
