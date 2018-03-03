@@ -326,7 +326,17 @@ public class Drive extends Subsystem {
     }
 
     public synchronized void reloadGains() {
-        //todo: implement this
+        mLeftMaster.config_kP(kLowGearVelocityControlSlot, Constants.kDriveLowGearVelocityKp, Constants.kLongCANTimeoutMs);
+        mLeftMaster.config_kI(kLowGearVelocityControlSlot, Constants.kDriveLowGearVelocityKi, Constants.kLongCANTimeoutMs);
+        mLeftMaster.config_kD(kLowGearVelocityControlSlot, Constants.kDriveLowGearVelocityKd, Constants.kLongCANTimeoutMs);
+        mLeftMaster.config_kF(kLowGearVelocityControlSlot, Constants.kDriveLowGearVelocityKf, Constants.kLongCANTimeoutMs);
+        mLeftMaster.config_IntegralZone(kLowGearVelocityControlSlot, Constants.kDriveLowGearVelocityIZone, Constants.kLongCANTimeoutMs);
+
+        mRightMaster.config_kP(kLowGearVelocityControlSlot, Constants.kDriveLowGearVelocityKp, Constants.kLongCANTimeoutMs);
+        mRightMaster.config_kI(kLowGearVelocityControlSlot, Constants.kDriveLowGearVelocityKi, Constants.kLongCANTimeoutMs);
+        mRightMaster.config_kD(kLowGearVelocityControlSlot, Constants.kDriveLowGearVelocityKd, Constants.kLongCANTimeoutMs);
+        mRightMaster.config_kF(kLowGearVelocityControlSlot, Constants.kDriveLowGearVelocityKf, Constants.kLongCANTimeoutMs);
+        mRightMaster.config_IntegralZone(kLowGearVelocityControlSlot, Constants.kDriveLowGearVelocityIZone, Constants.kLongCANTimeoutMs);
     }
 
     @Override
@@ -368,6 +378,8 @@ public class Drive extends Subsystem {
                 ControlMode.Velocity, mPeriodicOutputs.left_output_);
         mRightMaster.set(mDriveControlState == DriveControlState.OPEN_LOOP ? ControlMode.PercentOutput :
                 ControlMode.Velocity, mPeriodicOutputs.right_output_);
+        mPeriodicInputs.left_velocity_setpoint_ = mPeriodicOutputs.left_output_;
+        mPeriodicInputs.right_velocity_setpoint_ = mPeriodicOutputs.right_output_;
     }
 
     @Override
@@ -440,6 +452,10 @@ public class Drive extends Subsystem {
         public int left_velocity_ticks_per_100ms_;
         public int right_velocity_ticks_per_100ms_;
         public Rotation2d gyro_heading_;
+
+        // TODO this is a hack
+        public double left_velocity_setpoint_;
+        public double right_velocity_setpoint_;
     }
 
     private static class PeriodicOutputs {

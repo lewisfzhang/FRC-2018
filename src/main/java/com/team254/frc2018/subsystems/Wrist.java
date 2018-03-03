@@ -181,7 +181,6 @@ public class Wrist extends Subsystem {
 //        }
 //        SmartDashboard.putNumber("Wrist Ticks", mMaster.getSelectedSensorPosition(0));
         SmartDashboard.putNumber("Wrist Ticks", mPeriodicInputs.position_ticks_);
-        SmartDashboard.putNumber("Wrist Target", mMaster.getClosedLoopTarget(0));
         SmartDashboard.putNumber("Wrist periodic output_", mPeriodicOutputs.output_);
         SmartDashboard.putBoolean("LIMR", mPeriodicInputs.limit_switch_);
 

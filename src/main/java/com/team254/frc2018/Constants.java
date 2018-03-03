@@ -60,30 +60,16 @@ public class Constants {
     public static final double kDriveDownShiftAngularVelocity = Math.PI / 2.0; // rad/sec
     public static final double kDriveUpShiftVelocity = 11.0 * 12.0;  // inches per second
 
-    // PID gains for drive velocity loop (HIGH GEAR)
-    // Units: setpoint, error, and output are in inches per second.
-    public static final double kDriveHighGearVelocityKp = 1.2;
-    public static final double kDriveHighGearVelocityKi = 0.0;
-    public static final double kDriveHighGearVelocityKd = 6.0;
-    public static final double kDriveHighGearVelocityKf = .15;
-    public static final int kDriveHighGearVelocityIZone = 0;
-    public static final double kDriveHighGearVelocityRampRate = 240.0;
-    public static final double kDriveHighGearMaxSetpoint = 17.0 * 12.0; // 17 fps
-
     // PID gains for drive velocity loop (LOW GEAR)
-    // Units: setpoint, error, and output are in inches per second.
-    public static final double kDriveLowGearPositionKp = 1.0;
-    public static final double kDriveLowGearPositionKi = 0.002;
-    public static final double kDriveLowGearPositionKd = 100.0;
-    public static final double kDriveLowGearPositionKf = .45;
-    public static final int kDriveLowGearPositionIZone = 700;
-    public static final double kDriveLowGearPositionRampRate = 240.0; // V/s
+    // Units: setpoint, error, and output are in ticks per second.
+    public static final double kDriveLowGearVelocityKp = 1.0;
+    public static final double kDriveLowGearVelocityKi = 0.0;
+    public static final double kDriveLowGearVelocityKd = 100.0;
+    public static final double kDriveLowGearVelocityKf = .45;
+    public static final int kDriveLowGearVelocityIZone = 0;
+    public static final double kDriveLowGearVelocityRampRate = 240.0; // V/s
     public static final double kDriveLowGearMaxVelocity = 6.0 * 12.0 * 60.0 / (Math.PI * kDriveWheelDiameterInches);
-    // 6 fps
-    // in RPM
-    public static final double kDriveLowGearMaxAccel = 18.0 * 12.0 * 60.0 / (Math.PI * kDriveWheelDiameterInches); //
-    // 18 fps/s
-    // in RPM/s
+    public static final double kDriveLowGearMaxAccel = 18.0 * 12.0 * 60.0 / (Math.PI * kDriveWheelDiameterInches);
 
     // PID gains for elevator velocity loop (HIGH GEAR)
     // Units: setpoint, error, and output are in native units per 100ms.

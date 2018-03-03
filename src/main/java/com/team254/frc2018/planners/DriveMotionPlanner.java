@@ -12,7 +12,6 @@ import com.team254.lib.trajectory.TrajectoryUtil;
 import com.team254.lib.trajectory.timing.DifferentialDriveDynamicsConstraint;
 import com.team254.lib.trajectory.timing.TimedState;
 import com.team254.lib.trajectory.timing.TimingUtil;
-import com.team254.lib.util.DriveSignal;
 import com.team254.lib.util.Units;
 
 import java.util.Arrays;
@@ -67,8 +66,25 @@ public class DriveMotionPlanner {
         return timed_trajectory;
     }
 
-    public DriveSignal update(double timestamp) {
-        if (mCurrentTrajectory == null) return DriveSignal.NEUTRAL;
+    public static class Output {
+        public Output() {}
+
+        public Output(double left_velocity, double right_velocity, double left_feedforward_voltage, double right_feedforward_voltage) {
+            this.left_velocity = left_velocity;
+            this.right_velocity = right_velocity;
+            this.left_feedforward_voltage = left_feedforward_voltage;
+            this.right_feedforward_voltage = right_feedforward_voltage;
+        }
+
+        public double left_velocity;  // rad/s
+        public double right_velocity;  // rad/s
+
+        public double left_feedforward_voltage;
+        public double right_feedforward_voltage;
+    }
+
+    public Output update(double timestamp) {
+        if (mCurrentTrajectory == null) return new Output();
 
         if (mCurrentTrajectory.getProgress() == 0.0) {
             mStartTime = timestamp;
@@ -84,10 +100,10 @@ public class DriveMotionPlanner {
                     new DifferentialDrive.ChassisState(Units.inches_to_meters(goal.acceleration()),
                             goal.acceleration() * goal.state().getCurvature()));
             // TODO add feedback
-            return new DriveSignal(dynamics.voltage.left / 12.0, dynamics.voltage.right / 12.0);
+            return new Output(dynamics.wheel_velocity.left, dynamics.wheel_velocity.right, dynamics.voltage.left, dynamics.voltage.right);
         } else {
             // Possibly switch to a pose stabilizing controller?
-            return DriveSignal.NEUTRAL;
+            return new Output();
         }
     }
 
