@@ -26,7 +26,7 @@ public class DriveMotionPlannerTest {
             Pose2d pose = motion_planner.setpoint().state().getPose();
             while (!motion_planner.isDone()) {
                 motion_planner.update(t, pose);
-                pose = motion_planner.mSetpoint.state().getPose();
+                pose = motion_planner.mSetpoint.state().getPose().transformBy(new Pose2d(new Translation2d(0.0, 1.0), Rotation2d.fromDegrees(2.0)));
                 System.out.println(t + "," + motion_planner.toCSV());
                 t += 0.01;
             }
@@ -43,7 +43,7 @@ public class DriveMotionPlannerTest {
             Pose2d pose = motion_planner.setpoint().state().getPose();
             while (!motion_planner.isDone()) {
                 motion_planner.update(t, pose);
-                pose = motion_planner.mSetpoint.state().getPose();
+                pose = motion_planner.mSetpoint.state().getPose().transformBy(new Pose2d(new Translation2d(0.0, -1.0), Rotation2d.fromDegrees(-2.0)));
                 System.out.println(t + "," + motion_planner.toCSV());
                 t += 0.01;
             }
