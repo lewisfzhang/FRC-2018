@@ -16,31 +16,27 @@ public class Constants {
     /* ROBOT PHYSICAL CONSTANTS */
 
     // Wheels
-    public static final double kFollowerWheelTrackWidthInches = 25.624;
-    public static final double kFollowerWheelBackOffset = 14.19;
-    public static final double kFollowerWheelDiameterInches = 2.28;
-    public static final double kFollowerWheelDiameterInchesForwards = 2.26317884466;
-    public static final double kFollowerWheelDiameterInchesReverse = 2.34640434375;
     public static final double kDriveWheelTrackWidthInches = 25.54;
-    public static final double kDriveWheelDiameterInches = 3.92820959548; // TODO: measure
-    public static final double kDriveWheelRadiusInches = kDriveWheelDiameterInches / 2.0; // TODO: measure
+    public static final double kDriveWheelDiameterInches = 3.92820959548;
+    public static final double kDriveWheelRadiusInches = kDriveWheelDiameterInches / 2.0;
     public static final double kTrackScrubFactor = 1.0;  // Tune me!
 
     // Tuned dynamics
     public static final double kRobotLinearInertia = 60.0;  // kg TODO tune
-    public static final double kRobotAngularInertia = 80.0;  // kg m TODO tune
+    public static final double kRobotAngularInertia = 120.0;  // kg m TODO tune
     public static final double kDriveVIntercept = 1.055;  // V
     public static final double kDriveKv = 0.135;  // V per rad/s
     public static final double kDriveKa = 0.012;  // V per rad/s^2
 
     // Geometry
+    // TODO measure in CAD/on robot!
     public static final double kCenterToFrontBumperDistance = 16.33;
     public static final double kCenterToIntakeDistance = 23.11;
     public static final double kCenterToRearBumperDistance = 16.99;
     public static final double kCenterToSideBumperDistance = 17.225;
 
     // Pose of the LIDAR frame w.r.t. the robot frame
-    // TUNE ME
+    // TODO measure in CAD/on robot!
     public static final double kLidarXOffset = -3.3211;
     public static final double kLidarYOffset = 0.0;
     public static final double kLidarYawAngleDegrees = 0.0;
@@ -58,24 +54,21 @@ public class Constants {
     public static final double kDriveDownShiftAngularVelocity = Math.PI / 2.0; // rad/sec
     public static final double kDriveUpShiftVelocity = 11.0 * 12.0;  // inches per second
 
-    public static final double kPathKX = 3.0;  // m/s per meter of error
-    public static final double kPathKY = 3.0;  // rad/s per meter of error
-    public static final double kPathKTheta = 0.5;  // rad/s per rad of error
+    public static final double kPathKX = 2.0;  // m/s per meter of error
+    public static final double kPathKY = 0.2;  // m^-1 of curvature per meter of error
+    public static final double kPathKTheta = 0.4;  // m^-1 of curvature per rad of error
 
     // PID gains for drive velocity loop (LOW GEAR)
-    // Units: setpoint, error, and output are in ticks per second.
-    public static final double kDriveLowGearVelocityKp = 0.5;
+    // Units: setpoint, error, and demand are in ticks per second.
+    public static final double kDriveLowGearVelocityKp = 0.3;
     public static final double kDriveLowGearVelocityKi = 0.0;
-    public static final double kDriveLowGearVelocityKd = 2.5;//100.0;
+    public static final double kDriveLowGearVelocityKd = 2.5;
     public static final double kDriveLowGearVelocityKf = 0.0;
     public static final int kDriveLowGearVelocityIZone = 0;
-    public static final double kDriveVoltageRampRate = 0.2;
-    public static final double kDriveLowGearVelocityRampRate = 240.0; // V/s
-    public static final double kDriveLowGearMaxVelocity = 6.0 * 12.0 * 60.0 / (Math.PI * kDriveWheelDiameterInches);
-    public static final double kDriveLowGearMaxAccel = 18.0 * 12.0 * 60.0 / (Math.PI * kDriveWheelDiameterInches);
+    public static final double kDriveVoltageRampRate = 0.1;
 
     // PID gains for elevator velocity loop (HIGH GEAR)
-    // Units: setpoint, error, and output are in native units per 100ms.
+    // Units: setpoint, error, and demand are in native units per 100ms.
     // Elevator encoder is CTRE mag encoder which is 4096 native units per revolution.
     public static final double kElevatorHighGearKp =  0.18;
     public static final double kElevatorHighGearKi = 0.0;//0.0;
@@ -100,7 +93,6 @@ public class Constants {
     public static final double kWristKfMultiplierWithoutCube = 0.1; //todo: tune me
     public static final double kWristElevatorAccelerationMultiplier = 0.0;
     public static final double kWristEpsilon = 3.0; //todo: tune me
-
 
     public static final int kWristMaxIntegralAccumulator = 500000; //todo: tune me
     public static final int kWristIZone = 500; //todo: tune me
@@ -137,7 +129,6 @@ public class Constants {
     public static final int kFollowerRearAChannelId = 4;
     public static final int kFollowerRearBChannelId = 5;
 
-
     // Intake
     public static final int kIntakeLeftMasterId = 9;
     public static final int kIntakeRightMasterId = 10;
@@ -161,10 +152,6 @@ public class Constants {
     public static final int kFollowerWheelSolenoid = 11;
     public static final int kElevatorShifterSolenoidId = 8;
 
-    // Sensors
-    public static final int kIntakeLeftBannerId = 9; //todo: get actual value
-    public static final int kIntakeRightBannerId = 10; //todo: get actual value
-
     // Control Board
     public static final boolean kUseGamepadForDriving = false;
     public static final boolean kUseGamepadForButtons = true;
@@ -174,6 +161,7 @@ public class Constants {
     public static final int kMainThrottleJoystickPort = 0;
     public static final int kMainTurnJoystickPort = 1;
     public static final double kJoystickThreshold = 0.5;
+    public static final double kJoystickJogThreshold = 0.1;
 
     // Height in in after applying turn factor.
     public static final double kElevatorLowSensitivityThreshold = 50.0;

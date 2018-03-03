@@ -29,7 +29,6 @@ public class Robot extends IterativeRobot {
             Arrays.asList(
                     RobotStateEstimator.getInstance(),
                     Drive.getInstance(),
-                    FollowerWheels.getInstance(),
                     Superstructure.getInstance(),
                     Intake.getInstance(),
                     Wrist.getInstance(),
@@ -82,7 +81,6 @@ public class Robot extends IterativeRobot {
             mEnabledLooper.stop();
 
             Drive.getInstance().zeroSensors();
-            FollowerWheels.getInstance().zeroSensors();
             RobotState.getInstance().reset(Timer.getFPGATimestamp(), Pose2d.identity());
 
             mDrive.stopLogging();
@@ -104,7 +102,6 @@ public class Robot extends IterativeRobot {
             RobotState.getInstance().reset(Timer.getFPGATimestamp(), Pose2d.identity());
 
             Drive.getInstance().zeroSensors();
-            FollowerWheels.getInstance().zeroSensors();
             mInfrastructure.setIsDuringAuto(true);
 
             AutoFieldState.setStartPose(AutoModeSelector.getSelectedStartingPose());
@@ -129,7 +126,6 @@ public class Robot extends IterativeRobot {
             CrashTracker.logTeleopInit();
             mDisabledLooper.stop();
 
-            FollowerWheels.getInstance().zeroSensors();
             mInfrastructure.setIsDuringAuto(false);
 
             RobotState.getInstance().reset(Timer.getFPGATimestamp(), Pose2d.identity());
@@ -259,23 +255,49 @@ public class Robot extends IterativeRobot {
                 desired_angle = SuperstructureConstants.kIntakePositionAngle;
             }
 
-            // Elevator.
-            if (mControlBoard.getGoToHighScaleHeight() && !mControlBoard.getIntakePosition()) {
-                desired_height = SuperstructureConstants.kScaleHighHeight;
-            } else if (mControlBoard.getGoToNeutralScaleHeight() && !mControlBoard.getIntakePosition()) {
-                desired_height = SuperstructureConstants.kScaleNeutralHeight;
-            } else if (mControlBoard.getGoToLowScaleHeight() && !mControlBoard.getIntakePosition()) {
-                desired_height = SuperstructureConstants.kScaleLowHeight;
-            } else if (mControlBoard.getGoToHighScaleHeight() && mControlBoard.getIntakePosition()) {
-                desired_height = SuperstructureConstants.kIntakeThirdLevelHeight;
-            } else if (mControlBoard.getGoToNeutralScaleHeight() && mControlBoard.getIntakePosition()) {
-                desired_height = SuperstructureConstants.kIntakeSecondLevelHeight;
-            } else if (mControlBoard.getGoToLowScaleHeight() && mControlBoard.getIntakePosition()) {
-                desired_height = SuperstructureConstants.kIntakeFloorLevelHeight;
-            }  else if (mControlBoard.getGoToSwitchHeight()) {
-                desired_height = SuperstructureConstants.kSwitchHeight;
-            } else if (mControlBoard.getHangMode()) {
-                mSuperstructure.setHangThrottle(mControlBoard.getHangThrottle());
+            // Intake Preset locations
+            boolean go_high_scale = mControlBoard.getGoToHighScaleHeight();
+            boolean go_neutral_scale = mControlBoard.getGoToNeutralScaleHeight();
+            boolean go_low_scale = mControlBoard.getGoToLowScaleHeight();
+            boolean go_switch = mControlBoard.getGoToSwitchHeight();
+            if (mControlBoard.getIntakePosition()) {
+                // Angle will come from mRunIntakePressed on first time.
+                if (go_high_scale) {
+                    desired_height = SuperstructureConstants.kIntakeThirdLevelHeight;
+                } else if (go_neutral_scale) {
+                    desired_height = SuperstructureConstants.kIntakeSecondLevelHeight;
+                } else if (go_low_scale) {
+                    desired_height = SuperstructureConstants.kIntakeFloorLevelHeight;
+                }
+            } else if (mControlBoard.getBackwardsModifier()) {
+                // These are score backwards
+                if (go_high_scale) {
+                    desired_height = SuperstructureConstants.kScaleHighHeightBackwards;
+                    desired_angle = SuperstructureConstants.kScoreBackwardsAngle;
+                } else if (go_neutral_scale) {
+                    desired_height = SuperstructureConstants.kScaleNeutralHeightBackwards;
+                    desired_angle = SuperstructureConstants.kScoreBackwardsAngle;
+                } else if (go_low_scale) {
+                    desired_height = SuperstructureConstants.kScaleLowHeightBackwards;
+                    desired_angle = SuperstructureConstants.kScoreBackwardsAngle;
+                } else if (go_switch) {
+                    desired_height = SuperstructureConstants.kSwitchHeight;
+                    desired_angle = SuperstructureConstants.kScoreSwitchBackwardsAngle;
+                }
+            } else {
+                // These are score forward
+                if (go_high_scale) {
+                    desired_height = SuperstructureConstants.kScaleHighHeight;
+                } else if (go_neutral_scale) {
+                    desired_height = SuperstructureConstants.kScaleNeutralHeight;
+                } else if (go_low_scale) {
+                    desired_height = SuperstructureConstants.kScaleLowHeight;
+                } else if (go_switch) {
+                    desired_height = SuperstructureConstants.kSwitchHeight;
+                    desired_angle = SuperstructureConstants.kPlacingLowAngle;
+                } else if (mControlBoard.getHangMode()) {
+                    mSuperstructure.setHangThrottle(mControlBoard.getHangThrottle());
+                }
             }
 
             // Wrist.
@@ -315,16 +337,16 @@ public class Robot extends IterativeRobot {
                 mSuperstructure.setDesiredHeight(desired_height);
             }
 
-            if (mControlBoard.getJogElevatorUp()) {
-                mSuperstructure.setElevatorJog(SuperstructureConstants.kElevatorJogUpThrottle);
-            } else if (mControlBoard.getJogElevatorDown()) {
-                mSuperstructure.setElevatorJog(SuperstructureConstants.kElevatorJogDownThrottle);
+            double elevator_jog =  mControlBoard.getJogElevatorThrottle();
+            if (Math.abs(elevator_jog) > Constants.kJoystickJogThreshold) {
+                mSuperstructure.setElevatorJog(
+                        elevator_jog * SuperstructureConstants.kElevatorJogThrottle);
             }
 
-            if (mControlBoard.getJogWristForward()) {
-                mSuperstructure.setWristJog(SuperstructureConstants.kWristJogUpThrottle);
-            } else if (mControlBoard.getJogWristBack()) {
-                mSuperstructure.setWristJog(SuperstructureConstants.kWristJogDownThrottle);
+            double wrist_jog = mControlBoard.getJogWristThrottle();
+            if (Math.abs(wrist_jog) > Constants.kJoystickJogThreshold) {
+                mSuperstructure.setWristJog(
+                        wrist_jog * SuperstructureConstants.kWristJogThrottle);
             }
 
             outputToSmartDashboard();
@@ -341,7 +363,6 @@ public class Robot extends IterativeRobot {
 
     public void outputToSmartDashboard() {
         RobotState.getInstance().outputToSmartDashboard();
-        FollowerWheels.getInstance().outputTelemetry();
         Drive.getInstance().outputTelemetry();
         Wrist.getInstance().outputTelemetry();
         Intake.getInstance().outputTelemetry();

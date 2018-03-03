@@ -36,7 +36,7 @@ public class LidarProcessor implements Loop {
             if (count > 10) {
                 count = 0;
                 // SmartDashboard.putString("lidarScan", mScans.getLast().toJsonString());
-                // //output to lidar visualizer
+                // //demand to lidar visualizer
             }
 
             mScans.add(new LidarScan());

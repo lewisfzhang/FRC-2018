@@ -103,23 +103,18 @@ public class ControlBoard implements IControlBoard {
     }
 
     @Override
-    public boolean getJogElevatorUp() {
-        return mButtonControlBoard.getJogElevatorUp();
+    public boolean getBackwardsModifier() {
+        return mButtonControlBoard.getBackwardsModifier();
     }
 
     @Override
-    public boolean getJogElevatorDown() {
-        return mButtonControlBoard.getJogElevatorDown();
+    public double getJogElevatorThrottle() {
+        return mButtonControlBoard.getJogElevatorThrottle();
     }
 
     @Override
-    public boolean getJogWristBack() {
-        return mButtonControlBoard.getJogWristBack();
-    }
-
-    @Override
-    public boolean getJogWristForward() {
-        return mButtonControlBoard.getJogWristForward();
+    public double getJogWristThrottle() {
+        return mButtonControlBoard.getJogWristThrottle();
     }
 
     @Override

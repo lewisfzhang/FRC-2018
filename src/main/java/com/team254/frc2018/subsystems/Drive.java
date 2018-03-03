@@ -18,6 +18,7 @@ import com.team254.lib.trajectory.TimedView;
 import com.team254.lib.trajectory.Trajectory;
 import com.team254.lib.trajectory.TrajectoryIterator;
 import com.team254.lib.trajectory.timing.TimedState;
+import com.team254.lib.trajectory.timing.TimingConstraint;
 import com.team254.lib.util.DriveSignal;
 import com.team254.lib.util.ReflectingCSVWriter;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -41,12 +42,11 @@ public class Drive extends Subsystem {
     private DriveControlState mDriveControlState;
     private PigeonIMU mPigeon;
     // Hardware states
-    private PeriodicInputs mPeriodicInputs;
-    private PeriodicOutputs mPeriodicOutputs;
+    private PeriodicIO mPeriodicIO;
     private boolean mAutoShift;
     private boolean mIsHighGear;
     private boolean mIsBrakeMode;
-    private ReflectingCSVWriter<PeriodicInputs> mCSVWriter = null;
+    private ReflectingCSVWriter<PeriodicIO> mCSVWriter = null;
     private DriveMotionPlanner mMotionPlanner;
 
     private final Loop mLoop = new Loop() {
@@ -89,24 +89,29 @@ public class Drive extends Subsystem {
         }
     };
 
+    private void configureMaster(TalonSRX talon, boolean left) {
+        talon.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 10, 100);
+        final ErrorCode sensorPresent = talon.configSelectedFeedbackSensor(FeedbackDevice
+                .CTRE_MagEncoder_Relative, 0, 100); //primary closed-loop, 100 ms timeout
+        if (sensorPresent != ErrorCode.OK) {
+            DriverStation.reportError("Could not detect " + (left ? "left" : "right") + " encoder: " + sensorPresent, false);
+        }
+        talon.setInverted(!left);
+        talon.setSensorPhase(true);
+        talon.enableVoltageCompensation(true);
+        talon.configVoltageCompSaturation(12.0, Constants.kLongCANTimeoutMs);
+        talon.configVelocityMeasurementPeriod(VelocityMeasPeriod.Period_10Ms, Constants.kLongCANTimeoutMs);
+        talon.configVelocityMeasurementWindow(32, Constants.kLongCANTimeoutMs);
+        talon.configClosedloopRamp(Constants.kDriveVoltageRampRate, Constants.kLongCANTimeoutMs);
+        talon.configNeutralDeadband(0.04, 0);
+    }
+
     private Drive() {
-        mPeriodicInputs = new PeriodicInputs();
-        mPeriodicOutputs = new PeriodicOutputs();
+        mPeriodicIO = new PeriodicIO();
 
         // Start all Talons in open loop mode.
         mLeftMaster = TalonSRXFactory.createDefaultTalon(Constants.kLeftDriveMasterId);
-        final ErrorCode leftSensorPresent = mLeftMaster.configSelectedFeedbackSensor(FeedbackDevice
-                .CTRE_MagEncoder_Relative, 0, 100); //primary closed-loop, 100 ms timeout
-        if (leftSensorPresent != ErrorCode.OK) {
-            DriverStation.reportError("Could not detect left encoder: " + leftSensorPresent, false);
-        }
-        mLeftMaster.setInverted(false);
-        mLeftMaster.setSensorPhase(true);
-        mLeftMaster.enableVoltageCompensation(true);
-        mLeftMaster.configVoltageCompSaturation(12.0, Constants.kLongCANTimeoutMs);
-        mLeftMaster.configVelocityMeasurementPeriod(VelocityMeasPeriod.Period_10Ms, Constants.kLongCANTimeoutMs);
-        mLeftMaster.configVelocityMeasurementWindow(32, Constants.kLongCANTimeoutMs);
-        mLeftMaster.configClosedloopRamp(Constants.kDriveVoltageRampRate, Constants.kLongCANTimeoutMs);
+        configureMaster(mLeftMaster, true);
 
         mLeftSlaveA = TalonSRXFactory.createPermanentSlaveTalon(Constants.kLeftDriveSlaveAId,
                 Constants.kLeftDriveMasterId);
@@ -117,18 +122,7 @@ public class Drive extends Subsystem {
         mLeftSlaveB.setInverted(false);
 
         mRightMaster = TalonSRXFactory.createDefaultTalon(Constants.kRightDriveMasterId);
-        final ErrorCode rightSensorPresent = mRightMaster.configSelectedFeedbackSensor(FeedbackDevice
-                .CTRE_MagEncoder_Relative, 0, 100); //primary closed-loop, 100 ms timeout
-        if (rightSensorPresent != ErrorCode.OK) {
-            DriverStation.reportError("Could not detect left encoder: " + rightSensorPresent, false);
-        }
-        mRightMaster.setInverted(true);
-        mRightMaster.setSensorPhase(true);
-        mRightMaster.enableVoltageCompensation(true);
-        mRightMaster.configVoltageCompSaturation(12.0, Constants.kLongCANTimeoutMs);
-        mRightMaster.configVelocityMeasurementPeriod(VelocityMeasPeriod.Period_10Ms, Constants.kLongCANTimeoutMs);
-        mRightMaster.configVelocityMeasurementWindow(32, Constants.kLongCANTimeoutMs);
-        mRightMaster.configClosedloopRamp(Constants.kDriveVoltageRampRate, Constants.kLongCANTimeoutMs);
+        configureMaster(mRightMaster, false);
 
         mRightSlaveA = TalonSRXFactory.createPermanentSlaveTalon(Constants.kRightDriveSlaveAId,
                 Constants.kRightDriveMasterId);
@@ -160,10 +154,11 @@ public class Drive extends Subsystem {
 
     public TrajectoryIterator<TimedState<Pose2dWithCurvature>> generateTrajectory(
             final List<Pose2d> waypoints,
+            final List<TimingConstraint<Pose2dWithCurvature>> constraints,
             double max_vel,  // inches/s
             double max_accel,  // inches/s^2
             double max_voltage) {
-        Trajectory<TimedState<Pose2dWithCurvature>> trajectory = mMotionPlanner.generateTrajectory(waypoints, max_vel, max_accel, max_voltage);
+        Trajectory<TimedState<Pose2dWithCurvature>> trajectory = mMotionPlanner.generateTrajectory(waypoints, constraints, max_vel, max_accel, max_voltage);
         TrajectoryIterator<TimedState<Pose2dWithCurvature>> iterator = new TrajectoryIterator<>(new TimedView<>(trajectory));
         return iterator;
     }
@@ -206,11 +201,13 @@ public class Drive extends Subsystem {
             mAutoShift = true;
 
             mDriveControlState = DriveControlState.OPEN_LOOP;
+            mLeftMaster.configNeutralDeadband(0.04, 0);
+            mRightMaster.configNeutralDeadband(0.04, 0);
         }
-        mPeriodicOutputs.left_output_ = signal.getLeft();
-        mPeriodicOutputs.right_output_ = signal.getRight();
-        mPeriodicOutputs.left_feedforward_ = 0.0;
-        mPeriodicOutputs.right_feedforward_ = 0.0;
+        mPeriodicIO.left_demand = signal.getLeft();
+        mPeriodicIO.right_demand = signal.getRight();
+        mPeriodicIO.left_feedforward = 0.0;
+        mPeriodicIO.right_feedforward = 0.0;
     }
 
     /**
@@ -223,13 +220,15 @@ public class Drive extends Subsystem {
             mAutoShift = false;
             mLeftMaster.selectProfileSlot(kLowGearVelocityControlSlot, 0);
             mRightMaster.selectProfileSlot(kLowGearVelocityControlSlot, 0);
+            mLeftMaster.configNeutralDeadband(0.0, 0);
+            mRightMaster.configNeutralDeadband(0.0, 0);
 
             mDriveControlState = DriveControlState.PATH_FOLLOWING;
         }
-        mPeriodicOutputs.left_output_ = signal.getLeft();
-        mPeriodicOutputs.right_output_ = signal.getRight();
-         mPeriodicOutputs.left_feedforward_ = feedforward.getLeft();
-         mPeriodicOutputs.right_feedforward_ = feedforward.getRight();
+        mPeriodicIO.left_demand = signal.getLeft();
+        mPeriodicIO.right_demand = signal.getRight();
+        mPeriodicIO.left_feedforward = feedforward.getLeft();
+        mPeriodicIO.right_feedforward = feedforward.getRight();
     }
 
     public synchronized void setTrajectory(TrajectoryIterator<TimedState<Pose2dWithCurvature>> trajectory) {
@@ -276,7 +275,7 @@ public class Drive extends Subsystem {
     }
 
     public Rotation2d getHeading() {
-        return mPeriodicInputs.gyro_heading_;
+        return mPeriodicIO.gyro_heading;
     }
 
     public void setHeading(Rotation2d heading) {
@@ -290,16 +289,16 @@ public class Drive extends Subsystem {
 
     @Override
     public void outputTelemetry() {
-        SmartDashboard.putNumber("Right Drive Distance", mPeriodicInputs.right_distance_);
-        SmartDashboard.putNumber("Right Drive Ticks", mPeriodicInputs.right_position_ticks_);
-        SmartDashboard.putNumber("Left Drive Ticks", mPeriodicInputs.left_position_ticks_);
-        SmartDashboard.putNumber("Left Drive Distance", mPeriodicInputs.left_distance_);
+        SmartDashboard.putNumber("Right Drive Distance", mPeriodicIO.right_distance);
+        SmartDashboard.putNumber("Right Drive Ticks", mPeriodicIO.right_position_ticks);
+        SmartDashboard.putNumber("Left Drive Ticks", mPeriodicIO.left_position_ticks);
+        SmartDashboard.putNumber("Left Drive Distance", mPeriodicIO.left_distance);
         SmartDashboard.putNumber("Right Linear Velocity", getRightLinearVelocity());
         SmartDashboard.putNumber("Left Linear Velocity", getLeftLinearVelocity());
 
-        SmartDashboard.putNumber("x err", mPeriodicInputs.error_.getTranslation().x());
-        SmartDashboard.putNumber("y err", mPeriodicInputs.error_.getTranslation().y());
-        SmartDashboard.putNumber("theta err", mPeriodicInputs.error_.getRotation().getDegrees());
+        SmartDashboard.putNumber("x err", mPeriodicIO.error.getTranslation().x());
+        SmartDashboard.putNumber("y err", mPeriodicIO.error.getTranslation().y());
+        SmartDashboard.putNumber("theta err", mPeriodicIO.error.getRotation().getDegrees());
         if(getHeading() != null) {
             SmartDashboard.putNumber("Gyro Heading", getHeading().getDegrees());
         }
@@ -311,7 +310,7 @@ public class Drive extends Subsystem {
     public synchronized void resetEncoders() {
         mLeftMaster.setSelectedSensorPosition(0, 0, 0);
         mRightMaster.setSelectedSensorPosition(0, 0, 0);
-        mPeriodicInputs = new PeriodicInputs();
+        mPeriodicIO = new PeriodicIO();
     }
 
     @Override
@@ -322,11 +321,11 @@ public class Drive extends Subsystem {
     }
 
     public double getLeftEncoderRotations() {
-        return mPeriodicInputs.left_position_ticks_ / DRIVE_ENCODER_PPR;
+        return mPeriodicIO.left_position_ticks / DRIVE_ENCODER_PPR;
     }
 
     public double getRightEncoderRotations() {
-        return mPeriodicInputs.right_position_ticks_ / DRIVE_ENCODER_PPR;
+        return mPeriodicIO.right_position_ticks / DRIVE_ENCODER_PPR;
     }
 
     public double getLeftEncoderDistance() {
@@ -338,7 +337,7 @@ public class Drive extends Subsystem {
     }
 
     public double getRightVelocityNativeUnits() {
-        return mPeriodicInputs.right_velocity_ticks_per_100ms_;
+        return mPeriodicIO.right_velocity_ticks_per_100ms;
     }
 
     public double getRightLinearVelocity() {
@@ -346,7 +345,7 @@ public class Drive extends Subsystem {
     }
 
     public double getLeftVelocityNativeUnits() {
-        return mPeriodicInputs.left_velocity_ticks_per_100ms_;
+        return mPeriodicIO.left_velocity_ticks_per_100ms;
     }
 
     public double getLeftLinearVelocity() {
@@ -366,9 +365,9 @@ public class Drive extends Subsystem {
             final double now = Timer.getFPGATimestamp();
             DriveMotionPlanner.Output output = mMotionPlanner.update(now, RobotState.getInstance().getFieldToVehicle(now));
 
-            // DriveSignal signal = new DriveSignal(output.left_feedforward_voltage / 12.0, output.right_feedforward_voltage / 12.0);
+            // DriveSignal signal = new DriveSignal(demand.left_feedforward_voltage / 12.0, demand.right_feedforward_voltage / 12.0);
 
-            mPeriodicInputs.error_ = mMotionPlanner.getError();
+            mPeriodicIO.error = mMotionPlanner.error();
 
             setVelocity(new DriveSignal(radiansPerSecondToTicksPer100ms(output.left_velocity), radiansPerSecondToTicksPer100ms(output.right_velocity)),
                     new DriveSignal(output.left_feedforward_voltage / 12.0, output.right_feedforward_voltage / 12.0));
@@ -408,42 +407,39 @@ public class Drive extends Subsystem {
 
     @Override
     public synchronized void readPeriodicInputs() {
-        double prevLeftTicks = mPeriodicInputs.left_position_ticks_;
-        double prevRightTicks = mPeriodicInputs.right_position_ticks_;
-        mPeriodicInputs.left_position_ticks_ = mLeftMaster.getSelectedSensorPosition(0);
-        mPeriodicInputs.right_position_ticks_ = mRightMaster.getSelectedSensorPosition(0);
-        mPeriodicInputs.left_velocity_ticks_per_100ms_ = mLeftMaster.getSelectedSensorVelocity(0);
-        mPeriodicInputs.right_velocity_ticks_per_100ms_ = mRightMaster.getSelectedSensorVelocity(0);
-        mPeriodicInputs.gyro_heading_ = Rotation2d.fromDegrees(mPigeon.getFusedHeading());
+        double prevLeftTicks = mPeriodicIO.left_position_ticks;
+        double prevRightTicks = mPeriodicIO.right_position_ticks;
+        mPeriodicIO.left_position_ticks = mLeftMaster.getSelectedSensorPosition(0);
+        mPeriodicIO.right_position_ticks = mRightMaster.getSelectedSensorPosition(0);
+        mPeriodicIO.left_velocity_ticks_per_100ms = mLeftMaster.getSelectedSensorVelocity(0);
+        mPeriodicIO.right_velocity_ticks_per_100ms = mRightMaster.getSelectedSensorVelocity(0);
+        mPeriodicIO.gyro_heading = Rotation2d.fromDegrees(mPigeon.getFusedHeading());
 
-        double deltaLeftTicks = ((mPeriodicInputs.left_position_ticks_ - prevLeftTicks) / 4096.0) * Math.PI;
+        double deltaLeftTicks = ((mPeriodicIO.left_position_ticks - prevLeftTicks) / 4096.0) * Math.PI;
         if (deltaLeftTicks > 0.0) {
-            mPeriodicInputs.left_distance_ += deltaLeftTicks * Constants.kDriveWheelDiameterInches;
+            mPeriodicIO.left_distance += deltaLeftTicks * Constants.kDriveWheelDiameterInches;
         } else {
-            mPeriodicInputs.left_distance_ += deltaLeftTicks * Constants.kDriveWheelDiameterInches;
+            mPeriodicIO.left_distance += deltaLeftTicks * Constants.kDriveWheelDiameterInches;
         }
 
-        double deltaRightTicks = ((mPeriodicInputs.right_position_ticks_ - prevRightTicks) / 4096.0) * Math.PI;
+        double deltaRightTicks = ((mPeriodicIO.right_position_ticks - prevRightTicks) / 4096.0) * Math.PI;
         if (deltaRightTicks > 0.0) {
-            mPeriodicInputs.right_distance_ += deltaRightTicks * Constants.kDriveWheelDiameterInches;
+            mPeriodicIO.right_distance += deltaRightTicks * Constants.kDriveWheelDiameterInches;
         } else {
-            mPeriodicInputs.right_distance_ += deltaRightTicks * Constants.kDriveWheelDiameterInches;
+            mPeriodicIO.right_distance += deltaRightTicks * Constants.kDriveWheelDiameterInches;
         }
 
         if (mCSVWriter != null) {
-            mCSVWriter.add(mPeriodicInputs);
+            mCSVWriter.add(mPeriodicIO);
         }
     }
 
     @Override
     public synchronized void writePeriodicOutputs() {
         mLeftMaster.set(mDriveControlState == DriveControlState.OPEN_LOOP ? ControlMode.PercentOutput :
-                ControlMode.Velocity, mPeriodicOutputs.left_output_, DemandType.ArbitraryFeedForward, mPeriodicOutputs.left_feedforward_);
+                ControlMode.Velocity, mPeriodicIO.left_demand, DemandType.ArbitraryFeedForward, mPeriodicIO.left_feedforward);
         mRightMaster.set(mDriveControlState == DriveControlState.OPEN_LOOP ? ControlMode.PercentOutput :
-                ControlMode.Velocity, mPeriodicOutputs.right_output_, DemandType.ArbitraryFeedForward, mPeriodicOutputs.right_feedforward_);
-        mPeriodicInputs.left_velocity_setpoint_ = mPeriodicOutputs.left_output_;
-        mPeriodicInputs.right_velocity_setpoint_ = mPeriodicOutputs.right_output_;
-
+                ControlMode.Velocity, mPeriodicIO.right_demand, DemandType.ArbitraryFeedForward, mPeriodicIO.right_feedforward);
     }
 
     @Override
@@ -485,7 +481,7 @@ public class Drive extends Subsystem {
 
     public synchronized void startLogging() {
         if (mCSVWriter == null) {
-            mCSVWriter = new ReflectingCSVWriter<>("/home/lvuser/DRIVE-LOGS.csv", PeriodicInputs.class);
+            mCSVWriter = new ReflectingCSVWriter<>("/home/lvuser/DRIVE-LOGS.csv", PeriodicIO.class);
         }
     }
 
@@ -508,25 +504,21 @@ public class Drive extends Subsystem {
         AUTO_SHIFT
     }
 
-    public static class PeriodicInputs {
-        public int left_position_ticks_;
-        public int right_position_ticks_;
-        public double left_distance_;
-        public double right_distance_;
-        public int left_velocity_ticks_per_100ms_;
-        public int right_velocity_ticks_per_100ms_;
-        public Rotation2d gyro_heading_;
+    public static class PeriodicIO {
+        // INPUTS
+        public int left_position_ticks;
+        public int right_position_ticks;
+        public double left_distance;
+        public double right_distance;
+        public int left_velocity_ticks_per_100ms;
+        public int right_velocity_ticks_per_100ms;
+        public Rotation2d gyro_heading = Rotation2d.identity();
+        public Pose2d error = Pose2d.identity();
 
-        // TODO this is a hack
-        public double left_velocity_setpoint_;
-        public double right_velocity_setpoint_;
-        public Pose2d error_ = new Pose2d();
-    }
-
-    private static class PeriodicOutputs {
-        public double left_output_;
-        public double right_output_;
-        public double left_feedforward_;
-        public double right_feedforward_;
+        // OUTPUTS
+        public double left_demand;
+        public double right_demand;
+        public double left_feedforward;
+        public double right_feedforward;
     }
 }

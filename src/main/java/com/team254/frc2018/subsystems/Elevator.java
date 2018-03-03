@@ -19,15 +19,14 @@ public class Elevator extends Subsystem {
     public static final double kHomePositionInches = 5.0;
     private static final int kHighGearSlot = 0;
     private static final int kLowGearSlot = 1;
-    private static final int kReverseSoftLimit = -99000; // Encoder ticks (used to be -151000)
+    private static final int kReverseSoftLimit = -99400; // Encoder ticks (used to be -151000)
     private static final int kForwardSoftLimit = 500; // Encoder ticks.  TODO set to ~0 once skipping is fixed.
     private static final double kEncoderTicksPerInch = -1271.0;
     private static Elevator mInstance = null;
     private Intake mIntake = Intake.getInstance();
     private final TalonSRX mMaster, mRightSlave, mLeftSlaveA, mLeftSlaveB;
     private final Solenoid mShifter;
-    private PeriodicInputs mPeriodicInputs = new PeriodicInputs();
-    private PeriodicOutputs mPeriodicOutputs = new PeriodicOutputs();
+    private PeriodicIO mPeriodicIO = new PeriodicIO();
     private ElevatorControlState mElevatorControlState = ElevatorControlState.OPEN_LOOP;
 
     private Elevator() {
@@ -165,7 +164,7 @@ public class Elevator extends Subsystem {
 
     public synchronized void setOpenLoop(double percentage) {
         mElevatorControlState = ElevatorControlState.OPEN_LOOP;
-        mPeriodicOutputs.output_ = percentage;
+        mPeriodicIO.demand = percentage;
     }
 
     public synchronized void setClosedLoopPosition(double positionInchesOffGround) {
@@ -176,12 +175,12 @@ public class Elevator extends Subsystem {
 
     private synchronized void setClosedLoopRawPosition(double encoderPosition) {
         mElevatorControlState = ElevatorControlState.MOTION_MAGIC;
-        mPeriodicOutputs.output_ = encoderPosition;
+        mPeriodicIO.demand = encoderPosition;
     }
 
     public synchronized boolean hasFinishedTrajectory() {
         return mElevatorControlState == ElevatorControlState.MOTION_MAGIC &&
-                Util.epsilonEquals(mPeriodicInputs.active_trajectory_position_, mPeriodicOutputs.output_, 5);
+                Util.epsilonEquals(mPeriodicIO.active_trajectory_position, mPeriodicIO.demand, 5);
     }
 
     public synchronized void setHangMode(boolean hang_mode) {
@@ -190,36 +189,36 @@ public class Elevator extends Subsystem {
 
     public synchronized double getRPM() {
         // We are using a CTRE mag encoder which is 4096 native units per revolution.
-        return mPeriodicInputs.velocity_ticks_per_100ms_ * 10.0 / 4096.0 * 60.0;
+        return mPeriodicIO.velocity_ticks_per_100ms * 10.0 / 4096.0 * 60.0;
     }
 
     public synchronized double getInchesOffGround() {
-        return (mPeriodicInputs.position_ticks_ / kEncoderTicksPerInch) + kHomePositionInches;
+        return (mPeriodicIO.position_ticks / kEncoderTicksPerInch) + kHomePositionInches;
     }
 
     public synchronized double getSetpoint() {
         return mElevatorControlState == ElevatorControlState.MOTION_MAGIC ?
-                mPeriodicOutputs.output_ / kEncoderTicksPerInch + kHomePositionInches : Double.NaN;
+                mPeriodicIO.demand / kEncoderTicksPerInch + kHomePositionInches : Double.NaN;
     }
 
     public synchronized double getActiveTrajectoryAccelG() {
-        return mPeriodicInputs.active_trajectory_accel_g_;
+        return mPeriodicIO.active_trajectory_accel_g;
     }
 
     @Override
     public void outputTelemetry() {
-        SmartDashboard.putNumber("Elevator Output %", mPeriodicInputs.output_percent_);
+        SmartDashboard.putNumber("Elevator Output %", mPeriodicIO.output_percent);
         SmartDashboard.putNumber("Elevator RPM", getRPM());
         // SmartDashboard.putNumber("Elevator Error", mMaster.getClosedLoopError(0) / kEncoderTicksPerInch);
         SmartDashboard.putNumber("Elevator Height", getInchesOffGround());
-        SmartDashboard.putBoolean("Elevator Limit", mPeriodicInputs.limit_switch_);
-        SmartDashboard.putNumber("Elevator Sensor Height", mPeriodicInputs.position_ticks_);
+        SmartDashboard.putBoolean("Elevator Limit", mPeriodicIO.limit_switch);
+        SmartDashboard.putNumber("Elevator Sensor Height", mPeriodicIO.position_ticks);
 
 
         SmartDashboard.putNumber("Elevator Last Expected Trajectory", getSetpoint());
-        SmartDashboard.putNumber("Elevator Current Trajectory Point", mPeriodicInputs.active_trajectory_position_);
-        SmartDashboard.putNumber("Elevator Traj Vel", mPeriodicInputs.active_trajectory_velocity_);
-        SmartDashboard.putNumber("Elevator Traj Accel", mPeriodicInputs.active_trajectory_accel_g_);
+        SmartDashboard.putNumber("Elevator Current Trajectory Point", mPeriodicIO.active_trajectory_position);
+        SmartDashboard.putNumber("Elevator Traj Vel", mPeriodicIO.active_trajectory_velocity);
+        SmartDashboard.putNumber("Elevator Traj Accel", mPeriodicIO.active_trajectory_accel_g);
         SmartDashboard.putBoolean("Elevator Has Sent Trajectory", hasFinishedTrajectory());
     }
 
@@ -234,7 +233,7 @@ public class Elevator extends Subsystem {
     }
 
     public synchronized void resetIfAtLimit() {
-        if (mPeriodicInputs.limit_switch_) {
+        if (mPeriodicIO.limit_switch) {
             zeroSensors();
         }
     }
@@ -249,48 +248,48 @@ public class Elevator extends Subsystem {
     @Override
     public synchronized void readPeriodicInputs() {
         final double t = Timer.getFPGATimestamp();
-        mPeriodicInputs.position_ticks_ = mMaster.getSelectedSensorPosition(0);
-        mPeriodicInputs.velocity_ticks_per_100ms_ = mMaster.getSelectedSensorVelocity(0);
+        mPeriodicIO.position_ticks = mMaster.getSelectedSensorPosition(0);
+        mPeriodicIO.velocity_ticks_per_100ms = mMaster.getSelectedSensorVelocity(0);
         if (mMaster.getControlMode() == ControlMode.MotionMagic) {
-            mPeriodicInputs.active_trajectory_position_ = mMaster.getActiveTrajectoryPosition();
+            mPeriodicIO.active_trajectory_position = mMaster.getActiveTrajectoryPosition();
             final int newVel = mMaster.getActiveTrajectoryVelocity();
             // TODO check sign of elevator accel
             if (Util.epsilonEquals(newVel, Constants.kElevatorHighGearCruiseVelocity, 5) ||
-                    Util.epsilonEquals(newVel, mPeriodicInputs.active_trajectory_velocity_, 5)) {
+                    Util.epsilonEquals(newVel, mPeriodicIO.active_trajectory_velocity, 5)) {
                 // Elevator is ~constant velocity.
-                mPeriodicInputs.active_trajectory_accel_g_ = 0.0;
-            } else if (newVel > mPeriodicInputs.active_trajectory_velocity_) {
+                mPeriodicIO.active_trajectory_accel_g = 0.0;
+            } else if (newVel > mPeriodicIO.active_trajectory_velocity) {
                 // Elevator is accelerating downwards.
-                mPeriodicInputs.active_trajectory_accel_g_ = -Constants.kElevatorHighGearAcceleration * 10.0 /
+                mPeriodicIO.active_trajectory_accel_g = -Constants.kElevatorHighGearAcceleration * 10.0 /
                         (kEncoderTicksPerInch * 386.09);
             } else {
                 // Elevator is accelerating upwards.
-                mPeriodicInputs.active_trajectory_accel_g_ = Constants.kElevatorHighGearAcceleration * 10.0 /
+                mPeriodicIO.active_trajectory_accel_g = Constants.kElevatorHighGearAcceleration * 10.0 /
                         (kEncoderTicksPerInch * 386.09);
             }
-            mPeriodicInputs.active_trajectory_velocity_ = newVel;
+            mPeriodicIO.active_trajectory_velocity = newVel;
         } else {
-            mPeriodicInputs.active_trajectory_position_ = Integer.MIN_VALUE;
-            mPeriodicInputs.active_trajectory_velocity_ = 0;
-            mPeriodicInputs.active_trajectory_accel_g_ = 0.0;
+            mPeriodicIO.active_trajectory_position = Integer.MIN_VALUE;
+            mPeriodicIO.active_trajectory_velocity = 0;
+            mPeriodicIO.active_trajectory_accel_g = 0.0;
         }
-        mPeriodicInputs.output_percent_ = mMaster.getMotorOutputPercent();
-        mPeriodicInputs.limit_switch_ = mMaster.getSensorCollection().isFwdLimitSwitchClosed();
-        mPeriodicInputs.t_ = t;
+        mPeriodicIO.output_percent = mMaster.getMotorOutputPercent();
+        mPeriodicIO.limit_switch = mMaster.getSensorCollection().isFwdLimitSwitchClosed();
+        mPeriodicIO.t = t;
 
         if (getInchesOffGround() > Constants.kElevatorEpsilon && mShifter.get()) {
-            mPeriodicInputs.feedforward_ = mIntake.hasCube() ? Constants.kElevatorFeedforwardWithCube : Constants
+            mPeriodicIO.feedforward = mIntake.hasCube() ? Constants.kElevatorFeedforwardWithCube : Constants
                     .kElevatorFeedforwardNoCube;
         } else {
-            mPeriodicInputs.feedforward_ = 0.0;
+            mPeriodicIO.feedforward = 0.0;
         }
     }
 
     @Override
     public synchronized void writePeriodicOutputs() {
         mMaster.set(mElevatorControlState == ElevatorControlState.MOTION_MAGIC ? ControlMode.MotionMagic :
-                ControlMode.PercentOutput, mPeriodicOutputs.output_, DemandType.ArbitraryFeedForward, mPeriodicInputs
-                .feedforward_);
+                ControlMode.PercentOutput, mPeriodicIO.demand, DemandType.ArbitraryFeedForward, mPeriodicIO
+                .feedforward);
     }
 
     @Override
@@ -347,20 +346,19 @@ public class Elevator extends Subsystem {
         MOTION_MAGIC
     }
 
-    public static class PeriodicInputs {
-        public int position_ticks_;
-        public int velocity_ticks_per_100ms_;
-        public double active_trajectory_accel_g_;
-        public int active_trajectory_velocity_;
-        public int active_trajectory_position_;
-        public double output_percent_;
-        public boolean limit_switch_;
-        public double feedforward_;
-        public double t_;
-    }
+    public static class PeriodicIO {
+        // INPUTS
+        public int position_ticks;
+        public int velocity_ticks_per_100ms;
+        public double active_trajectory_accel_g;
+        public int active_trajectory_velocity;
+        public int active_trajectory_position;
+        public double output_percent;
+        public boolean limit_switch;
+        public double feedforward;
+        public double t;
 
-    private static class PeriodicOutputs {
-        public double output_;
+        // OUTPUTS
+        public double demand;
     }
-
 }

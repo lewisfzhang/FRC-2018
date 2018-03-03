@@ -13,7 +13,6 @@ import com.team254.lib.drivers.TalonSRXUtil;
 import com.team254.lib.util.ReflectingCSVWriter;
 import com.team254.lib.util.Util;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import java.util.ArrayList;
@@ -30,12 +29,11 @@ public class Wrist extends Subsystem {
     private final CarriageCanifier mCanifier = CarriageCanifier.getInstance();
     private final Elevator mElevator = Elevator.getInstance();
     private final TalonSRX mMaster;
-    private PeriodicInputs mPeriodicInputs = new PeriodicInputs();
-    private PeriodicOutputs mPeriodicOutputs = new PeriodicOutputs();
+    private PeriodicIO mPeriodicIO = new PeriodicIO();
     private double mZeroPosition = Double.NaN;
     private SystemState mSystemState = SystemState.HOMING;
     private SystemState mDesiredState = SystemState.CLOSED_LOOP;
-    private ReflectingCSVWriter<PeriodicInputs> mCSVWriter = null;
+    private ReflectingCSVWriter<PeriodicIO> mCSVWriter = null;
 
     private Wrist() {
         mMaster = TalonSRXFactory.createDefaultTalon(Constants.KWristMasterId);
@@ -174,28 +172,23 @@ public class Wrist extends Subsystem {
     }
 
     @Override
-    public synchronized void outputTelemetry() {
-//        if (!Double.isNaN(mZeroPosition)) {
+    public void outputTelemetry() {
         SmartDashboard.putNumber("Wrist Angle", getAngle());
         SmartDashboard.putNumber("Wrist Position", getPosition());
 //        }
-//        SmartDashboard.putNumber("Wrist Ticks", mMaster.getSelectedSensorPosition(0));
-        SmartDashboard.putNumber("Wrist Ticks", mPeriodicInputs.position_ticks_);
-        SmartDashboard.putNumber("Wrist periodic output_", mPeriodicOutputs.output_);
-        SmartDashboard.putBoolean("LIMR", mPeriodicInputs.limit_switch_);
+        SmartDashboard.putNumber("Wrist Ticks", mPeriodicIO.position_ticks);
+        SmartDashboard.putNumber("Wrist periodic demand", mPeriodicIO.demand);
+        SmartDashboard.putBoolean("LIMR", mPeriodicIO.limit_switch);
 
         SmartDashboard.putNumber("Wrist RPM", getRPM());
-        SmartDashboard.putNumber("Wrist Power %", mPeriodicInputs.output_percent_);
-        // SmartDashboard.putNumber("Wrist Error", sensorUnitsToDegrees(mMaster.getClosedLoopError(0)));
-        SmartDashboard.putBoolean("Wrist Limit Switch", mPeriodicInputs.limit_switch_);
+        SmartDashboard.putNumber("Wrist Power %", mPeriodicIO.output_percent);
+        SmartDashboard.putBoolean("Wrist Limit Switch", mPeriodicIO.limit_switch);
         SmartDashboard.putNumber("Wrist Last Expected Trajectory", getSetpoint());
-        SmartDashboard.putNumber("Wrist Current Trajectory Point", mPeriodicInputs.active_trajectory_position_);
-        SmartDashboard.putNumber("Wrist Traj Vel", mPeriodicInputs.active_trajectory_velocity_);
-        SmartDashboard.putNumber("Wrist Traj Accel", mPeriodicInputs.active_trajectory_acceleration_rad_per_s2_);
+        SmartDashboard.putNumber("Wrist Current Trajectory Point", mPeriodicIO.active_trajectory_position);
+        SmartDashboard.putNumber("Wrist Traj Vel", mPeriodicIO.active_trajectory_velocity);
+        SmartDashboard.putNumber("Wrist Traj Accel", mPeriodicIO.active_trajectory_acceleration_rad_per_s2);
         SmartDashboard.putBoolean("Wrist Has Sent Trajectory", hasFinishedTrajectory());
-        SmartDashboard.putNumber("elevator accel G", mElevator.getActiveTrajectoryAccelG());
-
-        SmartDashboard.putNumber("Wrist feedforward", mPeriodicInputs.feedforward_);
+        SmartDashboard.putNumber("Wrist feedforward", mPeriodicIO.feedforward);
 
         if (mCSVWriter != null) {
             mCSVWriter.write();
@@ -210,7 +203,7 @@ public class Wrist extends Subsystem {
 
     @Override
     public synchronized void zeroSensors() {
-//        mZeroPosition = mPeriodicInputs.position_ticks_;
+//        mZeroPosition = mPeriodicIO.position_ticks;
         mMaster.setSelectedSensorPosition(0, 0, 0);
         mCanifier.resetWristEncoder();
 
@@ -254,7 +247,7 @@ public class Wrist extends Subsystem {
                         case HOMING:
                             // TODO get this working again
 //                            if (Double.isNaN(mZeroPosition)) {
-//                                mPeriodicOutputs.output_ = resetIfAtLimit() ? 0.0 : kHomingOutput;
+//                                mPeriodicOutputs.demand = resetIfAtLimit() ? 0.0 : kHomingOutput;
 //                            } else {
                             mSystemState = SystemState.OPEN_LOOP;
 
@@ -273,7 +266,7 @@ public class Wrist extends Subsystem {
     }
 
     public synchronized void setOpenLoop(double percentage) {
-        mPeriodicOutputs.output_ = percentage;
+        mPeriodicIO.demand = percentage;
         mDesiredState = SystemState.OPEN_LOOP;
     }
 
@@ -290,8 +283,8 @@ public class Wrist extends Subsystem {
      * @param position the target position of the wrist in sensor units
      */
     public void setClosedLoop(int position) {
-//        mPeriodicOutputs.output_ = relativeToAbsolute(position);
-        mPeriodicOutputs.output_ = (position);
+//        mPeriodicOutputs.demand = relativeToAbsolute(position);
+        mPeriodicIO.demand = (position);
         mDesiredState = SystemState.CLOSED_LOOP;
     }
 
@@ -299,8 +292,8 @@ public class Wrist extends Subsystem {
      * @param angle the target position of the wrist in degrees.  0 is full back, 180 is facing forwards
      */
     public synchronized void setClosedLoopAngle(double angle) {
-//        mPeriodicOutputs.output_ = relativeToAbsolute(degreesToSensorUnits(angle));
-        mPeriodicOutputs.output_ = (degreesToSensorUnits(angle));
+//        mPeriodicOutputs.demand = relativeToAbsolute(degreesToSensorUnits(angle));
+        mPeriodicIO.demand = (degreesToSensorUnits(angle));
         mDesiredState = SystemState.CLOSED_LOOP;
     }
 
@@ -308,34 +301,34 @@ public class Wrist extends Subsystem {
      * @return current position of the wrist in sensor units
      */
     public synchronized double getPosition() { //returns angle of wrist in degrees
-//        return absoluteToRelative(mPeriodicInputs.position_ticks_);
-        return (mPeriodicInputs.position_ticks_);
+//        return absoluteToRelative(mPeriodicIO.position_ticks);
+        return (mPeriodicIO.position_ticks);
     }
 
     /**
      * @return current angle of the wrist in degrees
      */
     public synchronized double getAngle() { //returns angle of wrist in degrees
-//        return sensorUnitsToDegrees(absoluteToRelative(mPeriodicInputs.position_ticks_));
-        return sensorUnitsToDegrees((mPeriodicInputs.position_ticks_));
+//        return sensorUnitsToDegrees(absoluteToRelative(mPeriodicIO.position_ticks));
+        return sensorUnitsToDegrees((mPeriodicIO.position_ticks));
     }
 
     /**
      * @return current velocity in rpm
      */
     public double getRPM() {
-        return sensorUnitsToDegrees(mPeriodicInputs.velocity_ticks_per_100ms_) * 600.0 / 360.0;
+        return sensorUnitsToDegrees(mPeriodicIO.velocity_ticks_per_100ms) * 600.0 / 360.0;
     }
 
     /**
      * @return current velocity in degrees per second
      */
     public double getDegreesPerSecond() {
-        return sensorUnitsToDegrees(mPeriodicInputs.velocity_ticks_per_100ms_) * 10.0;
+        return sensorUnitsToDegrees(mPeriodicIO.velocity_ticks_per_100ms) * 10.0;
     }
 
     public synchronized boolean hasFinishedTrajectory() {
-        if (Util.epsilonEquals(mPeriodicInputs.active_trajectory_position_,
+        if (Util.epsilonEquals(mPeriodicIO.active_trajectory_position,
                 degreesToSensorUnits(getSetpoint()), 2)) {
             return true;
         }
@@ -344,8 +337,8 @@ public class Wrist extends Subsystem {
 
     public synchronized double getSetpoint() {
 //        return mDesiredState == SystemState.CLOSED_LOOP ? sensorUnitsToDegrees(absoluteToRelative(mPeriodicOutputs
-        return mDesiredState == SystemState.CLOSED_LOOP ? sensorUnitsToDegrees((mPeriodicOutputs
-                .output_)) : Double.NaN;
+        return mDesiredState == SystemState.CLOSED_LOOP ? sensorUnitsToDegrees((mPeriodicIO
+                .demand)) : Double.NaN;
     }
 
     private double sensorUnitsToDegrees(double units) {
@@ -368,57 +361,57 @@ public class Wrist extends Subsystem {
             mMaster.clearStickyFaults(0);
         }
         if (mMaster.getControlMode() == ControlMode.MotionMagic) {
-            mPeriodicInputs.active_trajectory_position_ = mMaster.getActiveTrajectoryPosition();
+            mPeriodicIO.active_trajectory_position = mMaster.getActiveTrajectoryPosition();
 
-            if (mPeriodicInputs.active_trajectory_position_ < kReverseSoftLimit) {
+            if (mPeriodicIO.active_trajectory_position < kReverseSoftLimit) {
                 DriverStation.reportError("Active trajectory past reverse soft limit!", false);
-            } else if (mPeriodicInputs.active_trajectory_position_ > kForwardSoftLimit) {
+            } else if (mPeriodicIO.active_trajectory_position > kForwardSoftLimit) {
                 DriverStation.reportError("Active trajectory past forward soft limit!", false);
             }
             final int newVel = mMaster.getActiveTrajectoryVelocity();
             // TODO check sign of accel
             if (Util.epsilonEquals(newVel, Constants.kWristCruiseVelocity, 5) ||
-                    Util.epsilonEquals(newVel, mPeriodicInputs.active_trajectory_velocity_, 5)) {
+                    Util.epsilonEquals(newVel, mPeriodicIO.active_trajectory_velocity, 5)) {
                 // Wrist is ~constant velocity.
-                mPeriodicInputs.active_trajectory_acceleration_rad_per_s2_ = 0.0;
+                mPeriodicIO.active_trajectory_acceleration_rad_per_s2 = 0.0;
             } else {
                 // Wrist is accelerating.
-                mPeriodicInputs.active_trajectory_acceleration_rad_per_s2_ = Math.signum(newVel - mPeriodicInputs
-                        .active_trajectory_velocity_) * Constants.kWristAcceleration * 20.0 * Math.PI /
+                mPeriodicIO.active_trajectory_acceleration_rad_per_s2 = Math.signum(newVel - mPeriodicIO
+                        .active_trajectory_velocity) * Constants.kWristAcceleration * 20.0 * Math.PI /
                         4096;
             }
-            mPeriodicInputs.active_trajectory_velocity_ = newVel;
+            mPeriodicIO.active_trajectory_velocity = newVel;
         } else {
-            mPeriodicInputs.active_trajectory_position_ = Integer.MIN_VALUE;
-            mPeriodicInputs.active_trajectory_velocity_ = 0;
-            mPeriodicInputs.active_trajectory_acceleration_rad_per_s2_ = 0.0;
+            mPeriodicIO.active_trajectory_position = Integer.MIN_VALUE;
+            mPeriodicIO.active_trajectory_velocity = 0;
+            mPeriodicIO.active_trajectory_acceleration_rad_per_s2 = 0.0;
         }
-//        mPeriodicInputs.limit_switch_ = mMaster.getSensorCollection().isRevLimitSwitchClosed();
-        mPeriodicInputs.limit_switch_ = mCanifier.getLimR();
-        mPeriodicInputs.output_voltage_ = mMaster.getMotorOutputVoltage();
-        mPeriodicInputs.output_percent_ = mMaster.getMotorOutputPercent();
-        mPeriodicInputs.position_ticks_ = mMaster.getSelectedSensorPosition(0);
-        mPeriodicInputs.velocity_ticks_per_100ms_ = mMaster.getSelectedSensorVelocity(0);
+//        mPeriodicIO.limit_switch = mMaster.getSensorCollection().isRevLimitSwitchClosed();
+        mPeriodicIO.limit_switch = mCanifier.getLimR();
+        mPeriodicIO.output_voltage = mMaster.getMotorOutputVoltage();
+        mPeriodicIO.output_percent = mMaster.getMotorOutputPercent();
+        mPeriodicIO.position_ticks = mMaster.getSelectedSensorPosition(0);
+        mPeriodicIO.velocity_ticks_per_100ms = mMaster.getSelectedSensorVelocity(0);
 
         if (getAngle() > Constants.kWristEpsilon ||
-                sensorUnitsToDegrees(mPeriodicInputs.active_trajectory_position_) > Constants.kWristEpsilon) {
+                sensorUnitsToDegrees(mPeriodicIO.active_trajectory_position) > Constants.kWristEpsilon) {
             double wristGravityComponent = Math.cos(Math.toRadians(getAngle())) * (mIntake.hasCube() ? Constants
                     .kWristKfMultiplierWithCube : Constants.kWristKfMultiplierWithoutCube);
             double elevatorAccelerationComponent = mElevator.getActiveTrajectoryAccelG() * Constants
                     .kWristElevatorAccelerationMultiplier;
-            mPeriodicInputs.feedforward_ = (elevatorAccelerationComponent + 1.0) * wristGravityComponent;
+            mPeriodicIO.feedforward = (elevatorAccelerationComponent + 1.0) * wristGravityComponent;
         } else {
-            mPeriodicInputs.feedforward_ = 0.0;
+            mPeriodicIO.feedforward = 0.0;
         }
         if (mCSVWriter != null) {
-            mCSVWriter.add(mPeriodicInputs);
+            mCSVWriter.add(mPeriodicIO);
         }
     }
 
     @Override
     public synchronized void writePeriodicOutputs() {
         mMaster.set(mDesiredState == SystemState.CLOSED_LOOP ? ControlMode.MotionMagic : ControlMode.PercentOutput,
-                mPeriodicOutputs.output_, DemandType.ArbitraryFeedForward, mPeriodicInputs.feedforward_);
+                mPeriodicIO.demand, DemandType.ArbitraryFeedForward, mPeriodicIO.feedforward);
     }
 
     @Override
@@ -443,7 +436,7 @@ public class Wrist extends Subsystem {
 
     public synchronized void startLogging() {
         if (mCSVWriter == null) {
-            mCSVWriter = new ReflectingCSVWriter<>("/home/lvuser/WRIST-LOGS.csv", PeriodicInputs.class);
+            mCSVWriter = new ReflectingCSVWriter<>("/home/lvuser/WRIST-LOGS.csv", PeriodicIO.class);
         }
     }
 
@@ -460,20 +453,20 @@ public class Wrist extends Subsystem {
         OPEN_LOOP,
     }
 
-    public static class PeriodicInputs {
-        public int position_ticks_;
-        public int velocity_ticks_per_100ms_;
-        public int active_trajectory_position_;
-        public int active_trajectory_velocity_;
-        public double active_trajectory_acceleration_rad_per_s2_;
-        public double output_percent_;
-        public double output_voltage_;
-        public double feedforward_;
-        public boolean limit_switch_;
-    }
+    public static class PeriodicIO {
+        // INPUTS
+        public int position_ticks;
+        public int velocity_ticks_per_100ms;
+        public int active_trajectory_position;
+        public int active_trajectory_velocity;
+        public double active_trajectory_acceleration_rad_per_s2;
+        public double output_percent;
+        public double output_voltage;
+        public double feedforward;
+        public boolean limit_switch;
 
-    private static class PeriodicOutputs {
-        public double output_;
+        // OUTPUTS
+        public double demand;
     }
 }
 
