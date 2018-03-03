@@ -32,10 +32,6 @@ public class SubsystemManager implements ILooper {
         mAllSubsystems.forEach((s) -> s.stop());
     }
 
-    public void zeroSensors() {
-        mAllSubsystems.forEach((s) -> s.zeroSensors());
-    }
-
     private class EnabledLoop implements Loop {
 
         @Override
