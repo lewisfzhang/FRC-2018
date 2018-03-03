@@ -95,6 +95,7 @@ public class Drive extends Subsystem {
 
         // Start all Talons in open loop mode.
         mLeftMaster = TalonSRXFactory.createDefaultTalon(Constants.kLeftDriveMasterId);
+        mLeftMaster.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 10, 100);
         final ErrorCode leftSensorPresent = mLeftMaster.configSelectedFeedbackSensor(FeedbackDevice
                 .CTRE_MagEncoder_Relative, 0, 100); //primary closed-loop, 100 ms timeout
         if (leftSensorPresent != ErrorCode.OK) {
@@ -117,6 +118,7 @@ public class Drive extends Subsystem {
         mLeftSlaveB.setInverted(false);
 
         mRightMaster = TalonSRXFactory.createDefaultTalon(Constants.kRightDriveMasterId);
+        mRightMaster.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 10, 100);
         final ErrorCode rightSensorPresent = mRightMaster.configSelectedFeedbackSensor(FeedbackDevice
                 .CTRE_MagEncoder_Relative, 0, 100); //primary closed-loop, 100 ms timeout
         if (rightSensorPresent != ErrorCode.OK) {

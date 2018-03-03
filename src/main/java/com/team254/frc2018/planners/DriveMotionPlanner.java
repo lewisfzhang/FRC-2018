@@ -13,6 +13,7 @@ import com.team254.lib.trajectory.TrajectoryUtil;
 import com.team254.lib.trajectory.timing.DifferentialDriveDynamicsConstraint;
 import com.team254.lib.trajectory.timing.TimedState;
 import com.team254.lib.trajectory.timing.TimingUtil;
+import com.team254.lib.trajectory.timing.VelocityLimitRegionConstraint;
 import com.team254.lib.util.Units;
 
 import java.util.Arrays;
@@ -38,7 +39,7 @@ public class DriveMotionPlanner {
                 Constants.kRobotLinearInertia,
                 Constants.kRobotAngularInertia,
                 Units.inches_to_meters(Constants.kDriveWheelDiameterInches / 2.0),
-                Units.inches_to_meters(Constants.kDriveWheelTrackWidthInches / 2.0),
+                Units.inches_to_meters(Constants.kDriveWheelTrackWidthInches / 2.0 * Constants.kTrackScrubFactor),
                 transmission, transmission
         );
     }
@@ -60,10 +61,13 @@ public class DriveMotionPlanner {
         // than the specified voltage.
         final DifferentialDriveDynamicsConstraint<Pose2dWithCurvature> drive_constraints = new
                 DifferentialDriveDynamicsConstraint<>(mModel, max_voltage);
+        final VelocityLimitRegionConstraint<Pose2dWithCurvature> slow_region = new VelocityLimitRegionConstraint<>(
+                new Translation2d(150.0, 70.0), new Translation2d(300.0, 300.0), 60.0
+        );
 
         // Generate the timed trajectory.
         Trajectory<TimedState<Pose2dWithCurvature>> timed_trajectory = TimingUtil.timeParameterizeTrajectory(new
-                        DistanceView<>(trajectory), kMaxDx, Arrays.asList(drive_constraints),
+                        DistanceView<>(trajectory), kMaxDx, Arrays.asList(drive_constraints, slow_region),
                 0.0, 0.0, max_vel, max_accel);
         return timed_trajectory;
     }
@@ -96,42 +100,40 @@ public class DriveMotionPlanner {
 
         final double t = timestamp - mLastTime;
         mLastTime = timestamp;
-        final TimedState<Pose2dWithCurvature> goal = mCurrentTrajectory.advance(t).state();
+        final double kLookaheadTime = 0.5;
+        final TimedState<Pose2dWithCurvature> cur_state = mCurrentTrajectory.advance(t).state();
+        final TimedState<Pose2dWithCurvature> lookahead_state = mCurrentTrajectory.preview(kLookaheadTime).state();
         if (!mCurrentTrajectory.isDone()) {
             // Generate feedforward voltages.
             final DifferentialDrive.DriveDynamics dynamics = mModel.solveInverseDynamics(
-                    new DifferentialDrive.ChassisState(Units.inches_to_meters(goal.velocity()),
-                            goal.velocity() * goal.state().getCurvature()),
-                    new DifferentialDrive.ChassisState(Units.inches_to_meters(goal.acceleration()),
-                            goal.acceleration() * goal.state().getCurvature()));
+                    new DifferentialDrive.ChassisState(Units.inches_to_meters(cur_state.velocity()),
+                            cur_state.velocity() * cur_state.state().getCurvature()),
+                    new DifferentialDrive.ChassisState(Units.inches_to_meters(cur_state.acceleration()),
+                            cur_state.acceleration() * cur_state.state().getCurvature()));
 
-            final double kBeta = 1.0;
-            final double kZeta = 0.5;
-
-            final double k1 = 2.0 * kZeta * Math.sqrt(dynamics.chassis_velocity.angular * dynamics.chassis_velocity.angular + kBeta * dynamics.chassis_velocity.linear * dynamics.chassis_velocity.linear);
-            final double k2 = kBeta * Math.abs(dynamics.chassis_velocity.linear);
+            mError = current_state.inverse().transformBy(cur_state.state().getPose());
+            final Pose2d lookahead_error = current_state.inverse().transformBy(lookahead_state.state().getPose());
             DifferentialDrive.ChassisState adjusted_velocity = new DifferentialDrive.ChassisState();
-
-            final Pose2d error = current_state.inverse().transformBy(goal.state().getPose());
-            final Translation2d error_meters = error.getTranslation().scale(Units.inches_to_meters(1.0));
-            adjusted_velocity.linear = error.getRotation().cos() * dynamics.chassis_velocity.linear
-                    + k1 * (current_state.getRotation().cos() * error_meters.x() + current_state.getRotation().sin() * error_meters.y());
-            adjusted_velocity.angular = dynamics.chassis_velocity.angular + k2 * (dynamics.chassis_velocity.linear >= 0.0 ? 1.0 : -1.0) *
-                    (current_state.getRotation().cos() * error_meters.x() - current_state.getRotation().sin() * error_meters.y()) + k1 * error.getRotation().getRadians();
-                    /*
-            mError = current_state.inverse().transformBy(goal.state().getPose());
-            DifferentialDrive.ChassisState adjusted_velocity = new DifferentialDrive.ChassisState();
-            adjusted_velocity.linear = dynamics.chassis_velocity.linear * mError.getRotation().cos() + Constants
+            adjusted_velocity.linear = dynamics.chassis_velocity.linear + Constants
                     .kPathKX * Units.inches_to_meters(mError.getTranslation().x());
-            adjusted_velocity.angular = dynamics.chassis_velocity.angular +
-                    (dynamics.chassis_velocity.linear >= 0.0 ? 1.0 : -1.0) * Constants.kPathKY * Units.inches_to_meters(mError
-                            .getTranslation().y()) + Constants.kPathKTheta * mError.getRotation().getRadians();
-                            */
+
+            double curvature = dynamics.chassis_velocity.angular / dynamics.chassis_velocity.linear;
+            if (Double.isNaN(curvature)) {
+                curvature = 0.0;
+            }
+            curvature +=
+                    (dynamics.chassis_velocity.linear >= 0.0 ? 1.0 : -1.0) * Constants.kPathKY * Units
+                    .inches_to_meters(lookahead_error
+                            .getTranslation().y()) + Constants.kPathKTheta * lookahead_error.getRotation().getRadians();
+            adjusted_velocity.angular = curvature * dynamics.chassis_velocity.linear;
+
 
             // Compute adjusted left and right wheel velocities.
             final DifferentialDrive.WheelState wheel_velocities = mModel.solveInverseKinematics(adjusted_velocity);
-            final double left_voltage = dynamics.voltage.left + (wheel_velocities.left - dynamics.wheel_velocity.left) / mModel.left_transmission().speed_per_volt();
-            final double right_voltage = dynamics.voltage.right + (wheel_velocities.right - dynamics.wheel_velocity.right) / mModel.right_transmission().speed_per_volt();
+            final double left_voltage = dynamics.voltage.left + (wheel_velocities.left - dynamics.wheel_velocity
+                    .left) / mModel.left_transmission().speed_per_volt();
+            final double right_voltage = dynamics.voltage.right + (wheel_velocities.right - dynamics.wheel_velocity
+                    .right) / mModel.right_transmission().speed_per_volt();
 
             // System.out.println(dynamics.toCSV());
             return new Output(wheel_velocities.left, wheel_velocities.right, left_voltage, right_voltage);

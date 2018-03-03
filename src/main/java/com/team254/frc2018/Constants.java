@@ -28,7 +28,7 @@ public class Constants {
 
     // Tuned dynamics
     public static final double kRobotLinearInertia = 60.0;  // kg TODO tune
-    public static final double kRobotAngularInertia = 80.0;  // kg m TODO tune
+    public static final double kRobotAngularInertia = 120.0;  // kg m TODO tune
     public static final double kDriveVIntercept = 1.055;  // V
     public static final double kDriveKv = 0.135;  // V per rad/s
     public static final double kDriveKa = 0.012;  // V per rad/s^2
@@ -58,19 +58,18 @@ public class Constants {
     public static final double kDriveDownShiftAngularVelocity = Math.PI / 2.0; // rad/sec
     public static final double kDriveUpShiftVelocity = 11.0 * 12.0;  // inches per second
 
-    public static final double kPathKX = 3.0;  // m/s per meter of error
-    public static final double kPathKY = 3.0;  // rad/s per meter of error
-    public static final double kPathKTheta = 0.5;  // rad/s per rad of error
+    public static final double kPathKX = 2.0;  // m/s per meter of error
+    public static final double kPathKY = 0.2;  // m^-1 of curvature per meter of error
+    public static final double kPathKTheta = 0.4;  // m^-1 of curvature per rad of error
 
     // PID gains for drive velocity loop (LOW GEAR)
     // Units: setpoint, error, and output are in ticks per second.
-    public static final double kDriveLowGearVelocityKp = 0.5;
+    public static final double kDriveLowGearVelocityKp = 0.3;
     public static final double kDriveLowGearVelocityKi = 0.0;
     public static final double kDriveLowGearVelocityKd = 2.5;//100.0;
     public static final double kDriveLowGearVelocityKf = 0.0;
     public static final int kDriveLowGearVelocityIZone = 0;
-    public static final double kDriveVoltageRampRate = 0.2;
-    public static final double kDriveLowGearVelocityRampRate = 240.0; // V/s
+    public static final double kDriveVoltageRampRate = 0.1;
     public static final double kDriveLowGearMaxVelocity = 6.0 * 12.0 * 60.0 / (Math.PI * kDriveWheelDiameterInches);
     public static final double kDriveLowGearMaxAccel = 18.0 * 12.0 * 60.0 / (Math.PI * kDriveWheelDiameterInches);
 
