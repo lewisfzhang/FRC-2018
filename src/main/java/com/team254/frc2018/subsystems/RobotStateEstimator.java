@@ -61,8 +61,8 @@ public class RobotStateEstimator extends Subsystem {
                     delta_left, delta_right, gyro_angle);
             final Twist2d predicted_velocity = Kinematics.forwardKinematics(drive_.getLeftLinearVelocity(),
                     drive_.getRightLinearVelocity());
-            robot_state_.addObservations(timestamp, new Twist2d(odometry_velocity.dx, 0.0, odometry_velocity.dtheta),
-                    new Twist2d(predicted_velocity.dx, 0.0, odometry_velocity.dtheta));
+            robot_state_.addObservations(timestamp, odometry_velocity,
+                    predicted_velocity);
             left_encoder_prev_distance_ = left_distance;
             right_encoder_prev_distance_ = right_distance;
         }
