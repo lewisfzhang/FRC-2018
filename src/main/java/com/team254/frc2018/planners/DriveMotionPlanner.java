@@ -25,7 +25,7 @@ public class DriveMotionPlanner {
     final DifferentialDrive mModel;
 
     TrajectoryIterator<TimedState<Pose2dWithCurvature>> mCurrentTrajectory;
-    double mLastTime;
+    double mLastTime = Double.POSITIVE_INFINITY;
 
     public DriveMotionPlanner() {
         final DCMotorTransmission transmission = new DCMotorTransmission(1.0 / Constants.kDriveKv,
