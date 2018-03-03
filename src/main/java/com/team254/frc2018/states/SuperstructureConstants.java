@@ -27,7 +27,7 @@ public class SuperstructureConstants {
     public final static double kWristJogThrottle = 110.0 / 25.0;
 
     // In inches, the height to use the kPlacingHighAngle.
-    public final static double kPlacingHighThreshold = 5.0;
+    public final static double kPlacingHighThreshold = 33.0;
 
     // Presets.
 
