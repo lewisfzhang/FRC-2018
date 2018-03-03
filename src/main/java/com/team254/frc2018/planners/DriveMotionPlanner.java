@@ -25,11 +25,11 @@ public class DriveMotionPlanner {
     final DifferentialDrive mModel;
 
     TrajectoryIterator<TimedState<Pose2dWithCurvature>> mCurrentTrajectory;
-    double mStartTime;
+    double mLastTime;
 
     public DriveMotionPlanner() {
         final DCMotorTransmission transmission = new DCMotorTransmission(1.0 / Constants.kDriveKv,
-                Constants.kDriveWheelRadiusInches * Constants.kDriveWheelRadiusInches *
+                Units.inches_to_meters(Constants.kDriveWheelRadiusInches) * Units.inches_to_meters(Constants.kDriveWheelRadiusInches) *
                         Constants.kRobotLinearInertia / (2.0 * Constants.kDriveKa), Constants.kDriveVIntercept);
         mModel = new DifferentialDrive(
                 Constants.kRobotLinearInertia,
@@ -85,11 +85,12 @@ public class DriveMotionPlanner {
     public Output update(double timestamp) {
         if (mCurrentTrajectory == null) return new Output();
 
-        if (mCurrentTrajectory.getProgress() == 0.0) {
-            mStartTime = timestamp;
+        if (mCurrentTrajectory.getProgress() == 0.0 && !Double.isFinite(mLastTime)) {
+            mLastTime = timestamp;
         }
 
-        final double t = timestamp - mStartTime;
+        final double t = timestamp - mLastTime;
+        mLastTime = timestamp;
         final TimedState<Pose2dWithCurvature> goal = mCurrentTrajectory.advance(t).state();
         if (!mCurrentTrajectory.isDone()) {
             // Generate feedforward voltages.
