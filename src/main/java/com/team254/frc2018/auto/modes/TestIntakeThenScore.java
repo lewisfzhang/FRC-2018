@@ -17,8 +17,8 @@ public class TestIntakeThenScore extends AutoModeBase {
     protected void routine() throws AutoModeEndedException {
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(TrajectoryGenerator.getInstance().getStraightLine(), false),
-                        new SeriesAction(
+//                        new DriveTrajectory(TrajectoryGenerator.getInstance().getStraightLine(), false),
+                        new SeriesAction(g
                                 Arrays.asList(
                                         new SetIntaking(true, true),
                                         new OverrideTrajectory()
