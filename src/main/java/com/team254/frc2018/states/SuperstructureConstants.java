@@ -6,9 +6,6 @@ public class SuperstructureConstants {
     public static final double kElevatorMaxHeight = 84.0;
     public static final double kElevatorMinHeight = 5.0;
 
-    // Threshold for enabling reset by limit switch.
-    public static final double kElevatorLimitThreshold = 8.0;
-
     public static final double kClearFirstStageMaxHeight = 33.0;
     public static final double kClearFirstStageMinWristAngle = 45.0;
 

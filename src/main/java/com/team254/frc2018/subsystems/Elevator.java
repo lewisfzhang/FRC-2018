@@ -162,11 +162,6 @@ public class Elevator extends Subsystem {
         return mInstance;
     }
 
-    public synchronized void enableResetOnLimit(boolean enable) {
-        mMaster.configSetParameter(ParamEnum.eClearPositionOnLimitF,
-                enable ? 1 : 0, 0, 0, 0);
-    }
-
     public synchronized void setOpenLoop(double percentage) {
         mElevatorControlState = ElevatorControlState.OPEN_LOOP;
         mPeriodicIO.demand = percentage;

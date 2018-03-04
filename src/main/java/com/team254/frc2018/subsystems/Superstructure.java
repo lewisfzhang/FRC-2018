@@ -110,18 +110,6 @@ public class Superstructure extends Subsystem {
                     updateObservedState(mState);
                     mCommand = mStateMachine.update(timestamp, mWantedAction, mState);
                     setFromCommandState(mCommand);
-
-                    boolean enable_limit_threshold = mState.height < SuperstructureConstants.kElevatorLimitThreshold;
-                    boolean disable_limit_threshold = mState.height > SuperstructureConstants.kElevatorLimitThreshold + 1.0;
-
-                    boolean into_limit_enable = mIntoLimitEnable.update(enable_limit_threshold);
-                    boolean into_limit_disable = mIntoLimitDisabled.update(disable_limit_threshold);
-
-                    if (into_limit_enable) {
-                        mElevator.enableResetOnLimit(true);
-                    } else if (into_limit_disable) {
-                        mElevator.enableResetOnLimit(false);
-                    }
                 }
             }
 
