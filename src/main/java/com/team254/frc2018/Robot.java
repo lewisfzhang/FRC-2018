@@ -77,7 +77,7 @@ public class Robot extends IterativeRobot {
 
             Elevator.getInstance().zeroSensors();
 
-            mTrajectoryGenerator.generateTrajectories();
+            mTrajectoryGenerator.generateTrajectories(Pose2d.identity());
 
             mRunIntakeReleased.update(true);
             mShootReleased.update(true);

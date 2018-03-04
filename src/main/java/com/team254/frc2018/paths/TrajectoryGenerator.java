@@ -15,12 +15,13 @@ import java.util.Arrays;
 import java.util.List;
 
 public class TrajectoryGenerator {
+    private static final double kMaxVelocity = 120.0;
+    private static final double kMaxAccel = 144.0;
+    private static final double kMaxVoltage = 9.0;
+
     private static TrajectoryGenerator mInstance = new TrajectoryGenerator();
-
     private final DriveMotionPlanner mMotionPlanner;
-    private Trajectory<TimedState<Pose2dWithCurvature>> mTestLine;
-    private Trajectory<TimedState<Pose2dWithCurvature>> mTestCurve;
-
+    private TrajectorySet mTrajectorySet;
 
     public static TrajectoryGenerator getInstance() {
         return mInstance;
@@ -30,42 +31,14 @@ public class TrajectoryGenerator {
         mMotionPlanner = new DriveMotionPlanner();
     }
 
-    public Trajectory<TimedState<Pose2dWithCurvature>> getTestLine() {
-        return mTestLine;
-    }
-
-    public Trajectory<TimedState<Pose2dWithCurvature>> getTestCurve() {
-        return mTestCurve;
-    }
-
-    public void generateTrajectories() {
+    public void generateTrajectories(Pose2d startPose) {
         System.out.println("Generating trajectories...");
-        generateTestLine();
-        generateTestCurve();
+        mTrajectorySet = new TrajectorySet(startPose);
         System.out.println("Finished trajectory generation");
-
     }
 
-    private void generateTestLine() {
-        List<Pose2d> waypoints = new ArrayList<>();
-        waypoints.add(new Pose2d(new Translation2d(0.0, 0.0), Rotation2d.fromDegrees(0.0)));
-        waypoints.add(new Pose2d(new Translation2d(120.0, 0.0), Rotation2d.fromDegrees(0.0)));
-
-        mTestLine = generateTrajectory(waypoints, null, 120.0, 144.0, 9.0);
-    }
-
-    private void generateTestCurve() {
-        List<Pose2d> waypoints = new ArrayList<>();
-        waypoints.add(new Pose2d(new Translation2d(0.0, 0.0), Rotation2d.fromDegrees(0.0)));
-        waypoints.add(new Pose2d(new Translation2d(155.0, 0.0), Rotation2d.fromDegrees(0.0)));
-        waypoints.add(new Pose2d(new Translation2d(205.0, 50.0), Rotation2d.fromDegrees(90.0)));
-        waypoints.add(new Pose2d(new Translation2d(205.0, 137.0), Rotation2d.fromDegrees(90.0)));
-        waypoints.add(new Pose2d(new Translation2d(255.0, 187.0), Rotation2d.fromDegrees(0.0)));
-
-        final VelocityLimitRegionConstraint<Pose2dWithCurvature> slow_region = new VelocityLimitRegionConstraint<>(
-                new Translation2d(150.0, 70.0), new Translation2d(300.0, 300.0), 60.0);
-
-        mTestCurve = generateTrajectory(waypoints, Arrays.asList(slow_region), 120.0, 144.0, 9.0);
+    public TrajectorySet getTrajectorySet() {
+        return mTrajectorySet;
     }
 
     public Trajectory<TimedState<Pose2dWithCurvature>> generateTrajectory(
@@ -75,5 +48,118 @@ public class TrajectoryGenerator {
             double max_accel,  // inches/s^2
             double max_voltage) {
         return mMotionPlanner.generateTrajectory(waypoints, constraints, max_vel, max_accel, max_voltage);
+    }
+
+    public class TrajectorySet {
+        // switch + scale hybrid paths
+        public final Trajectory<TimedState<Pose2dWithCurvature>> rightStartToRightScale;
+        public final Trajectory<TimedState<Pose2dWithCurvature>> rightScaleToFence;
+        public final Trajectory<TimedState<Pose2dWithCurvature>> rightStartToRightSwitch;
+        public final Trajectory<TimedState<Pose2dWithCurvature>> rightScaleToLeftFence;
+        public final Trajectory<TimedState<Pose2dWithCurvature>> rightStartToLeftScale;
+        public final Trajectory<TimedState<Pose2dWithCurvature>> leftScaleToLeftFence;
+
+        // simple switch paths
+        public final Trajectory<TimedState<Pose2dWithCurvature>> centerStartToLeftSwitch;
+        public final Trajectory<TimedState<Pose2dWithCurvature>> centerStartToRightSwitch;
+
+        // scale only paths
+        public final Trajectory<TimedState<Pose2dWithCurvature>> rightFenceToRightScale;
+        public final Trajectory<TimedState<Pose2dWithCurvature>> leftFenceToLeftScale;
+
+        private TrajectorySet(Pose2d startPose) {
+            rightStartToRightScale = getRightStartToRightScale(startPose);
+            rightScaleToFence = getRightScaleToFence(startPose);
+            rightStartToRightSwitch = getRightStartToRightSwitch(startPose);
+            rightScaleToLeftFence = getRightScaleToLeftFence(startPose);
+            rightStartToLeftScale = getRightStartToLeftScale(startPose);
+            leftScaleToLeftFence = getLeftScaleToLeftFence(startPose);
+
+            centerStartToLeftSwitch = getCenterStartToLeftSwitch(startPose);
+            centerStartToRightSwitch = getCenterStartToRightSwitch(startPose);
+
+            rightFenceToRightScale = getRightFenceToRightScale(startPose);
+            leftFenceToLeftScale = getLeftFenceToLeftScale(startPose);
+        }
+
+        private Trajectory<TimedState<Pose2dWithCurvature>> getRightStartToRightScale(Pose2d startPose) {
+            List<Pose2d> waypoints = new ArrayList<>();
+            waypoints.add(startPose);
+            waypoints.add(new Pose2d(new Translation2d(120.0, 0.0), Rotation2d.fromDegrees(0.0)));
+
+            return generateTrajectory(waypoints, null, kMaxVelocity, kMaxAccel, kMaxVoltage);
+        }
+
+        private Trajectory<TimedState<Pose2dWithCurvature>> getRightScaleToFence(Pose2d startPose) {
+            List<Pose2d> waypoints = new ArrayList<>();
+            waypoints.add(startPose);
+            waypoints.add(new Pose2d(new Translation2d(120.0, 0.0), Rotation2d.fromDegrees(0.0)));
+
+            return generateTrajectory(waypoints, null, kMaxVelocity, kMaxAccel, kMaxVoltage);
+        }
+
+        private Trajectory<TimedState<Pose2dWithCurvature>> getRightStartToRightSwitch(Pose2d startPose) {
+            List<Pose2d> waypoints = new ArrayList<>();
+            waypoints.add(startPose);
+            waypoints.add(new Pose2d(new Translation2d(120.0, 0.0), Rotation2d.fromDegrees(0.0)));
+
+            return generateTrajectory(waypoints, null, kMaxVelocity, kMaxAccel, kMaxVoltage);
+        }
+
+        private Trajectory<TimedState<Pose2dWithCurvature>> getRightScaleToLeftFence(Pose2d startPose) {
+            List<Pose2d> waypoints = new ArrayList<>();
+            waypoints.add(startPose);
+            waypoints.add(new Pose2d(new Translation2d(120.0, 0.0), Rotation2d.fromDegrees(0.0)));
+
+            return generateTrajectory(waypoints, null, kMaxVelocity, kMaxAccel, kMaxVoltage);
+        }
+
+        private Trajectory<TimedState<Pose2dWithCurvature>> getRightStartToLeftScale(Pose2d startPose) {
+            List<Pose2d> waypoints = new ArrayList<>();
+            waypoints.add(startPose);
+            waypoints.add(new Pose2d(new Translation2d(120.0, 0.0), Rotation2d.fromDegrees(0.0)));
+
+            return generateTrajectory(waypoints, null, kMaxVelocity, kMaxAccel, kMaxVoltage);
+        }
+
+        private Trajectory<TimedState<Pose2dWithCurvature>> getLeftScaleToLeftFence(Pose2d startPose) {
+            List<Pose2d> waypoints = new ArrayList<>();
+            waypoints.add(startPose);
+            waypoints.add(new Pose2d(new Translation2d(120.0, 0.0), Rotation2d.fromDegrees(0.0)));
+
+            return generateTrajectory(waypoints, null, kMaxVelocity, kMaxAccel, kMaxVoltage);
+        }
+
+        private Trajectory<TimedState<Pose2dWithCurvature>> getCenterStartToLeftSwitch(Pose2d startPose) {
+            List<Pose2d> waypoints = new ArrayList<>();
+            waypoints.add(startPose);
+            waypoints.add(new Pose2d(new Translation2d(120.0, 0.0), Rotation2d.fromDegrees(0.0)));
+
+            return generateTrajectory(waypoints, null, kMaxVelocity, kMaxAccel, kMaxVoltage);
+        }
+
+        private Trajectory<TimedState<Pose2dWithCurvature>> getCenterStartToRightSwitch(Pose2d startPose) {
+            List<Pose2d> waypoints = new ArrayList<>();
+            waypoints.add(startPose);
+            waypoints.add(new Pose2d(new Translation2d(120.0, 0.0), Rotation2d.fromDegrees(0.0)));
+
+            return generateTrajectory(waypoints, null, kMaxVelocity, kMaxAccel, kMaxVoltage);
+        }
+
+        private Trajectory<TimedState<Pose2dWithCurvature>> getRightFenceToRightScale(Pose2d startPose) {
+            List<Pose2d> waypoints = new ArrayList<>();
+            waypoints.add(startPose);
+            waypoints.add(new Pose2d(new Translation2d(120.0, 0.0), Rotation2d.fromDegrees(0.0)));
+
+            return generateTrajectory(waypoints, null, kMaxVelocity, kMaxAccel, kMaxVoltage);
+        }
+
+        private Trajectory<TimedState<Pose2dWithCurvature>> getLeftFenceToLeftScale(Pose2d startPose) {
+            List<Pose2d> waypoints = new ArrayList<>();
+            waypoints.add(startPose);
+            waypoints.add(new Pose2d(new Translation2d(120.0, 0.0), Rotation2d.fromDegrees(0.0)));
+
+            return generateTrajectory(waypoints, null, kMaxVelocity, kMaxAccel, kMaxVoltage);
+        }
     }
 }
