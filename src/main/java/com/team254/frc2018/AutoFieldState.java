@@ -1,6 +1,7 @@
 package com.team254.frc2018;
 
 import com.team254.lib.geometry.Pose2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * Represents the state of the robot and field at the beginning
@@ -90,6 +91,12 @@ public class AutoFieldState {
      */
     public Pose2d getStartPose() {
         return startPose;
+    }
+
+    public void outputToSmartDashboard() {
+        SmartDashboard.putString("FieldState OurSwitch",  getOurSwitchSide() == null ? "NULL" : getOurSwitchSide().toString());
+        SmartDashboard.putString("FieldState Scale", getScaleSide() == null ? "NULL" : getScaleSide().toString());
+        SmartDashboard.putString("FieldState TheirSwitch", getOpponentSwitchSide() == null ? "NULL" : getOpponentSwitchSide().toString());
     }
 
     @Override
