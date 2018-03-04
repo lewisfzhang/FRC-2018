@@ -3,33 +3,49 @@ package com.team254.frc2018.auto.modes;
 import com.team254.frc2018.auto.AutoModeBase;
 import com.team254.frc2018.auto.AutoModeEndedException;
 import com.team254.frc2018.auto.actions.*;
+import com.team254.frc2018.paths.TrajectoryGenerator;
 import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.lib.geometry.Pose2d;
+import com.team254.lib.geometry.Pose2dWithCurvature;
 import com.team254.lib.geometry.Rotation2d;
 import com.team254.lib.geometry.Translation2d;
+import com.team254.lib.trajectory.Trajectory;
+import com.team254.lib.trajectory.timing.TimedState;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class SimpleSwitchMode extends AutoModeBase {
 
-    DriveTrajectory mDriveCommand;
+    final boolean mGoLeft;
 
     public SimpleSwitchMode(boolean driveToLeftSwitch) {
-        List<Pose2d> waypoints = new ArrayList<>();
-        waypoints.add(new Pose2d(new Translation2d(0.0, 0.0), Rotation2d.fromDegrees(0.0)));
-        waypoints.add(new Pose2d(new Translation2d(10, 0.0), Rotation2d.fromDegrees(0.0)));
-        waypoints.add(new Pose2d(new Translation2d(100, driveToLeftSwitch ? 50.0 : -50.0), Rotation2d.fromDegrees(90.0)));
-       // mDriveCommand = new DriveTrajectory(waypoints, null, 70, 120, 9.0);
-
+        mGoLeft = driveToLeftSwitch;
     }
+
 
     @Override
     protected void routine() throws AutoModeEndedException {
+        Trajectory<TimedState<Pose2dWithCurvature>> trajectory;
+        if(mGoLeft) {
+            trajectory = TrajectoryGenerator.getInstance().getTrajectorySet().centerStartToLeftSwitch;
+        } else {
+            trajectory = TrajectoryGenerator.getInstance().getTrajectorySet().centerStartToRightSwitch;
+        }
+
+        System.out.println("Running Simple switch");
         runAction(new SetIntaking(false, false));
-        //runAction(mDriveCommand);
-        runAction(new SetSuperstructurePosition(SuperstructureConstants.kSwitchHeight, SuperstructureConstants.kPlacingLowAngle, true));
-        runAction(new WaitUntilCrossXBoundaryCommand(95));
-        runAction(new PlaceCube());
+
+
+        runAction(new ParallelAction(
+                Arrays.asList(
+                        (new DriveTrajectory(trajectory, true, true)),
+                        (new SetSuperstructurePosition(SuperstructureConstants.kSwitchHeight, SuperstructureConstants.kStowedPositionAngle, true))
+                )
+        ));
+
+
+        runAction(new ShootCube());
     }
 }
