@@ -161,7 +161,7 @@ public class Constants {
     public static final int kMainThrottleJoystickPort = 0;
     public static final int kMainTurnJoystickPort = 1;
     public static final double kJoystickThreshold = 0.5;
-    public static final double kJoystickJogThreshold = 0.1;
+    public static final double kJoystickJogThreshold = 0.2;
 
     // Height in in after applying turn factor.
     public static final double kElevatorLowSensitivityThreshold = 50.0;
