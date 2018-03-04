@@ -13,6 +13,8 @@ public class PlaceCube implements Action {
     @Override
     public void start() {
         mStartTime = Timer.getFPGATimestamp();
+        mIntake.setState(IntakeStateMachine.WantedAction.WANT_MANUAL);
+        mIntake.setPower(0.0);
         mIntake.tryOpenJaw();
     }
 

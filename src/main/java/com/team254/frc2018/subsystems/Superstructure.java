@@ -68,6 +68,10 @@ public class Superstructure extends Subsystem {
         return mStateMachine.getSystemState();
     }
 
+    public synchronized SuperstructureState getObservedState() {
+        return mState;
+    }
+
     private synchronized void updateObservedState(SuperstructureState state) {
         state.height = mElevator.getInchesOffGround();
         state.angle = mWrist.getAngle();
