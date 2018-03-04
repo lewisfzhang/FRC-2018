@@ -337,10 +337,13 @@ public class Robot extends IterativeRobot {
                     // These are score forward
                     if (go_high_scale) {
                         desired_height = SuperstructureConstants.kScaleHighHeight;
+                        desired_angle = SuperstructureConstants.kScoreForwardAngledAngle;
                     } else if (go_neutral_scale) {
                         desired_height = SuperstructureConstants.kScaleNeutralHeight;
+                        desired_angle = SuperstructureConstants.kScoreForwardAngledAngle;
                     } else if (go_low_scale) {
                         desired_height = SuperstructureConstants.kScaleLowHeight;
+                        desired_angle = SuperstructureConstants.kScoreForwardAngledAngle;
                     } else if (go_switch) {
                         desired_height = SuperstructureConstants.kSwitchHeight;
                         desired_angle = SuperstructureConstants.kPlacingLowAngle;
