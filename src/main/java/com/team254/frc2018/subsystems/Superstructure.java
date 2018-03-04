@@ -6,7 +6,9 @@ import com.team254.frc2018.loops.Loop;
 import com.team254.frc2018.statemachines.SuperstructureStateMachine;
 import com.team254.frc2018.states.IntakeState;
 import com.team254.frc2018.states.SuperstructureCommand;
+import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.frc2018.states.SuperstructureState;
+import com.team254.lib.util.LatchedBoolean;
 
 /**
  * The superstructure subsystem is the overarching superclass containing all components of the superstructure: the
@@ -31,6 +33,9 @@ public class Superstructure extends Subsystem {
     private SuperstructureStateMachine mStateMachine = new SuperstructureStateMachine();
     private SuperstructureStateMachine.WantedAction mWantedAction =
             SuperstructureStateMachine.WantedAction.IDLE;
+
+    private LatchedBoolean mIntoLimitEnable = new LatchedBoolean();
+    private LatchedBoolean mIntoLimitDisabled = new LatchedBoolean();
 
     public synchronized static Superstructure getInstance() {
         if (mInstance == null) {
@@ -95,6 +100,8 @@ public class Superstructure extends Subsystem {
             @Override
             public void onStart(double timestamp) {
                 mStateMachine.resetManual();
+                mIntoLimitEnable.update(false);
+                mIntoLimitDisabled.update(false);
             }
 
             @Override
@@ -103,6 +110,18 @@ public class Superstructure extends Subsystem {
                     updateObservedState(mState);
                     mCommand = mStateMachine.update(timestamp, mWantedAction, mState);
                     setFromCommandState(mCommand);
+
+                    boolean enable_limit_threshold = mState.height < SuperstructureConstants.kElevatorLimitThreshold;
+                    boolean disable_limit_threshold = mState.height > SuperstructureConstants.kElevatorLimitThreshold + 1.0;
+
+                    boolean into_limit_enable = mIntoLimitEnable.update(enable_limit_threshold);
+                    boolean into_limit_disable = mIntoLimitDisabled.update(disable_limit_threshold);
+
+                    if (into_limit_enable) {
+                        mElevator.enableResetOnLimit(true);
+                    } else if (into_limit_disable) {
+                        mElevator.enableResetOnLimit(false);
+                    }
                 }
             }
 

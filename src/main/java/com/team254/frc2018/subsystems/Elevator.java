@@ -117,7 +117,7 @@ public class Elevator extends Subsystem {
                         Constants.kElevatorRampRate, Constants.kLongCANTimeoutMs),
                 "Could not set elevator voltage ramp rate: ");
 
-        mMaster.configSetParameter(ParamEnum.eClearPositionOnLimitF, 1, 0, 0, 0);
+        mMaster.configSetParameter(ParamEnum.eClearPositionOnLimitF, 0, 0, 0, 0);
         mMaster.configSetParameter(ParamEnum.eClearPositionOnLimitR, 0, 0, 0, 0);
 
         // TODO add low gear gains
@@ -160,6 +160,11 @@ public class Elevator extends Subsystem {
             mInstance = new Elevator();
         }
         return mInstance;
+    }
+
+    public synchronized void enableResetOnLimit(boolean enable) {
+        mMaster.configSetParameter(ParamEnum.eClearPositionOnLimitF,
+                enable ? 1 : 0, 0, 0, 0);
     }
 
     public synchronized void setOpenLoop(double percentage) {

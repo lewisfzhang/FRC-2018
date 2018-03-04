@@ -1,14 +1,13 @@
 package com.team254.frc2018.states;
 
-import com.team254.frc2018.subsystems.Elevator;
-
-import java.util.HashMap;
-
 public class SuperstructureConstants {
     public static final double kWristMinAngle = 0.0;
     public static final double kWristMaxAngle = 180.0;
     public static final double kElevatorMaxHeight = 84.0;
     public static final double kElevatorMinHeight = 5.0;
+
+    // Threshold for enabling reset by limit switch.
+    public static final double kElevatorLimitThreshold = 8.0;
 
     public static final double kClearFirstStageMaxHeight = 33.0;
     public static final double kClearFirstStageMinWristAngle = 45.0;
