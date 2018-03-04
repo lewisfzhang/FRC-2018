@@ -20,14 +20,14 @@ public class SimpleSwitchMode extends AutoModeBase {
         waypoints.add(new Pose2d(new Translation2d(0.0, 0.0), Rotation2d.fromDegrees(0.0)));
         waypoints.add(new Pose2d(new Translation2d(10, 0.0), Rotation2d.fromDegrees(0.0)));
         waypoints.add(new Pose2d(new Translation2d(100, driveToLeftSwitch ? 50.0 : -50.0), Rotation2d.fromDegrees(90.0)));
-        mDriveCommand = new DriveTrajectory(waypoints, null, 70, 120, 9.0);
+       // mDriveCommand = new DriveTrajectory(waypoints, null, 70, 120, 9.0);
 
     }
 
     @Override
     protected void routine() throws AutoModeEndedException {
         runAction(new SetIntaking(false, false));
-        runAction(mDriveCommand);
+        //runAction(mDriveCommand);
         runAction(new SetSuperstructurePosition(SuperstructureConstants.kSwitchHeight, SuperstructureConstants.kPlacingLowAngle, true));
         runAction(new WaitUntilCrossXBoundaryCommand(95));
         runAction(new PlaceCube());

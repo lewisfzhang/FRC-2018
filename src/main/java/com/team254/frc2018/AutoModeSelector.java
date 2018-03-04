@@ -25,6 +25,7 @@ public class AutoModeSelector {
     private SendableChooser<DesiredMode> mModeChooser;
 
     public AutoModeSelector() {
+        mModeChooser = new SendableChooser<>();
         mModeChooser.addDefault("Do Nothing", DesiredMode.DO_NOTHING);
         mModeChooser.addObject("Simple switch", DesiredMode.SIMPLE_SWITCH);
         mModeChooser.addObject("Scale AND Switch", DesiredMode.SCALE_AND_SWITCH);
