@@ -4,7 +4,7 @@ public class SuperstructureConstants {
     public static final double kWristMinAngle = 0.0;
     public static final double kWristMaxAngle = 180.0;
     public static final double kElevatorMaxHeight = 84.0;
-    public static final double kElevatorMinHeight = 5.0;
+    public static final double kElevatorMinHeight = 4.0;
 
     public static final double kClearFirstStageMaxHeight = 33.0;
     public static final double kClearFirstStageMinWristAngle = 45.0;
