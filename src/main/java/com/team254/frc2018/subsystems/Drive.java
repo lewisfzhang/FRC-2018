@@ -48,12 +48,13 @@ public class Drive extends Subsystem {
     private boolean mIsBrakeMode;
     private ReflectingCSVWriter<PeriodicIO> mCSVWriter = null;
     private DriveMotionPlanner mMotionPlanner;
+    private Rotation2d mGyroOffset = Rotation2d.identity();
+    private boolean mOverrideTrajectory = false;
 
     private final Loop mLoop = new Loop() {
         @Override
         public void onStart(double timestamp) {
             synchronized (Drive.this) {
-                zeroSensors();
                 setOpenLoop(DriveSignal.NEUTRAL);
                 setBrakeMode(false);
             }
@@ -222,6 +223,7 @@ public class Drive extends Subsystem {
 
     public synchronized void setTrajectory(TrajectoryIterator<TimedState<Pose2dWithCurvature>> trajectory, boolean isReversed) {
         if(mMotionPlanner != null) {
+            mOverrideTrajectory = false;
             mMotionPlanner.setTrajectory(trajectory, isReversed);
             mDriveControlState = DriveControlState.PATH_FOLLOWING;
         }
@@ -231,7 +233,7 @@ public class Drive extends Subsystem {
         if(mMotionPlanner == null || mDriveControlState != DriveControlState.PATH_FOLLOWING) {
             return false;
         }
-        return mMotionPlanner.isDone();
+        return mMotionPlanner.isDone() || mOverrideTrajectory;
     }
 
     public boolean isHighGear() {
@@ -263,12 +265,17 @@ public class Drive extends Subsystem {
         }
     }
 
-    public Rotation2d getHeading() {
+    public synchronized Rotation2d getHeading() {
         return mPeriodicIO.gyro_heading;
     }
 
-    public void setHeading(Rotation2d heading) {
-        mPigeon.setFusedHeading(heading.getDegrees(), 10);
+    public synchronized void setHeading(Rotation2d heading) {
+        System.out.println("SET HEADING: " + heading.getDegrees());
+
+        mGyroOffset = heading.rotateBy(Rotation2d.fromDegrees(mPigeon.getFusedHeading()).inverse());
+        System.out.println("Gyro offset: " + mGyroOffset.getDegrees());
+
+        mPeriodicIO.gyro_heading = heading;
     }
 
     @Override
@@ -349,17 +356,26 @@ public class Drive extends Subsystem {
         return (getRightLinearVelocity() - getLeftLinearVelocity()) / Constants.kDriveWheelTrackWidthInches;
     }
 
+    public void overrideTrajectory(boolean value) {
+        mOverrideTrajectory = value;
+    }
+
     private void updatePathFollower() {
         if(mDriveControlState == DriveControlState.PATH_FOLLOWING) {
             final double now = Timer.getFPGATimestamp();
+
             DriveMotionPlanner.Output output = mMotionPlanner.update(now, RobotState.getInstance().getFieldToVehicle(now));
 
             // DriveSignal signal = new DriveSignal(demand.left_feedforward_voltage / 12.0, demand.right_feedforward_voltage / 12.0);
 
             mPeriodicIO.error = mMotionPlanner.error();
 
-            setVelocity(new DriveSignal(radiansPerSecondToTicksPer100ms(output.left_velocity), radiansPerSecondToTicksPer100ms(output.right_velocity)),
-                    new DriveSignal(output.left_feedforward_voltage / 12.0, output.right_feedforward_voltage / 12.0));
+            if(!mOverrideTrajectory) {
+                setVelocity(new DriveSignal(radiansPerSecondToTicksPer100ms(output.left_velocity), radiansPerSecondToTicksPer100ms(output.right_velocity)),
+                        new DriveSignal(output.left_feedforward_voltage / 12.0, output.right_feedforward_voltage / 12.0));
+            } else {
+                setVelocity(DriveSignal.BRAKE, DriveSignal.BRAKE);
+            }
         } else {
             DriverStation.reportError("Drive is not in path following state", false);
         }
@@ -402,7 +418,7 @@ public class Drive extends Subsystem {
         mPeriodicIO.right_position_ticks = mRightMaster.getSelectedSensorPosition(0);
         mPeriodicIO.left_velocity_ticks_per_100ms = mLeftMaster.getSelectedSensorVelocity(0);
         mPeriodicIO.right_velocity_ticks_per_100ms = mRightMaster.getSelectedSensorVelocity(0);
-        mPeriodicIO.gyro_heading = Rotation2d.fromDegrees(mPigeon.getFusedHeading());
+        mPeriodicIO.gyro_heading = Rotation2d.fromDegrees(mPigeon.getFusedHeading()).rotateBy(mGyroOffset);
 
         double deltaLeftTicks = ((mPeriodicIO.left_position_ticks - prevLeftTicks) / 4096.0) * Math.PI;
         if (deltaLeftTicks > 0.0) {
