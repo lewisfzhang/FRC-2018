@@ -1,7 +1,10 @@
 package com.team254.frc2018.planners;
 
 import com.team254.frc2018.Constants;
-import com.team254.lib.geometry.*;
+import com.team254.lib.geometry.Pose2d;
+import com.team254.lib.geometry.Pose2dWithCurvature;
+import com.team254.lib.geometry.Rotation2d;
+import com.team254.lib.geometry.Translation2d;
 import com.team254.lib.physics.DCMotorTransmission;
 import com.team254.lib.physics.DifferentialDrive;
 import com.team254.lib.trajectory.*;
@@ -44,7 +47,8 @@ public class DriveMotionPlanner implements CSVWritable {
         );
     }
 
-    public void setTrajectory(final TrajectoryIterator<TimedState<Pose2dWithCurvature>> trajectory, boolean isReversed) {
+    public void setTrajectory(final TrajectoryIterator<TimedState<Pose2dWithCurvature>> trajectory, boolean
+            isReversed) {
         mCurrentTrajectory = trajectory;
         mSetpoint = trajectory.getState();
         mIsReversed = isReversed;
@@ -108,7 +112,7 @@ public class DriveMotionPlanner implements CSVWritable {
         if (mCurrentTrajectory.getProgress() == 0.0 && !Double.isFinite(mLastTime)) {
             mLastTime = timestamp;
         }
-        if(mIsReversed) {
+        if (mIsReversed) {
             current_state = current_state.transformBy(Pose2d.fromRotation(Rotation2d.fromDegrees(180.)));
         }
 
@@ -118,10 +122,18 @@ public class DriveMotionPlanner implements CSVWritable {
         mSetpoint = mCurrentTrajectory.advance(t).state();
         double lookahead_time = Constants.kPathLookaheadTime;
         TimedState<Pose2dWithCurvature> lookahead_state = mCurrentTrajectory.preview(lookahead_time).state();
-        while (current_state.distance(lookahead_state.state().getPose()) < Constants.kPathMinLookaheadDistance &&
+        double actual_lookahead_distance = current_state.distance(lookahead_state.state().getPose());
+        while (actual_lookahead_distance < Constants.kPathMinLookaheadDistance &&
                 mCurrentTrajectory.getRemainingProgress() > lookahead_time) {
             lookahead_time += kLookaheadSearchDt;
             lookahead_state = mCurrentTrajectory.preview(lookahead_time).state();
+            actual_lookahead_distance = current_state.distance(lookahead_state.state().getPose());
+        }
+        if (actual_lookahead_distance < Constants.kPathMinLookaheadDistance) {
+            lookahead_state = new TimedState<Pose2dWithCurvature>(new Pose2dWithCurvature(lookahead_state.state()
+                    .getPose().transformBy(Pose2d.fromTranslation(new Translation2d(Constants
+                            .kPathMinLookaheadDistance - actual_lookahead_distance, 0.0))), 0.0), lookahead_state.t()
+                    , lookahead_state.velocity(), lookahead_state.acceleration());
         }
         if (!mCurrentTrajectory.isDone()) {
             // Generate feedforward voltages.
@@ -136,10 +148,12 @@ public class DriveMotionPlanner implements CSVWritable {
             DifferentialDrive.ChassisState adjusted_velocity = new DifferentialDrive.ChassisState();
 
             // Feedback on longitudinal error (distance).
-            adjusted_velocity.linear = dynamics.chassis_velocity.linear + Constants.kPathKX * Units.inches_to_meters(mError.getTranslation().x());
+            adjusted_velocity.linear = dynamics.chassis_velocity.linear + Constants.kPathKX * Units.inches_to_meters
+                    (mError.getTranslation().x());
 
             // Use pure pursuit to peek ahead along the trajectory and generate a new curvature.
-            final PurePursuitController.Arc<Pose2dWithCurvature> arc = new PurePursuitController.Arc<>(current_state, lookahead_state.state());
+            final PurePursuitController.Arc<Pose2dWithCurvature> arc = new PurePursuitController.Arc<>(current_state,
+                    lookahead_state.state());
 
             double curvature = 1.0 / Units.inches_to_meters(arc.radius);
             if (Double.isInfinite(curvature)) {
@@ -158,7 +172,7 @@ public class DriveMotionPlanner implements CSVWritable {
 
             // System.out.println(dynamics.toCSV());
             // TODO don't reverse this way in case left/right parameters aren't symmetric.
-            if(mIsReversed) {
+            if (mIsReversed) {
                 mOutput = new Output(-wheel_velocities.right, -wheel_velocities.left, -right_voltage, -left_voltage);
             } else {
                 mOutput = new Output(wheel_velocities.left, wheel_velocities.right, left_voltage, right_voltage);
