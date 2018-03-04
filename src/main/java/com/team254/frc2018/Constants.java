@@ -29,11 +29,9 @@ public class Constants {
     public static final double kDriveKa = 0.012;  // V per rad/s^2
 
     // Geometry
-    // TODO measure in CAD/on robot!
-    public static final double kCenterToFrontBumperDistance = 16.33;
-    public static final double kCenterToIntakeDistance = 23.11;
-    public static final double kCenterToRearBumperDistance = 16.99;
-    public static final double kCenterToSideBumperDistance = 17.225;
+    public static final double kCenterToFrontBumperDistance = 38.25 / 2.0;
+    public static final double kCenterToRearBumperDistance = 38.25 / 2.0;
+    public static final double kCenterToSideBumperDistance = 33.75 / 2.0;
 
     // Pose of the LIDAR frame w.r.t. the robot frame
     // TODO measure in CAD/on robot!
