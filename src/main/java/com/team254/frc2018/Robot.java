@@ -2,8 +2,7 @@ package com.team254.frc2018;
 
 import com.team254.frc2018.auto.AutoModeBase;
 import com.team254.frc2018.auto.AutoModeExecuter;
-import com.team254.frc2018.auto.modes.DoNothingMode;
-import com.team254.frc2018.auto.modes.TestDriveStraightLine;
+import com.team254.frc2018.auto.modes.*;
 import com.team254.frc2018.loops.Looper;
 import com.team254.frc2018.paths.TrajectoryGenerator;
 import com.team254.frc2018.subsystems.RobotStateEstimator;
@@ -99,6 +98,8 @@ public class Robot extends IterativeRobot {
 
             Drive.getInstance().zeroSensors();
             RobotState.getInstance().reset(Timer.getFPGATimestamp(), Pose2d.identity());
+
+            mTrajectoryGenerator.generateTrajectories(Pose2d.identity());
 
             mAutoModeSelector.reset();
 
@@ -419,6 +420,7 @@ public class Robot extends IterativeRobot {
         Intake.getInstance().outputTelemetry();
         Elevator.getInstance().outputTelemetry();
         Infrastructure.getInstance().outputTelemetry();
+        mAutoFieldState.outputToSmartDashboard();
         mEnabledLooper.outputToSmartDashboard();
         mAutoModeSelector.outputToSmartDashboard();
         // SmartDashboard.updateValues();

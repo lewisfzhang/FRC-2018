@@ -1,5 +1,6 @@
 package com.team254.frc2018;
 
+import com.team254.frc2018.subsystems.Drive;
 import com.team254.lib.geometry.Pose2d;
 import com.team254.lib.geometry.Rotation2d;
 import com.team254.lib.geometry.Translation2d;
@@ -39,7 +40,7 @@ public class RobotState {
     public synchronized void reset(double start_time, Pose2d initial_field_to_vehicle) {
         field_to_vehicle_ = new InterpolatingTreeMap<>(kObservationBufferSize);
         field_to_vehicle_.put(new InterpolatingDouble(start_time), initial_field_to_vehicle);
-        System.out.println(initial_field_to_vehicle);
+        Drive.getInstance().setHeading(initial_field_to_vehicle.getRotation());
         vehicle_velocity_predicted_ = Twist2d.identity();
         vehicle_velocity_measured_ = Twist2d.identity();
         distance_driven_ = 0.0;
