@@ -53,8 +53,8 @@ public class Constants {
     public static final double kDriveUpShiftVelocity = 11.0 * 12.0;  // inches per second
 
     public static final double kPathKX = 2.0;  // m/s per meter of error
-    public static final double kPathLookaheadTime = 0.2;  // seconds to look ahead along the path for steering
-    public static final double kPathMinLookaheadDistance = 2.0;  // inches
+    public static final double kPathLookaheadTime = 0.4;  // seconds to look ahead along the path for steering
+    public static final double kPathMinLookaheadDistance = 24.0;  // inches
 
     // PID gains for drive velocity loop (LOW GEAR)
     // Units: setpoint, error, and demand are in ticks per second.
