@@ -18,7 +18,7 @@ public class TestIntakeThenScore extends AutoModeBase {
         runAction(new ParallelAction(
                 Arrays.asList(
 //                        new DriveTrajectory(TrajectoryGenerator.getInstance().getStraightLine(), false),
-                        new SeriesAction(g
+                        new SeriesAction(
                                 Arrays.asList(
                                         new SetIntaking(true, true),
                                         new OverrideTrajectory()
