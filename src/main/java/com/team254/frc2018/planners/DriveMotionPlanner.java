@@ -4,10 +4,7 @@ import com.team254.frc2018.Constants;
 import com.team254.lib.geometry.*;
 import com.team254.lib.physics.DCMotorTransmission;
 import com.team254.lib.physics.DifferentialDrive;
-import com.team254.lib.trajectory.DistanceView;
-import com.team254.lib.trajectory.Trajectory;
-import com.team254.lib.trajectory.TrajectoryIterator;
-import com.team254.lib.trajectory.TrajectoryUtil;
+import com.team254.lib.trajectory.*;
 import com.team254.lib.trajectory.timing.DifferentialDriveDynamicsConstraint;
 import com.team254.lib.trajectory.timing.TimedState;
 import com.team254.lib.trajectory.timing.TimingConstraint;
@@ -112,14 +109,20 @@ public class DriveMotionPlanner implements CSVWritable {
             mLastTime = timestamp;
         }
         if(mIsReversed) {
-            current_state = current_state.transformBy(new Pose2d(Translation2d.identity(), Rotation2d.fromDegrees(180)));
+            current_state = current_state.transformBy(Pose2d.fromRotation(Rotation2d.fromDegrees(180.)));
         }
 
         final double t = timestamp - mLastTime;
         mLastTime = timestamp;
-        final double kLookaheadTime = 0.5;
+        final double kLookaheadSearchDt = 0.01;
         mSetpoint = mCurrentTrajectory.advance(t).state();
-        final TimedState<Pose2dWithCurvature> lookahead_state = mCurrentTrajectory.preview(kLookaheadTime).state();
+        double lookahead_time = Constants.kPathLookaheadTime;
+        TimedState<Pose2dWithCurvature> lookahead_state = mCurrentTrajectory.preview(lookahead_time).state();
+        while (current_state.distance(lookahead_state.state().getPose()) < Constants.kPathMinLookaheadDistance &&
+                mCurrentTrajectory.getRemainingProgress() > lookahead_time) {
+            lookahead_time += kLookaheadSearchDt;
+            lookahead_state = mCurrentTrajectory.preview(lookahead_time).state();
+        }
         if (!mCurrentTrajectory.isDone()) {
             // Generate feedforward voltages.
             final DifferentialDrive.DriveDynamics dynamics = mModel.solveInverseDynamics(
@@ -130,22 +133,21 @@ public class DriveMotionPlanner implements CSVWritable {
 
 
             mError = current_state.inverse().transformBy(mSetpoint.state().getPose());
-            final Pose2d lookahead_error = current_state.inverse().transformBy(lookahead_state.state().getPose());
             DifferentialDrive.ChassisState adjusted_velocity = new DifferentialDrive.ChassisState();
-            adjusted_velocity.linear = dynamics.chassis_velocity.linear + Constants
-                    .kPathKX * Units.inches_to_meters(mError.getTranslation().x());
 
-            double curvature = dynamics.chassis_velocity.angular / dynamics.chassis_velocity.linear;
-            if (Double.isNaN(curvature)) {
-                curvature = 0.0;
+            // Feedback on longitudinal error (distance).
+            adjusted_velocity.linear = dynamics.chassis_velocity.linear + Constants.kPathKX * Units.inches_to_meters(mError.getTranslation().x());
+
+            // Use pure pursuit to peek ahead along the trajectory and generate a new curvature.
+            final PurePursuitController.Arc<Pose2dWithCurvature> arc = new PurePursuitController.Arc<>(current_state, lookahead_state.state());
+
+            double curvature = 1.0 / Units.inches_to_meters(arc.radius);
+            if (Double.isInfinite(curvature)) {
+                adjusted_velocity.linear = 0.0;
+                adjusted_velocity.angular = dynamics.chassis_velocity.angular;
+            } else {
+                adjusted_velocity.angular = curvature * dynamics.chassis_velocity.linear;
             }
-            curvature +=
-                    (dynamics.chassis_velocity.linear >= 0.0 ? 1.0 : -1.0) * Constants.kPathKY * Units
-                            .inches_to_meters(lookahead_error
-                                    .getTranslation().y()) + Constants.kPathKTheta * lookahead_error.getRotation()
-                            .getRadians();
-            adjusted_velocity.angular = curvature * dynamics.chassis_velocity.linear;
-
 
             // Compute adjusted left and right wheel velocities.
             final DifferentialDrive.WheelState wheel_velocities = mModel.solveInverseKinematics(adjusted_velocity);
@@ -155,6 +157,7 @@ public class DriveMotionPlanner implements CSVWritable {
                     .right) / mModel.right_transmission().speed_per_volt();
 
             // System.out.println(dynamics.toCSV());
+            // TODO don't reverse this way in case left/right parameters aren't symmetric.
             if(mIsReversed) {
                 mOutput = new Output(-wheel_velocities.right, -wheel_velocities.left, -right_voltage, -left_voltage);
             } else {

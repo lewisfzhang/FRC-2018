@@ -79,7 +79,7 @@ public class DriveMotionPlannerTest {
                         new Pose2d(new Translation2d(120.0, -36.0), Rotation2d.identity()),
                         new Pose2d(new Translation2d(240.0, -36.0), Rotation2d.identity())),
                         null,
-                        120.0, 120.0, 10.0))));
+                        120.0, 120.0, 10.0))), false);
         final double dt = 0.01;
         double t = 0.0;
         Pose2d pose = motion_planner.setpoint().state().getPose();
@@ -88,6 +88,7 @@ public class DriveMotionPlannerTest {
             Twist2d delta = Kinematics.forwardKinematics(output.left_velocity * dt * Constants.kDriveWheelDiameterInches / 2.0, output.right_velocity * dt * Constants.kDriveWheelDiameterInches / 2.0);
             pose = pose.transformBy(Pose2d.exp(delta));
             t += dt;
+            System.out.println(motion_planner.setpoint().toCSV() + "," + pose.toCSV());
         }
         System.out.println(pose);
     }
