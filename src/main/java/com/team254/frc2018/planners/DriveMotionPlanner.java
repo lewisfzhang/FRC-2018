@@ -122,12 +122,12 @@ public class DriveMotionPlanner implements CSVWritable {
         mSetpoint = mCurrentTrajectory.advance(t).state();
         double lookahead_time = Constants.kPathLookaheadTime;
         TimedState<Pose2dWithCurvature> lookahead_state = mCurrentTrajectory.preview(lookahead_time).state();
-        double actual_lookahead_distance = current_state.distance(lookahead_state.state().getPose());
+        double actual_lookahead_distance = mSetpoint.state().distance(lookahead_state.state());
         while (actual_lookahead_distance < Constants.kPathMinLookaheadDistance &&
                 mCurrentTrajectory.getRemainingProgress() > lookahead_time) {
             lookahead_time += kLookaheadSearchDt;
             lookahead_state = mCurrentTrajectory.preview(lookahead_time).state();
-            actual_lookahead_distance = current_state.distance(lookahead_state.state().getPose());
+            actual_lookahead_distance = mSetpoint.state().distance(lookahead_state.state());
         }
         if (actual_lookahead_distance < Constants.kPathMinLookaheadDistance) {
             lookahead_state = new TimedState<Pose2dWithCurvature>(new Pose2dWithCurvature(lookahead_state.state()
