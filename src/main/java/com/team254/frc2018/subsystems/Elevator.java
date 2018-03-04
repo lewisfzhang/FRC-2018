@@ -19,7 +19,7 @@ public class Elevator extends Subsystem {
     public static final double kHomePositionInches = 5.0;
     private static final int kHighGearSlot = 0;
     private static final int kLowGearSlot = 1;
-    private static final int kReverseSoftLimit = -99400; // Encoder ticks (used to be -151000)
+    private static final int kReverseSoftLimit = -100000; // Encoder ticks (used to be -151000)
     private static final int kForwardSoftLimit = 500; // Encoder ticks.  TODO set to ~0 once skipping is fixed.
     private static final double kEncoderTicksPerInch = -1271.0;
     private static Elevator mInstance = null;
@@ -117,7 +117,7 @@ public class Elevator extends Subsystem {
                         Constants.kElevatorRampRate, Constants.kLongCANTimeoutMs),
                 "Could not set elevator voltage ramp rate: ");
 
-        mMaster.configSetParameter(ParamEnum.eClearPositionOnLimitF, 0, 0, 0, 0);
+        mMaster.configSetParameter(ParamEnum.eClearPositionOnLimitF, 1, 0, 0, 0);
         mMaster.configSetParameter(ParamEnum.eClearPositionOnLimitR, 0, 0, 0, 0);
 
         // TODO add low gear gains
