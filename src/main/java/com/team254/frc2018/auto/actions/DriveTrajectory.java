@@ -55,8 +55,6 @@ public class DriveTrajectory implements Action {
             if (mIsReversed) {
                 mRobotState.reset(Timer.getFPGATimestamp(), mTrajectory.getState().state().getPose()
                         .transformBy(new Pose2d(Translation2d.identity(), Rotation2d.fromDegrees(180.0))));
-                System.out.println("Reset to" + (mTrajectory.getState().state().getPose()
-                        .transformBy(new Pose2d(Translation2d.identity(), Rotation2d.fromDegrees(180.0)))));
             } else {
                 mRobotState.reset(Timer.getFPGATimestamp(), mTrajectory.getState().state().getPose());
             }

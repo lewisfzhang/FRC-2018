@@ -19,12 +19,12 @@ public class SetIntaking implements Action {
 
     @Override
     public void start() {
+        mIntake.clampJaw();
         if(mMoveToIntakingPosition) {
             mSuperstructure.setDesiredAngle(SuperstructureConstants.kIntakePositionAngle);
             mSuperstructure.setDesiredHeight(SuperstructureConstants.kIntakeFloorLevelHeight);
         } else {
             mIntake.getOrKeepCube();
-            mIntake.clampJaw();
         }
     }
 
@@ -32,7 +32,6 @@ public class SetIntaking implements Action {
     public void update() {
         if(mMoveToIntakingPosition && mSuperstructure.getSuperStructureState() == SuperstructureStateMachine.SystemState.HOLDING_POSITION) {
             mIntake.getOrKeepCube();
-            mIntake.clampJaw();
         }
     }
 
@@ -47,5 +46,6 @@ public class SetIntaking implements Action {
 
     @Override
     public void done() {
+        mIntake.clampJaw();
     }
 }
