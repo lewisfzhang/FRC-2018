@@ -37,6 +37,10 @@ public class DistanceView<S extends State<S>> implements TrajectoryView<S> {
         throw new RuntimeException();
     }
 
+    public double distance_at_index(int index) {
+        return distances_[index];
+    }
+
     @Override
     public double last_interpolant() {
         return distances_[distances_.length - 1];

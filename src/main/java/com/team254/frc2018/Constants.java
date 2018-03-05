@@ -56,14 +56,25 @@ public class Constants {
     public static final double kPathLookaheadTime = 0.4;  // seconds to look ahead along the path for steering
     public static final double kPathMinLookaheadDistance = 24.0;  // inches
 
-    // PID gains for drive velocity loop (LOW GEAR)
-    // Units: setpoint, error, and demand are in ticks per second.
-    public static final double kDriveLowGearVelocityKp = 0.3;
-    public static final double kDriveLowGearVelocityKi = 0.0;
-    public static final double kDriveLowGearVelocityKd = 2.5;
-    public static final double kDriveLowGearVelocityKf = 0.0;
-    public static final int kDriveLowGearVelocityIZone = 0;
-    public static final double kDriveVoltageRampRate = 0.1;
+    // Difference in encoder ticks between left and right in one full rotation.
+    public static final double kDriveTurnTravelUnitsPerRotation = 53522.8;  // Tuned 3/4
+    public static final double kDriveTurnUnits = 3600.0;  // tenths of a degree
+    public static final double kDriveVoltageRampRate = 0.1; // s for 0-12V
+
+    // PID gains for drive velocity loop (ALL LOW GEAR)
+    // Position loop.  PV/Setpoint is in encoder ticks, output is +/-1023
+    public static final double kDriveDistanceKp = 1.0;
+    public static final double kDriveDistanceKi = 0.0;
+    public static final double kDriveDistanceKd = 0.0;
+    public static final double kDriveDistanceKf = 0.0;
+    public static final int kDriveDistanceIZone = 0;
+
+    // Heading loop.  PV/Setpoint is in tenths of a degree, output is +/-1023
+    public static final double kDriveTurnKp = 0.0;
+    public static final double kDriveTurnKi = 0.0;
+    public static final double kDriveTurnKd = 0.0;
+    public static final double kDriveTurnKf = 0.0;
+    public static final int kDriveTurnIZone = 0;
 
     // PID gains for elevator velocity loop (HIGH GEAR)
     // Units: setpoint, error, and demand are in native units per 100ms.

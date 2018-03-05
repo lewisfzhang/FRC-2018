@@ -27,6 +27,7 @@ public class DriveMotionPlanner implements CSVWritable {
     public enum FollowerType {
         FEEDFORWARD_ONLY,
         PURE_PURSUIT,
+        MOTION_PROFILE_ARC
     }
 
     final FollowerType mFollowerType = FollowerType.FEEDFORWARD_ONLY;
