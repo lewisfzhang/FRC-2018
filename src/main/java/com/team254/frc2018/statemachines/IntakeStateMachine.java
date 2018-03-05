@@ -117,7 +117,7 @@ public class IntakeStateMachine {
             commandedState.ledState.copyFrom(LEDState.kIntakeHasCube);
         } else {
             commandedState.setPower(kIntakeCubeSetpoint);
-            commandedState.jawState = clamp ? IntakeState.JawState.CLAMPED : (mWantedJawState == IntakeState.JawState.OPEN ? IntakeState.JawState.OPEN : IntakeState.JawState.CLOSED);
+            commandedState.jawState = mustStayClosed(currentState) ? IntakeState.JawState.CLOSED : (mWantedJawState == IntakeState.JawState.OPEN ? IntakeState.JawState.OPEN : IntakeState.JawState.CLOSED);
             commandedState.ledState.copyFrom(LEDState.kIntakeIntaking);
         }
     }
