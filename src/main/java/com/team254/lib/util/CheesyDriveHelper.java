@@ -27,16 +27,16 @@ public class CheesyDriveHelper {
 
     private static final double kQuickStopDeadband = 0.2;
     private static final double kQuickStopWeight = 0.1;
-    private static final double kQuickStopScalar = 5.0;
+    private static final double kQuickStopScalar = 12.0; // This number is tuned for corner omni wheels
 
     private double mOldWheel = 0.0;
     private double mQuickStopAccumlator = 0.0;
     private double mNegInertiaAccumlator = 0.0;
 
-    public DriveSignal cheesyDrive(double throttle, double wheel, boolean isQuickTurn,
+    public DriveSignal cheesyDrive(double throttle, double wheelIn, boolean isQuickTurn,
                                    boolean isHighGear) {
 
-        wheel = handleDeadband(wheel, kWheelDeadband);
+        double wheel = handleDeadband(wheelIn, kWheelDeadband);
         throttle = handleDeadband(throttle, kThrottleDeadband);
 
         double negInertia = wheel - mOldWheel;
@@ -97,7 +97,7 @@ public class CheesyDriveHelper {
         linearPower = throttle;
 
         // Quickturn!
-        if (isQuickTurn) {
+        if (isQuickTurn && Math.abs(wheelIn) > kQuickStopDeadband) {
             if (Math.abs(linearPower) < kQuickStopDeadband) {
                 double alpha = kQuickStopWeight;
                 mQuickStopAccumlator = (1 - alpha) * mQuickStopAccumlator
