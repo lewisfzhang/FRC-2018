@@ -56,7 +56,11 @@ public class TimingUtil {
 
             // We may need to iterate to find the maximum end velocity and common acceleration, since acceleration
             // limits may be a function of velocity.
-            while (true) {
+
+            //TODO: figure out why integration test makes this hang
+            int iterations = 0;
+            while (iterations < 1000000) {
+                iterations++;
                 // Enforce global max velocity and max reachable velocity by global acceleration limit.
                 // vf = sqrt(vi^2 + 2*a*d)
                 constraint_state.max_velocity = Math.min(max_velocity,
