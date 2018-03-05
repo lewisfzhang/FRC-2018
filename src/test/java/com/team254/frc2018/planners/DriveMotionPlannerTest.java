@@ -18,7 +18,7 @@ public class DriveMotionPlannerTest {
     @Test
     public void testForwardSwerveRight() {
         DriveMotionPlanner motion_planner = new DriveMotionPlanner();
-        motion_planner.setFollowerType(DriveMotionPlanner.FollowerType.FEEDFORWARD_ONLY);
+        motion_planner.setFollowerType(DriveMotionPlanner.FollowerType.PURE_PURSUIT);
         motion_planner.setTrajectory(new TrajectoryIterator<>(new TimedView<>(motion_planner.generateTrajectory
                 (Arrays.asList(new Pose2d(new Translation2d(0.0, 0.0), Rotation2d.identity()),
                         new Pose2d(new Translation2d(120.0, -36.0), Rotation2d.identity()),
@@ -34,7 +34,7 @@ public class DriveMotionPlannerTest {
             // Rotation2d.fromDegrees(2.0)));
 
             System.out.println(t + "," + motion_planner.toCSV());
-            t += 0.01;
+            t += 0.01;// + (2.0 * Math.random() - 1.0) * 0.002;
         }
     }
 
