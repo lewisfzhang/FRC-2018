@@ -63,13 +63,13 @@ public class Wrist extends Subsystem {
         errorCode = mMaster.configForwardSoftLimitThreshold(kForwardSoftLimit, Constants.kLongCANTimeoutMs);
         if (errorCode != ErrorCode.OK)
             DriverStation.reportError("Could not set forward soft limit switch wrist: " + errorCode, false);
-        errorCode = mMaster.configForwardSoftLimitEnable(false, Constants.kLongCANTimeoutMs);
+        errorCode = mMaster.configForwardSoftLimitEnable(true, Constants.kLongCANTimeoutMs);
         if (errorCode != ErrorCode.OK)
             DriverStation.reportError("Could not enable forward soft limit switch wrist: " + errorCode, false);
         errorCode = mMaster.configReverseSoftLimitThreshold(kReverseSoftLimit, Constants.kLongCANTimeoutMs);
         if (errorCode != ErrorCode.OK)
             DriverStation.reportError("Could not set reverse soft limit switch wrist: " + errorCode, false);
-        errorCode = mMaster.configReverseSoftLimitEnable(false, Constants.kLongCANTimeoutMs);
+        errorCode = mMaster.configReverseSoftLimitEnable(true, Constants.kLongCANTimeoutMs);
         if (errorCode != ErrorCode.OK)
             DriverStation.reportError("Could not enable reverse soft limit switch wrist: " + errorCode, false);
 
