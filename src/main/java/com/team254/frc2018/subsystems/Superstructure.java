@@ -1,5 +1,6 @@
 package com.team254.frc2018.subsystems;
 
+import com.team254.frc2018.Constants;
 import com.team254.frc2018.Robot;
 import com.team254.frc2018.loops.ILooper;
 import com.team254.frc2018.loops.Loop;
@@ -9,6 +10,7 @@ import com.team254.frc2018.states.SuperstructureCommand;
 import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.frc2018.states.SuperstructureState;
 import com.team254.lib.util.LatchedBoolean;
+import edu.wpi.first.wpilibj.Solenoid;
 
 /**
  * The superstructure subsystem is the overarching superclass containing all components of the superstructure: the
@@ -33,6 +35,7 @@ public class Superstructure extends Subsystem {
     private SuperstructureStateMachine mStateMachine = new SuperstructureStateMachine();
     private SuperstructureStateMachine.WantedAction mWantedAction =
             SuperstructureStateMachine.WantedAction.IDLE;
+    private Solenoid mUnlockHookSolenoid =  Constants.makeSolenoidForId(Constants.kUnlockHookSolenoid);
 
     private LatchedBoolean mIntoLimitEnable = new LatchedBoolean();
     private LatchedBoolean mIntoLimitDisabled = new LatchedBoolean();
@@ -164,5 +167,9 @@ public class Superstructure extends Subsystem {
 
     public synchronized void setWantedAction(SuperstructureStateMachine.WantedAction wantedAction) {
         mWantedAction = wantedAction;
+    }
+
+    public synchronized void setUnlockHookSolenoid(boolean deployed) {
+        mUnlockHookSolenoid.set(deployed);
     }
 }

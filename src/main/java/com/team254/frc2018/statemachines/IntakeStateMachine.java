@@ -14,12 +14,13 @@ public class IntakeStateMachine {
 
     public enum WantedAction {
         WANT_MANUAL,
-        WANT_CUBE
+        WANT_CUBE,
     }
 
     private enum SystemState {
         OPEN_LOOP,
-        KEEPING_CUBE
+        KEEPING_CUBE,
+        LOST_CUBE,
     }
 
     private SystemState mSystemState = SystemState.OPEN_LOOP;

@@ -289,7 +289,9 @@ public class Robot extends IterativeRobot {
                 if (mManualShiftPressed.update(mControlBoard.getElevatorShift())) {
                    mSuperstructure.setElevatorLowGear();
                 }
+                mSuperstructure.setUnlockHookSolenoid(true);
             } else {
+                mSuperstructure.setUnlockHookSolenoid(false);
                 mLED.setWantedAction(LED.WantedAction.DISPLAY_INTAKE);
                 // Presets.
                 double desired_height = Double.NaN;
