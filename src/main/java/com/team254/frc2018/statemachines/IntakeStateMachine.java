@@ -3,6 +3,7 @@ package com.team254.frc2018.statemachines;
 import com.team254.frc2018.states.IntakeState;
 import com.team254.frc2018.states.LEDState;
 import com.team254.frc2018.states.SuperstructureConstants;
+import com.team254.lib.util.TimeDelayedBoolean;
 
 public class IntakeStateMachine {
     public final static double kActuationTime = 0.0;
@@ -10,7 +11,7 @@ public class IntakeStateMachine {
     public final static double kWeakShootSetpoint = .65;
     public final static double kIntakeCubeSetpoint = -1.0;
     public final static double kHoldSetpoint = 0.0;
-    public final static double kLostCubeTime = 0.5;
+    public final static double kLostCubeTime = 0.25;
 
     public enum WantedAction {
         WANT_MANUAL,
@@ -20,12 +21,13 @@ public class IntakeStateMachine {
     private enum SystemState {
         OPEN_LOOP,
         KEEPING_CUBE,
-        LOST_CUBE,
     }
 
     private SystemState mSystemState = SystemState.OPEN_LOOP;
     private IntakeState mCommandedState = new IntakeState();
     private double mCurrentStateStartTime = 0;
+
+    private TimeDelayedBoolean mLastSeenCube = new TimeDelayedBoolean();
 
     private IntakeState.JawState mWantedJawState = IntakeState.JawState.CLAMPED;
     private double mWantedPower = 0.0;
@@ -61,6 +63,7 @@ public class IntakeStateMachine {
                 System.out.println(timestamp + ": Intake changed state: " + mSystemState + " -> " + newState);
                 mSystemState = newState;
                 mCurrentStateStartTime = timestamp;
+                mLastSeenCube.update(false, kLostCubeTime);
             }
             
             // Handle State outputs
@@ -69,7 +72,7 @@ public class IntakeStateMachine {
                     getOpenLoopCommandedState(currentState, mCommandedState);
                     break;
                 case KEEPING_CUBE:
-                    getKeepingCubeCommandedState(currentState, mCommandedState);
+                    getKeepingCubeCommandedState(currentState, mCommandedState, timestamp);
                     break;
                 default:
                     getOpenLoopCommandedState(currentState, mCommandedState);
@@ -107,11 +110,14 @@ public class IntakeStateMachine {
                 return SystemState.KEEPING_CUBE;
         }
     }
-    private synchronized void getKeepingCubeCommandedState(IntakeState currentState, IntakeState commandedState) {
+    private synchronized void getKeepingCubeCommandedState(IntakeState currentState, IntakeState commandedState, double timestamp) {
         commandedState.setPower(kIntakeCubeSetpoint);
         final boolean clamp = (currentState.seesCube() && mWantedJawState != IntakeState.JawState.OPEN) || mustStayClosed(currentState);
         final boolean open = !clamp && mWantedJawState == IntakeState.JawState.OPEN;
-        if (currentState.seesCube()) {
+
+        boolean seenCube = mLastSeenCube.update(currentState.seesCube(), kLostCubeTime);
+
+        if (seenCube) {
             commandedState.setPower(kHoldSetpoint);
             commandedState.jawState = clamp ? IntakeState.JawState.CLAMPED : IntakeState.JawState.OPEN;
             commandedState.ledState.copyFrom(LEDState.kIntakeHasCube);
