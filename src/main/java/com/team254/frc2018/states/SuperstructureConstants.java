@@ -11,7 +11,7 @@ public class SuperstructureConstants {
 
     public static final double kAlwaysNeedsJawClampMinAngle = kClearFirstStageMinWristAngle;
 
-    public static final double kElevatorLongRaiseDistance = 24.0;
+    public static final double kElevatorLongRaiseDistance = 28.0;
     public static final double kElevatorApproachingThreshold = 12.0;
 
     public final static double kStowedAngle = 90.0;
