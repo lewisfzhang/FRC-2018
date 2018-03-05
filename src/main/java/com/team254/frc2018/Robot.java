@@ -240,13 +240,17 @@ public class Robot extends IterativeRobot {
             } else if (shoot) {
                 intakeAction = true;
                 mIntake.shoot();
-            } else if (runIntakeReleased || shootReleased) {
+            } else if (runIntakeReleased) {
                 if (mIntake.hasCube()) {
                     mIntake.getOrKeepCube();
                 } else {
                     mIntake.setState(IntakeStateMachine.WantedAction.WANT_MANUAL);
                     mIntake.setPower(0.0);
                 }
+                intakeAction = true;
+            } else if (shootReleased) {
+                mIntake.setState(IntakeStateMachine.WantedAction.WANT_MANUAL);
+                mIntake.setPower(0.0);
                 intakeAction = true;
             }
 
