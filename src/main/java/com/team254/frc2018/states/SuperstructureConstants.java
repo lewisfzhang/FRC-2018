@@ -56,6 +56,6 @@ public class SuperstructureConstants {
     public final static double kScoreSwitchBackwardsAngle = 0.0;
 
     public final static double kPlacingLowAngle = 175.0;
-    public final static double kPlacingHighAngle = 155.0;
+    public final static double kPlacingHighAngle = 175.0;
     public final static double kWeakShootAngle = 130.0;
 }
