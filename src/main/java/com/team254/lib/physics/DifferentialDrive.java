@@ -94,7 +94,7 @@ public class DifferentialDrive {
         return chassis_motion;
     }
 
-    // Input/demand could be either velocity or acceleration...the math is the same.
+    // Input/output could be either velocity or acceleration...the math is the same.
     public WheelState solveInverseKinematics(final ChassisState chassis_motion) {
         WheelState wheel_motion = new WheelState();
         wheel_motion.left = (chassis_motion.linear - effective_wheelbase_radius_ * chassis_motion.angular) /
@@ -262,8 +262,8 @@ public class DifferentialDrive {
                 } else {
                     variable_torque = fixed_torque * (linear_term - angular_term) / (linear_term + angular_term);
                 }
-                final double variable_voltage = variable_transmission.getVoltageForTorque(wheel_velocities.get(!left)
-                        , variable_torque);
+                final double variable_voltage = variable_transmission.getVoltageForTorque(
+                        wheel_velocities.get(!left), variable_torque);
                 if (Math.abs(variable_voltage) <= max_abs_voltage + Util.kEpsilon) {
                     double accel = 0.0;
                     if (Double.isInfinite(curvature)) {
