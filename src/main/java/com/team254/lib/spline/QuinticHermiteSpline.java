@@ -31,7 +31,7 @@ public class QuinticHermiteSpline extends Spline {
      * @param ref ReferenceFrame of this spline
      */
     public QuinticHermiteSpline(Pose2d p0, Pose2d p1, ReferenceFrame ref) {
-        double scale = 1.5 * p0.getTranslation().distance(p1.getTranslation());
+        double scale = 1.2 * p0.getTranslation().distance(p1.getTranslation());
         x0 = p0.getTranslation().x();
         x1 = p1.getTranslation().x();
         dx0 = p0.getRotation().cos() * scale;
