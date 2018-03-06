@@ -12,6 +12,7 @@ public class IntakeStateMachine {
     public final static double kIntakeCubeSetpoint = -1.0;
     public final static double kHoldSetpoint = 0.0;
     public final static double kLostCubeTime = 0.25;
+    public final static double kUnclampWaitingTime = 0.5;
 
     public enum WantedAction {
         WANT_MANUAL,
@@ -28,6 +29,7 @@ public class IntakeStateMachine {
     private double mCurrentStateStartTime = 0;
 
     private TimeDelayedBoolean mLastSeenCube = new TimeDelayedBoolean();
+    private double mLastSeenCubeTime = Double.NaN;
 
     private IntakeState.JawState mWantedJawState = IntakeState.JawState.CLAMPED;
     private double mWantedPower = 0.0;
@@ -86,6 +88,7 @@ public class IntakeStateMachine {
     private synchronized SystemState handleOpenLoopTransitions(WantedAction wantedAction, IntakeState currentState) {
         switch (wantedAction) {
             case WANT_CUBE:
+                mLastSeenCubeTime = Double.NaN;
                 return SystemState.KEEPING_CUBE;
             default:
                 return SystemState.OPEN_LOOP;
@@ -121,9 +124,17 @@ public class IntakeStateMachine {
             commandedState.setPower(kHoldSetpoint);
             commandedState.jawState = clamp ? IntakeState.JawState.CLAMPED : IntakeState.JawState.OPEN;
             commandedState.ledState.copyFrom(LEDState.kIntakeHasCube);
+            mLastSeenCubeTime = timestamp;
         } else {
             commandedState.setPower(kIntakeCubeSetpoint);
-            commandedState.jawState = mustStayClosed(currentState) ? IntakeState.JawState.CLOSED : (mWantedJawState == IntakeState.JawState.OPEN ? IntakeState.JawState.OPEN : IntakeState.JawState.CLOSED);
+
+            if (!Double.isNaN(mLastSeenCubeTime) &&
+                    (timestamp - mLastSeenCubeTime < kUnclampWaitingTime)) {
+                commandedState.jawState = IntakeState.JawState.CLAMPED;
+            } else {
+                commandedState.jawState = mustStayClosed(currentState) ? IntakeState.JawState.CLOSED : (mWantedJawState == IntakeState.JawState.OPEN ? IntakeState.JawState.OPEN : IntakeState.JawState.CLOSED);
+            }
+
             commandedState.ledState.copyFrom(LEDState.kIntakeIntaking);
         }
     }
