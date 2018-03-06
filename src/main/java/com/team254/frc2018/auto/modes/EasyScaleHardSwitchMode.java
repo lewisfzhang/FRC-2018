@@ -26,41 +26,37 @@ public class EasyScaleHardSwitchMode extends AutoModeBase {
                         new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().rightStartToRightScale, true, true),
                         new SeriesAction(
                                 Arrays.asList(
-                                        new WaitUntilInsideRegion(new Translation2d(130.0, -20.0), new Translation2d(260, 50)),
-                                        new SetSuperstructurePosition(SuperstructureConstants.kScaleHighHeight, SuperstructureConstants.kScoreBackwardsAngle, true)
-                                )
-                        )
-                )
-        ));
-        runAction(new ShootCube());
-
-        runAction(new ParallelAction(
-                Arrays.asList(
-                        new SeriesAction(
-                                Arrays.asList(
-                                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().rightScaleToLeftFence, false, true)
-                                )
-                        ),
-                        new SeriesAction(
-                                Arrays.asList(
-                                        new SetSuperstructurePosition(SuperstructureConstants.kStowedPositionHeight, SuperstructureConstants.kStowedPositionAngle, false),
-                                        new WaitUntilInsideRegion(new Translation2d(160.0, 180.0), new Translation2d(260, 250)),
-                                        new SetIntaking(true, true),
-                                        new OverrideTrajectory(),
-                                        new WaitAction(0.1)
+                                        new WaitUntilInsideRegion(new Translation2d(130.0, -20.0), new Translation2d
+                                                (260, 50)),
+                                        new SetSuperstructurePosition(SuperstructureConstants.kScaleLowHeight,
+                                                SuperstructureConstants.kScoreBackwardsAngle, true),
+                                        new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d
+                                                (260, 1000)),
+                                        new ShootCube(0.66)
                                 )
                         )
                 )
         ));
 
+        runAction(new ParallelAction(
+                Arrays.asList(
+                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().rightScaleToRightFence, false, false),
+                        new SetIntaking(true, false)
+                )
+        ));
 
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new SetSuperstructurePosition(SuperstructureConstants.kSwitchHeight, SuperstructureConstants.kPlacingHighAngle, true),
-                        new OpenLoopDrive(0.3, 0.3, 0.5, false)
+                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().rightFenceToLeftSwitch, true, false),
+                        new SeriesAction(
+                                Arrays.asList(
+                                        new SetSuperstructurePosition(SuperstructureConstants.kSwitchHeight,
+                                                SuperstructureConstants.kScoreSwitchBackwardsAngle, true)
+                                )
+                        )
                 )
         ));
-        new WaitAction(0.25);
-        runAction(new ShootCube());
+        runAction(new ShootCube(0.66));
+
     }
 }

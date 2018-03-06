@@ -22,13 +22,46 @@ public class HardScaleEasySwitchMode extends AutoModeBase {
     protected void routine() throws AutoModeEndedException {
         runAction(new SetIntaking(false, false));
 
+        // Score first cube
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().rightStartToRightSwitch, true, true),
-                        new SetSuperstructurePosition(SuperstructureConstants.kSwitchHeight, SuperstructureConstants.kScoreSwitchBackwardsAngle, true)
+                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().rightStartToLeftScale, true, true),
+                        new SeriesAction(
+                                Arrays.asList(
+                                        new WaitUntilInsideRegion(new Translation2d(130.0, 170.0), new Translation2d
+                                                (260, 200.0)),
+                                        new SetSuperstructurePosition(SuperstructureConstants.kScaleLowHeight,
+                                                SuperstructureConstants.kScoreBackwardsAngle, true),
+                                        new WaitUntilInsideRegion(new Translation2d(245.0, 170.0), new Translation2d
+                                                (260, 1000)),
+                                        new ShootCube(0.75)
+                                )
+                        )
                 )
         ));
 
-        runAction(new ShootCube());
+        runAction(new ParallelAction(
+                Arrays.asList(
+                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().leftScaleToLeftFence, false, true),
+                        new SeriesAction(
+                                Arrays.asList(
+                                        new SetIntaking(true, false)
+                                )
+                        )
+                )
+        ));
+
+        runAction(new ParallelAction(
+                Arrays.asList(
+                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().leftFenceToRightSwitch, true, false),
+                        new SeriesAction(
+                                Arrays.asList(
+                                        new SetSuperstructurePosition(SuperstructureConstants.kSwitchHeight,
+                                                SuperstructureConstants.kScoreSwitchBackwardsAngle, true)
+                                )
+                        )
+                )
+        ));
+        runAction(new ShootCube(0.66));
     }
 }
