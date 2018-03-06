@@ -4,6 +4,7 @@ import com.team254.frc2018.statemachines.SuperstructureStateMachine;
 import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.frc2018.subsystems.Intake;
 import com.team254.frc2018.subsystems.Superstructure;
+import com.team254.lib.util.TimeDelayedBoolean;
 
 public class SetIntaking implements Action {
     private static final Superstructure mSuperstructure = Superstructure.getInstance();
@@ -11,6 +12,7 @@ public class SetIntaking implements Action {
 
     private final boolean mWaitUntilHasCube;
     private final boolean mMoveToIntakingPosition;
+    private final TimeDelayedBoolean mDebounce = new TimeDelayedBoolean();
 
     public SetIntaking(boolean moveToIntakingPosition, boolean waitUntilHasCube) {
         mWaitUntilHasCube = waitUntilHasCube;
@@ -38,7 +40,7 @@ public class SetIntaking implements Action {
     @Override
     public boolean isFinished() {
         if(mWaitUntilHasCube) {
-            return mIntake.hasCube();
+            return mDebounce.update(mIntake.hasCube(), .1);
         } else {
             return true;
         }
