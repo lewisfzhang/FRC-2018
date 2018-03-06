@@ -6,12 +6,18 @@ import com.team254.frc2018.states.LEDState;
 
 public class LED extends Subsystem {
     private static final double kHangingBlinkDuration = 0.5; // In sec
+    private static final double kFaultBlinkDuration = 0.25; // In sec
 
     private static LED mInstance;
 
     private CarriageCanifier mCarriageCanifier;
     private SystemState mSystemState = SystemState.DISPLAYING_INTAKE;
     private WantedAction mWantedAction = WantedAction.DISPLAY_INTAKE;
+
+    private Wrist mWrist;
+    private Elevator mElevator;
+
+    private boolean mFaultsEnabled = false;
 
     private LEDState mDesiredLEDState = new LEDState();
     private LEDState mIntakeLEDState = new LEDState();
@@ -42,6 +48,8 @@ public class LED extends Subsystem {
             @Override
             public void onStart(double timestamp) {
                 stateStartTime = timestamp;
+                mWrist = Wrist.getInstance();
+                mElevator = Elevator.getInstance();
             }
 
             @Override
@@ -62,7 +70,7 @@ public class LED extends Subsystem {
                             setIntakeLEDCommand();
                             break;
                         case DISPLAYING_FAULT:
-                            setFaultLEDCommand();
+                            setFaultLEDCommand(timeInState);
                             break;
                         case DISPLAYING_HANG:
                             setHangLEDCommand(timeInState);
@@ -86,8 +94,13 @@ public class LED extends Subsystem {
     private void setIntakeLEDCommand() {
         mDesiredLEDState.copyFrom(mIntakeLEDState);
     }
-    private void setFaultLEDCommand() {
-
+    private void setFaultLEDCommand(double timeInState) {
+         // Blink red.
+        if ((int)(timeInState / kFaultBlinkDuration) % 2 == 0) {
+            mDesiredLEDState.copyFrom(LEDState.kFault);
+        } else {
+            mDesiredLEDState.copyFrom(LEDState.kOff);
+        }
     }
     private void setHangLEDCommand(double timeInState) {
         // Blink orange.
@@ -99,7 +112,9 @@ public class LED extends Subsystem {
     }
 
     private SystemState getStateTransition() {
-        // TODO: Make faults work!
+        if (mFaultsEnabled && (!mWrist.hasBeenZeroed() || !mElevator.hasBeenZeroed())) {
+            return SystemState.DISPLAYING_FAULT;
+        }
         switch (mWantedAction) {
             case DISPLAY_HANG:
                 return SystemState.DISPLAYING_HANG;
@@ -109,6 +124,10 @@ public class LED extends Subsystem {
                 System.out.println("Fell through on LED wanted action check: " + mWantedAction);
                 return SystemState.DISPLAYING_INTAKE;
         }
+    }
+
+    public synchronized void setEnableFaults(boolean enable) {
+        mFaultsEnabled = enable;
     }
 
     @Override

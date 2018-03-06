@@ -29,6 +29,8 @@ public class Elevator extends Subsystem {
     private PeriodicIO mPeriodicIO = new PeriodicIO();
     private ElevatorControlState mElevatorControlState = ElevatorControlState.OPEN_LOOP;
 
+    private boolean mHasBeenZeroed = false;
+
     private Elevator() {
         mMaster = TalonSRXFactory.createDefaultTalon(Constants.kElevatorMasterId);
 
@@ -227,8 +229,13 @@ public class Elevator extends Subsystem {
     }
 
     @Override
-    public void zeroSensors() {
+    public synchronized void zeroSensors() {
         mMaster.setSelectedSensorPosition(0, 0, 10);
+        mHasBeenZeroed = true;
+    }
+
+    public synchronized boolean hasBeenZeroed() {
+        return mHasBeenZeroed;
     }
 
     public synchronized void resetIfAtLimit() {

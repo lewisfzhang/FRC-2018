@@ -23,6 +23,7 @@ public class Wrist extends Subsystem {
     private static final int kReverseSoftLimit = -500;  // Encoder ticks.  TODO make ~0 once skipping is fixed.
 
     private static final double kHomingOutput = -0.25;
+    private boolean mHasBeenZeroed = false;
 
     private static Wrist mInstance;
     private final Intake mIntake = Intake.getInstance();
@@ -194,15 +195,11 @@ public class Wrist extends Subsystem {
     public synchronized void zeroSensors() {
         mMaster.setSelectedSensorPosition(0, 0, 0);
         mCanifier.resetWristEncoder();
+        mHasBeenZeroed = true;
+    }
 
-        // TODO is this needed?
-//        mMaster.configForwardSoftLimitThreshold((int) relativeToAbsolute(kForwardSoftLimit), 0);
-        mMaster.configForwardSoftLimitThreshold(kForwardSoftLimit, 0);
-        mMaster.configForwardSoftLimitEnable(false, 0);
-
-//        mMaster.configReverseSoftLimitThreshold((int) relativeToAbsolute(kReverseSoftLimit), 0);
-        mMaster.configReverseSoftLimitThreshold(kReverseSoftLimit, 0);
-        mMaster.configReverseSoftLimitEnable(false, 0);
+    public synchronized boolean hasBeenZeroed() {
+        return mHasBeenZeroed;
     }
 
     @Override

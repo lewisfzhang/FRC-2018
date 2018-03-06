@@ -78,8 +78,6 @@ public class Robot extends IterativeRobot {
             mLED.registerEnabledLoops(mEnabledLooper);
             mLED.registerEnabledLoops(mDisabledLooper);
 
-            Elevator.getInstance().zeroSensors();
-
             mTrajectoryGenerator.generateTrajectories(Pose2d.identity());
 
             mRunIntakeReleased.update(true);
@@ -107,6 +105,8 @@ public class Robot extends IterativeRobot {
 
             mDrive.stopLogging();
             mDisabledLooper.start();
+
+            mLED.setEnableFaults(true);
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
             throw t;
@@ -136,6 +136,7 @@ public class Robot extends IterativeRobot {
 
 
             mDrive.startLogging();
+            mLED.setEnableFaults(false);
             mEnabledLooper.start();
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
@@ -156,7 +157,7 @@ public class Robot extends IterativeRobot {
             RobotState.getInstance().reset(Timer.getFPGATimestamp(), Pose2d.identity());
             mDrive.stopLogging();
             mEnabledLooper.start();
-
+            mLED.setEnableFaults(false);
             mInHangMode = false;
             mForklift.retract();
         } catch (Throwable t) {
