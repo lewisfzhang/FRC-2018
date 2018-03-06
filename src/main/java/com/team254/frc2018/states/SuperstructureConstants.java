@@ -48,6 +48,7 @@ public class SuperstructureConstants {
     public final static double kIntakeFloorLevelHeight = 0.0;
 
     public final static double kSwitchHeight = 30.0;
+    public final static double kSwitchHeightBackwards = 27.0;
 
     // Wrist Angles.
     public final static double kVerticalAngle = 90.0;

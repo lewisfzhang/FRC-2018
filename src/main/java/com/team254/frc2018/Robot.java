@@ -354,7 +354,7 @@ public class Robot extends IterativeRobot {
                         desired_height = SuperstructureConstants.kScaleLowHeightBackwards;
                         desired_angle = SuperstructureConstants.kScoreBackwardsAngle;
                     } else if (go_switch) {
-                        desired_height = SuperstructureConstants.kSwitchHeight;
+                        desired_height = SuperstructureConstants.kSwitchHeightBackwards;
                         desired_angle = SuperstructureConstants.kScoreSwitchBackwardsAngle;
                     }
                 } else {
