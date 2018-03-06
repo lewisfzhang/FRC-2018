@@ -23,41 +23,42 @@ public class HardScaleHardSwitchMode extends AutoModeBase {
     protected void routine() throws AutoModeEndedException {
         runAction(new SetIntaking(false, false));
 
+        // Score first cube
         runAction(new ParallelAction(
                 Arrays.asList(
                         new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().rightStartToLeftScale, true, true),
                         new SeriesAction(
                                 Arrays.asList(
-                                        new WaitUntilInsideRegion(new Translation2d(160, 170), new Translation2d(260, 250)),
-                                        new SetSuperstructurePosition(SuperstructureConstants.kScaleHighHeight, SuperstructureConstants.kScoreBackwardsAngle, true)
+                                        new WaitUntilInsideRegion(new Translation2d(130.0, 170.0), new Translation2d
+                                                (260, 200.0)),
+                                        new SetSuperstructurePosition(SuperstructureConstants.kScaleLowHeight,
+                                                SuperstructureConstants.kScoreBackwardsAngle, true),
+                                        new WaitUntilInsideRegion(new Translation2d(245.0, 170.0), new Translation2d
+                                                (260, 1000)),
+                                        new ShootCube(0.75)
                                 )
                         )
                 )
         ));
-        runAction(new ShootCube());
 
         runAction(new ParallelAction(
                 Arrays.asList(
                         new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().leftScaleToLeftFence, false, true),
                         new SeriesAction(
                                 Arrays.asList(
-                                        new SetIntaking(true, true),
-                                        new OverrideTrajectory(),
-                                        new WaitAction(0.1)
+                                        new SetIntaking(true, false)
                                 )
                         )
                 )
         ));
 
-
-        runAction(new ParallelAction(
-                Arrays.asList(
-                        new SetSuperstructurePosition(SuperstructureConstants.kSwitchHeight, SuperstructureConstants.kPlacingHighAngle, true),
-                        new OpenLoopDrive(0.3, 0.3, 0.5, false)
-                )
-        ));
-        new WaitAction(0.25);
-        runAction(new ShootCube());
+        runAction(new WaitAction(0.5));
+        runAction(new OpenLoopDrive(-0.3, -0.3, 0.25, false));
+        runAction(new SetSuperstructurePosition(SuperstructureConstants.kSwitchHeight, SuperstructureConstants
+                .kPlacingHighAngle, true));
+        runAction(new OpenLoopDrive(0.5, 0.5, 0.5, false));
+        runAction(new WaitAction(0.25));
+        runAction(new ShootCube(0.5));
 
     }
 }

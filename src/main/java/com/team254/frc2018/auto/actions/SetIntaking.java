@@ -21,7 +21,6 @@ public class SetIntaking implements Action {
 
     @Override
     public void start() {
-        mIntake.clampJaw();
         if(mMoveToIntakingPosition) {
             mSuperstructure.setDesiredAngle(SuperstructureConstants.kIntakePositionAngle);
             mSuperstructure.setDesiredHeight(SuperstructureConstants.kIntakeFloorLevelHeight);

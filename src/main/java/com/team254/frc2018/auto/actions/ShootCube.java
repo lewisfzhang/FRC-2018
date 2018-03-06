@@ -8,14 +8,23 @@ import edu.wpi.first.wpilibj.Timer;
 
 public class ShootCube implements Action {
     private static final Intake mIntake = Intake.getInstance();
-    private static final double kShootTime = 0.75;
+    private static final double kShootTime = 0.5;
+    private final double mPower;
 
     private double mStartTime;
+
+    public ShootCube(double power) {
+        mPower = power;
+    }
+
+    public ShootCube() {
+        mPower = 1.0;
+    }
 
     @Override
     public void start() {
         mStartTime = Timer.getFPGATimestamp();
-        mIntake.shoot();
+        mIntake.shoot(mPower);
     }
 
     @Override

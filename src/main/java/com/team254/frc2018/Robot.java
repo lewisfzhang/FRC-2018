@@ -101,6 +101,7 @@ public class Robot extends IterativeRobot {
                 mAutoModeExecuter.stop();
             }
 
+            mInfrastructure.setIsDuringAuto(true);
             Drive.getInstance().zeroSensors();
             RobotState.getInstance().reset(Timer.getFPGATimestamp(), Pose2d.identity());
 
@@ -132,6 +133,9 @@ public class Robot extends IterativeRobot {
             mInfrastructure.setIsDuringAuto(true);
 
             // Make a new auto mode executor and set auto mode
+            if (mAutoModeExecuter != null) {
+                mAutoModeExecuter.stop();
+            }
             mAutoModeExecuter = new AutoModeExecuter();
             Optional<AutoModeBase> selectedMode = mAutoModeSelector.getAutoMode(mAutoFieldState);
             AutoModeBase autoMode = selectedMode.isPresent() ? selectedMode.get() : new DoNothingMode();
