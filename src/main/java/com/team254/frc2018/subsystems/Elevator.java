@@ -318,7 +318,7 @@ public class Elevator extends Subsystem {
                                 mRPMFloor = 200;
                                 mCurrentEpsilon = 2.0;
                                 mRPMEpsilon = 250;
-                                mRunTimeSec = 0.4;
+                                mRunTimeSec = 2.0;
                                 mRunOutputPercentage = -0.4;
                                 mRPMSupplier = () -> -mMaster.getSelectedSensorVelocity(0);
                             }
@@ -336,14 +336,12 @@ public class Elevator extends Subsystem {
                                 mRPMFloor = 200;
                                 mCurrentEpsilon = 2.0;
                                 mRPMEpsilon = 250;
-                                mRunTimeSec = 0.4;
+                                mRunTimeSec = 2.0;
                                 mRunOutputPercentage = -0.4;
                                 mRPMSupplier = () -> -mMaster.getSelectedSensorVelocity(0);
                             }
                         });
 
-        setHangMode(false);
-        setNeutralMode(NeutralMode.Brake);
         return leftSide && rightSide;
     }
 

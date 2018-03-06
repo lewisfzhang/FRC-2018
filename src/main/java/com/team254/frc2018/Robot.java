@@ -173,6 +173,9 @@ public class Robot extends IterativeRobot {
         try {
             System.out.println("Starting check systems.");
 
+            mDisabledLooper.stop();
+            mEnabledLooper.stop();
+
             mDrive.checkSystem();
             mIntake.checkSystem();
             mWrist.checkSystem();
@@ -253,7 +256,7 @@ public class Robot extends IterativeRobot {
                 } else if (mHighShiftPressed.update(mControlBoard.getElevatorHighShift())) {
                     mSuperstructure.setElevatorHighGear();
                 }
-                //mSuperstructure.setUnlockHookSolenoid(true);
+                mSuperstructure.setUnlockHookSolenoid(true);
             } else {
                 mSuperstructure.setUnlockHookSolenoid(false);
                 mLED.setWantedAction(LED.WantedAction.DISPLAY_INTAKE);

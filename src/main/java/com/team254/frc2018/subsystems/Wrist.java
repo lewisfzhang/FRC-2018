@@ -401,8 +401,8 @@ public class Wrist extends Subsystem {
                     }
                 }, new TalonSRXChecker.CheckerConfig() {
                     {
-                        mRunTimeSec = 0.5;
-                        mRunOutputPercentage = 0.25;
+                        mRunTimeSec = 1.0;
+                        mRunOutputPercentage = 0.20;
 
                         mRPMFloor = 50.0;
                         mCurrentFloor = 2.0;
