@@ -104,9 +104,6 @@ public class Robot extends IterativeRobot {
             mInfrastructure.setIsDuringAuto(true);
             Drive.getInstance().zeroSensors();
             RobotState.getInstance().reset(Timer.getFPGATimestamp(), Pose2d.identity());
-
-            mTrajectoryGenerator.generateTrajectories(Pose2d.identity());
-
             mAutoModeSelector.reset();
 
             mDrive.stopLogging();

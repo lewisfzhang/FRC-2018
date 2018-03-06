@@ -21,7 +21,7 @@ public class TrajectoryGenerator {
 
     private static TrajectoryGenerator mInstance = new TrajectoryGenerator();
     private final DriveMotionPlanner mMotionPlanner;
-    private TrajectorySet mTrajectorySet;
+    private TrajectorySet mTrajectorySet = null;
 
     public static TrajectoryGenerator getInstance() {
         return mInstance;
@@ -32,9 +32,11 @@ public class TrajectoryGenerator {
     }
 
     public void generateTrajectories(Pose2d startPose) {
-        System.out.println("Generating trajectories...");
-        mTrajectorySet = new TrajectorySet(startPose);
-        System.out.println("Finished trajectory generation");
+        if(mTrajectorySet == null) {
+            System.out.println("Generating trajectories...");
+            mTrajectorySet = new TrajectorySet(startPose);
+            System.out.println("Finished trajectory generation");
+        }
     }
 
     public TrajectorySet getTrajectorySet() {
