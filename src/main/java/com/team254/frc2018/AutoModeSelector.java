@@ -2,6 +2,7 @@ package com.team254.frc2018;
 
 import com.team254.frc2018.auto.AutoModeBase;
 import com.team254.frc2018.auto.creators.AutoModeCreator;
+import com.team254.frc2018.auto.creators.ScaleOnlyAutoModeCreator;
 import com.team254.frc2018.auto.creators.SimpleSwitchModeCreator;
 import com.team254.frc2018.auto.creators.SwitchAndScaleAutoModeCreator;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -66,6 +67,8 @@ public class AutoModeSelector {
                 return Optional.of(new SimpleSwitchModeCreator());
             case SCALE_AND_SWITCH:
                 return Optional.of(new SwitchAndScaleAutoModeCreator(startOnLeft));
+            case ONLY_SCALE:
+                return Optional.of(new ScaleOnlyAutoModeCreator(startOnLeft));
             default:
                 break;
         }
