@@ -101,7 +101,7 @@ public class Drive extends Subsystem {
         talon.setSensorPhase(true);
         talon.enableVoltageCompensation(true);
         talon.configVoltageCompSaturation(12.0, Constants.kLongCANTimeoutMs);
-        talon.configVelocityMeasurementPeriod(VelocityMeasPeriod.Period_10Ms, Constants.kLongCANTimeoutMs);
+        talon.configVelocityMeasurementPeriod(VelocityMeasPeriod.Period_20Ms, Constants.kLongCANTimeoutMs);
         talon.configVelocityMeasurementWindow(32, Constants.kLongCANTimeoutMs);
         talon.configClosedloopRamp(Constants.kDriveVoltageRampRate, Constants.kLongCANTimeoutMs);
         talon.configNeutralDeadband(0.04, 0);
@@ -369,6 +369,7 @@ public class Drive extends Subsystem {
             // DriveSignal signal = new DriveSignal(demand.left_feedforward_voltage / 12.0, demand.right_feedforward_voltage / 12.0);
 
             mPeriodicIO.error = mMotionPlanner.error();
+            mPeriodicIO.path_setpoint = mMotionPlanner.setpoint();
 
             if(!mOverrideTrajectory) {
                 setVelocity(new DriveSignal(radiansPerSecondToTicksPer100ms(output.left_velocity), radiansPerSecondToTicksPer100ms(output.right_velocity)),
@@ -525,6 +526,7 @@ public class Drive extends Subsystem {
         public double right_demand;
         public double left_feedforward;
         public double right_feedforward;
+        public TimedState<Pose2dWithCurvature> path_setpoint = new TimedState<Pose2dWithCurvature>(Pose2dWithCurvature.identity());
     }
 }
 

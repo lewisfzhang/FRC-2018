@@ -107,5 +107,8 @@ public class Trajectory<S extends State<S>> implements CSVWritable {
         public double first_interpolant() {
             return 0.0;
         }
+
+        @Override
+        public Trajectory<S> trajectory() { return Trajectory.this; }
     }
 }

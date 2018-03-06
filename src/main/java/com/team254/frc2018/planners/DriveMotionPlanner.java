@@ -27,6 +27,7 @@ public class DriveMotionPlanner implements CSVWritable {
     public enum FollowerType {
         FEEDFORWARD_ONLY,
         PURE_PURSUIT,
+        PID
     }
 
     FollowerType mFollowerType = FollowerType.PURE_PURSUIT;
@@ -45,10 +46,14 @@ public class DriveMotionPlanner implements CSVWritable {
     Output mOutput = new Output();
 
     public DriveMotionPlanner() {
-        final DCMotorTransmission transmission = new DCMotorTransmission(1.0 / Constants.kDriveKv,
+        final DCMotorTransmission transmission = new DCMotorTransmission(
+                1.0 / Constants.kDriveKvStraight,
+                1.0 / Constants.kDriveKvTurnInPlace,
                 Units.inches_to_meters(Constants.kDriveWheelRadiusInches) * Units.inches_to_meters(Constants
-                        .kDriveWheelRadiusInches) *
-                        Constants.kRobotLinearInertia / (2.0 * Constants.kDriveKa), Constants.kDriveVIntercept);
+                        .kDriveWheelRadiusInches) * Constants.kRobotLinearInertia / (2.0 * Constants.kDriveKaStraight),
+                Units.inches_to_meters(Constants.kDriveWheelRadiusInches) * Constants.kRobotAngularInertia / (2.0 * Constants.kDriveKaTurnInPlace),
+                Constants.kDriveVInterceptStraight,
+                Constants.kDriveVInterceptTurnInPlace);
         mModel = new DifferentialDrive(
                 Constants.kRobotLinearInertia,
                 Constants.kRobotAngularInertia,
@@ -127,6 +132,31 @@ public class DriveMotionPlanner implements CSVWritable {
         }
     }
 
+    protected Output updatePID(DifferentialDrive.DriveDynamics dynamics, Pose2d current_state) {DifferentialDrive.ChassisState adjusted_velocity = new DifferentialDrive.ChassisState();
+        // Feedback on longitudinal error (distance).
+        final double kPathKX = 5.0;
+        final double kPathKY = 1.0;
+        final double kPathKTheta = 5.0;
+        adjusted_velocity.linear = dynamics.chassis_velocity.linear + kPathKX * Units.inches_to_meters
+                (mError.getTranslation().x());
+        adjusted_velocity.angular = dynamics.chassis_velocity.angular + dynamics.chassis_velocity.linear * kPathKY * Units.inches_to_meters(mError.getTranslation().y()) + kPathKTheta * mError.getRotation().getRadians();
+
+        double curvature = adjusted_velocity.angular / adjusted_velocity.linear;
+        if (Double.isInfinite(curvature)) {
+            adjusted_velocity.linear = 0.0;
+            adjusted_velocity.angular = dynamics.chassis_velocity.angular;
+        }
+
+        // Compute adjusted left and right wheel velocities.
+        final DifferentialDrive.WheelState wheel_velocities = mModel.solveInverseKinematics(adjusted_velocity);
+        final double left_voltage = dynamics.voltage.left + (wheel_velocities.left - dynamics.wheel_velocity
+                .left) / mModel.left_transmission().speed_per_volt(curvature);
+        final double right_voltage = dynamics.voltage.right + (wheel_velocities.right - dynamics.wheel_velocity
+                .right) / mModel.right_transmission().speed_per_volt(curvature);
+
+        return new Output(wheel_velocities.left, wheel_velocities.right, left_voltage, right_voltage);
+    }
+
     protected Output updatePurePursuit(DifferentialDrive.DriveDynamics dynamics, Pose2d current_state) {
         double lookahead_time = Constants.kPathLookaheadTime;
         final double kLookaheadSearchDt = 0.01;
@@ -165,9 +195,9 @@ public class DriveMotionPlanner implements CSVWritable {
         // Compute adjusted left and right wheel velocities.
         final DifferentialDrive.WheelState wheel_velocities = mModel.solveInverseKinematics(adjusted_velocity);
         final double left_voltage = dynamics.voltage.left + (wheel_velocities.left - dynamics.wheel_velocity
-                .left) / mModel.left_transmission().speed_per_volt();
+                .left) / mModel.left_transmission().speed_per_volt(curvature);
         final double right_voltage = dynamics.voltage.right + (wheel_velocities.right - dynamics.wheel_velocity
-                .right) / mModel.right_transmission().speed_per_volt();
+                .right) / mModel.right_transmission().speed_per_volt(curvature);
 
         return new Output(wheel_velocities.left, wheel_velocities.right, left_voltage, right_voltage);
     }
@@ -184,21 +214,43 @@ public class DriveMotionPlanner implements CSVWritable {
 
         final double t = timestamp - mLastTime;
         mLastTime = timestamp;
-        mSetpoint = mCurrentTrajectory.advance(t).state();
+        TrajectorySamplePoint<TimedState<Pose2dWithCurvature>> sample_point = mCurrentTrajectory.advance(t);
+        mSetpoint = sample_point.state();
+
+        TimedState<Pose2dWithCurvature> prev_pt = mCurrentTrajectory.trajectory().getState(sample_point.index_floor());
+        TimedState<Pose2dWithCurvature> next_pt = mCurrentTrajectory.trajectory().getState(sample_point.index_ceil());
+        double dcurvature_ds = Units.meters_to_inches(next_pt.state().getCurvature() - prev_pt.state().getCurvature()) / Units.inches_to_meters(prev_pt.state().distance(next_pt.state()));
+        if (Double.isNaN(dcurvature_ds)) {
+            dcurvature_ds = 0.0;
+        }
+        // Compute the derivative of curvature.
         if (!mCurrentTrajectory.isDone()) {
             // Generate feedforward voltages.
+            final double velocity_m = Units.inches_to_meters(mSetpoint.velocity());
+            final double curvature_m = 1.0 / Units.inches_to_meters(1.0 / mSetpoint.state().getCurvature());
+            final double acceleration_m = Units.inches_to_meters(mSetpoint.acceleration());
             final DifferentialDrive.DriveDynamics dynamics = mModel.solveInverseDynamics(
-                    new DifferentialDrive.ChassisState(Units.inches_to_meters(mSetpoint.velocity()),
-                            mSetpoint.velocity() * mSetpoint.state().getCurvature()),
-                    new DifferentialDrive.ChassisState(Units.inches_to_meters(mSetpoint.acceleration()),
-                            mSetpoint.acceleration() * mSetpoint.state().getCurvature()));
+                    new DifferentialDrive.ChassisState(velocity_m, velocity_m * curvature_m),
+                    new DifferentialDrive.ChassisState(acceleration_m,
+                            acceleration_m * curvature_m + velocity_m * velocity_m * dcurvature_ds));
             mError = current_state.inverse().transformBy(mSetpoint.state().getPose());
+
+            // HACK scale up angular velocity for feedforward voltage.
+            final double kScalingFactor = 2.0;
+            final double scaled_curvature_m = curvature_m * kScalingFactor;
+            DifferentialDrive.DriveDynamics hack_dynamics = mModel.solveInverseDynamics(
+                    new DifferentialDrive.ChassisState(velocity_m, velocity_m * scaled_curvature_m),
+                    new DifferentialDrive.ChassisState(acceleration_m,
+                            acceleration_m * scaled_curvature_m + velocity_m * velocity_m * dcurvature_ds));
+            dynamics.voltage = hack_dynamics.voltage;
 
             if (mFollowerType == FollowerType.FEEDFORWARD_ONLY) {
                 mOutput = new Output(dynamics.wheel_velocity.left, dynamics.wheel_velocity.right, dynamics.voltage
                         .left, dynamics.voltage.right);
             } else if (mFollowerType == FollowerType.PURE_PURSUIT) {
                 mOutput = updatePurePursuit(dynamics, current_state);
+            } else if (mFollowerType == FollowerType.PID) {
+                mOutput = updatePID(dynamics, current_state);
             }
             // TODO don't reverse this way in case left/right parameters aren't symmetric.
             if (mIsReversed) {

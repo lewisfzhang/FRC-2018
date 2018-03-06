@@ -103,4 +103,23 @@ public class DriveMotionPlannerTest {
         }
         System.out.println(pose);
     }
+
+    @Test
+    public void testVoltages() {
+        final DriveMotionPlanner motion_planner = new DriveMotionPlanner();
+        motion_planner.setTrajectory(new TrajectoryIterator<>(new TimedView<>(motion_planner.generateTrajectory
+                (Arrays.asList(Pose2d.identity(), Pose2d.fromTranslation(new Translation2d(48.0, 0.0)),
+                        new Pose2d(new Translation2d(96.0, 48.0), Rotation2d.fromDegrees(90.0)),
+                        new Pose2d(new Translation2d(96.0, 96.0), Rotation2d.fromDegrees(90.0))), null,
+                48.0, 48.0, 10.0))), true);
+        double t = 0.0;
+        Pose2d pose = motion_planner.setpoint().state().getPose().transformBy(new Pose2d(Translation2d.identity(),
+                Rotation2d.fromDegrees(180.0)));
+        while (!motion_planner.isDone()) {
+            motion_planner.update(t, pose);
+            pose = motion_planner.mSetpoint.state().getPose();
+            System.out.println(t + "," + motion_planner.toCSV());
+            t += 0.01;
+        }
+    }
 }

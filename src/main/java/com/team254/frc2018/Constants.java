@@ -1,5 +1,6 @@
 package com.team254.frc2018;
 
+import com.team254.lib.util.Units;
 import edu.wpi.first.wpilibj.Solenoid;
 
 import java.net.NetworkInterface;
@@ -23,10 +24,13 @@ public class Constants {
 
     // Tuned dynamics
     public static final double kRobotLinearInertia = 60.0;  // kg TODO tune
-    public static final double kRobotAngularInertia = 60.0;  // kg m TODO tune
-    public static final double kDriveVIntercept = 1.055;  // V
-    public static final double kDriveKv = 0.135;  // V per rad/s
-    public static final double kDriveKa = 0.012;  // V per rad/s^2
+    public static final double kRobotAngularInertia = 80.0 * Units.inches_to_meters(kDriveWheelTrackWidthInches) / 2.0;  // kg m TODO tune
+    public static final double kDriveVInterceptStraight = 1.055;  // V
+    public static final double kDriveKvStraight = 0.135;  // V per rad/s
+    public static final double kDriveKaStraight = 0.012;  // V per rad/s^2
+    public static final double kDriveVInterceptTurnInPlace = 1.37;  // V
+    public static final double kDriveKvTurnInPlace = 0.142;  // V per rad/s
+    public static final double kDriveKaTurnInPlace = 0.0128;  // V per rad/s^2
 
     // Geometry
     public static final double kCenterToFrontBumperDistance = 38.25 / 2.0;
@@ -52,15 +56,15 @@ public class Constants {
     public static final double kDriveDownShiftAngularVelocity = Math.PI / 2.0; // rad/sec
     public static final double kDriveUpShiftVelocity = 11.0 * 12.0;  // inches per second
 
-    public static final double kPathKX = 2.0;  // m/s per meter of error
+    public static final double kPathKX = 4.0;  // units/s per unit of error
     public static final double kPathLookaheadTime = 0.4;  // seconds to look ahead along the path for steering
     public static final double kPathMinLookaheadDistance = 24.0;  // inches
 
     // PID gains for drive velocity loop (LOW GEAR)
     // Units: setpoint, error, and output are in ticks per second.
-    public static final double kDriveLowGearVelocityKp = 0.3;
+    public static final double kDriveLowGearVelocityKp = 0.5;
     public static final double kDriveLowGearVelocityKi = 0.0;
-    public static final double kDriveLowGearVelocityKd = 2.5;
+    public static final double kDriveLowGearVelocityKd = 30.0;
     public static final double kDriveLowGearVelocityKf = 0.0;
     public static final int kDriveLowGearVelocityIZone = 0;
     public static final double kDriveVoltageRampRate = 0.1;

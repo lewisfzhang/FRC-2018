@@ -63,6 +63,8 @@ public class Robot extends IterativeRobot {
 
     private boolean mInHangMode;
 
+    private AutoModeExecuter mAutoModeExecuter;
+
     public Robot() {
         CrashTracker.logRobotConstruction();
     }
@@ -95,6 +97,9 @@ public class Robot extends IterativeRobot {
         try {
             CrashTracker.logDisabledInit();
             mEnabledLooper.stop();
+            if (mAutoModeExecuter != null) {
+                mAutoModeExecuter.stop();
+            }
 
             Drive.getInstance().zeroSensors();
             RobotState.getInstance().reset(Timer.getFPGATimestamp(), Pose2d.identity());
@@ -127,7 +132,7 @@ public class Robot extends IterativeRobot {
             mInfrastructure.setIsDuringAuto(true);
 
             // Make a new auto mode executor and set auto mode
-            AutoModeExecuter mAutoModeExecuter = new AutoModeExecuter();
+            mAutoModeExecuter = new AutoModeExecuter();
             Optional<AutoModeBase> selectedMode = mAutoModeSelector.getAutoMode(mAutoFieldState);
             AutoModeBase autoMode = selectedMode.isPresent() ? selectedMode.get() : new DoNothingMode();
             mAutoModeExecuter.setAutoMode(autoMode);
@@ -151,6 +156,9 @@ public class Robot extends IterativeRobot {
         try {
             CrashTracker.logTeleopInit();
             mDisabledLooper.stop();
+            if (mAutoModeExecuter != null) {
+                mAutoModeExecuter.stop();
+            }
 
             mInfrastructure.setIsDuringAuto(false);
 
