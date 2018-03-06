@@ -160,6 +160,11 @@ public class Superstructure extends Subsystem {
         mWantedAction = SuperstructureStateMachine.WantedAction.WANT_MANUAL;
     }
 
+    public synchronized void setElevatorHighGear() {
+        mStateMachine.setManualWantsLowGear(false);
+        mWantedAction = SuperstructureStateMachine.WantedAction.WANT_MANUAL;
+    }
+
     public synchronized void setHangThrottle(double throttle) {
         mStateMachine.setOpenLoopPower(throttle);
         mWantedAction = SuperstructureStateMachine.WantedAction.WANT_MANUAL;

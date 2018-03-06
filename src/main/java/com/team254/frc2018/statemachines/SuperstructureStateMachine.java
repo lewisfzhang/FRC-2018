@@ -195,6 +195,12 @@ public class SuperstructureStateMachine {
     // MANUAL
     private SystemState handleManualTransitions(WantedAction wantedAction,
                                                  SuperstructureState currentState) {
+        if (wantedAction != WantedAction.WANT_MANUAL) {
+            // Freeze height.
+            mScoringAngle = currentState.angle;
+            mScoringHeight = currentState.height;
+            return handleDefaultTransitions(WantedAction.GO_TO_POSITION, currentState);
+        }
         return handleDefaultTransitions(wantedAction, currentState);
     }
     private void getManualCommandedState() {

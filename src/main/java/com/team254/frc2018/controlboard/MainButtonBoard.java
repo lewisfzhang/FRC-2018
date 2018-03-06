@@ -117,7 +117,12 @@ public class MainButtonBoard implements IButtonControlBoard {
     }
 
     @Override
-    public boolean getElevatorShift() {
+    public boolean getElevatorLowShift() {
+        return false;
+    }
+
+    @Override
+    public boolean getElevatorHighShift() {
         return false;
     }
 }

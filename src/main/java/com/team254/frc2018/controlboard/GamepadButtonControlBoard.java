@@ -117,11 +117,16 @@ public class GamepadButtonControlBoard implements IButtonControlBoard {
 
     @Override
     public boolean getDeployForks() {
-        return mJoystick.getRawButton(1);
+        return mJoystick.getRawButton(5) && mJoystick.getRawButton(6);
     }
 
     @Override
-    public boolean getElevatorShift() {
+    public boolean getElevatorLowShift() {
         return mJoystick.getRawButton(3);
+    }
+
+    @Override
+    public boolean getElevatorHighShift() {
+        return mJoystick.getRawButton(4);
     }
 }

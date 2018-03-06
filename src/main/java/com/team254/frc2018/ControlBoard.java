@@ -143,8 +143,13 @@ public class ControlBoard implements IControlBoard {
     }
 
     @Override
-    public boolean getElevatorShift() {
-        return mButtonControlBoard.getElevatorShift();
+    public boolean getElevatorLowShift() {
+        return mButtonControlBoard.getElevatorLowShift();
+    }
+
+    @Override
+    public boolean getElevatorHighShift() {
+        return mButtonControlBoard.getElevatorHighShift();
     }
 
     public void setRumble(boolean on) {

@@ -45,5 +45,6 @@ public interface IButtonControlBoard {
 
     boolean getDeployForks();
 
-    boolean getElevatorShift();
+    boolean getElevatorLowShift();
+    boolean getElevatorHighShift();
 }

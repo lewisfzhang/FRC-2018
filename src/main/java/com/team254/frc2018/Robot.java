@@ -58,7 +58,9 @@ public class Robot extends IterativeRobot {
     private LatchedBoolean mRunIntakePressed = new LatchedBoolean();
 
     private LatchedBoolean mHangModeEnablePressed = new LatchedBoolean();
-    private LatchedBoolean mManualShiftPressed = new LatchedBoolean();
+    private LatchedBoolean mLowShiftPressed = new LatchedBoolean();
+    private LatchedBoolean mHighShiftPressed = new LatchedBoolean();
+
     private boolean mInHangMode;
 
     public Robot() {
@@ -228,51 +230,6 @@ public class Robot extends IterativeRobot {
             mDrive.setOpenLoop(mCheesyDriveHelper.cheesyDrive(throttle, turn, mControlBoard.getQuickTurn(),
                     mDrive.isHighGear()));
 
-            // Intake/Shoot
-            boolean runIntake = mControlBoard.getRunIntake() || mControlBoard.getIntakePosition();
-            boolean shoot = mControlBoard.getShoot();
-            boolean runIntakeReleased = mRunIntakeReleased.update(!runIntake);
-            boolean shootReleased = mShootReleased.update(!shoot);
-            boolean intakeAction = false;
-            if (runIntake) {
-                mIntake.getOrKeepCube();
-                intakeAction = true;
-            } else if (shoot) {
-                intakeAction = true;
-                mIntake.shoot();
-            } else if (runIntakeReleased) {
-                if (mIntake.hasCube()) {
-                    mIntake.getOrKeepCube();
-                } else {
-                    mIntake.setState(IntakeStateMachine.WantedAction.WANT_MANUAL);
-                    mIntake.setPower(0.0);
-                }
-                intakeAction = true;
-            } else if (shootReleased) {
-                mIntake.setState(IntakeStateMachine.WantedAction.WANT_MANUAL);
-                mIntake.setPower(0.0);
-                intakeAction = true;
-            }
-
-            // Manual jaw inputs.
-            if (mControlBoard.getOpenJaw()) {
-                mIntake.tryOpenJaw();
-                if (!intakeAction) {
-                    mIntake.setState(IntakeStateMachine.WantedAction.WANT_MANUAL);
-                    mIntake.setPower(0.0);
-                }
-            } else {
-                mIntake.closeJaw();
-            }
-
-
-            // Rumble
-            if (runIntake && mIntake.definitelyHasCube()) {
-                mControlBoard.setRumble(true);
-            } else {
-                mControlBoard.setRumble(false);
-            }
-
             if (mHangModeEnablePressed.update(mControlBoard.getEnableHangMode())) {
                 if (mInHangMode) {
                     mInHangMode = false;
@@ -290,13 +247,60 @@ public class Robot extends IterativeRobot {
 
                 mSuperstructure.setHangThrottle(mControlBoard.getElevatorThrottle());
 
-                if (mManualShiftPressed.update(mControlBoard.getElevatorShift())) {
+                if (mLowShiftPressed.update(mControlBoard.getElevatorLowShift())) {
                    mSuperstructure.setElevatorLowGear();
+                } else if (mHighShiftPressed.update(mControlBoard.getElevatorHighShift())) {
+                    mSuperstructure.setElevatorHighGear();
                 }
-                mSuperstructure.setUnlockHookSolenoid(true);
+                //mSuperstructure.setUnlockHookSolenoid(true);
             } else {
                 mSuperstructure.setUnlockHookSolenoid(false);
                 mLED.setWantedAction(LED.WantedAction.DISPLAY_INTAKE);
+
+                // Intake/Shoot
+                boolean runIntake = mControlBoard.getRunIntake() || mControlBoard.getIntakePosition();
+                boolean shoot = mControlBoard.getShoot();
+                boolean runIntakeReleased = mRunIntakeReleased.update(!runIntake);
+                boolean shootReleased = mShootReleased.update(!shoot);
+                boolean intakeAction = false;
+                if (runIntake) {
+                    mIntake.getOrKeepCube();
+                    intakeAction = true;
+                } else if (shoot) {
+                    intakeAction = true;
+                    mIntake.shoot();
+                } else if (runIntakeReleased) {
+                    if (mIntake.hasCube()) {
+                        mIntake.getOrKeepCube();
+                    } else {
+                        mIntake.setState(IntakeStateMachine.WantedAction.WANT_MANUAL);
+                        mIntake.setPower(0.0);
+                    }
+                    intakeAction = true;
+                } else if (shootReleased) {
+                    mIntake.setState(IntakeStateMachine.WantedAction.WANT_MANUAL);
+                    mIntake.setPower(0.0);
+                    intakeAction = true;
+                }
+
+                // Manual jaw inputs.
+                if (mControlBoard.getOpenJaw()) {
+                    mIntake.tryOpenJaw();
+                    if (!intakeAction) {
+                        mIntake.setState(IntakeStateMachine.WantedAction.WANT_MANUAL);
+                        mIntake.setPower(0.0);
+                    }
+                } else {
+                    mIntake.closeJaw();
+                }
+
+                // Rumble
+                if (runIntake && mIntake.definitelyHasCube()) {
+                    mControlBoard.setRumble(true);
+                } else {
+                    mControlBoard.setRumble(false);
+                }
+
                 // Presets.
                 double desired_height = Double.NaN;
                 double desired_angle = Double.NaN;
