@@ -9,22 +9,26 @@ import com.team254.lib.geometry.Translation2d;
 
 import java.util.Arrays;
 
+// TODO fix
 public class HardScaleEasySwitchMode extends AutoModeBase {
 
     private static final TrajectoryGenerator mTrajectoryGenerator = TrajectoryGenerator.getInstance();
 
+    private boolean mLeft;
 
     public HardScaleEasySwitchMode(boolean robotStartedOnLeft) {
-
+        mLeft = robotStartedOnLeft;
     }
 
     @Override
     protected void routine() throws AutoModeEndedException {
+        /*
         runAction(new SetIntaking(false, false));
 
         // Score first cube
         runAction(new ParallelAction(
                 Arrays.asList(
+<<<<<<< HEAD
                         new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().rightStartToLeftScale, true, true),
                         new SeriesAction(
                                 Arrays.asList(
@@ -37,6 +41,10 @@ public class HardScaleEasySwitchMode extends AutoModeBase {
                                         new ShootCube(0.75)
                                 )
                         )
+=======
+                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().startToFarScale.get(mLeft), true, true),
+                        new SetSuperstructurePosition(SuperstructureConstants.kSwitchHeight, SuperstructureConstants.kScoreSwitchBackwardsAngle, true)
+>>>>>>> Add mirroring of left/right trajectories
                 )
         ));
 
@@ -63,5 +71,6 @@ public class HardScaleEasySwitchMode extends AutoModeBase {
                 )
         ));
         runAction(new ShootCube(0.66));
+        */
     }
 }

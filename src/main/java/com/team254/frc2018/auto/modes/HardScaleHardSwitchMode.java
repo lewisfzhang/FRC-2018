@@ -15,8 +15,9 @@ public class HardScaleHardSwitchMode extends AutoModeBase {
 
     private static final TrajectoryGenerator mTrajectoryGenerator = TrajectoryGenerator.getInstance();
 
+    private final boolean startedLeft;
     public HardScaleHardSwitchMode(boolean robotStartedOnLeft) {
-
+        startedLeft = robotStartedOnLeft;
     }
 
     @Override
@@ -26,7 +27,7 @@ public class HardScaleHardSwitchMode extends AutoModeBase {
         // Score first cube
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().rightStartToLeftScale, true, true),
+                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().startToFarScale.get(startedLeft), true, true),
                         new SeriesAction(
                                 Arrays.asList(
                                         new WaitUntilInsideRegion(new Translation2d(130.0, 170.0), new Translation2d
@@ -43,7 +44,7 @@ public class HardScaleHardSwitchMode extends AutoModeBase {
 
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().leftScaleToLeftFence, false, true),
+                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().farScaleToFarFence.get(startedLeft), false, true),
                         new SeriesAction(
                                 Arrays.asList(
                                         new SetIntaking(true, false)

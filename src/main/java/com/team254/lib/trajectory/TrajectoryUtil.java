@@ -1,18 +1,41 @@
 package com.team254.lib.trajectory;
 
-import com.team254.lib.geometry.Pose2d;
-import com.team254.lib.geometry.Pose2dWithCurvature;
-import com.team254.lib.geometry.State;
-import com.team254.lib.geometry.Twist2d;
+import com.team254.lib.geometry.*;
 import com.team254.lib.spline.QuinticHermiteSpline;
 import com.team254.lib.spline.Spline;
 import com.team254.lib.spline.SplineGenerator;
+import com.team254.lib.trajectory.timing.TimedState;
 import com.team254.lib.util.Util;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class TrajectoryUtil {
+    public static <S extends IPose2d<S>> Trajectory<S> mirror(final Trajectory<S> trajectory) {
+        List<S> waypoints = new ArrayList<>(trajectory.length());
+        for (int i = 0; i < trajectory.length(); ++i) {
+            waypoints.add(trajectory.getState(i).mirror());
+        }
+        return new Trajectory<>(waypoints);
+    }
+
+    public static <S extends IPose2d<S>> Trajectory<TimedState<S>> mirrorTimed(final Trajectory<TimedState<S>> trajectory) {
+        List<TimedState<S>> waypoints = new ArrayList<>(trajectory.length());
+        for (int i = 0; i < trajectory.length(); ++i) {
+            TimedState<S> timed_state = trajectory.getState(i);
+            waypoints.add(new TimedState<S>(timed_state.state().mirror(), timed_state.t(), timed_state.velocity(), timed_state.acceleration()));
+        }
+        return new Trajectory<>(waypoints);
+    }
+
+    public static <S extends IPose2d<S>> Trajectory<S> transform(final Trajectory<S> trajectory, Pose2d transform) {
+        List<S> waypoints = new ArrayList<>(trajectory.length());
+        for (int i = 0; i < trajectory.length(); ++i) {
+            waypoints.add(trajectory.getState(i).transformBy(transform));
+        }
+        return new Trajectory<>(waypoints);
+    }
+
     /**
      * Creates a Trajectory by sampling a TrajectoryView at a regular interval.
      *
