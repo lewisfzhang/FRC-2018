@@ -1,6 +1,5 @@
 package com.team254.frc2018;
 
-import com.sun.tools.javadoc.Start;
 import com.team254.frc2018.auto.AutoModeBase;
 import com.team254.frc2018.auto.creators.AutoModeCreator;
 import com.team254.frc2018.auto.creators.SimpleSwitchModeCreator;
