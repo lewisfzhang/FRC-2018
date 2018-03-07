@@ -27,7 +27,7 @@ public class EasyScaleOnlyMode extends AutoModeBase {
         // Score first cube
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().rightStartToRightScale, true, true),
+                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().startToNearScale.get(startedLeft), true),
                         new SeriesAction(
                                 Arrays.asList(
                                         new WaitUntilInsideRegion(new Translation2d(130.0, -20.0), new Translation2d
@@ -45,7 +45,7 @@ public class EasyScaleOnlyMode extends AutoModeBase {
         // Get second cube
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().rightScaleToRightFence, false, false),
+                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().nearScaleToNearFence.get(startedLeft)),
                         new SetIntaking(true, false)
                 )
         ));
@@ -54,7 +54,7 @@ public class EasyScaleOnlyMode extends AutoModeBase {
         // Score second cube
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().rightFenceToRightScale, true, false),
+                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().nearFenceToNearScale.get(startedLeft)),
                         new SeriesAction(
                                 Arrays.asList(
                                         new SetSuperstructurePosition(SuperstructureConstants.kScaleLowHeight - 8.0,
@@ -70,7 +70,7 @@ public class EasyScaleOnlyMode extends AutoModeBase {
         // Get third cube
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().rightScaleToRightFence2, false, false),
+                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().nearScaleToNearFence2.get(startedLeft)),
                         new SetIntaking(true, false)
                 )
         ));
@@ -79,7 +79,7 @@ public class EasyScaleOnlyMode extends AutoModeBase {
         // Score third cube
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().rightFence2ToRightScale, true, false),
+                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().nearFence2ToNearScale.get(startedLeft)),
                         new SeriesAction(
                                 Arrays.asList(
                                         new WaitAction(0.2), //drive backwards for a little with the intake down so it gets the chance to pick up cubes jammed against the wall

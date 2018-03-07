@@ -21,16 +21,15 @@ public class DriveTrajectory implements Action {
     private static final RobotState mRobotState = RobotState.getInstance();
 
     private final TrajectoryIterator<TimedState<Pose2dWithCurvature>> mTrajectory;
-    private final boolean mIsReversed;
     private final boolean mResetPose;
 
-    public DriveTrajectory(Trajectory<TimedState<Pose2dWithCurvature>> trajectory, boolean isReversed) {
-        this(trajectory, isReversed, false);
+    public DriveTrajectory(Trajectory<TimedState<Pose2dWithCurvature>> trajectory) {
+        this(trajectory, false);
     }
 
-    public DriveTrajectory(Trajectory<TimedState<Pose2dWithCurvature>> trajectory, boolean isReversed, boolean resetPose) {
+
+    public DriveTrajectory(Trajectory<TimedState<Pose2dWithCurvature>> trajectory, boolean resetPose) {
         mTrajectory = new TrajectoryIterator<>(new TimedView<>(trajectory));
-        mIsReversed = isReversed;
         mResetPose = resetPose;
     }
 
@@ -52,14 +51,9 @@ public class DriveTrajectory implements Action {
     @Override
     public void start() {
         if(mResetPose) {
-            if (mIsReversed) {
-                mRobotState.reset(Timer.getFPGATimestamp(), mTrajectory.getState().state().getPose()
-                        .transformBy(new Pose2d(Translation2d.identity(), Rotation2d.fromDegrees(180.0))));
-            } else {
-                mRobotState.reset(Timer.getFPGATimestamp(), mTrajectory.getState().state().getPose());
-            }
+            mRobotState.reset(Timer.getFPGATimestamp(), mTrajectory.getState().state().getPose());
         }
-        mDrive.setTrajectory(mTrajectory, mIsReversed);
+        mDrive.setTrajectory(mTrajectory);
     }
 }
 

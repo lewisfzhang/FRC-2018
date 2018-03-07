@@ -14,6 +14,7 @@ import com.team254.lib.trajectory.timing.TimingConstraint;
 import com.team254.lib.trajectory.timing.TimingUtil;
 import com.team254.lib.util.CSVWritable;
 import com.team254.lib.util.Units;
+import com.team254.lib.util.Util;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -63,23 +64,48 @@ public class DriveMotionPlanner implements CSVWritable {
         );
     }
 
-    public void setTrajectory(final TrajectoryIterator<TimedState<Pose2dWithCurvature>> trajectory, boolean
-            isReversed) {
+    public void setTrajectory(final TrajectoryIterator<TimedState<Pose2dWithCurvature>> trajectory) {
         mCurrentTrajectory = trajectory;
         mSetpoint = trajectory.getState();
-        mIsReversed = isReversed;
+        for (int i = 0; i < trajectory.trajectory().length(); ++i) {
+            if (trajectory.trajectory().getState(i).velocity() > Util.kEpsilon) {
+                mIsReversed = false;
+                break;
+            } else if (trajectory.trajectory().getState(i).velocity() < -Util.kEpsilon) {
+                mIsReversed = true;
+                break;
+            }
+        }
     }
 
     public Trajectory<TimedState<Pose2dWithCurvature>> generateTrajectory(
+            boolean reversed,
             final List<Pose2d> waypoints,
             final List<TimingConstraint<Pose2dWithCurvature>> constraints,
             double max_vel,  // inches/s
             double max_accel,  // inches/s^2
             double max_voltage) {
+        List<Pose2d> waypoints_maybe_flipped = waypoints;
+        final Pose2d flip = Pose2d.fromRotation(new Rotation2d(-1, 0, false));
+        // TODO re-architect the spline generator to support reverse.
+        if (reversed) {
+            waypoints_maybe_flipped = new ArrayList<>(waypoints.size());
+            for (int i = 0; i < waypoints.size(); ++i) {
+                waypoints_maybe_flipped.add(waypoints.get(i).transformBy(flip));
+            }
+        }
+
         // Create a trajectory from splines.
-        final Trajectory<Pose2dWithCurvature> trajectory = TrajectoryUtil.trajectoryFromSplineWaypoints(waypoints,
-                kMaxDx,
-                kMaxDy, kMaxDTheta);
+        Trajectory<Pose2dWithCurvature> trajectory = TrajectoryUtil.trajectoryFromSplineWaypoints(
+                waypoints_maybe_flipped, kMaxDx, kMaxDy, kMaxDTheta);
+
+        if (reversed) {
+            List<Pose2dWithCurvature> flipped = new ArrayList<>(trajectory.length());
+            for (int i = 0; i < trajectory.length(); ++i) {
+                flipped.add(new Pose2dWithCurvature(trajectory.getState(i).getPose().transformBy(flip), -trajectory.getState(i).getCurvature()));
+            }
+            trajectory = new Trajectory<>(flipped);
+        }
         // Create the constraint that the robot must be able to traverse the trajectory without ever applying more
         // than the specified voltage.
         final DifferentialDriveDynamicsConstraint<Pose2dWithCurvature> drive_constraints = new
@@ -90,7 +116,7 @@ public class DriveMotionPlanner implements CSVWritable {
             all_constraints.addAll(constraints);
         }
         // Generate the timed trajectory.
-        Trajectory<TimedState<Pose2dWithCurvature>> timed_trajectory = TimingUtil.timeParameterizeTrajectory(new
+        Trajectory<TimedState<Pose2dWithCurvature>> timed_trajectory = TimingUtil.timeParameterizeTrajectory(reversed, new
                 DistanceView<>(trajectory), kMaxDx, all_constraints, 0.0, 0.0, max_vel, max_accel);
         return timed_trajectory;
     }
@@ -169,9 +195,9 @@ public class DriveMotionPlanner implements CSVWritable {
             actual_lookahead_distance = mSetpoint.state().distance(lookahead_state.state());
         }
         if (actual_lookahead_distance < Constants.kPathMinLookaheadDistance) {
-            lookahead_state = new TimedState<Pose2dWithCurvature>(new Pose2dWithCurvature(lookahead_state.state()
-                    .getPose().transformBy(Pose2d.fromTranslation(new Translation2d(Constants
-                            .kPathMinLookaheadDistance - actual_lookahead_distance, 0.0))), 0.0), lookahead_state.t()
+            lookahead_state = new TimedState<>(new Pose2dWithCurvature(lookahead_state.state()
+                    .getPose().transformBy(Pose2d.fromTranslation(new Translation2d(
+                            (mIsReversed ? -1.0 : 1.0) *(Constants.kPathMinLookaheadDistance - actual_lookahead_distance), 0.0))), 0.0), lookahead_state.t()
                     , lookahead_state.velocity(), lookahead_state.acceleration());
         }
 
@@ -208,9 +234,6 @@ public class DriveMotionPlanner implements CSVWritable {
         if (mCurrentTrajectory.getProgress() == 0.0 && !Double.isFinite(mLastTime)) {
             mLastTime = timestamp;
         }
-        if (mIsReversed) {
-            current_state = current_state.transformBy(Pose2d.fromRotation(Rotation2d.fromDegrees(180.)));
-        }
 
         final double t = timestamp - mLastTime;
         mLastTime = timestamp;
@@ -219,7 +242,8 @@ public class DriveMotionPlanner implements CSVWritable {
 
         TimedState<Pose2dWithCurvature> prev_pt = mCurrentTrajectory.trajectory().getState(sample_point.index_floor());
         TimedState<Pose2dWithCurvature> next_pt = mCurrentTrajectory.trajectory().getState(sample_point.index_ceil());
-        double dcurvature_ds = Units.meters_to_inches(next_pt.state().getCurvature() - prev_pt.state().getCurvature()) / Units.inches_to_meters(prev_pt.state().distance(next_pt.state()));
+        double dcurvature_ds = (mIsReversed ? -1.0 : 1.0) * Units.meters_to_inches(next_pt.state().getCurvature() - prev_pt.state().getCurvature()) /
+                Units.inches_to_meters(prev_pt.state().distance(next_pt.state()));
         if (Double.isNaN(dcurvature_ds)) {
             dcurvature_ds = 0.0;
         }
@@ -251,10 +275,6 @@ public class DriveMotionPlanner implements CSVWritable {
                 mOutput = updatePurePursuit(dynamics, current_state);
             } else if (mFollowerType == FollowerType.PID) {
                 mOutput = updatePID(dynamics, current_state);
-            }
-            // TODO don't reverse this way in case left/right parameters aren't symmetric.
-            if (mIsReversed) {
-                mOutput.flip();
             }
         } else {
             // TODO Possibly switch to a pose stabilizing controller?
