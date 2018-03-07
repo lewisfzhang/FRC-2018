@@ -52,7 +52,12 @@ public class DriveTrajectory implements Action {
     @Override
     public void start() {
         if(mResetPose) {
-            mRobotState.reset(Timer.getFPGATimestamp(), mTrajectory.getState().state().getPose());
+            if (mIsReversed) {
+                mRobotState.reset(Timer.getFPGATimestamp(), mTrajectory.getState().state().getPose()
+                        .transformBy(new Pose2d(Translation2d.identity(), Rotation2d.fromDegrees(180.0))));
+            } else {
+                mRobotState.reset(Timer.getFPGATimestamp(), mTrajectory.getState().state().getPose());
+            }
         }
         mDrive.setTrajectory(mTrajectory, mIsReversed);
     }

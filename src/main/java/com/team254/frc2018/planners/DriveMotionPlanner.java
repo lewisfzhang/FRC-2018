@@ -208,6 +208,9 @@ public class DriveMotionPlanner implements CSVWritable {
         if (mCurrentTrajectory.getProgress() == 0.0 && !Double.isFinite(mLastTime)) {
             mLastTime = timestamp;
         }
+        if (mIsReversed) {
+            current_state = current_state.transformBy(Pose2d.fromRotation(Rotation2d.fromDegrees(180.)));
+        }
 
         final double t = timestamp - mLastTime;
         mLastTime = timestamp;

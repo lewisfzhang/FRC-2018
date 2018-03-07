@@ -27,7 +27,7 @@ public class HardScaleOnlyMode extends AutoModeBase {
         // Score first cube
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().startToFarScale.get(startedLeft), true, true),
+                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().rightStartToLeftScale, true, true),
                         new SeriesAction(
                                 Arrays.asList(
                                         new WaitUntilInsideRegion(new Translation2d(130.0, 170.0), new Translation2d
@@ -45,7 +45,7 @@ public class HardScaleOnlyMode extends AutoModeBase {
         // Get second cube
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().farScaleToFarFence.get(startedLeft), false, false),
+                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().leftScaleToLeftFence, false, false),
                         new SetIntaking(true, false)
                 )
         ));
@@ -54,7 +54,7 @@ public class HardScaleOnlyMode extends AutoModeBase {
         // Score second cube
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().farFenceToFarScale.get(startedLeft), true, false),
+                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().leftFenceToLeftScale, true, false),
                         new SeriesAction(
                                 Arrays.asList(
                                         new SetSuperstructurePosition(SuperstructureConstants.kScaleLowHeight - 8.0,
@@ -70,7 +70,7 @@ public class HardScaleOnlyMode extends AutoModeBase {
         // Get third cube
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().farScaleToFarFence2.get(startedLeft), false, false),
+                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().leftScaleToLeftFence2, false, false),
                         new SetIntaking(true, false)
                 )
         ));
@@ -79,7 +79,7 @@ public class HardScaleOnlyMode extends AutoModeBase {
         // Score third cube
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().farFence2ToFarScale.get(startedLeft), true, false),
+                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().leftFence2ToLeftScale, true, false),
                         new SeriesAction(
                                 Arrays.asList(
                                         new SetSuperstructurePosition(SuperstructureConstants.kScaleLowHeight - 8.0,
