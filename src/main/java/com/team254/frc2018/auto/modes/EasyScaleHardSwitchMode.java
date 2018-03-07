@@ -12,9 +12,10 @@ import java.util.Arrays;
 public class EasyScaleHardSwitchMode extends AutoModeBase {
 
     private static final TrajectoryGenerator mTrajectoryGenerator = TrajectoryGenerator.getInstance();
+    private boolean startOnLeft;
 
     public EasyScaleHardSwitchMode(boolean robotStartedOnLeft) {
-
+        startOnLeft = robotStartedOnLeft;
     }
 
     @Override
@@ -23,7 +24,7 @@ public class EasyScaleHardSwitchMode extends AutoModeBase {
 
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().rightStartToRightScale, true, true),
+                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().startToNearScale.get(startOnLeft), true),
                         new SeriesAction(
                                 Arrays.asList(
                                         new WaitUntilInsideRegion(new Translation2d(130.0, -20.0), new Translation2d
@@ -42,7 +43,7 @@ public class EasyScaleHardSwitchMode extends AutoModeBase {
                 Arrays.asList(
                         new SeriesAction(
                                 Arrays.asList(
-                                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().rightScaleToRightFence, false, false),
+                                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().nearScaleToNearFence.get(startOnLeft)),
                                         new WaitAction(0.2) //give intake more time to pick up cube
                                 )
                         ),
@@ -52,7 +53,7 @@ public class EasyScaleHardSwitchMode extends AutoModeBase {
 
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().rightFenceToLeftSwitch, true, false),
+                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().nearFenceToFarSwitch.get(startOnLeft)),
                         new SeriesAction(
                                 Arrays.asList(
                                         new SetSuperstructurePosition(SuperstructureConstants.kSwitchHeight,

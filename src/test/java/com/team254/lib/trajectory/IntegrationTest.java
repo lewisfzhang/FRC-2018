@@ -81,7 +81,7 @@ public class IntegrationTest {
                 DifferentialDriveDynamicsConstraint<>(drive, 10.0);
 
         // Generate the timed trajectory.
-        Trajectory<TimedState<Pose2dWithCurvature>> timed_trajectory = TimingUtil.timeParameterizeTrajectory(new
+        Trajectory<TimedState<Pose2dWithCurvature>> timed_trajectory = TimingUtil.timeParameterizeTrajectory(false, new
                         DistanceView<>(trajectory), 2.0, Arrays.asList(drive_constraints),
                 0.0, 0.0, 12.0 * 14.0, 12.0 * 10.0);
 
