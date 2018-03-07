@@ -82,6 +82,7 @@ public class EasyScaleOnlyMode extends AutoModeBase {
                         new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().rightFence2ToRightScale, true, false),
                         new SeriesAction(
                                 Arrays.asList(
+                                        new WaitAction(0.2), //drive backwards for a little with the intake down so it gets the chance to pick up cubes jammed against the wall
                                         new SetSuperstructurePosition(SuperstructureConstants.kScaleLowHeight - 8.0,
                                                 SuperstructureConstants.kScoreBackwardsAngle, true),
                                         new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d

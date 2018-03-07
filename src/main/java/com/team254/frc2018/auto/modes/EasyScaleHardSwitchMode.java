@@ -40,7 +40,12 @@ public class EasyScaleHardSwitchMode extends AutoModeBase {
 
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().rightScaleToRightFence, false, false),
+                        new SeriesAction(
+                                Arrays.asList(
+                                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().rightScaleToRightFence, false, false),
+                                        new WaitAction(0.2) //give intake more time to pick up cube
+                                )
+                        ),
                         new SetIntaking(true, false)
                 )
         ));

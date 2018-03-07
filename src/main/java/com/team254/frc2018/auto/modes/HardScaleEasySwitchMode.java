@@ -42,7 +42,12 @@ public class HardScaleEasySwitchMode extends AutoModeBase {
 
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().leftScaleToLeftFence, false, true),
+                        new SeriesAction(
+                                Arrays.asList(
+                                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().leftScaleToLeftFence, false, false),
+                                        new WaitAction(0.2)
+                                )
+                        ),
                         new SeriesAction(
                                 Arrays.asList(
                                         new SetIntaking(true, false)
