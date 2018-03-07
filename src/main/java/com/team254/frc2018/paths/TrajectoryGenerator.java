@@ -60,32 +60,32 @@ public class TrajectoryGenerator {
     // +x is towards the center of the field.
     // +y is to the left.
     // STARTING ON RIGHT (mirrored about +x axis for LEFT)
-    public static final Pose2d kRightStartPose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0.0));
-    public static final Pose2d kNearScaleEmptyPose = new Pose2d(new Translation2d(-250.0, -22.0), Rotation2d
-            .fromDegrees(10.0));
-    public static final Pose2d kNearScaleFullPose = new Pose2d(new Translation2d(-250.0, -22.0), Rotation2d.fromDegrees
-            (15.0));
+    public static final Pose2d kRightStartPose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(180.0));
+    public static final Pose2d kNearScaleEmptyPose = new Pose2d(new Translation2d(250.0, 22.0), Rotation2d
+            .fromDegrees(10.0+180.0));
+    public static final Pose2d kNearScaleFullPose = new Pose2d(new Translation2d(250.0, 22.0), Rotation2d.fromDegrees
+            (15.0+180.0));
 
-    public static final Pose2d kFarScaleEmptyPose = new Pose2d(new Translation2d(-250.0, -205.0), Rotation2d
-            .fromDegrees(-10.0));
-    public static final Pose2d kFarScaleFullPose = new Pose2d(new Translation2d(-250.0, -205.0), Rotation2d.fromDegrees
-            (-15.0));
+    public static final Pose2d kFarScaleEmptyPose = new Pose2d(new Translation2d(250.0, 205.0), Rotation2d
+            .fromDegrees(-10.0+180.0));
+    public static final Pose2d kFarScaleFullPose = new Pose2d(new Translation2d(250.0, 205.0), Rotation2d.fromDegrees
+            (-15.0+180.0));
 
-    public static final Pose2d kNearFence1Pose = new Pose2d(new Translation2d(-208.0, -32.0), Rotation2d.fromDegrees
-            (-45.0));
-    public static final Pose2d kNearFence2Pose = new Pose2d(new Translation2d(-202.0, -32.0 - 28.0), Rotation2d
-            .fromDegrees(-45.0));
+    public static final Pose2d kNearFence1Pose = new Pose2d(new Translation2d(208.0, 32.0), Rotation2d.fromDegrees
+            (-45.0+180.0));
+    public static final Pose2d kNearFence2Pose = new Pose2d(new Translation2d(202.0, 32.0 + 28.0), Rotation2d
+            .fromDegrees(-45.0+180.0));
 
-    public static final Pose2d kFarFence1Pose = new Pose2d(new Translation2d(-208.0, -195.0), Rotation2d.fromDegrees
-            (45.0));
-    public static final Pose2d kFarFence2Pose = new Pose2d(new Translation2d(-202.0, -195.0 + 28.0), Rotation2d
-            .fromDegrees(45.0));
+    public static final Pose2d kFarFence1Pose = new Pose2d(new Translation2d(208.0, 195.0), Rotation2d.fromDegrees
+            (45.0+180.0));
+    public static final Pose2d kFarFence2Pose = new Pose2d(new Translation2d(202.0, 195.0 - 28.0), Rotation2d
+            .fromDegrees(45.0+180.0));
 
     // STARTING IN CENTER
-    public static final Pose2d kCenterStartPose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0.0));
-    public static final Pose2d kLeftSwitchPose = new Pose2d(new Translation2d(-100, -60.0), Rotation2d.fromDegrees(0.0));
-    public static final Pose2d kRightSwitchPose = new Pose2d(new Translation2d(-100, 46.0), Rotation2d.fromDegrees
-            (-40.0));
+    public static final Pose2d kCenterStartPose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(180.0));
+    public static final Pose2d kLeftSwitchPose = new Pose2d(new Translation2d(100, 60.0), Rotation2d.fromDegrees(0.0+180.0));
+    public static final Pose2d kRightSwitchPose = new Pose2d(new Translation2d(100, -46.0), Rotation2d.fromDegrees
+            (-40.0+180.0));
 
     public class TrajectorySet {
         public class MirroredTrajectory {
