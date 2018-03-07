@@ -11,6 +11,7 @@ import com.team254.lib.trajectory.timing.CentripetalAccelerationConstraint;
 import com.team254.lib.trajectory.timing.TimedState;
 import com.team254.lib.trajectory.timing.TimingConstraint;
 
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -45,12 +46,13 @@ public class TrajectoryGenerator {
     }
 
     public Trajectory<TimedState<Pose2dWithCurvature>> generateTrajectory(
+            boolean reversed,
             final List<Pose2d> waypoints,
             final List<TimingConstraint<Pose2dWithCurvature>> constraints,
             double max_vel,  // inches/s
             double max_accel,  // inches/s^2
             double max_voltage) {
-        return mMotionPlanner.generateTrajectory(waypoints, constraints, max_vel, max_accel, max_voltage);
+        return mMotionPlanner.generateTrajectory(reversed, waypoints, constraints, max_vel, max_accel, max_voltage);
     }
 
     // CRITICAL POSES
@@ -139,7 +141,7 @@ public class TrajectoryGenerator {
             waypoints.add(kRightStartPose.transformBy(Pose2d.fromTranslation(new Translation2d(120.0, 0.0))));
             waypoints.add(kNearScaleEmptyPose);
 
-            return generateTrajectory(waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxAccel)),
+            return generateTrajectory(true, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxAccel)),
                     kMaxVelocity, kMaxAccel, kMaxVoltage);
         }
 
@@ -149,7 +151,7 @@ public class TrajectoryGenerator {
             waypoints.add(kNearFence1Pose.transformBy(Pose2d.fromTranslation(new Translation2d(-12.0, 0.0))));
             waypoints.add(kNearFence1Pose);
 
-            return generateTrajectory(waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxAccel / 2.0)
+            return generateTrajectory(false, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxAccel / 2.0)
             ), kMaxVelocity / 2.0, kMaxAccel / 2.0, kMaxVoltage);
         }
 
@@ -159,7 +161,7 @@ public class TrajectoryGenerator {
             waypoints.add(kNearFence2Pose.transformBy(Pose2d.fromTranslation(new Translation2d(-12.0, 0.0))));
             waypoints.add(kNearFence2Pose);
 
-            return generateTrajectory(waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxAccel / 2.0)
+            return generateTrajectory(false, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxAccel / 2.0)
             ), kMaxVelocity / 2.0, kMaxAccel / 2.0, kMaxVoltage);
         }
 
@@ -169,7 +171,7 @@ public class TrajectoryGenerator {
             waypoints.add(kRightStartPose);
             waypoints.add(new Pose2d(new Translation2d(120.0, 36.0), Rotation2d.fromDegrees(90.0)));
 
-            return generateTrajectory(waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxAccel)),
+            return generateTrajectory(true, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxAccel)),
                     kMaxVelocity, kMaxAccel, kMaxVoltage);
         }
 
@@ -182,7 +184,7 @@ public class TrajectoryGenerator {
                     (Pose2d.fromTranslation(new Translation2d(-12.0, 0.0))));
             waypoints.add(new Pose2d(new Translation2d(208.0, 190.0), Rotation2d.fromDegrees(225.0)));
 
-            return generateTrajectory(waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxAccel)), 45,
+            return generateTrajectory(false, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxAccel)), 45,
                     45, kMaxVoltage);
         }
 
@@ -199,7 +201,7 @@ public class TrajectoryGenerator {
             // .fromDegrees(-10.0))));
             waypoints.add(kFarScaleEmptyPose);
 
-            return generateTrajectory(waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxAccel)),
+            return generateTrajectory(true, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxAccel)),
                     kMaxVelocity, kMaxAccel, kMaxVoltage);
         }
 
@@ -209,7 +211,7 @@ public class TrajectoryGenerator {
             waypoints.add(kFarFence1Pose.transformBy(Pose2d.fromTranslation(new Translation2d(-12.0, 0.0))));
             waypoints.add(kFarFence1Pose);
 
-            return generateTrajectory(waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxAccel / 2)),
+            return generateTrajectory(false, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxAccel / 2)),
                     kMaxAccel / 2, kMaxAccel / 2, kMaxVoltage);
         }
 
@@ -219,7 +221,7 @@ public class TrajectoryGenerator {
             waypoints.add(kFarFence2Pose.transformBy(Pose2d.fromTranslation(new Translation2d(-12.0, 0.0))));
             waypoints.add(kFarFence2Pose);
 
-            return generateTrajectory(waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxAccel / 2.0)
+            return generateTrajectory(false, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxAccel / 2.0)
             ), kMaxVelocity / 2.0, kMaxAccel / 2.0, kMaxVoltage);
         }
 
@@ -228,7 +230,7 @@ public class TrajectoryGenerator {
             waypoints.add(kFarFence1Pose);
             waypoints.add(kFarScaleFullPose);
 
-            return generateTrajectory(waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxAccel / 2)),
+            return generateTrajectory(true, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxAccel / 2)),
                     kMaxAccel / 2, kMaxAccel / 2, kMaxVoltage);
         }
 
@@ -237,7 +239,7 @@ public class TrajectoryGenerator {
             waypoints.add(kFarFence2Pose);
             waypoints.add(kFarScaleFullPose);
 
-            return generateTrajectory(waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxAccel / 2.0)
+            return generateTrajectory(true, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxAccel / 2.0)
             ), kMaxVelocity / 2.0, kMaxAccel / 2.0, kMaxVoltage);
         }
 
@@ -247,7 +249,7 @@ public class TrajectoryGenerator {
             waypoints.add(kCenterStartPose);
             waypoints.add(kLeftSwitchPose);
 
-            return generateTrajectory(waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxAccel)),
+            return generateTrajectory(true, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxAccel)),
                     kMaxVelocity, kMaxAccel, kMaxVoltage);
         }
 
@@ -256,7 +258,7 @@ public class TrajectoryGenerator {
             waypoints.add(kCenterStartPose);
             waypoints.add(kRightSwitchPose);
 
-            return generateTrajectory(waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxAccel)),
+            return generateTrajectory(true, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxAccel)),
                     kMaxVelocity, kMaxAccel, kMaxVoltage);
         }
 
@@ -265,7 +267,7 @@ public class TrajectoryGenerator {
             waypoints.add(kNearFence1Pose);
             waypoints.add(kNearScaleFullPose);
 
-            return generateTrajectory(waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxAccel / 2)),
+            return generateTrajectory(true, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxAccel / 2)),
                     kMaxVelocity / 2, kMaxAccel / 2, kMaxVoltage);
         }
 
@@ -274,7 +276,7 @@ public class TrajectoryGenerator {
             waypoints.add(kNearFence2Pose);
             waypoints.add(kNearScaleFullPose);
 
-            return generateTrajectory(waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxAccel / 2)),
+            return generateTrajectory(true, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxAccel / 2)),
                     kMaxVelocity / 2, kMaxAccel / 2, kMaxVoltage);
         }
 

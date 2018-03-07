@@ -29,6 +29,7 @@ public class HardScaleEasySwitchMode extends AutoModeBase {
         runAction(new ParallelAction(
                 Arrays.asList(
 <<<<<<< HEAD
+<<<<<<< HEAD
                         new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().rightStartToLeftScale, true, true),
                         new SeriesAction(
                                 Arrays.asList(
@@ -43,6 +44,9 @@ public class HardScaleEasySwitchMode extends AutoModeBase {
                         )
 =======
                         new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().startToFarScale.get(mLeft), true, true),
+=======
+                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().startToFarScale.get(mLeft), true),
+>>>>>>> Add mirroring and fix how reversing is done
                         new SetSuperstructurePosition(SuperstructureConstants.kSwitchHeight, SuperstructureConstants.kScoreSwitchBackwardsAngle, true)
 >>>>>>> Add mirroring of left/right trajectories
                 )

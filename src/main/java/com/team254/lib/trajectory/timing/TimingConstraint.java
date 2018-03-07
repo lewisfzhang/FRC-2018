@@ -11,6 +11,8 @@ public interface TimingConstraint<S extends State<S>> {
         protected final double min_acceleration_;
         protected final double max_acceleration_;
 
+        public static MinMaxAcceleration kNoLimits = new MinMaxAcceleration();
+
         public MinMaxAcceleration() {
             // No limits.
             min_acceleration_ = Double.NEGATIVE_INFINITY;
