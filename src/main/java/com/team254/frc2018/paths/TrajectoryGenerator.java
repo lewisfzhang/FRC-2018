@@ -61,30 +61,30 @@ public class TrajectoryGenerator {
     // +y is to the left.
     // STARTING ON RIGHT (mirrored about +x axis for LEFT)
     public static final Pose2d kRightStartPose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0.0));
-    public static final Pose2d kNearScaleEmptyPose = new Pose2d(new Translation2d(250.0, 22.0), Rotation2d
+    public static final Pose2d kNearScaleEmptyPose = new Pose2d(new Translation2d(-250.0, -22.0), Rotation2d
             .fromDegrees(10.0));
-    public static final Pose2d kNearScaleFullPose = new Pose2d(new Translation2d(250.0, 22.0), Rotation2d.fromDegrees
+    public static final Pose2d kNearScaleFullPose = new Pose2d(new Translation2d(-250.0, -22.0), Rotation2d.fromDegrees
             (15.0));
 
-    public static final Pose2d kFarScaleEmptyPose = new Pose2d(new Translation2d(250.0, 205.0), Rotation2d
+    public static final Pose2d kFarScaleEmptyPose = new Pose2d(new Translation2d(-250.0, -205.0), Rotation2d
             .fromDegrees(-10.0));
-    public static final Pose2d kFarScaleFullPose = new Pose2d(new Translation2d(250.0, 205.0), Rotation2d.fromDegrees
+    public static final Pose2d kFarScaleFullPose = new Pose2d(new Translation2d(-250.0, -205.0), Rotation2d.fromDegrees
             (-15.0));
 
-    public static final Pose2d kNearFence1Pose = new Pose2d(new Translation2d(208.0, 32.0), Rotation2d.fromDegrees
+    public static final Pose2d kNearFence1Pose = new Pose2d(new Translation2d(-208.0, -32.0), Rotation2d.fromDegrees
             (-45.0));
-    public static final Pose2d kNearFence2Pose = new Pose2d(new Translation2d(202.0, 32.0 + 28.0), Rotation2d
+    public static final Pose2d kNearFence2Pose = new Pose2d(new Translation2d(-202.0, -32.0 - 28.0), Rotation2d
             .fromDegrees(-45.0));
 
-    public static final Pose2d kFarFence1Pose = new Pose2d(new Translation2d(208.0, 195.0), Rotation2d.fromDegrees
+    public static final Pose2d kFarFence1Pose = new Pose2d(new Translation2d(-208.0, -195.0), Rotation2d.fromDegrees
             (45.0));
-    public static final Pose2d kFarFence2Pose = new Pose2d(new Translation2d(202.0, 195.0 - 28.0), Rotation2d
+    public static final Pose2d kFarFence2Pose = new Pose2d(new Translation2d(-202.0, -195.0 + 28.0), Rotation2d
             .fromDegrees(45.0));
 
     // STARTING IN CENTER
     public static final Pose2d kCenterStartPose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0.0));
-    public static final Pose2d kLeftSwitchPose = new Pose2d(new Translation2d(100, 60.0), Rotation2d.fromDegrees(0.0));
-    public static final Pose2d kRightSwitchPose = new Pose2d(new Translation2d(100, -46.0), Rotation2d.fromDegrees
+    public static final Pose2d kLeftSwitchPose = new Pose2d(new Translation2d(-100, -60.0), Rotation2d.fromDegrees(0.0));
+    public static final Pose2d kRightSwitchPose = new Pose2d(new Translation2d(-100, 46.0), Rotation2d.fromDegrees
             (-40.0));
 
     public class TrajectorySet {
@@ -138,7 +138,7 @@ public class TrajectoryGenerator {
         private Trajectory<TimedState<Pose2dWithCurvature>> getRightStartToRightScale() {
             List<Pose2d> waypoints = new ArrayList<>();
             waypoints.add(kRightStartPose);
-            waypoints.add(kRightStartPose.transformBy(Pose2d.fromTranslation(new Translation2d(120.0, 0.0))));
+            waypoints.add(kRightStartPose.transformBy(Pose2d.fromTranslation(new Translation2d(-120.0, 0.0))));
             waypoints.add(kNearScaleEmptyPose);
 
             return generateTrajectory(true, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxAccel)),
@@ -169,7 +169,7 @@ public class TrajectoryGenerator {
         private Trajectory<TimedState<Pose2dWithCurvature>> getRightStartToRightSwitch() {
             List<Pose2d> waypoints = new ArrayList<>();
             waypoints.add(kRightStartPose);
-            waypoints.add(new Pose2d(new Translation2d(120.0, 36.0), Rotation2d.fromDegrees(90.0)));
+            waypoints.add(new Pose2d(new Translation2d(-120.0, -36.0), Rotation2d.fromDegrees(90.0)));
 
             return generateTrajectory(true, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxAccel)),
                     kMaxVelocity, kMaxAccel, kMaxVoltage);
@@ -179,10 +179,10 @@ public class TrajectoryGenerator {
         private Trajectory<TimedState<Pose2dWithCurvature>> getRightScaleToLeftFence() {
             List<Pose2d> waypoints = new ArrayList<>();
             // TODO these are wrong!
-            waypoints.add(new Pose2d(new Translation2d(250.0, 200.0), Rotation2d.fromDegrees(170.0)));
-            waypoints.add(new Pose2d(new Translation2d(208.0, 190.0), Rotation2d.fromDegrees(225.0)).transformBy
+            waypoints.add(new Pose2d(new Translation2d(-250.0, -200.0), Rotation2d.fromDegrees(170.0)));
+            waypoints.add(new Pose2d(new Translation2d(-208.0, -190.0), Rotation2d.fromDegrees(225.0)).transformBy
                     (Pose2d.fromTranslation(new Translation2d(-12.0, 0.0))));
-            waypoints.add(new Pose2d(new Translation2d(208.0, 190.0), Rotation2d.fromDegrees(225.0)));
+            waypoints.add(new Pose2d(new Translation2d(-208.0, -190.0), Rotation2d.fromDegrees(225.0)));
 
             return generateTrajectory(false, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxAccel)), 45,
                     45, kMaxVoltage);
@@ -191,11 +191,11 @@ public class TrajectoryGenerator {
         private Trajectory<TimedState<Pose2dWithCurvature>> getRightStartToLeftScale() {
             List<Pose2d> waypoints = new ArrayList<>();
             waypoints.add(kRightStartPose);
-            waypoints.add(kRightStartPose.transformBy(new Pose2d(new Translation2d(160.0, 0.0), Rotation2d
+            waypoints.add(kRightStartPose.transformBy(new Pose2d(new Translation2d(-160.0, 0.0), Rotation2d
                     .fromDegrees(0.0))));
-            waypoints.add(kRightStartPose.transformBy(new Pose2d(new Translation2d(225.0, 60.0), Rotation2d
+            waypoints.add(kRightStartPose.transformBy(new Pose2d(new Translation2d(-225.0, -60.0), Rotation2d
                     .fromDegrees(90.0))));
-            waypoints.add(kRightStartPose.transformBy(new Pose2d(new Translation2d(225.0, 180.0), Rotation2d
+            waypoints.add(kRightStartPose.transformBy(new Pose2d(new Translation2d(-225.0, -180.0), Rotation2d
                     .fromDegrees(90.0))));
             // waypoints.add(kRightStartPose.transformBy(new Pose2d(new Translation2d(250.0, 205.0), Rotation2d
             // .fromDegrees(-10.0))));
