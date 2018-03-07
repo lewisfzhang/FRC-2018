@@ -80,7 +80,7 @@ public class Robot extends IterativeRobot {
             mLED.registerEnabledLoops(mEnabledLooper);
             mLED.registerEnabledLoops(mDisabledLooper);
 
-            mTrajectoryGenerator.generateTrajectories(Pose2d.identity());
+            mTrajectoryGenerator.generateTrajectories();
 
             mRunIntakeReleased.update(true);
             mShootReleased.update(true);
@@ -104,6 +104,7 @@ public class Robot extends IterativeRobot {
             mInfrastructure.setIsDuringAuto(true);
             Drive.getInstance().zeroSensors();
             RobotState.getInstance().reset(Timer.getFPGATimestamp(), Pose2d.identity());
+
             mAutoModeSelector.reset();
 
             mDrive.stopLogging();
