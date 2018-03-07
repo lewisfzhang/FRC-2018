@@ -109,7 +109,8 @@ public class TrajectoryUtil {
     }
 
     public static Trajectory<Pose2dWithCurvature> trajectoryFromSplineWaypoints(final List<Pose2d> waypoints, double
-            maxDx, double maxDy, double maxDTheta) {
+            maxDx,
+                                                                                double maxDy, double maxDTheta) {
         List<QuinticHermiteSpline> splines = new ArrayList<>(waypoints.size() - 1);
         for (int i = 1; i < waypoints.size(); ++i) {
             splines.add(new QuinticHermiteSpline(waypoints.get(i - 1), waypoints.get(i)));

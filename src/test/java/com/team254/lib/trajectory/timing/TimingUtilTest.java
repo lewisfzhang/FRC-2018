@@ -33,7 +33,7 @@ public class TimingUtilTest {
                                                                                   double max_vel,
                                                                                   double max_acc) {
         Trajectory<TimedState<S>> timed_traj = TimingUtil
-                .timeParameterizeTrajectory(false, dist_view, step_size, constraints, start_vel, end_vel, max_vel, max_acc);
+                .timeParameterizeTrajectory(dist_view, step_size, constraints, start_vel, end_vel, max_vel, max_acc);
         checkTrajectory(timed_traj, constraints, start_vel, end_vel, max_vel, max_acc);
         return timed_traj;
     }

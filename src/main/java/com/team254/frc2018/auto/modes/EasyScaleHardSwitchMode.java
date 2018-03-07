@@ -26,7 +26,7 @@ public class EasyScaleHardSwitchMode extends AutoModeBase {
 
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().startToNearScale.get(startedLeft), true),
+                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().startToNearScale.get(startedLeft), true, true),
                         new SeriesAction(
                                 Arrays.asList(
                                         new WaitUntilInsideRegion(new Translation2d(130.0, -20.0), new Translation2d
@@ -49,7 +49,7 @@ public class EasyScaleHardSwitchMode extends AutoModeBase {
 =======
                         new SeriesAction(
                                 Arrays.asList(
-                                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().nearScaleToFarFence.get(startedLeft), false)
+                                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().nearScaleToFarFence.get(startedLeft), false, true)
                                 )
                         ),
                         new SeriesAction(

@@ -20,11 +20,11 @@ public class DriveMotionPlannerTest {
         DriveMotionPlanner motion_planner = new DriveMotionPlanner();
         motion_planner.setFollowerType(DriveMotionPlanner.FollowerType.PURE_PURSUIT);
         motion_planner.setTrajectory(new TrajectoryIterator<>(new TimedView<>(motion_planner.generateTrajectory
-                (false, Arrays.asList(new Pose2d(new Translation2d(0.0, 0.0), Rotation2d.identity()),
+                (Arrays.asList(new Pose2d(new Translation2d(0.0, 0.0), Rotation2d.identity()),
                         new Pose2d(new Translation2d(120.0, -36.0), Rotation2d.identity()),
                         new Pose2d(new Translation2d(240.0, -36.0), Rotation2d.identity())),
                         Arrays.asList(new CentripetalAccelerationConstraint(120.0)),
-                        120.0, 120.0, 10.0))));
+                        120.0, 120.0, 10.0))), false);
 
         double t = 0.0;
         Pose2d pose = motion_planner.setpoint().state().getPose();
@@ -43,11 +43,11 @@ public class DriveMotionPlannerTest {
         DriveMotionPlanner motion_planner = new DriveMotionPlanner();
         motion_planner.setFollowerType(DriveMotionPlanner.FollowerType.FEEDFORWARD_ONLY);
         motion_planner.setTrajectory(new TrajectoryIterator<>(new TimedView<>(motion_planner.generateTrajectory
-                (false, Arrays.asList(new Pose2d(new Translation2d(0.0, 0.0), Rotation2d.identity()),
+                (Arrays.asList(new Pose2d(new Translation2d(0.0, 0.0), Rotation2d.identity()),
                         new Pose2d(new Translation2d(120.0, 36.0), Rotation2d.identity()),
-                        new Pose2d(new Translation2d(240.0, 0.0), Rotation2d.identity())),
+                        new Pose2d(new Translation2d(240.0, 36.0), Rotation2d.identity())),
                         null,
-                        120.0, 120.0, 10.0))));
+                        120.0, 120.0, 10.0))), false);
         double t = 0.0;
         Pose2d pose = motion_planner.setpoint().state().getPose();
         while (!motion_planner.isDone()) {
@@ -63,48 +63,19 @@ public class DriveMotionPlannerTest {
     public void testReverseSwerveLeft() {
         DriveMotionPlanner motion_planner = new DriveMotionPlanner();
         motion_planner.setTrajectory(new TrajectoryIterator<>(new TimedView<>(motion_planner.generateTrajectory
-                (true, Arrays.asList(new Pose2d(new Translation2d(240.0, 0.0), Rotation2d.identity()),
+                (Arrays.asList(new Pose2d(new Translation2d(0.0, 0.0), Rotation2d.identity()),
                         new Pose2d(new Translation2d(120.0, 36.0), Rotation2d.identity()),
-                        new Pose2d(new Translation2d(0.0, 0.0), Rotation2d.identity())),
+                        new Pose2d(new Translation2d(240.0, 36.0), Rotation2d.identity())),
                         null,
-                        120.0, 120.0, 10.0))));
+                        120.0, 120.0, 10.0))), true);
         double t = 0.0;
-        Pose2d pose = motion_planner.setpoint().state().getPose();
+        Pose2d pose = motion_planner.setpoint().state().getPose().transformBy(new Pose2d(Translation2d.identity(),
+                Rotation2d.fromDegrees(180.0)));
         while (!motion_planner.isDone()) {
             motion_planner.update(t, pose);
-            pose = motion_planner.mSetpoint.state().getPose();
+            pose = motion_planner.mSetpoint.state().getPose().transformBy(new Pose2d(new Translation2d(0.0, -1.0),
+                    Rotation2d.fromDegrees(178.0)));
             System.out.println(t + "," + motion_planner.toCSV());
-            t += 0.01;
-        }
-    }
-
-    @Test
-    public void testForwardReverseSame() {
-        DriveMotionPlanner fwd_motion_planner = new DriveMotionPlanner();
-        fwd_motion_planner.setFollowerType(DriveMotionPlanner.FollowerType.FEEDFORWARD_ONLY);
-        fwd_motion_planner.setTrajectory(new TrajectoryIterator<>(new TimedView<>(fwd_motion_planner.generateTrajectory
-                (false, Arrays.asList(new Pose2d(new Translation2d(0.0, 0.0), Rotation2d.identity()),
-                        new Pose2d(new Translation2d(120.0, 36.0), Rotation2d.identity()),
-                        new Pose2d(new Translation2d(240.0, 0.0), Rotation2d.identity())),
-                        null,
-                        120.0, 120.0, 10.0))));
-        DriveMotionPlanner rev_motion_planner = new DriveMotionPlanner();
-        rev_motion_planner.setTrajectory(new TrajectoryIterator<>(new TimedView<>(rev_motion_planner.generateTrajectory
-                (true, Arrays.asList(new Pose2d(new Translation2d(240.0, 0.0), Rotation2d.identity()),
-                        new Pose2d(new Translation2d(120.0, 36.0), Rotation2d.identity()),
-                        new Pose2d(new Translation2d(0.0, 0.0), Rotation2d.identity())),
-                        null,
-                        120.0, 120.0, 10.0))));
-
-        double t = 0.0;
-        Pose2d fwd_pose = fwd_motion_planner.setpoint().state().getPose();
-        Pose2d rev_pose = rev_motion_planner.setpoint().state().getPose();
-        while (!fwd_motion_planner.isDone() || !rev_motion_planner.isDone()) {
-            fwd_motion_planner.update(t, fwd_pose);
-            fwd_pose = fwd_motion_planner.mSetpoint.state().getPose();
-            rev_motion_planner.update(t, rev_pose);
-            rev_pose = rev_motion_planner.mSetpoint.state().getPose();
-            System.out.println(fwd_motion_planner.toCSV() + "," + rev_motion_planner.toCSV());
             t += 0.01;
         }
     }
@@ -113,11 +84,11 @@ public class DriveMotionPlannerTest {
     public void testFollowerReachesGoal() {
         final DriveMotionPlanner motion_planner = new DriveMotionPlanner();
         motion_planner.setTrajectory(new TrajectoryIterator<>(new TimedView<>(motion_planner.generateTrajectory
-                (false, Arrays.asList(new Pose2d(new Translation2d(0.0, 0.0), Rotation2d.identity()),
+                (Arrays.asList(new Pose2d(new Translation2d(0.0, 0.0), Rotation2d.identity()),
                         new Pose2d(new Translation2d(120.0, -36.0), Rotation2d.identity()),
                         new Pose2d(new Translation2d(240.0, -36.0), Rotation2d.identity())),
                         null,
-                        120.0, 120.0, 10.0))));
+                        120.0, 120.0, 10.0))), false);
         final double dt = 0.01;
         double t = 0.0;
         Pose2d pose = motion_planner.setpoint().state().getPose();
@@ -137,10 +108,10 @@ public class DriveMotionPlannerTest {
     public void testVoltages() {
         final DriveMotionPlanner motion_planner = new DriveMotionPlanner();
         motion_planner.setTrajectory(new TrajectoryIterator<>(new TimedView<>(motion_planner.generateTrajectory
-                (false, Arrays.asList(Pose2d.identity(), Pose2d.fromTranslation(new Translation2d(48.0, 0.0)),
+                (Arrays.asList(Pose2d.identity(), Pose2d.fromTranslation(new Translation2d(48.0, 0.0)),
                         new Pose2d(new Translation2d(96.0, 48.0), Rotation2d.fromDegrees(90.0)),
                         new Pose2d(new Translation2d(96.0, 96.0), Rotation2d.fromDegrees(90.0))), null,
-                48.0, 48.0, 10.0))));
+                48.0, 48.0, 10.0))), true);
         double t = 0.0;
         Pose2d pose = motion_planner.setpoint().state().getPose().transformBy(new Pose2d(Translation2d.identity(),
                 Rotation2d.fromDegrees(180.0)));

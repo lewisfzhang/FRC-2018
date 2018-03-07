@@ -221,10 +221,10 @@ public class Drive extends Subsystem {
         mPeriodicIO.right_feedforward = feedforward.getRight();
     }
 
-    public synchronized void setTrajectory(TrajectoryIterator<TimedState<Pose2dWithCurvature>> trajectory) {
+    public synchronized void setTrajectory(TrajectoryIterator<TimedState<Pose2dWithCurvature>> trajectory, boolean isReversed) {
         if(mMotionPlanner != null) {
             mOverrideTrajectory = false;
-            mMotionPlanner.setTrajectory(trajectory);
+            mMotionPlanner.setTrajectory(trajectory, isReversed);
             mDriveControlState = DriveControlState.PATH_FOLLOWING;
         }
     }
