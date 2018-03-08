@@ -2,8 +2,8 @@ package com.team254.frc2018.auto.creators;
 
 import com.team254.frc2018.AutoFieldState;
 import com.team254.frc2018.auto.AutoModeBase;
-import com.team254.frc2018.auto.modes.EasyScaleOnlyMode;
-import com.team254.frc2018.auto.modes.HardScaleOnlyMode;
+import com.team254.frc2018.auto.modes.NearScaleOnlyMode;
+import com.team254.frc2018.auto.modes.FarScaleOnlyMode;
 
 public class ScaleOnlyAutoModeCreator implements AutoModeCreator {
 
@@ -13,8 +13,8 @@ public class ScaleOnlyAutoModeCreator implements AutoModeCreator {
 
     public ScaleOnlyAutoModeCreator(boolean robotStartedOnLeft) {
         mRobotStartedOnLeft = robotStartedOnLeft;
-        hardScaleMode = new HardScaleOnlyMode(robotStartedOnLeft);
-        easyScaleMode = new EasyScaleOnlyMode(robotStartedOnLeft);
+        hardScaleMode = new FarScaleOnlyMode(robotStartedOnLeft);
+        easyScaleMode = new NearScaleOnlyMode(robotStartedOnLeft);
     }
 
     @Override

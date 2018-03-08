@@ -9,34 +9,34 @@ import com.team254.lib.geometry.Translation2d;
 
 import java.util.Arrays;
 
-public class EasyScaleOnlyMode extends AutoModeBase {
+public class FarScaleOnlyMode extends AutoModeBase {
 
     private static final TrajectoryGenerator mTrajectoryGenerator = TrajectoryGenerator.getInstance();
     private final boolean startedLeft;
 
-    public EasyScaleOnlyMode(boolean robotStartedOnLeft) {
+    public FarScaleOnlyMode(boolean robotStartedOnLeft) {
         startedLeft = robotStartedOnLeft;
     }
 
     @Override
     protected void routine() throws AutoModeEndedException {
-        System.out.println("Running easy scale only");
+        System.out.println("Running far scale only");
 
         runAction(new SetIntaking(false, false));
 
         // Score first cube
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().startToNearScale.get(startedLeft), true),
+                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().sideStartToFarScale.get(startedLeft), true),
                         new SeriesAction(
                                 Arrays.asList(
-                                        new WaitUntilInsideRegion(new Translation2d(130.0, -20.0), new Translation2d
-                                                (260, 50)),
+                                        new WaitUntilInsideRegion(new Translation2d(130.0, 170.0), new Translation2d
+                                                (260, 200.0)),
                                         new SetSuperstructurePosition(SuperstructureConstants.kScaleLowHeight,
                                                 SuperstructureConstants.kScoreBackwardsAngle, true),
-                                        new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d
+                                        new WaitUntilInsideRegion(new Translation2d(245.0, 170.0), new Translation2d
                                                 (260, 1000)),
-                                        new ShootCube(0.66)
+                                        new ShootCube(0.75)
                                 )
                         )
                 )
@@ -45,7 +45,7 @@ public class EasyScaleOnlyMode extends AutoModeBase {
         // Get second cube
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().nearScaleToNearFence.get(startedLeft)),
+                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().farScaleToFarFence.get(startedLeft)),
                         new SetIntaking(true, false)
                 )
         ));
@@ -54,7 +54,7 @@ public class EasyScaleOnlyMode extends AutoModeBase {
         // Score second cube
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().nearFenceToNearScale.get(startedLeft)),
+                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().farFenceToFarScale.get(startedLeft)),
                         new SeriesAction(
                                 Arrays.asList(
                                         new SetSuperstructurePosition(SuperstructureConstants.kScaleLowHeight - 8.0,
@@ -70,7 +70,7 @@ public class EasyScaleOnlyMode extends AutoModeBase {
         // Get third cube
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().nearScaleToNearFence2.get(startedLeft)),
+                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().farScaleToFarFence2.get(startedLeft)),
                         new SetIntaking(true, false)
                 )
         ));
@@ -79,10 +79,9 @@ public class EasyScaleOnlyMode extends AutoModeBase {
         // Score third cube
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().nearFence2ToNearScale.get(startedLeft)),
+                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().farFence2ToFarScale.get(startedLeft)),
                         new SeriesAction(
                                 Arrays.asList(
-                                        new WaitAction(0.2), //drive backwards for a little with the intake down so it gets the chance to pick up cubes jammed against the wall
                                         new SetSuperstructurePosition(SuperstructureConstants.kScaleLowHeight - 8.0,
                                                 SuperstructureConstants.kScoreBackwardsAngle, true),
                                         new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d
