@@ -107,7 +107,6 @@ public class TrajectoryGenerator {
         public final MirroredTrajectory sideStartToFarSwitch;
         public final MirroredTrajectory nearScaleToNearFence;
         public final MirroredTrajectory nearScaleToNearFence2;
-        public final MirroredTrajectory nearScaleToFarFence;
         public final MirroredTrajectory nearFenceToNearScale;
         public final MirroredTrajectory nearFence2ToNearScale;
         public final MirroredTrajectory farScaleToFarFence;
@@ -123,7 +122,6 @@ public class TrajectoryGenerator {
             sideStartToNearScale = new MirroredTrajectory(getSideStartToNearScale());
             nearScaleToNearFence = new MirroredTrajectory(getNearScaleToNearFence());
             nearScaleToNearFence2 = new MirroredTrajectory(getNearScaleToNearFence2());
-            nearScaleToFarFence = new MirroredTrajectory(getNearScaleToFarFence());
             sideStartToFarScale = new MirroredTrajectory(getSideStartToFarScale());
             nearFenceToNearScale = new MirroredTrajectory(getNearFenceToNearScale());
             nearFence2ToNearScale = new MirroredTrajectory(getNearFence2ToNearScale());
@@ -168,7 +166,6 @@ public class TrajectoryGenerator {
             ), kMaxVelocity / 2.0, kMaxAccel / 2.0, kMaxVoltage);
         }
 
-        // TODO tune
         private Trajectory<TimedState<Pose2dWithCurvature>> getSideStartToNearSwitch() {
             List<Pose2d> waypoints = new ArrayList<>();
             waypoints.add(kSideStartPose);
@@ -176,18 +173,6 @@ public class TrajectoryGenerator {
 
             return generateTrajectory(true, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxAccel)),
                     kMaxVelocity, kMaxAccel, kMaxVoltage);
-        }
-
-        // TODO tune
-        private Trajectory<TimedState<Pose2dWithCurvature>> getNearScaleToFarFence() {
-            List<Pose2d> waypoints = new ArrayList<>();
-            // TODO these are wrong!
-            waypoints.add(new Pose2d(new Translation2d(-250.0, -200.0), Rotation2d.fromDegrees(170.0)));
-            waypoints.add(new Pose2d(new Translation2d(-208.0, -190.0), Rotation2d.fromDegrees(225.0)).transformBy
-                    (Pose2d.fromTranslation(new Translation2d(-12.0, 0.0))));
-            waypoints.add(new Pose2d(new Translation2d(-208.0, -190.0), Rotation2d.fromDegrees(225.0)));
-            return generateTrajectory(false, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxAccel)), 45,
-                    45, kMaxVoltage);
         }
 
         private Trajectory<TimedState<Pose2dWithCurvature>> getSideStartToFarScale() {
