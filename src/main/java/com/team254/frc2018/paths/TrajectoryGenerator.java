@@ -70,14 +70,14 @@ public class TrajectoryGenerator {
     public static final Pose2d kFarScaleFullPose = new Pose2d(new Translation2d(250.0, 205.0), Rotation2d.fromDegrees
             (-15.0+180.0));
 
-    public static final Pose2d kNearFence1Pose = new Pose2d(new Translation2d(208.0, 32.0), Rotation2d.fromDegrees
+    public static final Pose2d kNearFence1Pose = new Pose2d(new Translation2d(205.0, 32.0), Rotation2d.fromDegrees
             (-45.0+180.0));
-    public static final Pose2d kNearFence2Pose = new Pose2d(new Translation2d(202.0, 32.0 + 28.0), Rotation2d
+    public static final Pose2d kNearFence2Pose = new Pose2d(new Translation2d(199.0, 32.0 + 28.0), Rotation2d
             .fromDegrees(-45.0+180.0));
 
-    public static final Pose2d kFarFence1Pose = new Pose2d(new Translation2d(208.0, 195.0), Rotation2d.fromDegrees
+    public static final Pose2d kFarFence1Pose = new Pose2d(new Translation2d(205.0, 195.0), Rotation2d.fromDegrees
             (45.0+180.0));
-    public static final Pose2d kFarFence2Pose = new Pose2d(new Translation2d(202.0, 195.0 - 28.0), Rotation2d
+    public static final Pose2d kFarFence2Pose = new Pose2d(new Translation2d(199.0, 195.0 - 28.0), Rotation2d
             .fromDegrees(45.0+180.0));
 
     // STARTING IN CENTER
@@ -107,13 +107,7 @@ public class TrajectoryGenerator {
         public final MirroredTrajectory sideStartToFarSwitch;
         public final MirroredTrajectory nearScaleToNearFence;
         public final MirroredTrajectory nearScaleToNearFence2;
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
         public final MirroredTrajectory nearScaleToFarFence;
->>>>>>> Rename left/right to near/far for all mirrored modes
-=======
->>>>>>> Fix hanging in trajectory generation, add test cases
         public final MirroredTrajectory nearFenceToNearScale;
         public final MirroredTrajectory nearFence2ToNearScale;
         public final MirroredTrajectory farScaleToFarFence;
@@ -129,13 +123,7 @@ public class TrajectoryGenerator {
             sideStartToNearScale = new MirroredTrajectory(getSideStartToNearScale());
             nearScaleToNearFence = new MirroredTrajectory(getNearScaleToNearFence());
             nearScaleToNearFence2 = new MirroredTrajectory(getNearScaleToNearFence2());
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
             nearScaleToFarFence = new MirroredTrajectory(getNearScaleToFarFence());
->>>>>>> Rename left/right to near/far for all mirrored modes
-=======
->>>>>>> Fix hanging in trajectory generation, add test cases
             sideStartToFarScale = new MirroredTrajectory(getSideStartToFarScale());
             nearFenceToNearScale = new MirroredTrajectory(getNearFenceToNearScale());
             nearFence2ToNearScale = new MirroredTrajectory(getNearFence2ToNearScale());
@@ -180,13 +168,6 @@ public class TrajectoryGenerator {
             ), kMaxVelocity / 2.0, kMaxAccel / 2.0, kMaxVoltage);
         }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-        // TODO tune
->>>>>>> Rename left/right to near/far for all mirrored modes
-=======
->>>>>>> Fix hanging in trajectory generation, add test cases
         private Trajectory<TimedState<Pose2dWithCurvature>> getSideStartToNearSwitch() {
             List<Pose2d> waypoints = new ArrayList<>();
             waypoints.add(kSideStartPose);
@@ -196,9 +177,6 @@ public class TrajectoryGenerator {
                     kMaxVelocity, kMaxAccel, kMaxVoltage);
         }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
         // TODO tune
         private Trajectory<TimedState<Pose2dWithCurvature>> getNearScaleToFarFence() {
             List<Pose2d> waypoints = new ArrayList<>();
@@ -210,10 +188,7 @@ public class TrajectoryGenerator {
             return generateTrajectory(false, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxAccel)), 45,
                     45, kMaxVoltage);
         }
-
->>>>>>> Rename left/right to near/far for all mirrored modes
-=======
->>>>>>> Fix hanging in trajectory generation, add test cases
+        
         private Trajectory<TimedState<Pose2dWithCurvature>> getSideStartToFarScale() {
             List<Pose2d> waypoints = new ArrayList<>();
             waypoints.add(kSideStartPose);
