@@ -7,7 +7,7 @@ import com.team254.lib.util.TimeDelayedBoolean;
 
 public class IntakeStateMachine {
     public final static double kActuationTime = 0.0;
-    public final static double kStrongShootSetpoint = 1.0;
+    public final static double kStrongShootSetpoint = 0.65;
     public final static double kWeakShootSetpoint = .65;
     public final static double kIntakeCubeSetpoint = -1.0;
     public final static double kHoldSetpoint = 0.0;
