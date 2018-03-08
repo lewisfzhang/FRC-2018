@@ -116,10 +116,17 @@ public class IntakeStateMachine {
     }
     private synchronized void getKeepingCubeCommandedState(IntakeState currentState, IntakeState commandedState, double timestamp) {
         commandedState.setPower(kIntakeCubeSetpoint);
-        final boolean clamp = (currentState.seesCube() && mWantedJawState != IntakeState.JawState.OPEN) || mustStayClosed(currentState);
+        boolean clamp = (currentState.seesCube() && mWantedJawState != IntakeState.JawState.OPEN) || mustStayClosed(currentState);
         final boolean open = !clamp && mWantedJawState == IntakeState.JawState.OPEN;
 
-        boolean seenCube = mLastSeenCube.update(currentState.seesCube(), kLostCubeTime);
+        boolean currentlySeeCube = currentState.seesCube();
+        if (!currentlySeeCube && !Double.isNaN(mLastSeenCubeTime) &&
+                (timestamp - mLastSeenCubeTime < kLostCubeTime)) {
+            currentlySeeCube = true;
+            clamp = (mWantedJawState != IntakeState.JawState.OPEN) || mustStayClosed(currentState);
+        }
+
+        boolean seenCube = mLastSeenCube.update(currentlySeeCube, kLostCubeTime);
 
         if (seenCube) {
             commandedState.setPower(kHoldSetpoint);
