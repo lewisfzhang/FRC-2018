@@ -204,7 +204,7 @@ public class TimingUtil {
             double dt = 0.0;
             if (i > 0) {
                 timed_states.get(i - 1).set_acceleration(reverse ? -accel : accel);
-                if (Math.abs(accel) > Util.kEpsilon) {
+                if (Math.abs(accel) > kEpsilon) {
                     dt = (constrained_state.max_velocity - v) / accel;
                 } else if (Math.abs(v) > kEpsilon) {
                     dt = ds / v;

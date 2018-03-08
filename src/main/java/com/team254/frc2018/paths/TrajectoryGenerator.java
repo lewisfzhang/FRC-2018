@@ -108,9 +108,12 @@ public class TrajectoryGenerator {
         public final MirroredTrajectory nearScaleToNearFence;
         public final MirroredTrajectory nearScaleToNearFence2;
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
         public final MirroredTrajectory nearScaleToFarFence;
 >>>>>>> Rename left/right to near/far for all mirrored modes
+=======
+>>>>>>> Fix hanging in trajectory generation, add test cases
         public final MirroredTrajectory nearFenceToNearScale;
         public final MirroredTrajectory nearFence2ToNearScale;
         public final MirroredTrajectory farScaleToFarFence;
@@ -127,9 +130,12 @@ public class TrajectoryGenerator {
             nearScaleToNearFence = new MirroredTrajectory(getNearScaleToNearFence());
             nearScaleToNearFence2 = new MirroredTrajectory(getNearScaleToNearFence2());
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
             nearScaleToFarFence = new MirroredTrajectory(getNearScaleToFarFence());
 >>>>>>> Rename left/right to near/far for all mirrored modes
+=======
+>>>>>>> Fix hanging in trajectory generation, add test cases
             sideStartToFarScale = new MirroredTrajectory(getSideStartToFarScale());
             nearFenceToNearScale = new MirroredTrajectory(getNearFenceToNearScale());
             nearFence2ToNearScale = new MirroredTrajectory(getNearFence2ToNearScale());
@@ -175,9 +181,12 @@ public class TrajectoryGenerator {
         }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
         // TODO tune
 >>>>>>> Rename left/right to near/far for all mirrored modes
+=======
+>>>>>>> Fix hanging in trajectory generation, add test cases
         private Trajectory<TimedState<Pose2dWithCurvature>> getSideStartToNearSwitch() {
             List<Pose2d> waypoints = new ArrayList<>();
             waypoints.add(kSideStartPose);
@@ -187,6 +196,7 @@ public class TrajectoryGenerator {
                     kMaxVelocity, kMaxAccel, kMaxVoltage);
         }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
         // TODO tune
@@ -202,6 +212,8 @@ public class TrajectoryGenerator {
         }
 
 >>>>>>> Rename left/right to near/far for all mirrored modes
+=======
+>>>>>>> Fix hanging in trajectory generation, add test cases
         private Trajectory<TimedState<Pose2dWithCurvature>> getSideStartToFarScale() {
             List<Pose2d> waypoints = new ArrayList<>();
             waypoints.add(kSideStartPose);
