@@ -4,19 +4,17 @@ import com.team254.frc2018.auto.AutoModeBase;
 import com.team254.frc2018.auto.AutoModeEndedException;
 import com.team254.frc2018.auto.actions.*;
 import com.team254.frc2018.paths.TrajectoryGenerator;
-import com.team254.frc2018.statemachines.IntakeStateMachine;
 import com.team254.frc2018.states.SuperstructureConstants;
-import com.team254.frc2018.subsystems.Intake;
 import com.team254.lib.geometry.Translation2d;
 
 import java.util.Arrays;
 
-public class HardScaleHardSwitchMode extends AutoModeBase {
+public class FarScaleFarSwitchMode extends AutoModeBase {
 
     private static final TrajectoryGenerator mTrajectoryGenerator = TrajectoryGenerator.getInstance();
 
     private final boolean startedLeft;
-    public HardScaleHardSwitchMode(boolean robotStartedOnLeft) {
+    public FarScaleFarSwitchMode(boolean robotStartedOnLeft) {
         startedLeft = robotStartedOnLeft;
     }
 
@@ -27,7 +25,7 @@ public class HardScaleHardSwitchMode extends AutoModeBase {
         // Score first cube
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().startToFarScale.get(startedLeft), true),
+                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().sideStartToFarScale.get(startedLeft), true),
                         new SeriesAction(
                                 Arrays.asList(
                                         new WaitUntilInsideRegion(new Translation2d(130.0, 170.0), new Translation2d

@@ -7,19 +7,19 @@ import com.team254.frc2018.auto.modes.*;
 public class SwitchAndScaleAutoModeCreator implements AutoModeCreator {
 
     private boolean mRobotStartedOnLeft;
-    private EasyScaleEasySwitchMode mEasyScaleEasySwitch;
-    private EasyScaleHardSwitchMode mEasyScaleHardSwitch;
-    private HardScaleEasySwitchMode mHardScaleEasySwitch;
-    private HardScaleHardSwitchMode mHardScaleHardSwitch;
+    private NearScaleNearSwitchMode mEasyScaleEasySwitch;
+    private NearScaleFarSwitchMode mEasyScaleHardSwitch;
+    private FarScaleNearSwitchMode mHardScaleEasySwitch;
+    private FarScaleFarSwitchMode mHardScaleHardSwitch;
 
     public SwitchAndScaleAutoModeCreator(boolean robotStartedOnLeft) {
         // Make all 4 possible auto modes, and they make their paths
         System.out.println("SwitchAndScaleAutoModeCreator, make some paths?" + robotStartedOnLeft);
         mRobotStartedOnLeft = robotStartedOnLeft;
-        mEasyScaleEasySwitch = new EasyScaleEasySwitchMode(robotStartedOnLeft);
-        mEasyScaleHardSwitch = new EasyScaleHardSwitchMode(robotStartedOnLeft);
-        mHardScaleEasySwitch = new HardScaleEasySwitchMode(robotStartedOnLeft);
-        mHardScaleHardSwitch = new HardScaleHardSwitchMode(robotStartedOnLeft);
+        mEasyScaleEasySwitch = new NearScaleNearSwitchMode(robotStartedOnLeft);
+        mEasyScaleHardSwitch = new NearScaleFarSwitchMode(robotStartedOnLeft);
+        mHardScaleEasySwitch = new FarScaleNearSwitchMode(robotStartedOnLeft);
+        mHardScaleHardSwitch = new FarScaleFarSwitchMode(robotStartedOnLeft);
     }
 
     @Override
