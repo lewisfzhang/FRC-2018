@@ -153,6 +153,7 @@ public class Constants {
     public static final int kFollowerWheelSolenoid = 11;
     public static final int kElevatorShifterSolenoidId = 8;
     public static final int kUnlockHookSolenoid = 6;
+    public static final int kJazzHandsSolenoid = 5;
 
     // Control Board
     public static final boolean kUseGamepadForDriving = false;
