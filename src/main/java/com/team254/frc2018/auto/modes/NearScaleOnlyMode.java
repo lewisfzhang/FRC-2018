@@ -31,11 +31,11 @@ public class NearScaleOnlyMode extends AutoModeBase {
                         new SeriesAction(
                                 Arrays.asList(
                                         new WaitUntilInsideRegion(new Translation2d(130.0, -20.0), new Translation2d
-                                                (260, 50)),
+                                                (260, 50), startedLeft),
                                         new SetSuperstructurePosition(SuperstructureConstants.kScaleLowHeight,
                                                 SuperstructureConstants.kScoreBackwardsAngle, true),
                                         new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d
-                                                (260, 1000)),
+                                                (260, 1000), startedLeft),
                                         new ShootCube(0.66)
                                 )
                         )
@@ -60,7 +60,7 @@ public class NearScaleOnlyMode extends AutoModeBase {
                                         new SetSuperstructurePosition(SuperstructureConstants.kScaleLowHeight - 8.0,
                                                 SuperstructureConstants.kScoreBackwardsAngle, true),
                                         new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d
-                                                (260, 1000)),
+                                                (260, 1000), startedLeft),
                                         new ShootCube(0.66)
                                 )
                         )
@@ -86,7 +86,7 @@ public class NearScaleOnlyMode extends AutoModeBase {
                                         new SetSuperstructurePosition(SuperstructureConstants.kScaleLowHeight - 8.0,
                                                 SuperstructureConstants.kScoreBackwardsAngle, true),
                                         new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d
-                                                (260, 1000)),
+                                                (260, 1000), startedLeft),
                                         new ShootCube(0.66)
                                 )
                         )

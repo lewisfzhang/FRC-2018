@@ -31,11 +31,11 @@ public class FarScaleNearSwitchMode extends AutoModeBase {
                         new SeriesAction(
                                 Arrays.asList(
                                         new WaitUntilInsideRegion(new Translation2d(130.0, 170.0), new Translation2d
-                                                (260, 200.0)),
+                                                (260, 200.0), mLeft),
                                         new SetSuperstructurePosition(SuperstructureConstants.kScaleLowHeight,
                                                 SuperstructureConstants.kScoreBackwardsAngle, true),
                                         new WaitUntilInsideRegion(new Translation2d(245.0, 170.0), new Translation2d
-                                                (260, 1000)),
+                                                (260, 1000), mLeft),
                                         new ShootCube(0.75)
                                 )
                         )
