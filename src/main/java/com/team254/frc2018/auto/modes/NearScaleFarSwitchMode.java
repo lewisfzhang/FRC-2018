@@ -28,11 +28,11 @@ public class NearScaleFarSwitchMode extends AutoModeBase {
                         new SeriesAction(
                                 Arrays.asList(
                                         new WaitUntilInsideRegion(new Translation2d(130.0, -20.0), new Translation2d
-                                                (260, 50)),
+                                                (260, 50), startOnLeft),
                                         new SetSuperstructurePosition(SuperstructureConstants.kScaleLowHeight,
                                                 SuperstructureConstants.kScoreBackwardsAngle, true),
                                         new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d
-                                                (260, 1000)),
+                                                (260, 1000), startOnLeft),
                                         new ShootCube(0.66)
                                 )
                         )

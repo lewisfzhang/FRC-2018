@@ -10,9 +10,14 @@ public class WaitUntilInsideRegion implements Action  {
     private final Translation2d mBottomLeft;
     private final Translation2d mTopRight;
 
-    public WaitUntilInsideRegion(Translation2d bottomLeft, Translation2d topRight) {
-        mBottomLeft = bottomLeft;
-        mTopRight = topRight;
+    public WaitUntilInsideRegion(Translation2d bottomLeft, Translation2d topRight, boolean isOnLeft) {
+        if(isOnLeft) {
+            mBottomLeft = new Translation2d(bottomLeft.x(), -bottomLeft.y());
+            mTopRight = new Translation2d(topRight.x(), -topRight.y());
+        } else {
+            mBottomLeft = bottomLeft;
+            mTopRight = topRight;
+        }
     }
 
     @Override
