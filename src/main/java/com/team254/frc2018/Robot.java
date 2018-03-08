@@ -271,7 +271,9 @@ public class Robot extends IterativeRobot {
                 mLED.setWantedAction(LED.WantedAction.DISPLAY_INTAKE);
 
                 // Intake/Shoot
-                boolean runIntake = mControlBoard.getRunIntake() || mControlBoard.getIntakePosition();
+                boolean runIntakePosition = mControlBoard.getIntakePosition() &&
+                        (mWrist.getAngle() > SuperstructureConstants.kMinIntakePositionAngle);
+                boolean runIntake = mControlBoard.getRunIntake() || runIntakePosition;
                 boolean shoot = mControlBoard.getShoot();
                 boolean runIntakeReleased = mRunIntakeReleased.update(!runIntake);
                 boolean shootReleased = mShootReleased.update(!shoot);
