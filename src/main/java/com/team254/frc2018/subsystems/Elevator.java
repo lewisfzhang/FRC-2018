@@ -164,6 +164,10 @@ public class Elevator extends Subsystem {
         return mInstance;
     }
 
+    public synchronized void enableSoftLimits(boolean enable) {
+        mMaster.overrideSoftLimitsEnable(enable);
+    }
+
     public synchronized void setOpenLoop(double percentage) {
         mElevatorControlState = ElevatorControlState.OPEN_LOOP;
         mPeriodicIO.demand = percentage;

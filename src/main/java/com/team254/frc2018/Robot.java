@@ -252,6 +252,7 @@ public class Robot extends IterativeRobot {
             }
 
             if (mInHangMode) {
+                mElevator.enableSoftLimits(false);
                 mLED.setWantedAction(LED.WantedAction.DISPLAY_HANG);
                 if (mControlBoard.getDeployForks()) {
                     // This is fire once only!
@@ -268,6 +269,7 @@ public class Robot extends IterativeRobot {
                 mSuperstructure.setUnlockHookSolenoid(true);
             } else {
                 mSuperstructure.setUnlockHookSolenoid(false);
+                mElevator.enableSoftLimits(true);
                 mLED.setWantedAction(LED.WantedAction.DISPLAY_INTAKE);
 
                 // Intake/Shoot
