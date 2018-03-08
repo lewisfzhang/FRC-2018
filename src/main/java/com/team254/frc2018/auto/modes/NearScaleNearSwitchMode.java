@@ -9,12 +9,12 @@ import com.team254.lib.geometry.Translation2d;
 
 import java.util.Arrays;
 
-public class EasyScaleEasySwitchMode extends AutoModeBase {
+public class NearScaleNearSwitchMode extends AutoModeBase {
 
     private static final TrajectoryGenerator mTrajectoryGenerator = TrajectoryGenerator.getInstance();
     private final boolean startedLeft;
 
-    public EasyScaleEasySwitchMode(boolean robotStartedOnLeft) {
+    public NearScaleNearSwitchMode(boolean robotStartedOnLeft) {
         startedLeft = robotStartedOnLeft;
     }
 
@@ -26,7 +26,7 @@ public class EasyScaleEasySwitchMode extends AutoModeBase {
 
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().startToNearScale.get(startedLeft), true),
+                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().sideStartToNearScale.get(startedLeft), true),
                         new SeriesAction(
                                 Arrays.asList(
                                         new WaitUntilInsideRegion(new Translation2d(130.0, -20.0), new Translation2d

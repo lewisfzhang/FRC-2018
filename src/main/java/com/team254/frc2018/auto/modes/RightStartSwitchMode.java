@@ -26,9 +26,9 @@ public class RightStartSwitchMode extends AutoModeBase {
     protected void routine() throws AutoModeEndedException {
         Trajectory<TimedState<Pose2dWithCurvature>> trajectory;
         if(mGoLeft == mRobotOnLeft) {
-            trajectory = TrajectoryGenerator.getInstance().getTrajectorySet().startToNearSwitch.get(mRobotOnLeft);
+            trajectory = TrajectoryGenerator.getInstance().getTrajectorySet().sideStartToNearSwitch.get(mRobotOnLeft);
         } else {
-            trajectory = TrajectoryGenerator.getInstance().getTrajectorySet().startToFarSwitch.get(mRobotOnLeft);
+            trajectory = TrajectoryGenerator.getInstance().getTrajectorySet().sideStartToFarSwitch.get(mRobotOnLeft);
         }
 
         System.out.println("Running Simple switch");
