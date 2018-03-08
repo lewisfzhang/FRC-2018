@@ -127,7 +127,7 @@ public class Elevator extends Subsystem {
         mMaster.selectProfileSlot(0, 0);
 
         mMaster.overrideLimitSwitchesEnable(true);
-        mMaster.overrideSoftLimitsEnable(true);
+        mMaster.overrideSoftLimitsEnable(false);
 
         mMaster.enableVoltageCompensation(true);
 
