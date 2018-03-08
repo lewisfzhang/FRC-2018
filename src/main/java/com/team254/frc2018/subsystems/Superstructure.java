@@ -36,6 +36,8 @@ public class Superstructure extends Subsystem {
     private SuperstructureStateMachine.WantedAction mWantedAction =
             SuperstructureStateMachine.WantedAction.IDLE;
     private Solenoid mUnlockHookSolenoid =  Constants.makeSolenoidForId(Constants.kUnlockHookSolenoid);
+    private Solenoid mJazzHandsSolenoid =  Constants.makeSolenoidForId(Constants.kJazzHandsSolenoid);
+
 
     private LatchedBoolean mIntoLimitEnable = new LatchedBoolean();
     private LatchedBoolean mIntoLimitDisabled = new LatchedBoolean();
@@ -109,6 +111,7 @@ public class Superstructure extends Subsystem {
                 mStateMachine.resetManual();
                 mIntoLimitEnable.update(false);
                 mIntoLimitDisabled.update(false);
+                mJazzHandsSolenoid.set(true);
             }
 
             @Override
