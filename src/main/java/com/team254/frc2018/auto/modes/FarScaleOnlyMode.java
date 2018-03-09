@@ -36,7 +36,7 @@ public class FarScaleOnlyMode extends AutoModeBase {
                                                 SuperstructureConstants.kScoreBackwardsAngle, true),
                                         new WaitUntilInsideRegion(new Translation2d(245.0, 170.0), new Translation2d
                                                 (260, 1000), startedLeft),
-                                        new ShootCube(0.75)
+                                        new ShootCube(0.66)
                                 )
                         )
                 )
