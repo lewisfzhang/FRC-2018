@@ -282,7 +282,15 @@ public class Robot extends IterativeRobot {
                     intakeAction = true;
                 } else if (shoot) {
                     intakeAction = true;
-                    mIntake.shoot();
+
+                    if (mWrist.getAngle() > SuperstructureConstants.kWeakShootAngle) {
+                        mIntake.shoot(IntakeStateMachine.kWeakShootSetpoint);
+                    } else if (mElevator.getInchesOffGround() < SuperstructureConstants.kClearFirstStageMaxHeight) {
+                        mIntake.shoot(IntakeStateMachine.kStrongShootLowElevatorSetpoint);
+                    } else {
+                        mIntake.shoot(IntakeStateMachine.kStrongShootSetpoint);
+                    }
+
                 } else if (runIntakeReleased) {
                     if (mIntake.hasCube()) {
                         mIntake.getOrKeepCube();
