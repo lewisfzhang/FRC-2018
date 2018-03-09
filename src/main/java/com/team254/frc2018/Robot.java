@@ -14,6 +14,7 @@ import com.team254.lib.geometry.Pose2d;
 import com.team254.lib.util.CheesyDriveHelper;
 import com.team254.lib.util.CrashTracker;
 import com.team254.lib.util.LatchedBoolean;
+import com.team254.lib.util.Util;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Timer;
@@ -259,7 +260,14 @@ public class Robot extends IterativeRobot {
                     mForklift.deploy();
                 }
 
-                mSuperstructure.setHangThrottle(mControlBoard.getElevatorThrottle());
+                final double kElevatorThrottleDeadband = 0.3;
+                double elevatorThrottle = mControlBoard.getElevatorThrottle();
+                if(Math.abs(elevatorThrottle) < kElevatorThrottleDeadband) {
+                    elevatorThrottle = 0;
+                } else {
+                    elevatorThrottle = (elevatorThrottle - Math.signum(elevatorThrottle) * kElevatorThrottleDeadband) / (1.0 - kElevatorThrottleDeadband);
+                }
+                mSuperstructure.setHangThrottle(elevatorThrottle);
 
                 if (mLowShiftPressed.update(mControlBoard.getElevatorLowShift())) {
                    mSuperstructure.setElevatorLowGear();
@@ -269,6 +277,7 @@ public class Robot extends IterativeRobot {
                 mSuperstructure.setUnlockHookSolenoid(true);
             } else {
                 mSuperstructure.setUnlockHookSolenoid(false);
+                mForklift.retract();
                 mLED.setWantedAction(LED.WantedAction.DISPLAY_INTAKE);
 
                 // Intake/Shoot
