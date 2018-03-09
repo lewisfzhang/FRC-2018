@@ -297,7 +297,7 @@ public class TrajectoryGenerator {
             waypoints.add(new Pose2d(new Translation2d(230, 67.0), Rotation2d.fromDegrees(90.0)));
             waypoints.add(new Pose2d(new Translation2d(205, 47.0), Rotation2d.fromDegrees(0.0)));
 
-            return generateTrajectory(true, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxAccel / 4.0)), kMaxVelocity/2, kMaxAccel/2, kMaxVoltage);
+            return generateTrajectory(true, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxAccel / 2.0)), kMaxVelocity, kMaxAccel/2, kMaxVoltage);
         }
 
         private Trajectory<TimedState<Pose2dWithCurvature>> getNearFenceToFarSwitch() {
@@ -307,7 +307,7 @@ public class TrajectoryGenerator {
             waypoints.add(new Pose2d(new Translation2d(230, 130), Rotation2d.fromDegrees(-90)));
             waypoints.add(new Pose2d(new Translation2d(205, 170), Rotation2d.fromDegrees(0.0)));
 
-            return generateTrajectory(true, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxAccel / 4.0)), kMaxVelocity/2, kMaxAccel/2, kMaxVoltage);
+            return generateTrajectory(true, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxAccel / 2.0)), kMaxVelocity, kMaxAccel/2, kMaxVoltage);
         }
     }
 }
