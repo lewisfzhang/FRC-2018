@@ -119,6 +119,13 @@ public class Elevator extends Subsystem {
                         Constants.kElevatorRampRate, Constants.kLongCANTimeoutMs),
                 "Could not set elevator voltage ramp rate: ");
 
+        TalonSRXUtil.checkError(
+                mMaster.configOpenloopRamp(
+                        Constants.kElevatorRampRate, Constants.kLongCANTimeoutMs),
+                "Could not set elevator voltage ramp rate: ");
+
+
+
         mMaster.configSetParameter(ParamEnum.eClearPositionOnLimitF, 0, 0, 0, 0);
         mMaster.configSetParameter(ParamEnum.eClearPositionOnLimitR, 0, 0, 0, 0);
 
@@ -162,10 +169,6 @@ public class Elevator extends Subsystem {
             mInstance = new Elevator();
         }
         return mInstance;
-    }
-
-    public synchronized void enableSoftLimits(boolean enable) {
-        mMaster.overrideSoftLimitsEnable(enable);
     }
 
     public synchronized void setOpenLoop(double percentage) {
