@@ -41,7 +41,7 @@ public class SimpleSwitchMode extends AutoModeBase {
         runAction(new ParallelAction(
                 Arrays.asList(
                         (new DriveTrajectory(trajectory, true)),
-                        (new SetSuperstructurePosition(SuperstructureConstants.kSwitchHeight, SuperstructureConstants.kStowedPositionAngle, true))
+                        (new SetSuperstructurePosition(SuperstructureConstants.kSwitchHeightBackwards, SuperstructureConstants.kStowedPositionAngle, true))
                 )
         ));
 
