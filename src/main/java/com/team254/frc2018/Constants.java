@@ -85,7 +85,7 @@ public class Constants {
     public static final int kElevatorHighGearCruiseVelocity = 12500;
     public static final int kElevatorHighGearAcceleration = 33000;//33000;
     public static final double kElevatorEpsilon = 1.0;//33000;
-    public static final double kElevatorRampRate = 0.1;
+    public static final double kElevatorRampRate = 0.2;
 
     public static final double kWristKp = 1.5; //todo: tune me
     public static final double kWristKi = 0.0; //todo: tune me

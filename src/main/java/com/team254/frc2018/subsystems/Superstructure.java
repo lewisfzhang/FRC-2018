@@ -10,6 +10,7 @@ import com.team254.frc2018.states.SuperstructureCommand;
 import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.frc2018.states.SuperstructureState;
 import com.team254.lib.util.LatchedBoolean;
+import com.team254.lib.util.Util;
 import edu.wpi.first.wpilibj.Solenoid;
 
 /**
@@ -99,6 +100,12 @@ public class Superstructure extends Subsystem {
             mElevator.setHangMode(false);
         }
         mWrist.setClosedLoopAngle(commandState.wristAngle);
+        if(Util.epsilonEquals(mStateMachine.getScoringHeight(), SuperstructureConstants.kSwitchHeightBackwards, 2.5)
+                && Util.epsilonEquals(mStateMachine.getScoringAngle(), SuperstructureConstants.kScoreSwitchBackwardsAngle, 2.5)) {
+            setJazzHands(true);
+        } else {
+            setJazzHands(false);
+        }
     }
 
     @Override
@@ -111,7 +118,6 @@ public class Superstructure extends Subsystem {
                 mStateMachine.resetManual();
                 mIntoLimitEnable.update(false);
                 mIntoLimitDisabled.update(false);
-                mJazzHandsSolenoid.set(true);
             }
 
             @Override
@@ -179,5 +185,9 @@ public class Superstructure extends Subsystem {
 
     public synchronized void setUnlockHookSolenoid(boolean deployed) {
         mUnlockHookSolenoid.set(deployed);
+    }
+
+    public synchronized void setJazzHands(boolean deployed) {
+        mJazzHandsSolenoid.set(deployed);
     }
 }
