@@ -51,12 +51,16 @@ public class FarScaleFarSwitchMode extends AutoModeBase {
                 )
         ));
 
-        runAction(new WaitAction(0.5));
+        runAction(new WaitAction(0.2));
         runAction(new OpenLoopDrive(-0.3, -0.3, 0.25, false));
         runAction(new SetSuperstructurePosition(SuperstructureConstants.kSwitchHeight, SuperstructureConstants
                 .kPlacingHighAngle, true));
-        runAction(new OpenLoopDrive(0.5, 0.5, 0.5, false));
-        runAction(new WaitAction(0.25));
+        if(startedLeft) {
+            runAction(new OpenLoopDrive(0.45, 0.55, 0.5, false));
+        } else {
+            runAction(new OpenLoopDrive(0.55, 0.45, 0.5, false));
+        }
+        runAction(new WaitAction(0.2));
         runAction(new ShootCube(0.5));
 
     }
