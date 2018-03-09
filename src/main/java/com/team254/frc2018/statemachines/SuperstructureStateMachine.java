@@ -29,7 +29,7 @@ public class SuperstructureStateMachine {
     private SuperstructureMotionPlanner mPlanner = new SuperstructureMotionPlanner();
 
     private double mScoringHeight = Elevator.kHomePositionInches;
-    private double mScoringAngle = SuperstructureConstants.kStowedAngle;
+    private double mScoringAngle = SuperstructureConstants.kStowedPositionAngle;
 
     private double mOpenLoopPower = 0.0;
     private boolean mManualWantsLowGear = false;
