@@ -175,6 +175,7 @@ public class Wrist extends Subsystem {
         SmartDashboard.putBoolean("Wrist Limit Switch", mPeriodicIO.limit_switch);
         SmartDashboard.putNumber("Wrist Last Expected Trajectory", getSetpoint());
         SmartDashboard.putNumber("Wrist Current Trajectory Point", mPeriodicIO.active_trajectory_position);
+        SmartDashboard.putNumber("Wrist Actual Vel", mPeriodicIO.velocity_ticks_per_100ms);
         SmartDashboard.putNumber("Wrist Traj Vel", mPeriodicIO.active_trajectory_velocity);
         SmartDashboard.putNumber("Wrist Traj Accel", mPeriodicIO.active_trajectory_acceleration_rad_per_s2);
         SmartDashboard.putBoolean("Wrist Has Sent Trajectory", hasFinishedTrajectory());
@@ -221,6 +222,7 @@ public class Wrist extends Subsystem {
                                 mDesiredState);
                         mSystemState = mDesiredState;
                     }
+                    outputTelemetry();
 
                     switch (mSystemState) {
                         case OPEN_LOOP:
@@ -377,7 +379,8 @@ public class Wrist extends Subsystem {
                     .kWristKfMultiplierWithCube : Constants.kWristKfMultiplierWithoutCube);
             double elevatorAccelerationComponent = mElevator.getActiveTrajectoryAccelG() * Constants
                     .kWristElevatorAccelerationMultiplier;
-            mPeriodicIO.feedforward = (elevatorAccelerationComponent + 1.0) * wristGravityComponent;
+            double ka = Constants.kWristKa * mPeriodicIO.active_trajectory_acceleration_rad_per_s2;
+            mPeriodicIO.feedforward = (elevatorAccelerationComponent + 1.0) * wristGravityComponent + ka;
         } else {
             mPeriodicIO.feedforward = 0.0;
         }
