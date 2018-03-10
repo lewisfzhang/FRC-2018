@@ -170,6 +170,8 @@ public class Constants {
     public static final double kElevatorLowSensitivityThreshold = 50.0;
     public static final double kLowSensitivityFactor = 1.0 / 4.0;
 
+    public static final double kJazzHandsEpsilon = 2.5;
+
     /**
      * Make an {@link Solenoid} instance for the single-number ID of the solenoid
      * <p>

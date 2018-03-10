@@ -251,6 +251,7 @@ public class Robot extends IterativeRobot {
                 } else {
                     mInHangMode = true;
                 }
+                mSuperstructure.setHangMode(mInHangMode);
             }
 
             if (mInHangMode) {
