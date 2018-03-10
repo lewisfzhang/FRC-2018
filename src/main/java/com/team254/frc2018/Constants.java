@@ -18,7 +18,7 @@ public class Constants {
 
     // Wheels
     public static final double kDriveWheelTrackWidthInches = 25.54;
-    public static final double kDriveWheelDiameterInches = 3.92820959548;
+    public static final double kDriveWheelDiameterInches = 3.92820959548 * 0.99;
     public static final double kDriveWheelRadiusInches = kDriveWheelDiameterInches / 2.0;
     public static final double kTrackScrubFactor = 1.0;  // Tune me!
 
