@@ -39,7 +39,7 @@ public class Superstructure extends Subsystem {
     private Solenoid mUnlockHookSolenoid =  Constants.makeSolenoidForId(Constants.kUnlockHookSolenoid);
     private Solenoid mJazzHandsSolenoid =  Constants.makeSolenoidForId(Constants.kJazzHandsSolenoid);
 
-
+    private boolean isHangMode;
     private LatchedBoolean mIntoLimitEnable = new LatchedBoolean();
     private LatchedBoolean mIntoLimitDisabled = new LatchedBoolean();
 
@@ -100,9 +100,14 @@ public class Superstructure extends Subsystem {
             mElevator.setHangMode(false);
         }
         mWrist.setClosedLoopAngle(commandState.wristAngle);
-        if(Util.epsilonEquals(mStateMachine.getScoringHeight(), SuperstructureConstants.kSwitchHeightBackwards, 2.5)
-                && Util.epsilonEquals(mStateMachine.getScoringAngle(), SuperstructureConstants.kScoreSwitchBackwardsAngle, 2.5)) {
-            setJazzHands(true);
+
+        if(!isHangMode) {
+            if (Util.epsilonEquals(mStateMachine.getScoringHeight(), SuperstructureConstants.kSwitchHeightBackwards, Constants.kJazzHandsEpsilon)
+                    && Util.epsilonEquals(mStateMachine.getScoringAngle(), SuperstructureConstants.kScoreSwitchBackwardsAngle, Constants.kJazzHandsEpsilon)) {
+                setJazzHands(true);
+            } else {
+                setJazzHands(false);
+            }
         } else {
             setJazzHands(false);
         }
@@ -189,5 +194,9 @@ public class Superstructure extends Subsystem {
 
     public synchronized void setJazzHands(boolean deployed) {
         mJazzHandsSolenoid.set(deployed);
+    }
+
+    public synchronized void setHangMode(boolean activated) {
+        isHangMode = activated;
     }
 }
