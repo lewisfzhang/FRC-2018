@@ -12,7 +12,7 @@ public class IntakeStateMachine {
     public final static double kIntakeCubeSetpoint = -1.0;
     public final static double kHoldSetpoint = 0.0;
     public final static double kLostCubeTime = 0.25;
-    public final static double kUnclampWaitingTime = 0.5;
+    public final static double kUnclampWaitingTime = 1.0;
 
     public enum WantedAction {
         WANT_MANUAL,
@@ -119,10 +119,12 @@ public class IntakeStateMachine {
         final boolean open = !clamp && mWantedJawState == IntakeState.JawState.OPEN;
 
         boolean currentlySeeCube = currentState.seesCube();
+        boolean resetSeenCubeTime = true;
         if (!currentlySeeCube && !Double.isNaN(mLastSeenCubeTime) &&
                 (timestamp - mLastSeenCubeTime < kLostCubeTime)) {
             currentlySeeCube = true;
             clamp = (mWantedJawState != IntakeState.JawState.OPEN) || mustStayClosed(currentState);
+            resetSeenCubeTime = false;
         }
 
         boolean seenCube = mLastSeenCube.update(currentlySeeCube, kLostCubeTime);
@@ -131,7 +133,9 @@ public class IntakeStateMachine {
             commandedState.setPower(kHoldSetpoint);
             commandedState.jawState = clamp ? IntakeState.JawState.CLAMPED : IntakeState.JawState.OPEN;
             commandedState.ledState.copyFrom(LEDState.kIntakeHasCube);
-            mLastSeenCubeTime = timestamp;
+            if (resetSeenCubeTime) {
+                mLastSeenCubeTime = timestamp;
+            }
         } else {
             commandedState.setPower(kIntakeCubeSetpoint);
 
