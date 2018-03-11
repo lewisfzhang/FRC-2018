@@ -228,7 +228,7 @@ public class Robot extends IterativeRobot {
             throw t;
         }
     }
-
+    private double mLastShootTime = Double.NaN;
     @Override
     public void teleopPeriodic() {
         SmartDashboard.putString("Match Cycle", "TELEOP");
@@ -287,8 +287,17 @@ public class Robot extends IterativeRobot {
                 boolean runIntake = mControlBoard.getRunIntake() || runIntakePosition;
                 boolean shoot = mControlBoard.getShoot();
                 boolean runIntakeReleased = mRunIntakeReleased.update(!runIntake);
-                boolean shootReleased = mShootReleased.update(!shoot);
+
                 boolean intakeAction = false;
+
+                if (shoot) {
+                    mLastShootTime = Timer.getFPGATimestamp();
+
+                }
+                if (!shoot && !Double.isNaN(mLastShootTime) &&  (Timer.getFPGATimestamp() - mLastShootTime < 0.25)) {
+                    shoot = true;
+                }
+                boolean shootReleased = mShootReleased.update(!shoot);
                 if (runIntake) {
                     mIntake.getOrKeepCube();
                     intakeAction = true;
