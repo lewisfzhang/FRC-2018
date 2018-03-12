@@ -263,12 +263,14 @@ public class Robot extends IterativeRobot {
                     mForklift.deploy();
                 }
 
-                final double kElevatorThrottleDeadband = 0.3;
                 double elevatorThrottle = mControlBoard.getElevatorThrottle();
-                if(Math.abs(elevatorThrottle) < kElevatorThrottleDeadband) {
-                    elevatorThrottle = 0;
+                if(Math.abs(elevatorThrottle) < Constants.kElevatorThrottleDeadband) {
+                    elevatorThrottle = 0.0;
                 } else {
-                    elevatorThrottle = (elevatorThrottle - Math.signum(elevatorThrottle) * kElevatorThrottleDeadband) / (1.0 - kElevatorThrottleDeadband);
+                    elevatorThrottle =
+                            (elevatorThrottle - Math.signum(elevatorThrottle) *
+                                    Constants.kElevatorThrottleDeadband) /
+                                    (1.0 - Constants.kElevatorThrottleDeadband);
                 }
                 mSuperstructure.setHangThrottle(elevatorThrottle);
 
@@ -289,7 +291,6 @@ public class Robot extends IterativeRobot {
                 boolean runIntake = mControlBoard.getRunIntake() || runIntakePosition;
                 boolean shoot = mControlBoard.getShoot();
                 boolean runIntakeReleased = mRunIntakeReleased.update(!runIntake);
-
                 boolean intakeAction = false;
 
                 if (shoot) {

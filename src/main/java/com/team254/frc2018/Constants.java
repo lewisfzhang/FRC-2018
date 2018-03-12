@@ -170,6 +170,7 @@ public class Constants {
     public static final double kElevatorLowSensitivityThreshold = 50.0;
     public static final double kLowSensitivityFactor = 1.0 / 4.0;
 
+    public static final double kElevatorThrottleDeadband = 0.3;
     public static final double kMinShootTimeSec = 0.25;
     public static final double kJazzHandsEpsilon = 2.5;
 
