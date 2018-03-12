@@ -57,6 +57,7 @@ public class Robot extends IterativeRobot {
     private LatchedBoolean mRunIntakeReleased = new LatchedBoolean();
     private LatchedBoolean mShootReleased = new LatchedBoolean();
     private LatchedBoolean mRunIntakePressed = new LatchedBoolean();
+    private double mLastShootTime = Double.NaN;
 
     private LatchedBoolean mHangModeEnablePressed = new LatchedBoolean();
     private LatchedBoolean mLowShiftPressed = new LatchedBoolean();
@@ -228,10 +229,11 @@ public class Robot extends IterativeRobot {
             throw t;
         }
     }
-    private double mLastShootTime = Double.NaN;
+
     @Override
     public void teleopPeriodic() {
         SmartDashboard.putString("Match Cycle", "TELEOP");
+        double timestamp = Timer.getFPGATimestamp();
 
         try {
             double throttle = mControlBoard.getThrottle();
@@ -291,10 +293,11 @@ public class Robot extends IterativeRobot {
                 boolean intakeAction = false;
 
                 if (shoot) {
-                    mLastShootTime = Timer.getFPGATimestamp();
+                    mLastShootTime = timestamp;
 
                 }
-                if (!shoot && !Double.isNaN(mLastShootTime) &&  (Timer.getFPGATimestamp() - mLastShootTime < 0.25)) {
+                if (!shoot && !Double.isNaN(mLastShootTime) &&
+                        (timestamp - mLastShootTime < Constants.kMinShootTimeSec)) {
                     shoot = true;
                 }
                 boolean shootReleased = mShootReleased.update(!shoot);
