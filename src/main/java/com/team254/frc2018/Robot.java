@@ -329,6 +329,8 @@ public class Robot extends IterativeRobot {
                         mIntake.setState(IntakeStateMachine.WantedAction.WANT_MANUAL);
                         mIntake.setPower(0.0);
                     }
+                } else if (shoot) {
+                    mIntake.clampJaw();
                 } else {
                     mIntake.closeJaw();
                 }
