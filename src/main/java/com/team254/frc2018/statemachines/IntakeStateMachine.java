@@ -97,7 +97,8 @@ public class IntakeStateMachine {
     private synchronized void getOpenLoopCommandedState(IntakeState currentState, IntakeState commandedState) {
         commandedState.setPower(mWantedPower);
         if (mustStayClosed(currentState)) {
-            commandedState.jawState = IntakeState.JawState.CLOSED;
+            commandedState.jawState = (mWantedJawState == IntakeState.JawState.CLAMPED) ?
+                   IntakeState.JawState.CLAMPED : IntakeState.JawState.CLOSED;
         } else {
             commandedState.jawState = mWantedJawState;
         }
