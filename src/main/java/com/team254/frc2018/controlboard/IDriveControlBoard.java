@@ -5,6 +5,8 @@ public interface IDriveControlBoard {
 
     double getTurn();
 
+    boolean getAutoExchange();
+
     boolean getQuickTurn();
 
     boolean getOpenJaw();

@@ -40,6 +40,11 @@ public class ControlBoard implements IControlBoard {
     }
 
     @Override
+    public boolean getAutoExchange() {
+        return mDriveControlBoard.getAutoExchange();
+    }
+
+    @Override
     public boolean getQuickTurn() {
         return mDriveControlBoard.getQuickTurn();
     }
