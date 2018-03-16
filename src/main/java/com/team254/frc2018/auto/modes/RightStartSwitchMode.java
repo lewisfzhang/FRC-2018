@@ -14,10 +14,10 @@ import java.util.Arrays;
 public class RightStartSwitchMode extends AutoModeBase {
 
     final boolean mGoLeft;
-    final boolean mRobotOnLeft;
+    final boolean mStartedLeft;
 
     public RightStartSwitchMode(boolean robotStartedOnLeft, boolean switchIsLeft) {
-        mRobotOnLeft = robotStartedOnLeft;
+        mStartedLeft = robotStartedOnLeft;
         mGoLeft = switchIsLeft;
     }
 
@@ -25,10 +25,10 @@ public class RightStartSwitchMode extends AutoModeBase {
     @Override
     protected void routine() throws AutoModeEndedException {
         Trajectory<TimedState<Pose2dWithCurvature>> trajectory;
-        if(mGoLeft == mRobotOnLeft) {
-            trajectory = TrajectoryGenerator.getInstance().getTrajectorySet().sideStartToNearSwitch.get(mRobotOnLeft);
+        if(mGoLeft == mStartedLeft) {
+            trajectory = TrajectoryGenerator.getInstance().getTrajectorySet().sideStartToNearSwitch.get(mStartedLeft);
         } else {
-            trajectory = TrajectoryGenerator.getInstance().getTrajectorySet().sideStartToFarSwitch.get(mRobotOnLeft);
+            trajectory = TrajectoryGenerator.getInstance().getTrajectorySet().sideStartToFarSwitch.get(mStartedLeft);
         }
 
         System.out.println("Running Simple switch");

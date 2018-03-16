@@ -12,10 +12,10 @@ import java.util.Arrays;
 public class FarScaleOnlyMode extends AutoModeBase {
 
     private static final TrajectoryGenerator mTrajectoryGenerator = TrajectoryGenerator.getInstance();
-    private final boolean startedLeft;
+    private final boolean mStartedLeft;
 
     public FarScaleOnlyMode(boolean robotStartedOnLeft) {
-        startedLeft = robotStartedOnLeft;
+        mStartedLeft = robotStartedOnLeft;
     }
 
     @Override
@@ -27,15 +27,15 @@ public class FarScaleOnlyMode extends AutoModeBase {
         // Score first cube
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().sideStartToFarScale.get(startedLeft), true),
+                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().sideStartToFarScale.get(mStartedLeft), true),
                         new SeriesAction(
                                 Arrays.asList(
                                         new WaitUntilInsideRegion(new Translation2d(130.0, 170.0), new Translation2d
-                                                (260, 200.0), startedLeft),
+                                                (260, 200.0), mStartedLeft),
                                         new SetSuperstructurePosition(SuperstructureConstants.kScaleLowHeight,
                                                 SuperstructureConstants.kScoreBackwardsAngle, true),
                                         new WaitUntilInsideRegion(new Translation2d(245.0, 170.0), new Translation2d
-                                                (260, 1000), startedLeft),
+                                                (260, 1000), mStartedLeft),
                                         new ShootCube(0.66)
                                 )
                         )
@@ -45,7 +45,7 @@ public class FarScaleOnlyMode extends AutoModeBase {
         // Get second cube
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().farScaleToFarFence.get(startedLeft)),
+                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().farScaleToFarFence.get(mStartedLeft)),
                         new SetIntaking(true, false)
                 )
         ));
@@ -54,13 +54,13 @@ public class FarScaleOnlyMode extends AutoModeBase {
         // Score second cube
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().farFenceToFarScale.get(startedLeft)),
+                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().farFenceToFarScale.get(mStartedLeft)),
                         new SeriesAction(
                                 Arrays.asList(
                                         new SetSuperstructurePosition(SuperstructureConstants.kScaleLowHeight - 8.0,
                                                 SuperstructureConstants.kScoreBackwardsAngle, true),
                                         new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d
-                                                (260, 1000), startedLeft),
+                                                (260, 1000), mStartedLeft),
                                         new ShootCube(0.66)
                                 )
                         )
@@ -70,7 +70,7 @@ public class FarScaleOnlyMode extends AutoModeBase {
         // Get third cube
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().farScaleToFarFence2.get(startedLeft)),
+                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().farScaleToFarFence2.get(mStartedLeft)),
                         new SetIntaking(true, false)
                 )
         ));
@@ -79,13 +79,13 @@ public class FarScaleOnlyMode extends AutoModeBase {
         // Score third cube
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().farFence2ToFarScale.get(startedLeft)),
+                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().farFence2ToFarScale.get(mStartedLeft)),
                         new SeriesAction(
                                 Arrays.asList(
                                         new SetSuperstructurePosition(SuperstructureConstants.kScaleLowHeight - 8.0,
                                                 SuperstructureConstants.kScoreBackwardsAngle, true),
                                         new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d
-                                                (260, 1000), startedLeft),
+                                                (260, 1000), mStartedLeft),
                                         new ShootCube(0.66)
                                 )
                         )

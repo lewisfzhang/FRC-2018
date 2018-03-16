@@ -14,10 +14,10 @@ public class FarScaleNearSwitchMode extends AutoModeBase {
 
     private static final TrajectoryGenerator mTrajectoryGenerator = TrajectoryGenerator.getInstance();
 
-    private boolean mLeft;
+    private boolean mStartedLeft;
 
     public FarScaleNearSwitchMode(boolean robotStartedOnLeft) {
-        mLeft = robotStartedOnLeft;
+        mStartedLeft = robotStartedOnLeft;
     }
 
     @Override
@@ -27,15 +27,15 @@ public class FarScaleNearSwitchMode extends AutoModeBase {
         // Score first cube
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().sideStartToFarScale.get(mLeft), true),
+                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().sideStartToFarScale.get(mStartedLeft), true),
                         new SeriesAction(
                                 Arrays.asList(
                                         new WaitUntilInsideRegion(new Translation2d(130.0, 170.0), new Translation2d
-                                                (260, 200.0), mLeft),
+                                                (260, 200.0), mStartedLeft),
                                         new SetSuperstructurePosition(SuperstructureConstants.kScaleLowHeight,
                                                 SuperstructureConstants.kScoreBackwardsAngle, true),
                                         new WaitUntilInsideRegion(new Translation2d(245.0, 170.0), new Translation2d
-                                                (260, 1000), mLeft),
+                                                (260, 1000), mStartedLeft),
                                         new ShootCube(0.66)
                                 )
                         )
@@ -46,7 +46,7 @@ public class FarScaleNearSwitchMode extends AutoModeBase {
                 Arrays.asList(
                         new SeriesAction(
                                 Arrays.asList(
-                                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().farScaleToFarFence.get(mLeft)),
+                                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().farScaleToFarFence.get(mStartedLeft)),
                                         new WaitAction(0.2)
                                 )
                         ),
@@ -60,7 +60,7 @@ public class FarScaleNearSwitchMode extends AutoModeBase {
 
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().farFenceToNearSwitch.get(mLeft)),
+                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().farFenceToNearSwitch.get(mStartedLeft)),
                         new SeriesAction(
                                 Arrays.asList(
                                         new SetSuperstructurePosition(SuperstructureConstants.kSwitchHeight,
