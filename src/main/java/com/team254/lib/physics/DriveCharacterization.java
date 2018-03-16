@@ -34,6 +34,20 @@ public class DriveCharacterization {
         }
     }
 
+    public static class CurvatureDataPoint {
+        public final double linear_velocity;
+        public final double angular_velocity;
+        public final double left_voltage;
+        public final double right_voltage;
+
+        public CurvatureDataPoint(double linear_velocity, double angular_velocity, double left_voltage, double right_voltage) {
+            this.linear_velocity = linear_velocity;
+            this.angular_velocity = angular_velocity;
+            this.left_voltage = left_voltage;
+            this.right_voltage = right_voltage;
+        }
+    }
+
     public static CharacterizationConstants characterizeDrive(List<VelocityDataPoint> velocityData, List<AccelerationDataPoint> accelerationData) {
         CharacterizationConstants rv = getVelocityCharacterization(getVelocityData(velocityData));
         getAccelerationCharacterization(getAccelerationData(accelerationData, rv), rv);
