@@ -3,6 +3,7 @@ package com.team254.frc2018.auto.modes;
 import com.team254.frc2018.auto.AutoModeBase;
 import com.team254.frc2018.auto.AutoModeEndedException;
 import com.team254.frc2018.auto.actions.*;
+import com.team254.frc2018.auto.AutoConstants;
 import com.team254.frc2018.paths.TrajectoryGenerator;
 import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.lib.geometry.Translation2d;
@@ -36,7 +37,7 @@ public class FarScaleOnlyMode extends AutoModeBase {
                                                 SuperstructureConstants.kScoreBackwardsAngle, true),
                                         new WaitUntilInsideRegion(new Translation2d(245.0, 170.0), new Translation2d
                                                 (260, 1000), mStartedLeft),
-                                        new ShootCube(0.66)
+                                        new ShootCube(AutoConstants.kStrongShootPower)
                                 )
                         )
                 )
@@ -49,7 +50,7 @@ public class FarScaleOnlyMode extends AutoModeBase {
                         new SetIntaking(true, false)
                 )
         ));
-        runAction(new WaitAction(0.1));
+        runAction(new WaitAction(AutoConstants.kWaitForCubeTime));
 
         // Score second cube
         runAction(new ParallelAction(
@@ -61,7 +62,7 @@ public class FarScaleOnlyMode extends AutoModeBase {
                                                 SuperstructureConstants.kScoreBackwardsAngle, true),
                                         new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d
                                                 (260, 1000), mStartedLeft),
-                                        new ShootCube(0.66)
+                                        new ShootCube(AutoConstants.kStrongShootPower)
                                 )
                         )
                 )
@@ -74,7 +75,7 @@ public class FarScaleOnlyMode extends AutoModeBase {
                         new SetIntaking(true, false)
                 )
         ));
-        runAction(new WaitAction(0.1));
+        runAction(new WaitAction(AutoConstants.kWaitForCubeTime));
 
         // Score third cube
         runAction(new ParallelAction(
@@ -86,7 +87,7 @@ public class FarScaleOnlyMode extends AutoModeBase {
                                                 SuperstructureConstants.kScoreBackwardsAngle, true),
                                         new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d
                                                 (260, 1000), mStartedLeft),
-                                        new ShootCube(0.66)
+                                        new ShootCube(AutoConstants.kStrongShootPower)
                                 )
                         )
                 )

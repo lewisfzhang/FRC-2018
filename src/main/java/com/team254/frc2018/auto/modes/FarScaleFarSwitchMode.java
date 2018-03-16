@@ -3,6 +3,7 @@ package com.team254.frc2018.auto.modes;
 import com.team254.frc2018.auto.AutoModeBase;
 import com.team254.frc2018.auto.AutoModeEndedException;
 import com.team254.frc2018.auto.actions.*;
+import com.team254.frc2018.auto.AutoConstants;
 import com.team254.frc2018.paths.TrajectoryGenerator;
 import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.lib.geometry.Translation2d;
@@ -34,7 +35,7 @@ public class FarScaleFarSwitchMode extends AutoModeBase {
                                                 SuperstructureConstants.kScoreBackwardsAngle, true),
                                         new WaitUntilInsideRegion(new Translation2d(245.0, 170.0), new Translation2d
                                                 (260, 1000), mStartedLeft),
-                                        new ShootCube(0.66)
+                                        new ShootCube(AutoConstants.kStrongShootPower)
                                 )
                         )
                 )
@@ -51,17 +52,19 @@ public class FarScaleFarSwitchMode extends AutoModeBase {
                 )
         ));
 
-        runAction(new WaitAction(0.2));
+        runAction(new WaitAction(AutoConstants.kWaitForCubeTime));
         runAction(new OpenLoopDrive(-0.3, -0.3, 0.25, false));
         runAction(new SetSuperstructurePosition(SuperstructureConstants.kSwitchHeight, SuperstructureConstants
                 .kPlacingHighAngle, true));
+
         if(mStartedLeft) {
             runAction(new OpenLoopDrive(0.45, 0.55, 0.5, false));
         } else {
             runAction(new OpenLoopDrive(0.55, 0.45, 0.5, false));
         }
-        runAction(new WaitAction(0.2));
-        runAction(new ShootCube(0.5));
+
+        runAction(new WaitAction(AutoConstants.kWaitForCubeTime));
+        runAction(new ShootCube(AutoConstants.kWeakShootPower));
 
     }
 }

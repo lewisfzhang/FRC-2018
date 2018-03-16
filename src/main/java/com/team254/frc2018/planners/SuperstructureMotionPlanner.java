@@ -1,11 +1,8 @@
 package com.team254.frc2018.planners;
 
-import com.team254.frc2018.Constants;
 import com.team254.frc2018.states.SuperstructureState;
 import com.team254.frc2018.states.SuperstructureConstants;
-import com.team254.frc2018.subsystems.Superstructure;
 import com.team254.lib.util.Util;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import java.util.LinkedList;
 import java.util.Optional;

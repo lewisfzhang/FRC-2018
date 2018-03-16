@@ -1,7 +1,5 @@
 package com.team254.frc2018.states;
 
-import com.team254.frc2018.statemachines.IntakeStateMachine;
-
 public class SuperstructureCommand {
     public double height = SuperstructureConstants.kElevatorMinHeight;
     public double wristAngle = SuperstructureConstants.kWristMinAngle;

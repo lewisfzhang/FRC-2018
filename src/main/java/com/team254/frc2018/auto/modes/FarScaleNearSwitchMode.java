@@ -3,6 +3,7 @@ package com.team254.frc2018.auto.modes;
 import com.team254.frc2018.auto.AutoModeBase;
 import com.team254.frc2018.auto.AutoModeEndedException;
 import com.team254.frc2018.auto.actions.*;
+import com.team254.frc2018.auto.AutoConstants;
 import com.team254.frc2018.paths.TrajectoryGenerator;
 import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.lib.geometry.Translation2d;
@@ -36,7 +37,7 @@ public class FarScaleNearSwitchMode extends AutoModeBase {
                                                 SuperstructureConstants.kScoreBackwardsAngle, true),
                                         new WaitUntilInsideRegion(new Translation2d(245.0, 170.0), new Translation2d
                                                 (260, 1000), mStartedLeft),
-                                        new ShootCube(0.66)
+                                        new ShootCube(AutoConstants.kStrongShootPower)
                                 )
                         )
                 )
@@ -47,7 +48,7 @@ public class FarScaleNearSwitchMode extends AutoModeBase {
                         new SeriesAction(
                                 Arrays.asList(
                                         new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().farScaleToFarFence.get(mStartedLeft)),
-                                        new WaitAction(0.2)
+                                        new WaitAction(AutoConstants.kWaitForCubeTime)
                                 )
                         ),
                         new SeriesAction(
@@ -69,6 +70,6 @@ public class FarScaleNearSwitchMode extends AutoModeBase {
                         )
                 )
         ));
-        runAction(new ShootCube(0.66));
+        runAction(new ShootCube(AutoConstants.kStrongShootPower));
     }
 }

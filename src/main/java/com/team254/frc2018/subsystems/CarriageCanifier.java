@@ -1,9 +1,7 @@
 package com.team254.frc2018.subsystems;
 
 import com.ctre.phoenix.CANifier;
-import com.ctre.phoenix.CANifierControlFrame;
 import com.ctre.phoenix.CANifierStatusFrame;
-import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 import com.team254.frc2018.Constants;
 
 public class CarriageCanifier extends Subsystem {

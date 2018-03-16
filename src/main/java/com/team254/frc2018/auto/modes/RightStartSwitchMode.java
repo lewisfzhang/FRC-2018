@@ -3,6 +3,7 @@ package com.team254.frc2018.auto.modes;
 import com.team254.frc2018.auto.AutoModeBase;
 import com.team254.frc2018.auto.AutoModeEndedException;
 import com.team254.frc2018.auto.actions.*;
+import com.team254.frc2018.auto.AutoConstants;
 import com.team254.frc2018.paths.TrajectoryGenerator;
 import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.lib.geometry.Pose2dWithCurvature;
@@ -43,6 +44,6 @@ public class RightStartSwitchMode extends AutoModeBase {
         ));
 
 
-        runAction(new ShootCube());
+        runAction(new ShootCube(AutoConstants.kStrongShootPower));
     }
 }

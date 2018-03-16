@@ -1,9 +1,7 @@
 package com.team254.frc2018.auto.actions;
 
 import com.team254.frc2018.statemachines.IntakeStateMachine;
-import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.frc2018.subsystems.Intake;
-import com.team254.frc2018.subsystems.Superstructure;
 import edu.wpi.first.wpilibj.Timer;
 
 public class ShootCube implements Action {
