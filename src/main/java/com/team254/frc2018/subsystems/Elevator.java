@@ -139,7 +139,7 @@ public class Elevator extends Subsystem {
         mMaster.enableVoltageCompensation(true);
 
         mMaster.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 10, 20);
-        mMaster.setStatusFramePeriod(StatusFrameEnhanced.Status_9_MotProfBuffer, 10, 20);
+        mMaster.setStatusFramePeriod(StatusFrameEnhanced.Status_10_MotionMagic, 10, 20);
 
         mMaster.setInverted(true);
         mMaster.setSensorPhase(true);
