@@ -10,9 +10,9 @@ import edu.wpi.first.wpilibj.Timer;
 import java.util.List;
 
 public class CollectCurvatureData implements Action {
-    private static final double kMaxPower = 0.3;
-    private static final double kStartPower = 0.15;
-    private static final double kStartTime = 0.1;
+    private static final double kMaxPower = 0.4;
+    private static final double kStartPower = 0.2;
+    private static final double kStartTime = 0.25;
     private static final double kRampRate = 0.02;
     private static final Drive mDrive = Drive.getInstance();
     private static final RobotState mRobotState = RobotState.getInstance();
@@ -60,8 +60,8 @@ public class CollectCurvatureData implements Action {
         }
         mDrive.setOpenLoop(new DriveSignal((mReverse ? -1.0 : 1.0) * kStartPower, (mReverse ? -1.0 : 1.0) * rightPower));
         mCurvatureData.add(new DriveCharacterization.CurvatureDataPoint(
-                mRobotState.getMeasuredVelocity().dx,
-                mRobotState.getMeasuredVelocity().dtheta,
+                mRobotState.getPredictedVelocity().dx,
+                mRobotState.getPredictedVelocity().dtheta,
                 kStartPower,
                 rightPower
         ));
