@@ -87,14 +87,16 @@ public class Constants {
     public static final double kElevatorEpsilon = 1.0;//33000;
     public static final double kElevatorRampRate = 0.1;
 
-    public static final double kWristKp = 1.5; //todo: tune me
-    public static final double kWristKi = 0.0; //todo: tune me
-    public static final double kWristKd = 80.0; //todo: tune me
-    public static final double kWristKf = 1.1; //todo: tune me
-    public static final double kWristKfMultiplierWithCube = 0.15; //todo: tune me
-    public static final double kWristKfMultiplierWithoutCube = 0.1; //todo: tune me
+    public static final double kWristKp = 1.5;
+    public static final double kWristKi = 0.0;
+    public static final double kWristKd = 80.0;
+    public static final double kWristKf = 1.1;
+    public static final double kWristKaWithCube = 0.0;
+    public static final double kWristKaWithoutCube = 0.0;
+    public static final double kWristKfMultiplierWithCube = 0.15;
+    public static final double kWristKfMultiplierWithoutCube = 0.1;
     public static final double kWristElevatorAccelerationMultiplier = 0.0;
-    public static final double kWristEpsilon = 3.0; //todo: tune me
+    public static final double kWristEpsilon = 3.0;
 
     public static final int kWristMaxIntegralAccumulator = 500000; //todo: tune me
     public static final int kWristIZone = 500; //todo: tune me

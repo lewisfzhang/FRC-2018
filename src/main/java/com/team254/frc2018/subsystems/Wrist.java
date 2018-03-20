@@ -377,7 +377,9 @@ public class Wrist extends Subsystem {
                     .kWristKfMultiplierWithCube : Constants.kWristKfMultiplierWithoutCube);
             double elevatorAccelerationComponent = mElevator.getActiveTrajectoryAccelG() * Constants
                     .kWristElevatorAccelerationMultiplier;
-            mPeriodicIO.feedforward = (elevatorAccelerationComponent + 1.0) * wristGravityComponent;
+            double wristAccelerationComponent = mPeriodicIO.active_trajectory_acceleration_rad_per_s2 *
+                    (mIntake.hasCube() ? Constants.kWristKaWithCube : Constants.kWristKaWithoutCube);
+            mPeriodicIO.feedforward = (elevatorAccelerationComponent + 1.0) * wristGravityComponent + wristAccelerationComponent;
         } else {
             mPeriodicIO.feedforward = 0.0;
         }
