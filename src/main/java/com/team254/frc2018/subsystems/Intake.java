@@ -174,14 +174,6 @@ public class Intake extends Subsystem {
         setPower(power);
     }
 
-    public synchronized void shoot() {
-        if(mCurrentState.wristAngle > SuperstructureConstants.kWeakShootAngle) {
-            shoot(IntakeStateMachine.kWeakShootSetpoint);
-        } else {
-            shoot(IntakeStateMachine.kStrongShootSetpoint);
-        }
-    }
-
     public IntakeStateMachine.WantedAction getWantedAction() {
         return mWantedAction;
     }

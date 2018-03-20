@@ -2,6 +2,7 @@ package com.team254.frc2018;
 
 import com.team254.frc2018.auto.AutoModeBase;
 import com.team254.frc2018.auto.AutoModeExecuter;
+import com.team254.frc2018.auto.actions.CollectCurvatureData;
 import com.team254.frc2018.auto.modes.*;
 import com.team254.frc2018.loops.Looper;
 import com.team254.frc2018.paths.TrajectoryGenerator;
@@ -11,6 +12,13 @@ import com.team254.frc2018.statemachines.SuperstructureStateMachine;
 import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.frc2018.subsystems.*;
 import com.team254.lib.geometry.Pose2d;
+import com.team254.lib.geometry.Pose2dWithCurvature;
+import com.team254.lib.geometry.Rotation2d;
+import com.team254.lib.geometry.Translation2d;
+import com.team254.lib.trajectory.TimedView;
+import com.team254.lib.trajectory.Trajectory;
+import com.team254.lib.trajectory.TrajectoryIterator;
+import com.team254.lib.trajectory.timing.TimedState;
 import com.team254.lib.util.CheesyDriveHelper;
 import com.team254.lib.util.CrashTracker;
 import com.team254.lib.util.LatchedBoolean;
@@ -19,7 +27,9 @@ import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 public class Robot extends IterativeRobot {
@@ -40,7 +50,8 @@ public class Robot extends IterativeRobot {
                     Wrist.getInstance(),
                     Elevator.getInstance(),
                     CarriageCanifier.getInstance(),
-                    Infrastructure.getInstance()
+                    Infrastructure.getInstance(),
+                    Limelight.getInstance()
             )
     );
 
@@ -52,6 +63,7 @@ public class Robot extends IterativeRobot {
     private Infrastructure mInfrastructure = Infrastructure.getInstance();
     private Superstructure mSuperstructure = Superstructure.getInstance();
     private Elevator mElevator = Elevator.getInstance();
+    private Limelight mLimelight = Limelight.getInstance();
 
     private LatchedBoolean mRunIntakeReleased = new LatchedBoolean();
     private LatchedBoolean mShootReleased = new LatchedBoolean();
@@ -61,6 +73,7 @@ public class Robot extends IterativeRobot {
     private LatchedBoolean mHangModeEnablePressed = new LatchedBoolean();
     private LatchedBoolean mLowShiftPressed = new LatchedBoolean();
     private LatchedBoolean mHighShiftPressed = new LatchedBoolean();
+    private LatchedBoolean mAutoExchangePressed = new LatchedBoolean();
 
     private boolean mInHangMode;
 
@@ -202,6 +215,8 @@ public class Robot extends IterativeRobot {
     public void disabledPeriodic() {
         SmartDashboard.putString("Match Cycle", "DISABLED");
 
+        mLimelight.setStream(2);
+
         try {
             outputToSmartDashboard();
             mWrist.resetIfAtLimit();
@@ -234,13 +249,17 @@ public class Robot extends IterativeRobot {
         SmartDashboard.putString("Match Cycle", "TELEOP");
         double timestamp = Timer.getFPGATimestamp();
 
-        try {
-            double throttle = mControlBoard.getThrottle();
-            double turn = mControlBoard.getTurn();
+        double throttle = mControlBoard.getThrottle();
+        double turn = mControlBoard.getTurn();
 
-            // When elevator is up, tune sensitivity on tune a little.
-            if (mElevator.getInchesOffGround() > Constants.kElevatorLowSensitivityThreshold) {
-                turn *= Constants.kLowSensitivityFactor;
+        try {
+            if(mControlBoard.getAutoExchange()) {
+                //get turn from vision feedback
+            } else {
+                // When elevator is up, tune sensitivity on tune a little.
+                if (mElevator.getInchesOffGround() > Constants.kElevatorLowSensitivityThreshold) {
+                    turn *= Constants.kLowSensitivityFactor;
+                }
             }
 
             mDrive.setOpenLoop(mCheesyDriveHelper.cheesyDrive(throttle, turn, mControlBoard.getQuickTurn(),
@@ -306,7 +325,19 @@ public class Robot extends IterativeRobot {
                     intakeAction = true;
                 } else if (shoot) {
                     intakeAction = true;
-                    mIntake.shoot();
+                    if(mElevator.getInchesOffGround() < SuperstructureConstants.kSwitchHeight + 5.0) {
+                        if(mWrist.getAngle() > SuperstructureConstants.kWeakShootAngle) {
+                            mIntake.shoot(IntakeStateMachine.kSwitchShootSetpoint);
+                        } else {
+                            mIntake.shoot(IntakeStateMachine.kExchangeShootSetpoint);
+                        }
+                    } else {
+                        if (mWrist.getAngle() > SuperstructureConstants.kWeakShootAngle) {
+                            mIntake.shoot(IntakeStateMachine.kWeakShootSetpoint);
+                        } else {
+                            mIntake.shoot(IntakeStateMachine.kStrongShootSetpoint);
+                        }
+                    }
                 } else if (runIntakeReleased) {
                     if (mIntake.hasCube()) {
                         mIntake.getOrKeepCube();
