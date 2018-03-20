@@ -87,22 +87,22 @@ public class Constants {
     public static final double kElevatorEpsilon = 1.0;//33000;
     public static final double kElevatorRampRate = 0.1;
 
-    public static final double kWristKp = 1.5;
+    public static final double kWristKp = 3.0;
     public static final double kWristKi = 0.0;
     public static final double kWristKd = 80.0;
-    public static final double kWristKf = 1.1;
-    public static final double kWristKaWithCube = 0.0;
-    public static final double kWristKaWithoutCube = 0.0;
+    public static final double kWristKf = 1.0;
+    public static final double kWristKaWithCube = 0.009;
+    public static final double kWristKaWithoutCube = 0.003;
     public static final double kWristKfMultiplierWithCube = 0.15;
     public static final double kWristKfMultiplierWithoutCube = 0.1;
-    public static final double kWristElevatorAccelerationMultiplier = 0.0;
+    public static final double kWristElevatorAccelerationMultiplier = -1.0;
     public static final double kWristEpsilon = 3.0;
 
     public static final int kWristMaxIntegralAccumulator = 500000; //todo: tune me
     public static final int kWristIZone = 500; //todo: tune me
-    public static final int kWristDeadband = 25; //todo: tune me
-    public static final int kWristCruiseVelocity = 650; //todo: tune me
-    public static final int kWristAcceleration = 1000; //todo: tune me
+    public static final int kWristDeadband = 5; //todo: tune me
+    public static final int kWristCruiseVelocity = 800; //todo: tune me
+    public static final int kWristAcceleration = 2000; //todo: tune me
     public static final double kWristRampRate = 0.0;
 
     // Do not change anything after this line unless you rewire the robot and

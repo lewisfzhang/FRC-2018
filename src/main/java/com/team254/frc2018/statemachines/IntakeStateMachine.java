@@ -132,8 +132,12 @@ public class IntakeStateMachine {
 
         boolean seenCube = mLastSeenCube.update(currentlySeeCube, kLostCubeTime);
 
-        if (seenCube) {
-            commandedState.setPower(kHoldSetpoint);
+        if (currentlySeeCube) {
+            if (!seenCube) {
+                commandedState.setPower(kIntakeCubeSetpoint);
+            } else {
+                commandedState.setPower(kHoldSetpoint);
+            }
             commandedState.jawState = clamp ? IntakeState.JawState.CLAMPED : IntakeState.JawState.OPEN;
             commandedState.ledState.copyFrom(LEDState.kIntakeHasCube);
             if (resetSeenCubeTime) {
