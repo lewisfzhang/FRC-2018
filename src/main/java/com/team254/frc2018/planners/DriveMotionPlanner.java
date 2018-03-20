@@ -42,7 +42,7 @@ public class DriveMotionPlanner implements CSVWritable {
     TrajectoryIterator<TimedState<Pose2dWithCurvature>> mCurrentTrajectory;
     boolean mIsReversed = false;
     double mLastTime = Double.POSITIVE_INFINITY;
-    TimedState<Pose2dWithCurvature> mSetpoint = new TimedState<>(Pose2dWithCurvature.identity());
+    public TimedState<Pose2dWithCurvature> mSetpoint = new TimedState<>(Pose2dWithCurvature.identity());
     Pose2d mError = Pose2d.identity();
     Output mOutput = new Output();
 
@@ -78,10 +78,28 @@ public class DriveMotionPlanner implements CSVWritable {
         }
     }
 
+    public void reset() {
+        mError = Pose2d.identity();
+        mOutput = new Output();
+        mLastTime = Double.POSITIVE_INFINITY;
+    }
+
     public Trajectory<TimedState<Pose2dWithCurvature>> generateTrajectory(
             boolean reversed,
             final List<Pose2d> waypoints,
             final List<TimingConstraint<Pose2dWithCurvature>> constraints,
+            double max_vel,  // inches/s
+            double max_accel,  // inches/s^2
+            double max_voltage) {
+        return generateTrajectory(reversed, waypoints, constraints, 0.0, 0.0, max_vel, max_accel, max_voltage);
+    }
+
+    public Trajectory<TimedState<Pose2dWithCurvature>> generateTrajectory(
+            boolean reversed,
+            final List<Pose2d> waypoints,
+            final List<TimingConstraint<Pose2dWithCurvature>> constraints,
+            double start_vel,
+            double end_vel,
             double max_vel,  // inches/s
             double max_accel,  // inches/s^2
             double max_voltage) {
@@ -117,7 +135,7 @@ public class DriveMotionPlanner implements CSVWritable {
         }
         // Generate the timed trajectory.
         Trajectory<TimedState<Pose2dWithCurvature>> timed_trajectory = TimingUtil.timeParameterizeTrajectory(reversed, new
-                DistanceView<>(trajectory), kMaxDx, all_constraints, 0.0, 0.0, max_vel, max_accel);
+                DistanceView<>(trajectory), kMaxDx, all_constraints, start_vel, end_vel, max_vel, max_accel);
         return timed_trajectory;
     }
 

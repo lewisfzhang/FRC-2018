@@ -54,6 +54,18 @@ public class TrajectoryGenerator {
         return mMotionPlanner.generateTrajectory(reversed, waypoints, constraints, max_vel, max_accel, max_voltage);
     }
 
+    public Trajectory<TimedState<Pose2dWithCurvature>> generateTrajectory(
+            boolean reversed,
+            final List<Pose2d> waypoints,
+            final List<TimingConstraint<Pose2dWithCurvature>> constraints,
+            double start_vel,  // inches/s
+            double end_vel,  // inches/s
+            double max_vel,  // inches/s
+            double max_accel,  // inches/s^2
+            double max_voltage) {
+        return mMotionPlanner.generateTrajectory(reversed, waypoints, constraints, start_vel, end_vel, max_vel, max_accel, max_voltage);
+    }
+
     // CRITICAL POSES
     // Origin is the center of the robot when the robot is placed against the middle of the alliance station wall.
     // +x is towards the center of the field.
