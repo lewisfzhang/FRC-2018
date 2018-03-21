@@ -31,13 +31,13 @@ public class DifferentialDrive {
     // This is "equivalent" in that it also absorbs the effects of drivetrain inertia.
     // Theoretical value:
     // = m_robot + I_transmissions / r_wheel^2
-    protected final double linear_inertia_;
+    protected final double mass_;
 
-    // Equivalent load when accelerating purely angularly, in kg*m^2.
+    // Equivalent moment of inertia when accelerating purely angularly, in kg*m^2.
     // This is "equivalent" in that it also absorbs the effects of drivetrain inertia.
     // Theoretical value:
     // = I_robot_about_com + I_transmissions / r_wheel * wheelbase_radius
-    protected final double angular_inertia_;
+    protected final double moi_;
 
     // Drag torque (proportional to angular velocity) that resists turning, in N*m/rad/s
     protected final double angular_drag_;
@@ -49,15 +49,15 @@ public class DifferentialDrive {
     protected final DCMotorTransmission left_transmission_;
     protected final DCMotorTransmission right_transmission_;
 
-    public DifferentialDrive(final double linear_inertia,
-                             final double angular_inertia,
+    public DifferentialDrive(final double mass,
+                             final double moi,
                              final double angular_drag,
                              final double wheel_radius,
                              final double effective_wheelbase_radius,
                              final DCMotorTransmission left_transmission,
                              final DCMotorTransmission right_transmission) {
-        linear_inertia_ = linear_inertia;
-        angular_inertia_ = angular_inertia;
+        mass_ = mass;
+        moi_ = moi;
         angular_drag_ = angular_drag;
         wheel_radius_ = wheel_radius;
         effective_wheelbase_radius_ = effective_wheelbase_radius;
@@ -65,12 +65,12 @@ public class DifferentialDrive {
         right_transmission_ = right_transmission;
     }
 
-    public double linear_inertia() {
-        return linear_inertia_;
+    public double mass() {
+        return mass_;
     }
 
-    public double angular_inertia() {
-        return angular_inertia_;
+    public double moi() {
+        return moi_;
     }
 
     public double wheel_radius() {
@@ -150,11 +150,11 @@ public class DifferentialDrive {
 
         // Add forces and torques about the center of mass.
         dynamics.chassis_acceleration.linear = (dynamics.wheel_torque.right + dynamics.wheel_torque.left) /
-                (wheel_radius_ * linear_inertia_);
+                (wheel_radius_ * mass_);
         // (Tr - Tl) / r_w * r_wb - drag * w = I * alpha
         dynamics.chassis_acceleration.angular = effective_wheelbase_radius_ * (dynamics.wheel_torque.right - dynamics
-                .wheel_torque.left) / (wheel_radius_ * angular_inertia_) -
-                dynamics.chassis_velocity.angular * angular_drag_ / angular_inertia_;
+                .wheel_torque.left) / (wheel_radius_ * moi_) -
+                dynamics.chassis_velocity.angular * angular_drag_ / moi_;
 
         // Resolve chassis accelerations to each wheel.
         dynamics.wheel_acceleration.left = dynamics.chassis_acceleration.linear - dynamics.chassis_acceleration
@@ -188,11 +188,11 @@ public class DifferentialDrive {
     // Assumptions about dynamics: velocities and accelerations provided.
     public void solveInverseDynamics(DriveDynamics dynamics) {
         // Determine the necessary torques on the left and right wheels to produce the desired wheel accelerations.
-        dynamics.wheel_torque.left = wheel_radius_ / 2.0 * (dynamics.chassis_acceleration.linear * linear_inertia_ -
-                dynamics.chassis_acceleration.angular * angular_inertia_ / effective_wheelbase_radius_ -
+        dynamics.wheel_torque.left = wheel_radius_ / 2.0 * (dynamics.chassis_acceleration.linear * mass_ -
+                dynamics.chassis_acceleration.angular * moi_ / effective_wheelbase_radius_ -
                 dynamics.chassis_velocity.angular * angular_drag_ / effective_wheelbase_radius_);
-        dynamics.wheel_torque.right = wheel_radius_ / 2.0 * (dynamics.chassis_acceleration.linear * linear_inertia_ +
-                dynamics.chassis_acceleration.angular * angular_inertia_ / effective_wheelbase_radius_ +
+        dynamics.wheel_torque.right = wheel_radius_ / 2.0 * (dynamics.chassis_acceleration.linear * mass_ +
+                dynamics.chassis_acceleration.angular * moi_ / effective_wheelbase_radius_ +
                 dynamics.chassis_velocity.angular * angular_drag_ / effective_wheelbase_radius_);
 
         // Solve for input voltages.
@@ -256,8 +256,8 @@ public class DifferentialDrive {
         // 2 equations, 2 unknowns.
         // Solve for a and (Tl|Tr)
 
-        final double linear_term = Double.isInfinite(curvature) ? 0.0 : linear_inertia_ * effective_wheelbase_radius_;
-        final double angular_term = Double.isInfinite(curvature) ? angular_inertia_ : angular_inertia_ * curvature;
+        final double linear_term = Double.isInfinite(curvature) ? 0.0 : mass_ * effective_wheelbase_radius_;
+        final double angular_term = Double.isInfinite(curvature) ? moi_ : moi_ * curvature;
 
         final double drag_torque = chassis_velocity.angular * angular_drag_;
 
@@ -270,10 +270,10 @@ public class DifferentialDrive {
                         max_abs_voltage);
                 double variable_torque = 0.0;
                 if (left) {
-                    variable_torque = (-drag_torque * linear_inertia_ * wheel_radius_ + fixed_torque *
+                    variable_torque = (-drag_torque * mass_ * wheel_radius_ + fixed_torque *
                             (linear_term + angular_term)) / (linear_term - angular_term);
                 } else {
-                    variable_torque = (drag_torque * linear_inertia_ * wheel_radius_ + fixed_torque *
+                    variable_torque = (drag_torque * mass_ * wheel_radius_ + fixed_torque *
                             (linear_term - angular_term)) / (linear_term + angular_term);
                 }
                 final double variable_voltage = variable_transmission.getVoltageForTorque(wheel_velocities.get(!left)
@@ -282,9 +282,9 @@ public class DifferentialDrive {
                     double accel = 0.0;
                     if (Double.isInfinite(curvature)) {
                         accel = (left ? -1.0 : 1.0) * (fixed_torque - variable_torque) * effective_wheelbase_radius_
-                                / (angular_inertia_ * wheel_radius_) - drag_torque / angular_inertia_;
+                                / (moi_ * wheel_radius_) - drag_torque / moi_;
                     } else {
-                        accel = (fixed_torque + variable_torque) / (linear_inertia_ * wheel_radius_);
+                        accel = (fixed_torque + variable_torque) / (mass_ * wheel_radius_);
                     }
                     result.min = Math.min(result.min, accel);
                     result.max = Math.max(result.max, accel);
