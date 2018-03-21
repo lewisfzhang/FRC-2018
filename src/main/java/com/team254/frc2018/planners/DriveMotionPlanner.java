@@ -28,7 +28,8 @@ public class DriveMotionPlanner implements CSVWritable {
     public enum FollowerType {
         FEEDFORWARD_ONLY,
         PURE_PURSUIT,
-        PID
+        PID,
+        NONLINEAR_FEEDBACK
     }
 
     FollowerType mFollowerType = FollowerType.PURE_PURSUIT;
@@ -118,7 +119,8 @@ public class DriveMotionPlanner implements CSVWritable {
         if (reversed) {
             List<Pose2dWithCurvature> flipped = new ArrayList<>(trajectory.length());
             for (int i = 0; i < trajectory.length(); ++i) {
-                flipped.add(new Pose2dWithCurvature(trajectory.getState(i).getPose().transformBy(flip), -trajectory.getState(i).getCurvature()));
+                flipped.add(new Pose2dWithCurvature(trajectory.getState(i).getPose().transformBy(flip), -trajectory
+                        .getState(i).getCurvature()));
             }
             trajectory = new Trajectory<>(flipped);
         }
@@ -132,8 +134,9 @@ public class DriveMotionPlanner implements CSVWritable {
             all_constraints.addAll(constraints);
         }
         // Generate the timed trajectory.
-        Trajectory<TimedState<Pose2dWithCurvature>> timed_trajectory = TimingUtil.timeParameterizeTrajectory(reversed, new
-                DistanceView<>(trajectory), kMaxDx, all_constraints, start_vel, end_vel, max_vel, max_accel);
+        Trajectory<TimedState<Pose2dWithCurvature>> timed_trajectory = TimingUtil.timeParameterizeTrajectory
+                (reversed, new
+                        DistanceView<>(trajectory), kMaxDx, all_constraints, start_vel, end_vel, max_vel, max_accel);
         return timed_trajectory;
     }
 
@@ -174,14 +177,16 @@ public class DriveMotionPlanner implements CSVWritable {
         }
     }
 
-    protected Output updatePID(DifferentialDrive.DriveDynamics dynamics, Pose2d current_state) {DifferentialDrive.ChassisState adjusted_velocity = new DifferentialDrive.ChassisState();
+    protected Output updatePID(DifferentialDrive.DriveDynamics dynamics, Pose2d current_state) {
+        DifferentialDrive.ChassisState adjusted_velocity = new DifferentialDrive.ChassisState();
         // Feedback on longitudinal error (distance).
         final double kPathKX = 5.0;
         final double kPathKY = 1.0;
         final double kPathKTheta = 5.0;
         adjusted_velocity.linear = dynamics.chassis_velocity.linear + kPathKX * Units.inches_to_meters
                 (mError.getTranslation().x());
-        adjusted_velocity.angular = dynamics.chassis_velocity.angular + dynamics.chassis_velocity.linear * kPathKY * Units.inches_to_meters(mError.getTranslation().y()) + kPathKTheta * mError.getRotation().getRadians();
+        adjusted_velocity.angular = dynamics.chassis_velocity.angular + dynamics.chassis_velocity.linear * kPathKY *
+                Units.inches_to_meters(mError.getTranslation().y()) + kPathKTheta * mError.getRotation().getRadians();
 
         double curvature = adjusted_velocity.angular / adjusted_velocity.linear;
         if (Double.isInfinite(curvature)) {
@@ -213,7 +218,8 @@ public class DriveMotionPlanner implements CSVWritable {
         if (actual_lookahead_distance < Constants.kPathMinLookaheadDistance) {
             lookahead_state = new TimedState<>(new Pose2dWithCurvature(lookahead_state.state()
                     .getPose().transformBy(Pose2d.fromTranslation(new Translation2d(
-                            (mIsReversed ? -1.0 : 1.0) *(Constants.kPathMinLookaheadDistance - actual_lookahead_distance), 0.0))), 0.0), lookahead_state.t()
+                            (mIsReversed ? -1.0 : 1.0) * (Constants.kPathMinLookaheadDistance -
+                                    actual_lookahead_distance), 0.0))), 0.0), lookahead_state.t()
                     , lookahead_state.velocity(), lookahead_state.acceleration());
         }
 
@@ -244,6 +250,47 @@ public class DriveMotionPlanner implements CSVWritable {
         return new Output(wheel_velocities.left, wheel_velocities.right, left_voltage, right_voltage);
     }
 
+    protected Output updateNonlinearFeedback(DifferentialDrive.DriveDynamics dynamics, Pose2d current_state) {
+        // Implements eqn. 5.12 from https://www.dis.uniroma1.it/~labrob/pub/papers/Ramsete01.pdf
+        final double kBeta = 10.0;  // Angular/linear scaling coefficient, >0.
+        final double kZeta = 0.7;  // Damping coefficient, [0, 1].
+
+        // Compute gain parameter.
+        final double k = 2.0 * kZeta * Math.sqrt(kBeta * dynamics.chassis_velocity.linear * dynamics.chassis_velocity
+                .linear +
+                dynamics.chassis_velocity.angular * dynamics.chassis_velocity.angular);
+
+        //System.out.println("k=" + k);
+
+        // Compute error components.
+        final Translation2d translation_error = current_state.getTranslation().inverse().translateBy(mSetpoint.state
+                ().getTranslation()).scale(Units.inches_to_meters(1.0));
+        final Rotation2d angle_error = current_state.getRotation().inverse().rotateBy(mSetpoint.state().getRotation());
+        final double angle_error_rads = angle_error.getRadians();
+        final double sin_x_over_x = Util.epsilonEquals(angle_error_rads, 0.0) ?
+                1.0 : angle_error.sin() / angle_error_rads;
+        final DifferentialDrive.ChassisState adjusted_velocity = new DifferentialDrive.ChassisState(
+                dynamics.chassis_velocity.linear * angle_error.cos() +
+                        k * (current_state.getRotation().cos() * translation_error.x() + current_state.getRotation()
+                                .sin() * translation_error.y()),
+                dynamics.chassis_velocity.angular + k * angle_error_rads +
+                        dynamics.chassis_velocity.linear * kBeta * sin_x_over_x *
+                                (current_state.getRotation().cos() * translation_error.x() - current_state
+                                        .getRotation().sin() * translation_error.y()));
+
+        //System.out.println("Feedforward velocity: " + dynamics.chassis_velocity + ", feedback velocity: " +
+        // adjusted_velocity);
+
+        // Compute adjusted left and right wheel velocities.
+        final DifferentialDrive.WheelState wheel_velocities = mModel.solveInverseKinematics(adjusted_velocity);
+        final double left_voltage = dynamics.voltage.left + (wheel_velocities.left - dynamics.wheel_velocity
+                .left) / mModel.left_transmission().speed_per_volt();
+        final double right_voltage = dynamics.voltage.right + (wheel_velocities.right - dynamics.wheel_velocity
+                .right) / mModel.right_transmission().speed_per_volt();
+
+        return new Output(wheel_velocities.left, wheel_velocities.right, left_voltage, right_voltage);
+    }
+
     public Output update(double timestamp, Pose2d current_state) {
         if (mCurrentTrajectory == null) return new Output();
 
@@ -259,7 +306,8 @@ public class DriveMotionPlanner implements CSVWritable {
         // Compute the derivative of curvature.
         TimedState<Pose2dWithCurvature> prev_pt = mCurrentTrajectory.trajectory().getState(sample_point.index_floor());
         TimedState<Pose2dWithCurvature> next_pt = mCurrentTrajectory.trajectory().getState(sample_point.index_ceil());
-        double dcurvature_ds = (mIsReversed ? -1.0 : 1.0) * Units.meters_to_inches(next_pt.state().getCurvature() - prev_pt.state().getCurvature()) /
+        double dcurvature_ds = (mIsReversed ? -1.0 : 1.0) * Units.meters_to_inches(next_pt.state().getCurvature() -
+                prev_pt.state().getCurvature()) /
                 Units.inches_to_meters(prev_pt.state().distance(next_pt.state()));
         if (Double.isNaN(dcurvature_ds)) {
             dcurvature_ds = 0.0;
@@ -282,6 +330,8 @@ public class DriveMotionPlanner implements CSVWritable {
                 mOutput = updatePurePursuit(dynamics, current_state);
             } else if (mFollowerType == FollowerType.PID) {
                 mOutput = updatePID(dynamics, current_state);
+            } else if (mFollowerType == FollowerType.NONLINEAR_FEEDBACK) {
+                mOutput = updateNonlinearFeedback(dynamics, current_state);
             }
         } else {
             // TODO Possibly switch to a pose stabilizing controller?
