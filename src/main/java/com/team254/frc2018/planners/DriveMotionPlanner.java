@@ -48,13 +48,10 @@ public class DriveMotionPlanner implements CSVWritable {
 
     public DriveMotionPlanner() {
         final DCMotorTransmission transmission = new DCMotorTransmission(
-                1.0 / Constants.kDriveKvStraight,
-                1.0 / Constants.kDriveKvTurnInPlace,
+                1.0 / Constants.kDriveKv,
                 Units.inches_to_meters(Constants.kDriveWheelRadiusInches) * Units.inches_to_meters(Constants
-                        .kDriveWheelRadiusInches) * Constants.kRobotLinearInertia / (2.0 * Constants.kDriveKaStraight),
-                Units.inches_to_meters(Constants.kDriveWheelRadiusInches) * Constants.kRobotAngularInertia / (2.0 * Constants.kDriveKaTurnInPlace),
-                Constants.kDriveVInterceptStraight,
-                Constants.kDriveVInterceptTurnInPlace);
+                        .kDriveWheelRadiusInches) * Constants.kRobotLinearInertia / (2.0 * Constants.kDriveKa),
+                Constants.kDriveVIntercept);
         mModel = new DifferentialDrive(
                 Constants.kRobotLinearInertia,
                 Constants.kRobotAngularInertia,
@@ -194,9 +191,9 @@ public class DriveMotionPlanner implements CSVWritable {
         // Compute adjusted left and right wheel velocities.
         final DifferentialDrive.WheelState wheel_velocities = mModel.solveInverseKinematics(adjusted_velocity);
         final double left_voltage = dynamics.voltage.left + (wheel_velocities.left - dynamics.wheel_velocity
-                .left) / mModel.left_transmission().speed_per_volt(curvature);
+                .left) / mModel.left_transmission().speed_per_volt();
         final double right_voltage = dynamics.voltage.right + (wheel_velocities.right - dynamics.wheel_velocity
-                .right) / mModel.right_transmission().speed_per_volt(curvature);
+                .right) / mModel.right_transmission().speed_per_volt();
 
         return new Output(wheel_velocities.left, wheel_velocities.right, left_voltage, right_voltage);
     }
@@ -239,9 +236,9 @@ public class DriveMotionPlanner implements CSVWritable {
         // Compute adjusted left and right wheel velocities.
         final DifferentialDrive.WheelState wheel_velocities = mModel.solveInverseKinematics(adjusted_velocity);
         final double left_voltage = dynamics.voltage.left + (wheel_velocities.left - dynamics.wheel_velocity
-                .left) / mModel.left_transmission().speed_per_volt(curvature);
+                .left) / mModel.left_transmission().speed_per_volt();
         final double right_voltage = dynamics.voltage.right + (wheel_velocities.right - dynamics.wheel_velocity
-                .right) / mModel.right_transmission().speed_per_volt(curvature);
+                .right) / mModel.right_transmission().speed_per_volt();
 
         return new Output(wheel_velocities.left, wheel_velocities.right, left_voltage, right_voltage);
     }

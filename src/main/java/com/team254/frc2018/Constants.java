@@ -25,12 +25,9 @@ public class Constants {
     // Tuned dynamics
     public static final double kRobotLinearInertia = 60.0;  // kg TODO tune
     public static final double kRobotAngularInertia = 80.0 * Units.inches_to_meters(kDriveWheelTrackWidthInches) / 2.0;  // kg m TODO tune
-    public static final double kDriveVInterceptStraight = 1.055;  // V
-    public static final double kDriveKvStraight = 0.135;  // V per rad/s
-    public static final double kDriveKaStraight = 0.012;  // V per rad/s^2
-    public static final double kDriveVInterceptTurnInPlace = 1.37;  // V
-    public static final double kDriveKvTurnInPlace = 0.142;  // V per rad/s
-    public static final double kDriveKaTurnInPlace = 0.0128;  // V per rad/s^2
+    public static final double kDriveVIntercept = 1.055;  // V
+    public static final double kDriveKv = 0.135;  // V per rad/s
+    public static final double kDriveKa = 0.012;  // V per rad/s^2
 
     // Geometry
     public static final double kCenterToFrontBumperDistance = 38.25 / 2.0;

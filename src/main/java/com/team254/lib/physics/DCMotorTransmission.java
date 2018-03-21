@@ -10,113 +10,77 @@ public class DCMotorTransmission {
     // TODO add electrical constants?  (e.g. current)
 
     // All units must be SI!
-    protected final double speed_per_volt_straight_;  // rad/s per V (no load)protected final double speed_per_volt_straight_;  // rad/s per V (no load)
-    protected final double speed_per_volt_turn_in_place_;  // rad/s per V (no load)protected final double speed_per_volt_straight_;  // rad/s per V (no load)
-    protected final double torque_per_volt_straight_;  // N m per V (stall)
-    protected final double torque_per_volt_turn_in_place_;  // N m per V (stall)
-    protected final double friction_voltage_straight_;  // V
-    protected final double friction_voltage_turn_in_place_;  // V
+    protected final double speed_per_volt_;  // rad/s per V (no load)
+    protected final double torque_per_volt_;  // N m per V (stall)
+    protected final double friction_voltage_;  // V
 
-    private static double mix(double straight_value, double turn_in_place_value, double curvature) {
-        double rv = straight_value + turn_in_place_value * Math.abs(curvature);
-        if (Double.isInfinite(rv)) {
-            return turn_in_place_value;
-        } else {
-            return rv / Math.sqrt(curvature * curvature + 1);
-        }
+    public DCMotorTransmission(final double speed_per_volt,
+                               final double torque_per_volt,
+                               final double friction_voltage) {
+        speed_per_volt_ = speed_per_volt;
+        torque_per_volt_ = torque_per_volt;
+        friction_voltage_ = friction_voltage;
     }
 
-    public DCMotorTransmission(final double speed_per_volt_straight,
-                               final double speed_per_volt_turn_in_place,
-                               final double torque_per_volt_straight,
-                               final double torque_per_volt_turn_in_place,
-                               final double friction_voltage_straight,
-                               final double friction_voltage_turn_in_place) {
-        speed_per_volt_straight_ = speed_per_volt_straight;
-        speed_per_volt_turn_in_place_ = speed_per_volt_turn_in_place;
-        torque_per_volt_straight_ = torque_per_volt_straight;
-        torque_per_volt_turn_in_place_ = torque_per_volt_turn_in_place;
-        friction_voltage_straight_ = friction_voltage_turn_in_place;
-        friction_voltage_turn_in_place_ = friction_voltage_turn_in_place;
+    public double speed_per_volt() {
+        return speed_per_volt_;
+    }
+    public double torque_per_volt() {
+        return torque_per_volt_;
+    }
+    public double friction_voltage() {
+        return friction_voltage_;
     }
 
-    public double speed_per_volt_straight() {
-        return speed_per_volt_straight_;
-    }
-    public double speed_per_volt_turn_in_place() {
-        return speed_per_volt_turn_in_place_;
-    }
-    public double speed_per_volt(double curvature) {
-        return mix(speed_per_volt_straight_, speed_per_volt_turn_in_place_, curvature);
-    }
-    public double torque_per_volt_straight_() {
-        return torque_per_volt_straight_;
-    }
-    public double torque_per_volt_turn_in_place() {
-        return torque_per_volt_turn_in_place_;
-    }
-    public double torque_per_volt(double curvature) {
-        return mix(torque_per_volt_straight_, torque_per_volt_turn_in_place_, curvature);
-    }
-    public double friction_voltage_straight() {
-        return friction_voltage_straight_;
-    }
-    public double friction_voltage_turn_in_place() {
-        return friction_voltage_turn_in_place_;
-    }
-    public double friction_voltage(double curvature) {
-        return mix(friction_voltage_straight_, friction_voltage_turn_in_place_, curvature);
-    }
-
-    public double free_speed_at_voltage(final double curvature, final double voltage) {
+    public double free_speed_at_voltage(final double voltage) {
         if (voltage > Util.kEpsilon) {
-            return Math.max(0.0, voltage - friction_voltage(curvature)) * speed_per_volt(curvature);
+            return Math.max(0.0, voltage - friction_voltage()) * speed_per_volt();
         } else if (voltage < Util.kEpsilon) {
-            return Math.min(0.0, voltage + friction_voltage(curvature)) * speed_per_volt(curvature);
+            return Math.min(0.0, voltage + friction_voltage()) * speed_per_volt();
         } else {
             return 0.0;
         }
     }
 
-    public double getTorqueForVoltage(final double curvature, final double output_speed, final double voltage) {
+    public double getTorqueForVoltage(final double output_speed, final double voltage) {
         double effective_voltage = voltage;
         if (output_speed > Util.kEpsilon) {
             // Forward motion, rolling friction.
-            effective_voltage -= friction_voltage(curvature);
+            effective_voltage -= friction_voltage();
         } else if (output_speed < -Util.kEpsilon) {
             // Reverse motion, rolling friction.
-            effective_voltage += friction_voltage(curvature);
+            effective_voltage += friction_voltage();
         } else if (voltage > Util.kEpsilon) {
             // System is static, forward torque.
-            effective_voltage = Math.max(0.0, voltage - friction_voltage(curvature));
+            effective_voltage = Math.max(0.0, voltage - friction_voltage());
         } else if (voltage < -Util.kEpsilon) {
             // System is static, reverse torque.
-            effective_voltage = Math.min(0.0, voltage + friction_voltage(curvature));
+            effective_voltage = Math.min(0.0, voltage + friction_voltage());
         } else {
             // System is idle.
             return 0.0;
         }
-        return torque_per_volt(curvature) * (-output_speed / speed_per_volt(curvature) + effective_voltage);
+        return torque_per_volt() * (-output_speed / speed_per_volt() + effective_voltage);
     }
 
-    public double getVoltageForTorque(final double curvature, final double output_speed, final double torque) {
+    public double getVoltageForTorque(final double output_speed, final double torque) {
         double friction_voltage;
         if (output_speed > Util.kEpsilon) {
             // Forward motion, rolling friction.
-            friction_voltage = friction_voltage(curvature);
+            friction_voltage = friction_voltage();
         } else if (output_speed < -Util.kEpsilon) {
             // Reverse motion, rolling friction.
-            friction_voltage = -friction_voltage(curvature);
+            friction_voltage = -friction_voltage();
         } else if (torque > Util.kEpsilon) {
             // System is static, forward torque.
-            friction_voltage = friction_voltage(curvature);
+            friction_voltage = friction_voltage();
         } else if (torque < -Util.kEpsilon) {
             // System is static, reverse torque.
-            friction_voltage = -friction_voltage(curvature);
+            friction_voltage = -friction_voltage();
         } else {
             // System is idle.
             return 0.0;
         }
-        return torque / torque_per_volt(curvature) + output_speed / speed_per_volt(curvature) + friction_voltage;
+        return torque / torque_per_volt() + output_speed / speed_per_volt() + friction_voltage;
     }
 }

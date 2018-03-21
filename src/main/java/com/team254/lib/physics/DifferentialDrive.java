@@ -127,9 +127,9 @@ public class DifferentialDrive {
     public void solveForwardDynamics(DriveDynamics dynamics) {
         // TODO this assumes when stationary we are always accelerating with 0 curvature.
         final boolean left_stationary = Util.epsilonEquals(dynamics.wheel_velocity.left, 0.0) && Math.abs(dynamics
-                .voltage.left) < left_transmission_.friction_voltage_straight();
+                .voltage.left) < left_transmission_.friction_voltage();
         final boolean right_stationary = Util.epsilonEquals(dynamics.wheel_velocity.right, 0.0) && Math.abs(dynamics
-                .voltage.right) < right_transmission_.friction_voltage_straight();
+                .voltage.right) < right_transmission_.friction_voltage();
         if (left_stationary && right_stationary) {
             // Neither side breaks static friction.
             dynamics.wheel_torque.left = dynamics.wheel_torque.right = 0.0;
@@ -137,12 +137,13 @@ public class DifferentialDrive {
             dynamics.wheel_acceleration.left = dynamics.wheel_acceleration.right = 0.0;
             return;
         }
-        final double curvature = dynamics.chassis_velocity.angular / dynamics.chassis_velocity.linear;
+        double curvature = dynamics.chassis_velocity.angular / dynamics.chassis_velocity.linear;
+        if (Double.isNaN(curvature)) curvature = 0.0;
 
         // Solve for motor torques generated on each side.
-        dynamics.wheel_torque.left = left_transmission_.getTorqueForVoltage(curvature, dynamics.wheel_velocity.left, dynamics
+        dynamics.wheel_torque.left = left_transmission_.getTorqueForVoltage(dynamics.wheel_velocity.left, dynamics
                 .voltage.left);
-        dynamics.wheel_torque.right = right_transmission_.getTorqueForVoltage(curvature, dynamics.wheel_velocity.right, dynamics
+        dynamics.wheel_torque.right = right_transmission_.getTorqueForVoltage(dynamics.wheel_velocity.right, dynamics
                 .voltage.right);
 
         // Add forces and torques about the center of mass.
@@ -191,9 +192,9 @@ public class DifferentialDrive {
         double curvature = dynamics.chassis_velocity.angular / dynamics.chassis_velocity.linear;
         if (Double.isNaN(curvature)) curvature = 0.0;
         // Solve for input voltages.
-        dynamics.voltage.left = left_transmission_.getVoltageForTorque(curvature, dynamics.wheel_velocity.left, dynamics
+        dynamics.voltage.left = left_transmission_.getVoltageForTorque(dynamics.wheel_velocity.left, dynamics
                 .wheel_torque.left);
-        dynamics.voltage.right = right_transmission_.getVoltageForTorque(curvature, dynamics.wheel_velocity.right, dynamics
+        dynamics.voltage.right = right_transmission_.getVoltageForTorque(dynamics.wheel_velocity.right, dynamics
                 .wheel_torque.right);
     }
 
@@ -202,8 +203,8 @@ public class DifferentialDrive {
         // v = r_w*(wr + wl) / 2
         // w = r_w*(wr - wl) / (2 * r_wb)
         // Plug in max_abs_voltage for each wheel.
-        final double left_speed_at_max_voltage = left_transmission_.free_speed_at_voltage(curvature, max_abs_voltage);
-        final double right_speed_at_max_voltage = right_transmission_.free_speed_at_voltage(curvature, max_abs_voltage);
+        final double left_speed_at_max_voltage = left_transmission_.free_speed_at_voltage(max_abs_voltage);
+        final double right_speed_at_max_voltage = right_transmission_.free_speed_at_voltage(max_abs_voltage);
         if (Util.epsilonEquals(curvature, 0.0)) {
             return wheel_radius_ * Math.min(left_speed_at_max_voltage, right_speed_at_max_voltage);
         }
@@ -229,7 +230,7 @@ public class DifferentialDrive {
         public double max;
     }
 
-    // NOTE: curvature is redundant here in the case that chassis_velocity is non-stationary.  It is only read if the
+    // NOTE: curvature_hint is redundant here in the case that chassis_velocity is non-stationary.  It is only read if the
     // robot is stationary.
     public MinMax getMinMaxAcceleration(final ChassisState chassis_velocity, double curvature_hint, double
             max_abs_voltage) {
@@ -258,7 +259,7 @@ public class DifferentialDrive {
             for (double sign : Arrays.asList(1.0, -1.0)) {
                 final DCMotorTransmission fixed_transmission = left ? left_transmission_ : right_transmission_;
                 final DCMotorTransmission variable_transmission = left ? right_transmission_ : left_transmission_;
-                final double fixed_torque = fixed_transmission.getTorqueForVoltage(curvature, wheel_velocities.get(left), sign *
+                final double fixed_torque = fixed_transmission.getTorqueForVoltage(wheel_velocities.get(left), sign *
                         max_abs_voltage);
                 double variable_torque = 0.0;
                 if (left) {
@@ -266,8 +267,7 @@ public class DifferentialDrive {
                 } else {
                     variable_torque = fixed_torque * (linear_term - angular_term) / (linear_term + angular_term);
                 }
-                final double variable_voltage = variable_transmission.getVoltageForTorque(curvature,
-                        wheel_velocities.get(!left), variable_torque);
+                final double variable_voltage = variable_transmission.getVoltageForTorque(wheel_velocities.get(!left), variable_torque);
                 if (Math.abs(variable_voltage) <= max_abs_voltage + Util.kEpsilon) {
                     double accel = 0.0;
                     if (Double.isInfinite(curvature)) {
