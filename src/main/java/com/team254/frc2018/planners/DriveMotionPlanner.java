@@ -55,6 +55,7 @@ public class DriveMotionPlanner implements CSVWritable {
         mModel = new DifferentialDrive(
                 Constants.kRobotLinearInertia,
                 Constants.kRobotAngularInertia,
+                Constants.kRobotAngularDrag,
                 Units.inches_to_meters(Constants.kDriveWheelDiameterInches / 2.0),
                 Units.inches_to_meters(Constants.kDriveWheelTrackWidthInches / 2.0 * Constants.kTrackScrubFactor),
                 transmission, transmission
@@ -255,6 +256,7 @@ public class DriveMotionPlanner implements CSVWritable {
         TrajectorySamplePoint<TimedState<Pose2dWithCurvature>> sample_point = mCurrentTrajectory.advance(t);
         mSetpoint = sample_point.state();
 
+        // Compute the derivative of curvature.
         TimedState<Pose2dWithCurvature> prev_pt = mCurrentTrajectory.trajectory().getState(sample_point.index_floor());
         TimedState<Pose2dWithCurvature> next_pt = mCurrentTrajectory.trajectory().getState(sample_point.index_ceil());
         double dcurvature_ds = (mIsReversed ? -1.0 : 1.0) * Units.meters_to_inches(next_pt.state().getCurvature() - prev_pt.state().getCurvature()) /
@@ -262,7 +264,6 @@ public class DriveMotionPlanner implements CSVWritable {
         if (Double.isNaN(dcurvature_ds)) {
             dcurvature_ds = 0.0;
         }
-        // Compute the derivative of curvature.
         if (!mCurrentTrajectory.isDone()) {
             // Generate feedforward voltages.
             final double velocity_m = Units.inches_to_meters(mSetpoint.velocity());
@@ -273,15 +274,6 @@ public class DriveMotionPlanner implements CSVWritable {
                     new DifferentialDrive.ChassisState(acceleration_m,
                             acceleration_m * curvature_m + velocity_m * velocity_m * dcurvature_ds));
             mError = current_state.inverse().transformBy(mSetpoint.state().getPose());
-
-            // HACK scale up angular velocity for feedforward voltage.
-            final double kScalingFactor = 2.0;
-            final double scaled_curvature_m = curvature_m * kScalingFactor;
-            DifferentialDrive.DriveDynamics hack_dynamics = mModel.solveInverseDynamics(
-                    new DifferentialDrive.ChassisState(velocity_m, velocity_m * scaled_curvature_m),
-                    new DifferentialDrive.ChassisState(acceleration_m,
-                            acceleration_m * scaled_curvature_m + velocity_m * velocity_m * dcurvature_ds));
-            dynamics.voltage = hack_dynamics.voltage;
 
             if (mFollowerType == FollowerType.FEEDFORWARD_ONLY) {
                 mOutput = new Output(dynamics.wheel_velocity.left, dynamics.wheel_velocity.right, dynamics.voltage
