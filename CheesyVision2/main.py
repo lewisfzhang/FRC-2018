@@ -61,6 +61,13 @@ def process(input):
         # return the final list
         return blobs
     blobs = getBlobs(mask)
+    centroidAngles = []
+    for b in blobs:
+        x, y = b["centroid"]
+        dx, dy = x-pivotLoc[0], y-pivotLoc[1]
+        if dy == 0: continue
+        angle = -math.atan(dy/dx)*180/math.pi
+        centroidAngles.append(angle)
     
     # convert contours to a mask for line detection
     contourMask = np.zeros((height-2,width-2,1), np.uint8)
@@ -131,6 +138,9 @@ def process(input):
     for b in blobs:
         cv2.drawContours(output, [b["contour"]], 0, (0, 255, 0), 1)
         cv2.drawMarker(output, tuple(int(v) for v in b["centroid"]), (255,0,255), cv2.MARKER_CROSS)
+    
+    # scale pivot location
+    cv2.circle(output, pivotLoc, 3, (255,230,0), lineType=cv2.LINE_AA)
     
     # blow up image for easier viewing
     output = cv2.resize(output, (0,0), fx=VIEW_SCALE, fy=VIEW_SCALE, interpolation=cv2.INTER_NEAREST)
@@ -248,6 +258,9 @@ V_PAD = 30
 roi = None
 gotROI = False
 
+pivotLoc = None
+gotPivotLoc = False
+
 global width, height
 def onMouse_raw(event, x, y, flags, param):
     global roi, gotROI, width, height, rawViewScale
@@ -268,22 +281,30 @@ def onMouse_raw(event, x, y, flags, param):
         roi = roi[:2] + (x, y)
 
 def onMouse(event, x, y, flags, param):
-    global curFrame, minColor, maxColor
+    global curFrame, minColor, maxColor, pivotLoc, gotPivotLoc
     h, w = curFrame.shape[:2]
     x = int(x/VIEW_SCALE)
     y = int(y/VIEW_SCALE)
     if x >= w or y >= h:
         return
     
-    color = curFrame[y, x]
-    newMinColor = (float(color[0])-H_PAD, float(color[1])-S_PAD, float(color[2])-V_PAD)
-    newMaxColor = (float(color[0])+H_PAD, float(color[1])+S_PAD, float(color[2])+V_PAD)
-    if event == cv2.EVENT_RBUTTONDOWN or ((event == cv2.EVENT_LBUTTONDOWN) and maxColor == (0,0,0)):
-        minColor = newMinColor
-        maxColor = newMaxColor
-    if event == cv2.EVENT_LBUTTONDOWN or flags & cv2.EVENT_FLAG_LBUTTON != 0:
-        minColor = tuple(map(min, minColor, newMinColor))
-        maxColor = tuple(map(max, maxColor, newMaxColor))
+    leftDown  = flags & cv2.EVENT_FLAG_LBUTTON != 0
+    shiftDown = flags & cv2.EVENT_FLAG_SHIFTKEY != 0
+    if not gotPivotLoc or shiftDown:
+        if leftDown:
+            pivotLoc = (x, y)
+        if event == cv2.EVENT_LBUTTONUP:
+            gotPivotLoc = True
+    else:
+        color = curFrame[y, x]
+        newMinColor = (float(color[0])-H_PAD, float(color[1])-S_PAD, float(color[2])-V_PAD)
+        newMaxColor = (float(color[0])+H_PAD, float(color[1])+S_PAD, float(color[2])+V_PAD)
+        if event == cv2.EVENT_RBUTTONDOWN or ((event == cv2.EVENT_LBUTTONDOWN) and maxColor == (0,0,0)):
+            minColor = newMinColor
+            maxColor = newMaxColor
+        if event == cv2.EVENT_LBUTTONDOWN or leftDown:
+            minColor = tuple(map(min, minColor, newMinColor))
+            maxColor = tuple(map(max, maxColor, newMaxColor))
 
 def onKey(key):
     global minColor, maxColor
@@ -326,6 +347,8 @@ while True:
         return False
     if not isFrameOK():
         print("FRAME IS NOT OK, ret:", ret)
+        cap.release()
+        cap = initCapture()
     
     # show the raw frame (with ROI rect)
     frameDisp = frame.copy()
