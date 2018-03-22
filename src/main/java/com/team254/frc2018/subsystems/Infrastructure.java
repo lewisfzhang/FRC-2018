@@ -56,6 +56,7 @@ public class Infrastructure extends Subsystem {
 
     public void setIsDuringAuto(boolean isDuringAuto) {
         mIsDuringAuto = isDuringAuto;
+        if (isDuringAuto) stopCompressor();
     }
 
     @Override

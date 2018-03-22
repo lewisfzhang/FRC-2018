@@ -24,8 +24,8 @@ public class Constants {
 
     // Tuned dynamics
     public static final double kRobotLinearInertia = 60.0;  // kg TODO tune
-    public static final double kRobotAngularInertia = 80.0;  // kg m^2 TODO tune
-    public static final double kRobotAngularDrag = 0.0;  // N*m / (rad/sec) TODO tune
+    public static final double kRobotAngularInertia = 10.0;  // kg m^2 TODO tune
+    public static final double kRobotAngularDrag = 12.0;  // N*m / (rad/sec) TODO tune
     public static final double kDriveVIntercept = 1.055;  // V
     public static final double kDriveKv = 0.135;  // V per rad/s
     public static final double kDriveKa = 0.012;  // V per rad/s^2
@@ -60,12 +60,12 @@ public class Constants {
 
     // PID gains for drive velocity loop (LOW GEAR)
     // Units: setpoint, error, and output are in ticks per second.
-    public static final double kDriveLowGearVelocityKp = 0.5;
+    public static final double kDriveLowGearVelocityKp = 0.9;
     public static final double kDriveLowGearVelocityKi = 0.0;
-    public static final double kDriveLowGearVelocityKd = 30.0;
+    public static final double kDriveLowGearVelocityKd = 0.0;
     public static final double kDriveLowGearVelocityKf = 0.0;
     public static final int kDriveLowGearVelocityIZone = 0;
-    public static final double kDriveVoltageRampRate = 0.1;
+    public static final double kDriveVoltageRampRate = 0.01;
 
     // PID gains for elevator velocity loop (HIGH GEAR)
     // Units: setpoint, error, and output are in native units per 100ms.
@@ -85,10 +85,10 @@ public class Constants {
     public static final double kElevatorEpsilon = 1.0;//33000;
     public static final double kElevatorRampRate = 0.1;
 
-    public static final double kWristKp = 3.0;
+    public static final double kWristKp = 4.0;
     public static final double kWristKi = 0.0;
-    public static final double kWristKd = 80.0;
-    public static final double kWristKf = 1.0;
+    public static final double kWristKd = 200.0;
+    public static final double kWristKf = 1.1;
     public static final double kWristKaWithCube = 0.009;
     public static final double kWristKaWithoutCube = 0.003;
     public static final double kWristKfMultiplierWithCube = 0.15;

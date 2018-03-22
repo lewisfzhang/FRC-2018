@@ -32,7 +32,7 @@ public class DriveMotionPlanner implements CSVWritable {
         NONLINEAR_FEEDBACK
     }
 
-    FollowerType mFollowerType = FollowerType.PURE_PURSUIT;
+    FollowerType mFollowerType = FollowerType.NONLINEAR_FEEDBACK;
 
     public void setFollowerType(FollowerType type) {
         mFollowerType = type;
@@ -240,19 +240,14 @@ public class DriveMotionPlanner implements CSVWritable {
             adjusted_velocity.angular = curvature * dynamics.chassis_velocity.linear;
         }
 
-        // Compute adjusted left and right wheel velocities.
-        final DifferentialDrive.WheelState wheel_velocities = mModel.solveInverseKinematics(adjusted_velocity);
-        final double left_voltage = dynamics.voltage.left + (wheel_velocities.left - dynamics.wheel_velocity
-                .left) / mModel.left_transmission().speed_per_volt();
-        final double right_voltage = dynamics.voltage.right + (wheel_velocities.right - dynamics.wheel_velocity
-                .right) / mModel.right_transmission().speed_per_volt();
-
-        return new Output(wheel_velocities.left, wheel_velocities.right, left_voltage, right_voltage);
+        dynamics.chassis_velocity = adjusted_velocity;
+        dynamics.wheel_velocity = mModel.solveInverseKinematics(adjusted_velocity);
+        return new Output(dynamics.wheel_velocity.left, dynamics.wheel_velocity.right, dynamics.voltage.left, dynamics.voltage.right);
     }
 
     protected Output updateNonlinearFeedback(DifferentialDrive.DriveDynamics dynamics, Pose2d current_state) {
         // Implements eqn. 5.12 from https://www.dis.uniroma1.it/~labrob/pub/papers/Ramsete01.pdf
-        final double kBeta = 10.0;  // Angular/linear scaling coefficient, >0.
+        final double kBeta = 2.0;  // >0.
         final double kZeta = 0.7;  // Damping coefficient, [0, 1].
 
         // Compute gain parameter.
@@ -267,7 +262,7 @@ public class DriveMotionPlanner implements CSVWritable {
                 ().getTranslation()).scale(Units.inches_to_meters(1.0));
         final Rotation2d angle_error = current_state.getRotation().inverse().rotateBy(mSetpoint.state().getRotation());
         final double angle_error_rads = angle_error.getRadians();
-        final double sin_x_over_x = Util.epsilonEquals(angle_error_rads, 0.0) ?
+        final double sin_x_over_x = Util.epsilonEquals(angle_error_rads, 0.0, 1E-2) ?
                 1.0 : angle_error.sin() / angle_error_rads;
         final DifferentialDrive.ChassisState adjusted_velocity = new DifferentialDrive.ChassisState(
                 dynamics.chassis_velocity.linear * angle_error.cos() +
@@ -275,20 +270,16 @@ public class DriveMotionPlanner implements CSVWritable {
                                 .sin() * translation_error.y()),
                 dynamics.chassis_velocity.angular + k * angle_error_rads +
                         dynamics.chassis_velocity.linear * kBeta * sin_x_over_x *
-                                (current_state.getRotation().cos() * translation_error.x() - current_state
-                                        .getRotation().sin() * translation_error.y()));
+                                (current_state.getRotation().cos() * translation_error.y() - current_state
+                                        .getRotation().sin() * translation_error.x()));
 
-        //System.out.println("Feedforward velocity: " + dynamics.chassis_velocity + ", feedback velocity: " +
-        // adjusted_velocity);
+        System.out.println("ffv: " + dynamics.chassis_velocity + ", newv: " +
+         adjusted_velocity + ", error (m): " + translation_error + ", (deg): " + angle_error);
 
         // Compute adjusted left and right wheel velocities.
-        final DifferentialDrive.WheelState wheel_velocities = mModel.solveInverseKinematics(adjusted_velocity);
-        final double left_voltage = dynamics.voltage.left + (wheel_velocities.left - dynamics.wheel_velocity
-                .left) / mModel.left_transmission().speed_per_volt();
-        final double right_voltage = dynamics.voltage.right + (wheel_velocities.right - dynamics.wheel_velocity
-                .right) / mModel.right_transmission().speed_per_volt();
-
-        return new Output(wheel_velocities.left, wheel_velocities.right, left_voltage, right_voltage);
+        dynamics.chassis_velocity = adjusted_velocity;
+        dynamics.wheel_velocity = mModel.solveInverseKinematics(adjusted_velocity);
+        return new Output(dynamics.wheel_velocity.left, dynamics.wheel_velocity.right, dynamics.voltage.left, dynamics.voltage.right);
     }
 
     public Output update(double timestamp, Pose2d current_state) {

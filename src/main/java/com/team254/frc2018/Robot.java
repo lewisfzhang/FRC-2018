@@ -225,6 +225,8 @@ public class Robot extends IterativeRobot {
             // Poll FMS auto mode info and update mode creator cache
             mAutoFieldState.setSides(DriverStation.getInstance().getGameSpecificMessage());
             mAutoModeSelector.updateModeCreator();
+
+            System.gc();
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
             throw t;

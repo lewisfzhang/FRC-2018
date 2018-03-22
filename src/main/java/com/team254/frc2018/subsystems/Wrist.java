@@ -91,7 +91,7 @@ public class Wrist extends Subsystem {
         if (errorCode != ErrorCode.OK)
             DriverStation.reportError("Could not set wrist kd: " + errorCode, false);
 
-        errorCode = mMaster.config_kF(kMagicMotionSlot, Constants.kWristKf, Constants.kLongCANTimeoutMs);
+        errorCode = mMaster.config_kF(kMagicMotionSlot, Constants.kWristKf + Constants.kWristKd / 100.0, Constants.kLongCANTimeoutMs);
         if (errorCode != ErrorCode.OK)
             DriverStation.reportError("Could not set wrist kf: " + errorCode, false);
 
@@ -211,6 +211,7 @@ public class Wrist extends Subsystem {
             @Override
             public void onStart(double timestamp) {
                 mHomingStartTime = timestamp;
+                // startLogging();
             }
 
             @Override
@@ -245,7 +246,7 @@ public class Wrist extends Subsystem {
 
             @Override
             public void onStop(double timestamp) {
-
+                stopLogging();
             }
         });
     }
