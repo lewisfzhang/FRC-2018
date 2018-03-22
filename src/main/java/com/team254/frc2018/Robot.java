@@ -121,10 +121,6 @@ public class Robot extends IterativeRobot {
 
             // Reset all auto mode state.
             mAutoModeSelector.reset();
-            // Make a new auto mode executor and set auto mode
-            if (mAutoModeExecuter != null) {
-                mAutoModeExecuter.stop();
-            }
             mAutoModeExecuter = new AutoModeExecuter();
             mAutoModeSelector.updateModeCreator(true);
 
