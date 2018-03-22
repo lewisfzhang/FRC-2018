@@ -119,9 +119,15 @@ public class Robot extends IterativeRobot {
             Drive.getInstance().zeroSensors();
             RobotState.getInstance().reset(Timer.getFPGATimestamp(), Pose2d.identity());
 
+            // Reset all auto mode state.
             mAutoModeSelector.reset();
+            // Make a new auto mode executor and set auto mode
+            if (mAutoModeExecuter != null) {
+                mAutoModeExecuter.stop();
+            }
+            mAutoModeExecuter = new AutoModeExecuter();
+            mAutoModeSelector.updateModeCreator(true);
 
-            mDrive.stopLogging();
             mDisabledLooper.start();
 
             mLED.setEnableFaults(true);
@@ -144,19 +150,12 @@ public class Robot extends IterativeRobot {
             Drive.getInstance().zeroSensors();
             mInfrastructure.setIsDuringAuto(true);
 
-            // Make a new auto mode executor and set auto mode
-            if (mAutoModeExecuter != null) {
-                mAutoModeExecuter.stop();
-            }
-            mAutoModeExecuter = new AutoModeExecuter();
             Optional<AutoModeBase> selectedMode = mAutoModeSelector.getAutoMode(mAutoFieldState);
             AutoModeBase autoMode = selectedMode.isPresent() ? selectedMode.get() : new DoNothingMode();
             mAutoModeExecuter.setAutoMode(autoMode);
             System.out.println("Set auto mode to: " + autoMode.getClass().toString());
             mAutoModeExecuter.start();
 
-
-            mDrive.startLogging();
             mLED.setEnableFaults(false);
             mEnabledLooper.start();
         } catch (Throwable t) {
@@ -179,7 +178,6 @@ public class Robot extends IterativeRobot {
             mInfrastructure.setIsDuringAuto(false);
 
             RobotState.getInstance().reset(Timer.getFPGATimestamp(), Pose2d.identity());
-            mDrive.stopLogging();
             mEnabledLooper.start();
             mLED.setEnableFaults(false);
             mInHangMode = false;
@@ -224,7 +222,7 @@ public class Robot extends IterativeRobot {
 
             // Poll FMS auto mode info and update mode creator cache
             mAutoFieldState.setSides(DriverStation.getInstance().getGameSpecificMessage());
-            mAutoModeSelector.updateModeCreator();
+            mAutoModeSelector.updateModeCreator(false);
 
             System.gc();
         } catch (Throwable t) {

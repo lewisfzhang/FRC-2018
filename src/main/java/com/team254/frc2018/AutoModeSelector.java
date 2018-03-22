@@ -48,10 +48,10 @@ public class AutoModeSelector {
 
     }
 
-    public void updateModeCreator() {
+    public void updateModeCreator(boolean force_reset) {
         DesiredMode desiredMode = mModeChooser.getSelected();
         StartingPosition position = mPositionChooser.getSelected();
-        if(mCachedDesiredMode != desiredMode || position != mCachedPosition) {
+        if(mCachedDesiredMode != desiredMode || position != mCachedPosition || force_reset) {
             System.out.println("Auto selection changed, updating creator: desiredMode->" + desiredMode.name() + ", position->" + position.name());
             mCreator = getCreatorForParams(desiredMode, position);
         }
