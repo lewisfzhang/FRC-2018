@@ -6,6 +6,7 @@ import com.team254.frc2018.auto.actions.*;
 import com.team254.frc2018.auto.AutoConstants;
 import com.team254.frc2018.paths.TrajectoryGenerator;
 import com.team254.frc2018.states.SuperstructureConstants;
+import com.team254.frc2018.subsystems.Drive;
 import com.team254.lib.geometry.Translation2d;
 
 import java.util.Arrays;
@@ -15,8 +16,19 @@ public class FarScaleOnlyMode extends AutoModeBase {
     private static final TrajectoryGenerator mTrajectoryGenerator = TrajectoryGenerator.getInstance();
     private final boolean mStartedLeft;
 
+    private DriveTrajectory mSideStartToFarScale;
+    private DriveTrajectory mFarScaleToFarFence;
+    private DriveTrajectory mFarFenceToFarScale;
+    private DriveTrajectory mFarScaleToFarFence2;
+    private DriveTrajectory mFarFence2ToFarScale;
+
     public FarScaleOnlyMode(boolean robotStartedOnLeft) {
         mStartedLeft = robotStartedOnLeft;
+        mSideStartToFarScale = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().sideStartToFarScale.get(mStartedLeft), true);
+        mFarScaleToFarFence = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().farScaleToFarFence.get(mStartedLeft));
+        mFarFenceToFarScale = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().farFenceToFarScale.get(mStartedLeft));
+        mFarScaleToFarFence2 = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().farScaleToFarFence2.get(mStartedLeft));
+        mFarFence2ToFarScale = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().farFence2ToFarScale.get(mStartedLeft));
     }
 
     @Override
@@ -28,7 +40,7 @@ public class FarScaleOnlyMode extends AutoModeBase {
         // Score first cube
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().sideStartToFarScale.get(mStartedLeft), true),
+                        mSideStartToFarScale,
                         new SeriesAction(
                                 Arrays.asList(
                                         new WaitUntilInsideRegion(new Translation2d(130.0, 170.0), new Translation2d
@@ -46,7 +58,7 @@ public class FarScaleOnlyMode extends AutoModeBase {
         // Get second cube
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().farScaleToFarFence.get(mStartedLeft)),
+                        mFarScaleToFarFence,
                         new SetIntaking(true, false)
                 )
         ));
@@ -55,7 +67,7 @@ public class FarScaleOnlyMode extends AutoModeBase {
         // Score second cube
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().farFenceToFarScale.get(mStartedLeft)),
+                        mFarFenceToFarScale,
                         new SeriesAction(
                                 Arrays.asList(
                                         new SetSuperstructurePosition(SuperstructureConstants.kScaleLowHeight - 8.0,
@@ -71,7 +83,7 @@ public class FarScaleOnlyMode extends AutoModeBase {
         // Get third cube
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().farScaleToFarFence2.get(mStartedLeft)),
+                        mFarScaleToFarFence2,
                         new SetIntaking(true, false)
                 )
         ));
@@ -80,7 +92,7 @@ public class FarScaleOnlyMode extends AutoModeBase {
         // Score third cube
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().farFence2ToFarScale.get(mStartedLeft)),
+                        mFarFence2ToFarScale,
                         new SeriesAction(
                                 Arrays.asList(
                                         new SetSuperstructurePosition(SuperstructureConstants.kScaleLowHeight - 8.0,

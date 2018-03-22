@@ -14,9 +14,13 @@ public class NearScaleNearSwitchMode extends AutoModeBase {
 
     private static final TrajectoryGenerator mTrajectoryGenerator = TrajectoryGenerator.getInstance();
     private final boolean mStartedLeft;
+    private DriveTrajectory mSideStartToNearScale;
+    private DriveTrajectory mNearScaleToNearFence;
 
     public NearScaleNearSwitchMode(boolean robotStartedOnLeft) {
         mStartedLeft = robotStartedOnLeft;
+        mSideStartToNearScale = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().sideStartToNearScale.get(mStartedLeft), true);
+        mNearScaleToNearFence = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().nearScaleToNearFence.get(mStartedLeft));
     }
 
     @Override
@@ -27,7 +31,7 @@ public class NearScaleNearSwitchMode extends AutoModeBase {
 
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().sideStartToNearScale.get(mStartedLeft), true),
+                        mSideStartToNearScale,
                         new SeriesAction(
                                 Arrays.asList(
                                         new WaitUntilInsideRegion(new Translation2d(130.0, -20.0), new Translation2d
@@ -44,7 +48,7 @@ public class NearScaleNearSwitchMode extends AutoModeBase {
 
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().nearScaleToNearFence.get(mStartedLeft), false),
+                        mNearScaleToNearFence,
                         new SetIntaking(true, false)
                 )
         ));

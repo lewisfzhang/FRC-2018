@@ -6,6 +6,7 @@ import com.team254.frc2018.auto.actions.*;
 import com.team254.frc2018.auto.AutoConstants;
 import com.team254.frc2018.paths.TrajectoryGenerator;
 import com.team254.frc2018.states.SuperstructureConstants;
+import com.team254.frc2018.subsystems.Drive;
 import com.team254.lib.geometry.Translation2d;
 
 import java.util.Arrays;
@@ -14,9 +15,19 @@ public class NearScaleOnlyMode extends AutoModeBase {
 
     private static final TrajectoryGenerator mTrajectoryGenerator = TrajectoryGenerator.getInstance();
     private final boolean mStartedLeft;
+    private DriveTrajectory mSideStartToNearScale;
+    private DriveTrajectory mNearScaleToNearFence;
+    private DriveTrajectory mNearFenceToNearScale;
+    private DriveTrajectory mNearScaleToNearFence2;
+    private DriveTrajectory mNearFence2ToNearScale;
 
     public NearScaleOnlyMode(boolean robotStartedOnLeft) {
         mStartedLeft = robotStartedOnLeft;
+        mSideStartToNearScale = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().sideStartToNearScale.get(mStartedLeft), true);
+        mNearScaleToNearFence = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().nearScaleToNearFence.get(mStartedLeft));
+        mNearFenceToNearScale = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().nearFenceToNearScale.get(mStartedLeft));
+        mNearScaleToNearFence2 = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().nearScaleToNearFence2.get(mStartedLeft));
+        mNearFence2ToNearScale = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().nearFence2ToNearScale.get(mStartedLeft));
     }
 
     @Override
@@ -28,7 +39,7 @@ public class NearScaleOnlyMode extends AutoModeBase {
         // Score first cube
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().sideStartToNearScale.get(mStartedLeft), true),
+                        mSideStartToNearScale,
                         new SeriesAction(
                                 Arrays.asList(
                                         new WaitUntilInsideRegion(new Translation2d(130.0, -20.0), new Translation2d
@@ -46,7 +57,7 @@ public class NearScaleOnlyMode extends AutoModeBase {
         // Get second cube
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().nearScaleToNearFence.get(mStartedLeft)),
+                        mNearScaleToNearFence,
                         new SetIntaking(true, false)
                 )
         ));
@@ -55,7 +66,7 @@ public class NearScaleOnlyMode extends AutoModeBase {
         // Score second cube
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().nearFenceToNearScale.get(mStartedLeft)),
+                        mNearFenceToNearScale,
                         new SeriesAction(
                                 Arrays.asList(
                                         new SetSuperstructurePosition(SuperstructureConstants.kScaleLowHeight - 8.0,
@@ -71,7 +82,7 @@ public class NearScaleOnlyMode extends AutoModeBase {
         // Get third cube
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().nearScaleToNearFence2.get(mStartedLeft)),
+                        mNearScaleToNearFence2,
                         new SetIntaking(true, false)
                 )
         ));
@@ -80,7 +91,7 @@ public class NearScaleOnlyMode extends AutoModeBase {
         // Score third cube
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().nearFence2ToNearScale.get(mStartedLeft)),
+                        mNearFence2ToNearScale,
                         new SeriesAction(
                                 Arrays.asList(
                                         new WaitAction(AutoConstants.kWaitForCubeTime), //drive backwards for a little with the intake down so it gets the chance to pick up cubes jammed against the wall

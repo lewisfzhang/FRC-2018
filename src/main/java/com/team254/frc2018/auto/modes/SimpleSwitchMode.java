@@ -15,32 +15,30 @@ import java.util.Arrays;
 public class SimpleSwitchMode extends AutoModeBase {
 
     final boolean mGoLeft;
+    private DriveTrajectory mTrajectory;
 
     public SimpleSwitchMode(boolean driveToLeftSwitch) {
         mGoLeft = driveToLeftSwitch;
+
+        if(mGoLeft) {
+            mTrajectory = new DriveTrajectory(TrajectoryGenerator.getInstance().getTrajectorySet().centerStartToLeftSwitch, true);
+        } else {
+            mTrajectory = new DriveTrajectory(TrajectoryGenerator.getInstance().getTrajectorySet().centerStartToRightSwitch, true);
+        }
     }
 
 
     @Override
     protected void routine() throws AutoModeEndedException {
-        Trajectory<TimedState<Pose2dWithCurvature>> trajectory;
-        if(mGoLeft) {
-            trajectory = TrajectoryGenerator.getInstance().getTrajectorySet().centerStartToLeftSwitch;
-        } else {
-            trajectory = TrajectoryGenerator.getInstance().getTrajectorySet().centerStartToRightSwitch;
-        }
-
         System.out.println("Running Simple switch");
         runAction(new SetIntaking(false, false));
 
-
         runAction(new ParallelAction(
                 Arrays.asList(
-                        (new DriveTrajectory(trajectory, true)),
+                        mTrajectory,
                         (new SetSuperstructurePosition(SuperstructureConstants.kSwitchHeightBackwards, SuperstructureConstants.kStowedPositionAngle, true))
                 )
         ));
-
 
         runAction(new ShootCube(AutoConstants.kStrongShootPower));
     }
