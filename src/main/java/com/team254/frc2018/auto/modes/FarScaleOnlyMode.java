@@ -20,6 +20,7 @@ public class FarScaleOnlyMode extends AutoModeBase {
     private DriveTrajectory mFarFenceToFarScale;
     private DriveTrajectory mFarScaleToFarFence2;
     private DriveTrajectory mFarFence2ToFarScale;
+    private DriveTrajectory mFarScaleToFarFence3;
 
     public FarScaleOnlyMode(boolean robotStartedOnLeft) {
         mStartedLeft = robotStartedOnLeft;
@@ -28,6 +29,7 @@ public class FarScaleOnlyMode extends AutoModeBase {
         mFarFenceToFarScale = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().farFenceToFarScale.get(mStartedLeft));
         mFarScaleToFarFence2 = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().farScaleToFarFence2.get(mStartedLeft));
         mFarFence2ToFarScale = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().farFence2ToFarScale.get(mStartedLeft));
+        mFarScaleToFarFence3 = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().farScaleToFarFence3.get(mStartedLeft));
     }
 
     @Override
@@ -101,6 +103,14 @@ public class FarScaleOnlyMode extends AutoModeBase {
                                         new ShootCube(AutoConstants.kStrongShootPower)
                                 )
                         )
+                )
+        ));
+
+        // Get fourth cube
+        runAction(new ParallelAction(
+                Arrays.asList(
+                        mFarScaleToFarFence3,
+                        new SetIntaking(true, false)
                 )
         ));
 

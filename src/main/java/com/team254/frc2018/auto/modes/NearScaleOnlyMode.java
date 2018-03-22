@@ -19,6 +19,8 @@ public class NearScaleOnlyMode extends AutoModeBase {
     private DriveTrajectory mNearFenceToNearScale;
     private DriveTrajectory mNearScaleToNearFence2;
     private DriveTrajectory mNearFence2ToNearScale;
+    private DriveTrajectory mNearScaleToNearFence3;
+    private DriveTrajectory mNearFence3ToNearScale;
 
     public NearScaleOnlyMode(boolean robotStartedOnLeft) {
         mStartedLeft = robotStartedOnLeft;
@@ -27,6 +29,8 @@ public class NearScaleOnlyMode extends AutoModeBase {
         mNearFenceToNearScale = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().nearFenceToNearScale.get(mStartedLeft));
         mNearScaleToNearFence2 = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().nearScaleToNearFence2.get(mStartedLeft));
         mNearFence2ToNearScale = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().nearFence2ToNearScale.get(mStartedLeft));
+        mNearScaleToNearFence3 = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().nearScaleToNearFence3.get(mStartedLeft));
+        mNearFence3ToNearScale = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().nearFence3ToNearScale.get(mStartedLeft));
     }
 
     @Override
@@ -104,5 +108,30 @@ public class NearScaleOnlyMode extends AutoModeBase {
                 )
         ));
 
+        // Get fourth cube
+        runAction(new ParallelAction(
+                Arrays.asList(
+                        mNearScaleToNearFence3,
+                        new SetIntaking(true, false)
+                )
+        ));
+        runAction(new WaitAction(AutoConstants.kWaitForCubeTime));
+
+        // Score fourth cube
+        runAction(new ParallelAction(
+                Arrays.asList(
+                        mNearFence3ToNearScale,
+                        new SeriesAction(
+                                Arrays.asList(
+                                        new WaitAction(AutoConstants.kWaitForCubeTime), //drive backwards for a little with the intake down so it gets the chance to pick up cubes jammed against the wall
+                                        new SetSuperstructurePosition(SuperstructureConstants.kScaleLowHeight - 8.0,
+                                                SuperstructureConstants.kScoreBackwardsAngle, true),
+                                        new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d
+                                                (260, 1000), mStartedLeft),
+                                        new ShootCube(AutoConstants.kStrongShootPower)
+                                )
+                        )
+                )
+        ));
     }
 }
