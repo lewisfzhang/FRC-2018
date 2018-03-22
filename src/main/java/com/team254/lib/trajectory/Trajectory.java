@@ -45,6 +45,10 @@ public class Trajectory<S extends State<S>> implements CSVWritable {
         return getPoint(index).state();
     }
 
+    public S getFirstState() { return getState(0); }
+
+    public S getLastState() { return getState(length() - 1); }
+
     public TrajectorySamplePoint<S> getInterpolated(final double index) {
         if (isEmpty()) {
             return null;

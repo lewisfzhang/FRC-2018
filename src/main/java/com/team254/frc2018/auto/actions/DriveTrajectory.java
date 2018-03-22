@@ -44,8 +44,6 @@ public class DriveTrajectory implements Action {
 
     @Override
     public void done() {
-
-
     }
 
     @Override

@@ -6,7 +6,6 @@ import com.team254.frc2018.auto.actions.*;
 import com.team254.frc2018.auto.AutoConstants;
 import com.team254.frc2018.paths.TrajectoryGenerator;
 import com.team254.frc2018.states.SuperstructureConstants;
-import com.team254.frc2018.subsystems.Drive;
 import com.team254.lib.geometry.Translation2d;
 
 import java.util.Arrays;
