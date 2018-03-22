@@ -134,6 +134,12 @@ def process(input):
     # blow up image for easier viewing
     output = cv2.resize(output, (0,0), fx=VIEW_SCALE, fy=VIEW_SCALE, interpolation=cv2.INTER_NEAREST)
     
+    def drawText(text, x, y, color, size=0.4, fromM=0):
+        textSz, _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, size, 1)
+        y += int(textSz[1]*fromM)
+        cv2.putText(output, text, (x, y), cv2.FONT_HERSHEY_SIMPLEX,
+                    size, color, 1, cv2.LINE_AA)
+    
     # FPS/debug text
     global dt, fps
     debugStr = ""
@@ -141,21 +147,7 @@ def process(input):
         debugStr += f"{int(dt*1000)} ms"
     if fps is not None:
         debugStr += f" ({int(fps)} FPS)"
-    cv2.putText(output, debugStr, (10,int(height*VIEW_SCALE)-10), cv2.FONT_HERSHEY_SIMPLEX,
-                0.4, (0,255,0), lineType=cv2.LINE_AA)
-    
-    def drawText(text, x, y, color, size=0.4, fromM=0):
-        textSz, _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, size, 1)
-        y += int(textSz[1]*fromM)
-        cv2.putText(output, text, (x, y), cv2.FONT_HERSHEY_SIMPLEX,
-                    size, color, 1, cv2.LINE_AA)
-    
-    # RESET text
-    # resetText = "[Space] to reset"
-    # textSz, _ = cv2.getTextSize(resetText, cv2.FONT_HERSHEY_SIMPLEX, 0.4, 1)
-    # cv2.rectangle(output, (0, 0), tuple(v + 10 for v in textSz), (255,255,255), cv2.FILLED)
-    # cv2.putText(output, resetText, (5, 5+textSz[1]), cv2.FONT_HERSHEY_SIMPLEX,
-    #             0.4, (0,0,0), 1, cv2.LINE_AA)
+    drawText(debugStr, 10, int(height*VIEW_SCALE)-10, (0,255,0))
     
     # visualize the detected angle and state
     angle = getAngle()
