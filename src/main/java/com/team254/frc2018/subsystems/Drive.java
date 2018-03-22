@@ -99,8 +99,8 @@ public class Drive extends Subsystem {
         talon.setSensorPhase(true);
         talon.enableVoltageCompensation(true);
         talon.configVoltageCompSaturation(12.0, Constants.kLongCANTimeoutMs);
-        talon.configVelocityMeasurementPeriod(VelocityMeasPeriod.Period_5Ms, Constants.kLongCANTimeoutMs);
-        talon.configVelocityMeasurementWindow(4, Constants.kLongCANTimeoutMs);
+        talon.configVelocityMeasurementPeriod(VelocityMeasPeriod.Period_20Ms, Constants.kLongCANTimeoutMs);
+        talon.configVelocityMeasurementWindow(1, Constants.kLongCANTimeoutMs);
         talon.configClosedloopRamp(Constants.kDriveVoltageRampRate, Constants.kLongCANTimeoutMs);
         talon.configNeutralDeadband(0.04, 0);
     }
