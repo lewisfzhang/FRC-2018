@@ -130,6 +130,7 @@ def process(input):
     # blobs/contours being used for detection
     for b in blobs:
         cv2.drawContours(output, [b["contour"]], 0, (0, 255, 0), 1)
+        cv2.drawMarker(output, tuple(int(v) for v in b["centroid"]), (255,0,255), cv2.MARKER_CROSS)
     
     # blow up image for easier viewing
     output = cv2.resize(output, (0,0), fx=VIEW_SCALE, fy=VIEW_SCALE, interpolation=cv2.INTER_NEAREST)
@@ -294,9 +295,12 @@ def onKey(key):
         zeroAngle()
 
 ######### VideoCapture #########
-cap = cv2.VideoCapture(1)
-cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+def initCapture():
+    cap = cv2.VideoCapture(1)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+    return cap
+cap = initCapture()
 # cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
 # cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
 
@@ -312,6 +316,16 @@ while True:
     # frame = cv2.imread("inputP1.jpg")
     height, width = frame.shape[:2]
     # print([width, height])
+    
+    def isFrameOK():
+        if not ret:
+            return False
+        for i in [0,1,2]:
+            if cv2.countNonZero(frame[:,:,i]) > 0:
+                return True
+        return False
+    if not isFrameOK():
+        print("FRAME IS NOT OK, ret:", ret)
     
     # show the raw frame (with ROI rect)
     frameDisp = frame.copy()
