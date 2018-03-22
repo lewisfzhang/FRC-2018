@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 import math
 import time
+import collections
 
 def fadeHSV(image, mask):
     fade = cv2.multiply(image, (0.3,))
@@ -71,13 +72,13 @@ def process(input):
     # binary search & Hough transform to find the two best lines
     NUM_LINES = 2
     lines = []
-    minT = 20
-    maxT = 200
+    minT = 70
+    maxT = 266
     numIters = 0
     while maxT > minT+1:
         # detect lines with the current threshold
         midT = (minT+maxT)//2
-        lines = cv2.HoughLines(contourMask, 3, np.pi*0.1/180, midT)
+        lines = cv2.HoughLines(contourMask, 5, np.pi*0.1/180, midT)
         lines = [] if lines is None else [a[0] for a in lines]
         
         # remove clearly invalid lines
@@ -103,7 +104,7 @@ def process(input):
         elif len(lines) > NUM_LINES:
             minT = midT
         else:
-            print(numIters, flush=True)
+            # print(numIters, midT)
             break
     
     if len(lines) == NUM_LINES:
@@ -165,8 +166,8 @@ def process(input):
         offY = -25*math.sin(rads)
         cv2.line(output, (int(25-offX),int(25-offY)), (int(25+offX),int(25+offY)), (0,0,0), 1, cv2.LINE_AA)
         drawText(f"angle = {int(angle*10)/10} deg", 60, 25, (0,255,0), fromM=0.5)
-        if waitingForSteady:
-            drawText(f"STEADYING", 5, 60, (0,0,255), fromM=1)
+        if errorMsg is not None:
+            drawText(errorMsg, 5, 60, (0,0,255), fromM=1)
     
     cv2.imshow("output", output)
 
@@ -180,12 +181,15 @@ def process(input):
 MAX_SCALE_SPEED = 10.0 # maximum normal movement speed (degrees per second)
 STEADY_HISTORY = 2.0 # amount of history to consider (seconds)
 STEADY_THRESHOLD = 4.0 # angle variation considered "steady" (degrees)
+MAX_SKEW = 10.0 # maximum skew between the top & bottom lines (degrees)
 
 curAngle = 0
 zeroPoint = 0
 lastUpdate = None
-lastAngles = []
+lastAngles = collections.deque()
 waitingForSteady = True
+
+errorMsg = None
 
 def isSteady():
     if len(lastAngles) == 0: return False
@@ -195,28 +199,33 @@ def isSteady():
     return maxA - minA < STEADY_THRESHOLD
 
 def updateAngle(a1, a2):
-    global curAngle, zeroPoint, lastUpdate, lastAngles, waitingForSteady
+    global curAngle, zeroPoint, lastUpdate, lastAngles, waitingForSteady, errorMsg
     now = time.perf_counter()
     if lastUpdate is None: lastUpdate = now
     dt = now - lastUpdate
     lastUpdate = now
     
-    newAngle = (a1+a2)/2
+    if abs(a1 - a2) > MAX_SKEW:
+        errorMsg = "SKEWED"
+        return # the lines are too skewed
+    newAngle = (a1 + a2) / 2
     delta = newAngle - curAngle
     
     # update history
     lastAngles.append((now, newAngle))
     while now - lastAngles[0][0] > STEADY_HISTORY:
-        lastAngles.pop(0)
+        lastAngles.popleft()
     
     # if it's moving too fast, stop updating until it's steady again
     if abs(delta) > MAX_SCALE_SPEED*dt:
         waitingForSteady = True
     if waitingForSteady and not isSteady():
+        errorMsg = "STEADYING"
         return
     waitingForSteady = False
     
     curAngle += min(max(delta, -MAX_SCALE_SPEED*dt), +MAX_SCALE_SPEED*dt)
+    errorMsg = None
 
 def getRawAngle():
     return curAngle
