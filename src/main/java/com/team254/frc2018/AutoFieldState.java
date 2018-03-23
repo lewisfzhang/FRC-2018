@@ -33,6 +33,14 @@ public class AutoFieldState {
     public AutoFieldState(Pose2d startPose) {
         this.startPose = startPose;
     }
+
+    /**
+     * Initializes switch/scale sides.
+     */
+    public AutoFieldState(String sideData) {
+        this.startPose = null;
+        setSides(sideData);
+    }
     
     /**
      * Sets the switch/scale sides based on the given GameSpecificMessage.
