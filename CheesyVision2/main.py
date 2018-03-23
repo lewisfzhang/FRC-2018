@@ -74,7 +74,7 @@ def process(input):
         x, y = b["median"]
         dx, dy = x-pivotLoc[0], y-pivotLoc[1]
         if dx == 0: continue
-        angle = -math.atan(dy/dx)*180/math.pi
+        angle = -math.degrees(math.atan(dy/dx))
         centerAngles.append(angle)
     
     # convert contours to a mask for line detection
@@ -125,7 +125,7 @@ def process(input):
     # send angle data to be processed
     lineAngles = None
     if len(lines) == NUM_LINES:
-        lineAngles = (90 - l[1]*180/math.pi for l in lines)
+        lineAngles = (90 - math.degrees(l[1]) for l in lines)
     updateAngle(lineAngles, centerAngles)
     
     
@@ -176,7 +176,7 @@ def process(input):
     angle = getAngle()
     if angle is not None:
         cv2.rectangle(output, (0, 0), (50, 50), (255,255,255), cv2.FILLED)
-        rads = angle*math.pi/180
+        rads = math.radians(angle)
         offX = 25*math.cos(rads)
         offY = -25*math.sin(rads)
         cv2.line(output, (int(25-offX),int(25-offY)), (int(25+offX),int(25+offY)), (0,0,0), 1, cv2.LINE_AA)
@@ -267,9 +267,10 @@ def getRawAngle():
     return curAngle
 
 SCALE_VIEW_ANGLE = 0 # degrees
-COS_SCALE_VIEW_ANGLE = math.cos(SCALE_VIEW_ANGLE*180/math.pi)
+COS_SCALE_VIEW_ANGLE = math.cos(math.radians(SCALE_VIEW_ANGLE))
 def getAngle():
-    return math.atan(COS_SCALE_VIEW_ANGLE*math.tan(curAngle - zeroPoint))
+    screenAngle = math.radians(curAngle - zeroPoint)
+    return math.degrees(math.atan(COS_SCALE_VIEW_ANGLE*math.tan(screenAngle)))
 
 def zeroAngle():
     global zeroPoint
