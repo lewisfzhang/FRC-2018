@@ -349,8 +349,9 @@ def onKey(key):
         zeroAngle()
 
 ######### VideoCapture #########
+CAPTURE_DEVICE = 1
 def initCapture():
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(CAPTURE_DEVICE)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
     return cap
@@ -381,7 +382,7 @@ while True:
     if not isFrameOK():
         print("FRAME IS NOT OK, ret:", ret)
         cap.release()
-        cap = initCapture()
+        cap = initCapture() # reopen the VideoCapture
     
     # show the raw frame (with ROI rect)
     frameDisp = frame.copy()
