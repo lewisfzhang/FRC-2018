@@ -41,6 +41,11 @@ def process(input):
     #cv2.imshow("mask", mask)
     
     # find & filter blobs in the mask
+    def getMedian(contour):
+        xs, ys = zip(*(p[0] for p in contour))
+        medianX = (max(xs) + min(xs)) / 2
+        medianY = (max(ys) + min(ys)) / 2
+        return (medianX, medianY)
     def getBlobs(mask):
         # find contours
         _, contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -52,7 +57,8 @@ def process(input):
             m = cv2.moments(contour)
             area = m["m00"]
             centroid = (m["m10"]/m["m00"], m["m01"]/m["m00"]) if area>0 else (math.inf, math.inf)
-            blobs.append({"contour": contour, "area": area, "centroid": centroid})
+            median = getMedian(contour)
+            blobs.append({"contour": contour, "area": area, "centroid": centroid, "median": median})
             maxArea = max(maxArea, area)
         
         # prune blobs
@@ -61,13 +67,15 @@ def process(input):
         # return the final list
         return blobs
     blobs = getBlobs(mask)
-    centroidAngles = []
+    
+    # compute angles from blob centers to the pivot
+    centerAngles = []
     for b in blobs:
-        x, y = b["centroid"]
+        x, y = b["median"]
         dx, dy = x-pivotLoc[0], y-pivotLoc[1]
-        if dy == 0: continue
+        if dx == 0: continue
         angle = -math.atan(dy/dx)*180/math.pi
-        centroidAngles.append(angle)
+        centerAngles.append(angle)
     
     # convert contours to a mask for line detection
     contourMask = np.zeros((height-2,width-2,1), np.uint8)
@@ -114,8 +122,11 @@ def process(input):
             # print(numIters, midT)
             break
     
+    # send angle data to be processed
+    lineAngles = None
     if len(lines) == NUM_LINES:
-        updateAngle(*[90 - l[1]*180/math.pi for l in lines])
+        lineAngles = (90 - l[1]*180/math.pi for l in lines)
+    updateAngle(lineAngles, centerAngles)
     
     
     ### draw debug info onto the input image and show it ###
@@ -138,6 +149,7 @@ def process(input):
     for b in blobs:
         cv2.drawContours(output, [b["contour"]], 0, (0, 255, 0), 1)
         cv2.drawMarker(output, tuple(int(v) for v in b["centroid"]), (255,0,255), cv2.MARKER_CROSS)
+        cv2.drawMarker(output, tuple(int(v) for v in b["median"]), (0,255,255), cv2.MARKER_CROSS)
     
     # scale pivot location
     cv2.circle(output, pivotLoc, 3, (255,230,0), lineType=cv2.LINE_AA)
@@ -181,10 +193,11 @@ def process(input):
 #########################################
 
 # constants (TODO: tune these)
-MAX_SCALE_SPEED = 10.0 # maximum normal movement speed (degrees per second)
-STEADY_HISTORY = 2.0 # amount of history to consider (seconds)
+MAX_SCALE_SPEED = 60.0 # maximum normal movement speed (degrees per second)
+STEADY_HISTORY = 1.0 # amount of history to consider (seconds)
 STEADY_THRESHOLD = 4.0 # angle variation considered "steady" (degrees)
 MAX_SKEW = 10.0 # maximum skew between the top & bottom lines (degrees)
+CENTER_ANGLE_REJECT_THRESHOLD = 7.0 # reject blob-center-angles farther off than this (degrees)
 
 curAngle = 0
 zeroPoint = 0
@@ -201,17 +214,38 @@ def isSteady():
     maxA = max(angles)
     return maxA - minA < STEADY_THRESHOLD
 
-def updateAngle(a1, a2):
+def updateAngle(lineAngles, centerAngles):
     global curAngle, zeroPoint, lastUpdate, lastAngles, waitingForSteady, errorMsg
+    errorMsg = None
+    
+    # calculate dt
     now = time.perf_counter()
     if lastUpdate is None: lastUpdate = now
     dt = now - lastUpdate
     lastUpdate = now
     
-    if abs(a1 - a2) > MAX_SKEW:
-        errorMsg = "SKEWED"
-        return # the lines are too skewed
-    newAngle = (a1 + a2) / 2
+    maxDelta = MAX_SCALE_SPEED*dt
+    newAngle = None
+    
+    # use the the angles from the lines, if available
+    if lineAngles is None:
+        errorMsg = "LINES FAILED"
+    else:
+        a1, a2 = lineAngles
+        if abs(a1 - a2) > MAX_SKEW:
+            errorMsg = "SKEWED"
+        else:
+            newAngle = (a1 + a2) / 2
+    
+    # fall back to angles from centers of blobs, if necessary
+    if newAngle is None:
+        centerAngles = [a for a in centerAngles if abs(a-curAngle) < CENTER_ANGLE_REJECT_THRESHOLD]
+        if len(centerAngles) > 0:
+            newAngle = sum(centerAngles)/len(centerAngles)
+        else:
+            errorMsg = "NO GOOD DATA"
+            return
+    
     delta = newAngle - curAngle
     
     # update history
@@ -220,15 +254,14 @@ def updateAngle(a1, a2):
         lastAngles.popleft()
     
     # if it's moving too fast, stop updating until it's steady again
-    if abs(delta) > MAX_SCALE_SPEED*dt:
+    if abs(delta) > maxDelta:
         waitingForSteady = True
     if waitingForSteady and not isSteady():
         errorMsg = "STEADYING"
         return
     waitingForSteady = False
     
-    curAngle += min(max(delta, -MAX_SCALE_SPEED*dt), +MAX_SCALE_SPEED*dt)
-    errorMsg = None
+    curAngle += min(max(delta, -maxDelta), +maxDelta)
 
 def getRawAngle():
     return curAngle
