@@ -266,8 +266,10 @@ def updateAngle(lineAngles, centerAngles):
 def getRawAngle():
     return curAngle
 
+SCALE_VIEW_ANGLE = 0 # degrees
+COS_SCALE_VIEW_ANGLE = math.cos(SCALE_VIEW_ANGLE*180/math.pi)
 def getAngle():
-    return curAngle - zeroPoint
+    return math.atan(COS_SCALE_VIEW_ANGLE*math.tan(curAngle - zeroPoint))
 
 def zeroAngle():
     global zeroPoint
