@@ -180,7 +180,7 @@ def process(input):
         offX = 25*math.cos(rads)
         offY = -25*math.sin(rads)
         cv2.line(output, (int(25-offX),int(25-offY)), (int(25+offX),int(25+offY)), (0,0,0), 1, cv2.LINE_AA)
-        drawText(f"angle = {int(angle*10)/10} deg", 60, 25, (0,255,0), fromM=0.5)
+        drawText(f"angle = {int(angle*10)/10} deg  (tip = {getTip()})", 60, 25, (0,255,0), fromM=0.5)
         if errorMsg is not None:
             drawText(errorMsg, 5, 60, (0,0,255), fromM=1)
     
@@ -198,6 +198,7 @@ STEADY_HISTORY = 1.0 # amount of history to consider (seconds)
 STEADY_THRESHOLD = 4.0 # angle variation considered "steady" (degrees)
 MAX_SKEW = 10.0 # maximum skew between the top & bottom lines (degrees)
 CENTER_ANGLE_REJECT_THRESHOLD = 7.0 # reject blob-center-angles farther off than this (degrees)
+TIPPED_THRESHOLD = 5.0 # angle at which the scale is "tipped" (degrees)
 
 curAngle = 0
 zeroPoint = 0
@@ -271,6 +272,12 @@ COS_SCALE_VIEW_ANGLE = math.cos(math.radians(SCALE_VIEW_ANGLE))
 def getAngle():
     screenAngle = math.radians(curAngle - zeroPoint)
     return math.degrees(math.atan(COS_SCALE_VIEW_ANGLE*math.tan(screenAngle)))
+
+def getTip(): # TODO: hysteresis?
+    angle = getAngle()
+    if angle > +TIPPED_THRESHOLD: return +1
+    if angle < -TIPPED_THRESHOLD: return -1
+    return 0
 
 def zeroAngle():
     global zeroPoint
