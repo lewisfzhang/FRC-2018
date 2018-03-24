@@ -175,12 +175,13 @@ def process(input):
     # visualize the detected angle and state
     angle = getAngle()
     if angle is not None:
-        cv2.rectangle(output, (0, 0), (50, 50), (255,255,255), cv2.FILLED)
+        PRE_SZ = 50
+        cv2.rectangle(output, (0, 0), (PRE_SZ, PRE_SZ), (255,255,255), cv2.FILLED)
         rads = math.radians(angle)
-        offX = 25*math.cos(rads)
-        offY = -25*math.sin(rads)
-        cv2.line(output, (int(25-offX),int(25-offY)), (int(25+offX),int(25+offY)), (0,0,0), 1, cv2.LINE_AA)
-        drawText(f"angle = {int(angle*10)/10} deg  (tip = {getTip()})", 60, 25, (0,255,0), fromM=0.5)
+        offX = 200*math.cos(rads)
+        offY = -200*math.sin(rads)
+        cv2.line(output[0:PRE_SZ, 0:PRE_SZ], (int(PRE_SZ/2-offX),int(PRE_SZ/2-offY)), (int(PRE_SZ/2+offX),int(PRE_SZ/2+offY)), (0,0,0), lineType=cv2.LINE_AA)
+        drawText(f"angle = {int(angle*10)/10} deg  (tip = {getTip()})", 60, PRE_SZ//2, (0,255,0), fromM=0.5)
         if errorMsg is not None:
             drawText(errorMsg, 5, 60, (0,0,255), fromM=1)
     
@@ -359,7 +360,7 @@ def onKey(key):
         zeroAngle()
 
 ######### VideoCapture #########
-CAPTURE_DEVICE = 1
+CAPTURE_DEVICE = 2
 def initCapture():
     cap = cv2.VideoCapture(CAPTURE_DEVICE)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
