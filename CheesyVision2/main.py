@@ -1,8 +1,11 @@
 import numpy as np
 import cv2
+from networktables import NetworkTables
+
 import math
 import time
 import collections
+import socket
 
 def fadeHSV(image, mask):
     fade = cv2.multiply(image, (0.3,))
@@ -289,6 +292,22 @@ def zeroAngle():
 
 
 #########################################
+########## robot communication ##########
+#########################################
+
+robotIP = None
+print("Resolving robot IP...")
+try:
+    robotIP = socket.gethostbyname("roborio-254-frc.local")
+    print(f"    robot IP: {robotIP}")
+except:
+    print("    failed.")
+NetworkTables.initialize(server=robotIP)
+smartDashboard = NetworkTables.getTable("SmartDashboard")
+
+
+
+#########################################
 ############### main code ###############
 #########################################
 
@@ -417,6 +436,11 @@ while True:
             frameCount = 0
         
         cv2.setMouseCallback("output", onMouse)
+    
+    smartDashboard.putNumber("scaleAngle", getAngle())
+    smartDashboard.putNumber("scaleTip", getTip())
+    if not NetworkTables.isConnected():
+        print("NetworkTables not connected")
     
     key = cv2.waitKey(1) & 0xFF
     if key == 27:
