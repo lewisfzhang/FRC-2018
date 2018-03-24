@@ -6,12 +6,11 @@ import math
 import time
 import collections
 import socket
+import argparse
 
 def fadeHSV(image, mask):
     fade = cv2.multiply(image, (0.3,))
     cv2.subtract(image, fade, image, cv2.bitwise_not(mask))
-
-VIEW_SCALE = 2.0
 
 def process(input):
     height, width = input.shape[:2]
@@ -158,7 +157,8 @@ def process(input):
     cv2.circle(output, pivotLoc, 3, (255,230,0), lineType=cv2.LINE_AA)
     
     # blow up image for easier viewing
-    output = cv2.resize(output, (0,0), fx=VIEW_SCALE, fy=VIEW_SCALE, interpolation=cv2.INTER_NEAREST)
+    if args.roi_scale != 1.0:
+        output = cv2.resize(output, (0,0), fx=args.roi_scale, fy=args.roi_scale, interpolation=cv2.INTER_NEAREST)
     
     def drawText(text, x, y, color, size=0.4, fromM=0):
         textSz, _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, size, 1)
@@ -173,7 +173,7 @@ def process(input):
         debugStr += f"{int(dt*1000)} ms"
     if fps is not None:
         debugStr += f" ({int(fps)} FPS)"
-    drawText(debugStr, 10, int(height*VIEW_SCALE)-10, (0,255,0))
+    drawText(debugStr, 10, int(height*args.roi_scale)-10, (0,255,0))
     
     # visualize the detected angle and state
     angle = getAngle()
@@ -291,19 +291,38 @@ def zeroAngle():
 
 
 
+##########################################
+######### command-line arguments #########
+##########################################
+
+parser = argparse.ArgumentParser(description="Program to track the scale arm using OpenCV. (by Quinn Tucker '18)")
+parser.add_argument("-n", "--no-network", action="store_true", help="don't initialize/output to NetworkTables")
+parser.add_argument("-d", "--device", type=int, default=2, metavar="ID",
+                    help="device ID of the camera to use (default: %(default)s)")
+parser.add_argument("--raw-scale", type=float, default=1.0, metavar="FACTOR",
+                    help="amount to scale the raw frame display by (default: %(default)s)")
+parser.add_argument("--roi-scale", type=float, default=2.0, metavar="FACTOR",
+                    help="amount to scale the region-of-interest display by (default: %(default)s)")
+args = parser.parse_args()
+
+
+
 #########################################
 ########## robot communication ##########
 #########################################
 
-robotIP = None
-print("Resolving robot IP...")
-try:
-    robotIP = socket.gethostbyname("roborio-254-frc.local")
-    print(f"    robot IP: {robotIP}")
-except:
-    print("    failed.")
-NetworkTables.initialize(server=robotIP)
-smartDashboard = NetworkTables.getTable("SmartDashboard")
+if args.no_network:
+    print("Skipping NetworkTables initialization")
+else:
+    robotIP = None
+    print("Resolving robot IP...")
+    try:
+        robotIP = socket.gethostbyname("roborio-254-frc.local")
+        print(f"    robot IP: {robotIP}")
+    except:
+        print("    failed.")
+    NetworkTables.initialize(server=robotIP)
+    smartDashboard = NetworkTables.getTable("SmartDashboard")
 
 
 
@@ -326,9 +345,9 @@ gotPivotLoc = False
 
 global width, height
 def onMouse_raw(event, x, y, flags, param):
-    global roi, gotROI, width, height, rawViewScale
-    x = int(x/rawViewScale)
-    y = int(y/rawViewScale)
+    global roi, gotROI, width, height
+    x = int(x/args.raw_scale)
+    y = int(y/args.raw_scale)
     x = min(max(x, 0), width-1)
     y = min(max(y, 0), height-1)
     if event == cv2.EVENT_LBUTTONDOWN:
@@ -346,8 +365,8 @@ def onMouse_raw(event, x, y, flags, param):
 def onMouse(event, x, y, flags, param):
     global curFrame, minColor, maxColor, pivotLoc, gotPivotLoc
     h, w = curFrame.shape[:2]
-    x = int(x/VIEW_SCALE)
-    y = int(y/VIEW_SCALE)
+    x = int(x/args.roi_scale)
+    y = int(y/args.roi_scale)
     if x >= w or y >= h:
         return
     
@@ -379,13 +398,14 @@ def onKey(key):
         zeroAngle()
 
 ######### VideoCapture #########
-CAPTURE_DEVICE = 2
 def initCapture():
-    cap = cv2.VideoCapture(CAPTURE_DEVICE)
+    print("Initializing VideoCapture...")
+    cap = cv2.VideoCapture(args.device)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
     # cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
     # cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+    print("    done.")
     return cap
 cap = initCapture()
 
@@ -394,7 +414,6 @@ dt = fps = None
 frameCount = 0
 lastSecond = time.perf_counter()
 
-global rawViewScale
 while True:
     # Capture frame-by-frame
     ret, frame = cap.read()
@@ -410,7 +429,7 @@ while True:
                 return True
         return False
     if not isFrameOK():
-        print("FRAME IS NOT OK, ret:", ret)
+        print("Got a bad frame, reinitializing.")
         cap.release()
         cap = initCapture() # reopen the VideoCapture
     
@@ -418,11 +437,11 @@ while True:
     frameDisp = frame.copy()
     if roi is not None:
         cv2.rectangle(frameDisp, roi[:2], roi[2:], (0, 0, 255), 2)
+    if args.raw_scale != 1.0:
+        frameDisp = cv2.resize(frameDisp, (0,0), fx=args.raw_scale, fy=args.raw_scale)#, interpolation=cv2.INTER_NEAREST)
     if not NetworkTables.isConnected():
         cv2.putText(frameDisp, "NetworkTables is not connected", (10, height-10),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0,0,255), 1, cv2.LINE_AA)
-    rawViewScale = 1.0#800/width
-    # frameDisp = cv2.resize(frameDisp, (1280, 720))#, interpolation=cv2.INTER_NEAREST)
     cv2.imshow("raw", frameDisp)
     cv2.setMouseCallback("raw", onMouse_raw)
     
@@ -440,8 +459,9 @@ while True:
         
         cv2.setMouseCallback("output", onMouse)
     
-    smartDashboard.putNumber("scaleAngle", getAngle())
-    smartDashboard.putNumber("scaleTip", getTip())
+    if not args.no_network:
+        smartDashboard.putNumber("scaleAngle", getAngle())
+        smartDashboard.putNumber("scaleTip", getTip())
     
     key = cv2.waitKey(1) & 0xFF
     if key == 27:
