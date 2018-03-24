@@ -51,7 +51,8 @@ public class Robot extends IterativeRobot {
                     Elevator.getInstance(),
                     CarriageCanifier.getInstance(),
                     Infrastructure.getInstance(),
-                    Limelight.getInstance()
+                    Limelight.getInstance(),
+                    CheesyVision2.getInstance()
             )
     );
 
@@ -64,6 +65,7 @@ public class Robot extends IterativeRobot {
     private Superstructure mSuperstructure = Superstructure.getInstance();
     private Elevator mElevator = Elevator.getInstance();
     private Limelight mLimelight = Limelight.getInstance();
+    private CheesyVision2 mCheesyVision2 = CheesyVision2.getInstance();
 
     private LatchedBoolean mRunIntakeReleased = new LatchedBoolean();
     private LatchedBoolean mShootReleased = new LatchedBoolean();
