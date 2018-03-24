@@ -198,29 +198,36 @@ def process(input):
 
 # constants (TODO: tune these)
 MAX_SCALE_SPEED = 60.0 # maximum normal movement speed (degrees per second)
-STEADY_HISTORY = 1.0 # amount of history to consider (seconds)
+SMOOTH_HISTORY = 1.5 # amount of history to consider for smoothing (seconds)
+SMOOTH_FIT_DEGREE = 2 # degree of polynomial fit for smoothing
+STEADY_HISTORY = 1.0 # amount of history to consider for steadiness (seconds)
 STEADY_THRESHOLD = 4.0 # angle variation considered "steady" (degrees)
 MAX_SKEW = 10.0 # maximum skew between the top & bottom lines (degrees)
 CENTER_ANGLE_REJECT_THRESHOLD = 7.0 # reject blob-center-angles farther off than this (degrees)
 TIPPED_THRESHOLD = 5.0 # angle at which the scale is "tipped" (degrees)
 
+# ignore RankWarnings from np.polyfit
+import warnings
+warnings.simplefilter("ignore", np.RankWarning)
+
 curAngle = 0
 zeroPoint = 0
 lastUpdate = None
-lastAngles = collections.deque()
+smoothHistory = collections.deque()
+steadyHistory = collections.deque()
 waitingForSteady = True
 
 errorMsg = None
 
 def isSteady():
-    if len(lastAngles) == 0: return False
-    angles = [e[1] for e in lastAngles]
+    if len(steadyHistory) == 0: return False
+    angles = [e[1] for e in steadyHistory]
     minA = min(angles)
     maxA = max(angles)
     return maxA - minA < STEADY_THRESHOLD
 
 def updateAngle(lineAngles, centerAngles):
-    global curAngle, zeroPoint, lastUpdate, lastAngles, waitingForSteady, errorMsg
+    global curAngle, zeroPoint, lastUpdate, waitingForSteady, errorMsg
     errorMsg = None
     
     # calculate dt
@@ -231,6 +238,14 @@ def updateAngle(lineAngles, centerAngles):
     
     maxDelta = MAX_SCALE_SPEED*dt
     newAngle = None
+    
+    # history update functions
+    def updateHistory(list, history, value):
+        list.append((now, value))
+        while now - list[0][0] > history:
+            list.popleft()
+    def updateSmoothHistory():
+        updateHistory(smoothHistory, SMOOTH_HISTORY, curAngle)
     
     # use the the angles from the lines, if available
     if lineAngles is None:
@@ -249,24 +264,25 @@ def updateAngle(lineAngles, centerAngles):
             newAngle = sum(centerAngles)/len(centerAngles)
         else:
             errorMsg = "NO GOOD DATA"
+            updateSmoothHistory()
             return
     
     delta = newAngle - curAngle
     
     # update history
-    lastAngles.append((now, newAngle))
-    while now - lastAngles[0][0] > STEADY_HISTORY:
-        lastAngles.popleft()
+    updateHistory(steadyHistory, STEADY_HISTORY, newAngle)
     
     # if it's moving too fast, stop updating until it's steady again
     if abs(delta) > maxDelta:
         waitingForSteady = True
     if waitingForSteady and not isSteady():
         errorMsg = "STEADYING"
+        updateSmoothHistory()
         return
     waitingForSteady = False
     
     curAngle += min(max(delta, -maxDelta), +maxDelta)
+    updateSmoothHistory()
 
 def getRawAngle():
     return curAngle
@@ -274,7 +290,12 @@ def getRawAngle():
 SCALE_VIEW_ANGLE = 0 # degrees
 COS_SCALE_VIEW_ANGLE = math.cos(math.radians(SCALE_VIEW_ANGLE))
 def getAngle():
-    screenAngle = math.radians(curAngle - zeroPoint)
+    if len(smoothHistory) == 0: return 0.0
+    # do a polynomial fit on the history, putting more weight on recent data points
+    weights = [x**0 for x in range(1, len(smoothHistory)+1)]
+    fitFunc = np.poly1d(np.polyfit(*zip(*smoothHistory), SMOOTH_FIT_DEGREE, w=weights))
+    lastTime = smoothHistory[-1][0]
+    screenAngle = math.radians(fitFunc(lastTime) - zeroPoint)
     return math.degrees(math.atan(COS_SCALE_VIEW_ANGLE*math.tan(screenAngle)))
 
 def getTip(): # TODO: hysteresis?
@@ -303,6 +324,8 @@ parser.add_argument("--raw-scale", type=float, default=1.0, metavar="FACTOR",
                     help="amount to scale the raw frame display by (default: %(default)s)")
 parser.add_argument("--roi-scale", type=float, default=2.0, metavar="FACTOR",
                     help="amount to scale the region-of-interest display by (default: %(default)s)")
+parser.add_argument("--csv-output", type=argparse.FileType("w"), metavar="FILE",
+                    help="optional file to write angle data to")
 args = parser.parse_args()
 
 
@@ -419,7 +442,6 @@ while True:
     ret, frame = cap.read()
     # frame = cv2.imread("inputP1.jpg")
     height, width = frame.shape[:2]
-    # print([width, height])
     
     def isFrameOK():
         if not ret:
@@ -458,6 +480,9 @@ while True:
             frameCount = 0
         
         cv2.setMouseCallback("output", onMouse)
+        
+        if args.csv_output is not None:
+            args.csv_output.write(f"{start}, {curAngle}, {getAngle()}, {getTip()}\n")
     
     if not args.no_network:
         smartDashboard.putNumber("scaleAngle", getAngle())
@@ -472,3 +497,5 @@ while True:
 # When everything done, release the capture
 cap.release()
 cv2.destroyAllWindows()
+if args.csv_output is not None:
+    args.csv_output.close()
