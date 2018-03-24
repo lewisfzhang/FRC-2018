@@ -38,7 +38,7 @@ def process(input):
     # reduce noise with morphology
     def getKernel(size):
         return cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (size,size))
-    KERNEL_SIZE = 4#10
+    KERNEL_SIZE = 4
     cv2.morphologyEx(mask, cv2.MORPH_CLOSE, getKernel(KERNEL_SIZE), mask)
     cv2.morphologyEx(mask, cv2.MORPH_OPEN,  getKernel(KERNEL_SIZE//2), mask)
     #cv2.imshow("mask", mask)
@@ -384,10 +384,10 @@ def initCapture():
     cap = cv2.VideoCapture(CAPTURE_DEVICE)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+    # cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+    # cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
     return cap
 cap = initCapture()
-# cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
-# cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
 
 global dt, fps
 dt = fps = None
@@ -418,8 +418,11 @@ while True:
     frameDisp = frame.copy()
     if roi is not None:
         cv2.rectangle(frameDisp, roi[:2], roi[2:], (0, 0, 255), 2)
+    if not NetworkTables.isConnected():
+        cv2.putText(frameDisp, "NetworkTables is not connected", (10, height-10),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0,0,255), 1, cv2.LINE_AA)
     rawViewScale = 1.0#800/width
-    # frameDisp = cv2.resize(frameDisp, (800, 450), interpolation=cv2.INTER_NEAREST)
+    # frameDisp = cv2.resize(frameDisp, (1280, 720))#, interpolation=cv2.INTER_NEAREST)
     cv2.imshow("raw", frameDisp)
     cv2.setMouseCallback("raw", onMouse_raw)
     
@@ -439,8 +442,6 @@ while True:
     
     smartDashboard.putNumber("scaleAngle", getAngle())
     smartDashboard.putNumber("scaleTip", getTip())
-    if not NetworkTables.isConnected():
-        print("NetworkTables not connected")
     
     key = cv2.waitKey(1) & 0xFF
     if key == 27:
