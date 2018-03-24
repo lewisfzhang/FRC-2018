@@ -85,10 +85,10 @@ public class Constants {
     public static final double kElevatorEpsilon = 1.0;//33000;
     public static final double kElevatorRampRate = 0.1;
 
-    public static final double kWristKp = 4.0;
+    public static final double kWristKp = 3.0;
     public static final double kWristKi = 0.0;
-    public static final double kWristKd = 200.0;
-    public static final double kWristKf = 1.1;
+    public static final double kWristKd = 80.0;
+    public static final double kWristKf = 1.0;
     public static final double kWristKaWithCube = 0.009;
     public static final double kWristKaWithoutCube = 0.003;
     public static final double kWristKfMultiplierWithCube = 0.15;
