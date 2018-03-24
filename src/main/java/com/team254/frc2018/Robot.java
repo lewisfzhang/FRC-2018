@@ -561,6 +561,7 @@ public class Robot extends IterativeRobot {
         mAutoFieldState.outputToSmartDashboard();
         mEnabledLooper.outputToSmartDashboard();
         mAutoModeSelector.outputToSmartDashboard();
+        mCheesyVision2.outputTelemetry();
         // SmartDashboard.updateValues();
     }
 }
