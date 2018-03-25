@@ -22,6 +22,7 @@ import com.team254.lib.trajectory.timing.TimedState;
 import com.team254.lib.util.CheesyDriveHelper;
 import com.team254.lib.util.CrashTracker;
 import com.team254.lib.util.LatchedBoolean;
+import com.team254.lib.util.MinTimeBoolean;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Timer;
@@ -70,12 +71,13 @@ public class Robot extends IterativeRobot {
     private LatchedBoolean mRunIntakeReleased = new LatchedBoolean();
     private LatchedBoolean mShootReleased = new LatchedBoolean();
     private LatchedBoolean mRunIntakePressed = new LatchedBoolean();
-    private double mLastShootTime = Double.NaN;
 
     private LatchedBoolean mHangModeEnablePressed = new LatchedBoolean();
     private LatchedBoolean mLowShiftPressed = new LatchedBoolean();
     private LatchedBoolean mHighShiftPressed = new LatchedBoolean();
     private LatchedBoolean mAutoExchangePressed = new LatchedBoolean();
+
+    private MinTimeBoolean mShoot = new MinTimeBoolean(Constants.kMinShootTimeSec);
 
     private boolean mInHangMode;
 
@@ -180,6 +182,8 @@ public class Robot extends IterativeRobot {
             mLED.setEnableFaults(false);
             mInHangMode = false;
             mForklift.retract();
+
+            mShoot.update(false, Double.POSITIVE_INFINITY);
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
             throw t;
@@ -260,8 +264,8 @@ public class Robot extends IterativeRobot {
                 }
             }
 
-            mDrive.setOpenLoop(mCheesyDriveHelper.cheesyDrive(throttle, turn, mControlBoard.getQuickTurn(),
-                    mDrive.isHighGear()));
+            mDrive.setOpenLoop(mCheesyDriveHelper.cheesyDrive(throttle, turn,
+                    mControlBoard.getQuickTurn(), mDrive.isHighGear()));
 
             if (mHangModeEnablePressed.update(mControlBoard.getEnableHangMode())) {
                 if (mInHangMode) {
@@ -305,19 +309,12 @@ public class Robot extends IterativeRobot {
                 boolean runIntakePosition = mControlBoard.getIntakePosition() &&
                         (mWrist.getAngle() > SuperstructureConstants.kMinIntakePositionAngle);
                 boolean runIntake = mControlBoard.getRunIntake() || runIntakePosition;
-                boolean shoot = mControlBoard.getShoot();
                 boolean runIntakeReleased = mRunIntakeReleased.update(!runIntake);
                 boolean intakeAction = false;
 
-                if (shoot) {
-                    mLastShootTime = timestamp;
-
-                }
-                if (!shoot && !Double.isNaN(mLastShootTime) &&
-                        (timestamp - mLastShootTime < Constants.kMinShootTimeSec)) {
-                    shoot = true;
-                }
+                boolean shoot = mShoot.update(mControlBoard.getShoot(), timestamp);
                 boolean shootReleased = mShootReleased.update(!shoot);
+
                 if (runIntake) {
                     mIntake.getOrKeepCube();
                     intakeAction = true;
