@@ -319,8 +319,12 @@ def zeroAngle():
 
 parser = argparse.ArgumentParser(description="Program to track the scale arm using OpenCV. (by Quinn Tucker '18)")
 parser.add_argument("-n", "--no-network", action="store_true", help="don't initialize/output to NetworkTables")
-parser.add_argument("-d", "--device", type=int, default=2, metavar="ID",
+optGroup = parser.add_mutually_exclusive_group()
+optGroup.add_argument("-d", "--device", type=int, default=2, metavar="ID",
                     help="device ID of the camera to use (default: %(default)s)")
+optGroup.add_argument("-i", "--input-image", metavar="FILE", help="optional image to use instead of a live camera")
+parser.add_argument("-s", "--scale", type=float, default=1.0, metavar="FACTOR",
+                      help="amount to up/downsample each frame (optional)")
 parser.add_argument("--raw-scale", type=float, default=1.0, metavar="FACTOR",
                     help="amount to scale the raw frame display by (default: %(default)s)")
 parser.add_argument("--roi-scale", type=float, default=2.0, metavar="FACTOR",
@@ -423,6 +427,7 @@ def onKey(key):
 
 ######### VideoCapture #########
 def initCapture():
+    if args.input_image is not None: return None
     print("Initializing VideoCapture...")
     cap = cv2.VideoCapture(args.device)
     if not cap.isOpened():
@@ -436,6 +441,10 @@ def initCapture():
     return cap
 cap = initCapture()
 
+if args.input_image is not None:
+    inputImage = cv2.imread(args.input_image)
+    inputImage = cv2.resize(inputImage, (0,0), fx=args.scale, fy=args.scale)
+
 global dt, fps
 dt = fps = None
 frameCount = 0
@@ -443,27 +452,33 @@ lastSecond = time.perf_counter()
 
 while True:
     # read the next frame and make sure it's valid
-    ret, frame = cap.read()
-    def isFrameOK():
-        if not ret or frame is None:
+    if args.input_image is None:
+        ret, frame = cap.read()
+        def isFrameOK():
+            if not ret or frame is None:
+                return False
+            for i in [0,1,2]:
+                if cv2.countNonZero(frame[:,:,i]) > 0:
+                    return True
             return False
-        for i in [0,1,2]:
-            if cv2.countNonZero(frame[:,:,i]) > 0:
-                return True
-        return False
-    if not isFrameOK():
-        print("Got a bad frame, reinitializing.")
-        cap.release()
-        cap = initCapture() # reopen the VideoCapture
+        if not isFrameOK():
+            print("Got a bad frame, reinitializing.")
+            cap.release()
+            cap = initCapture() # reopen the VideoCapture
+        if args.scale != 1.0:
+            frame = cv2.resize(frame, (0,0), fx=args.scale, fy=args.scale)
+    else:
+        frame = inputImage.copy()
     
     height, width = frame.shape[:2]
     
     # show the raw frame (with ROI rect)
     frameDisp = frame.copy()
-    if roi is not None:
-        cv2.rectangle(frameDisp, roi[:2], roi[2:], (0, 0, 255), 2)
     if args.raw_scale != 1.0:
-        frameDisp = cv2.resize(frameDisp, (0,0), fx=args.raw_scale, fy=args.raw_scale)#, interpolation=cv2.INTER_NEAREST)
+        frameDisp = cv2.resize(frameDisp, (0,0), fx=args.raw_scale, fy=args.raw_scale)
+    if roi is not None:
+        sROI = tuple(int(v*args.raw_scale) for v in roi)
+        cv2.rectangle(frameDisp, sROI[:2], sROI[2:], (0, 0, 255), 2)
     if not NetworkTables.isConnected():
         cv2.putText(frameDisp, "NetworkTables is not connected", (10, height-10),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0,0,255), 1, cv2.LINE_AA)
@@ -498,7 +513,8 @@ while True:
         onKey(key)
 
 # cleanup VideoCapture, windows, and CSV output
-cap.release()
+if args.input_image is None:
+    cap.release()
 cv2.destroyAllWindows()
 if args.csv_output is not None:
     args.csv_output.close()
