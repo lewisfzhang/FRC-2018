@@ -7,6 +7,7 @@ import time
 import collections
 import socket
 import argparse
+import sys
 
 def fadeHSV(image, mask):
     fade = cv2.multiply(image, (0.3,))
@@ -424,6 +425,9 @@ def onKey(key):
 def initCapture():
     print("Initializing VideoCapture...")
     cap = cv2.VideoCapture(args.device)
+    if not cap.isOpened():
+        print(f"    failed to open camera device {args.device}")
+        sys.exit(1)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
     # cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
@@ -438,13 +442,10 @@ frameCount = 0
 lastSecond = time.perf_counter()
 
 while True:
-    # Capture frame-by-frame
+    # read the next frame and make sure it's valid
     ret, frame = cap.read()
-    # frame = cv2.imread("inputP1.jpg")
-    height, width = frame.shape[:2]
-    
     def isFrameOK():
-        if not ret:
+        if not ret or frame is None:
             return False
         for i in [0,1,2]:
             if cv2.countNonZero(frame[:,:,i]) > 0:
@@ -454,6 +455,8 @@ while True:
         print("Got a bad frame, reinitializing.")
         cap.release()
         cap = initCapture() # reopen the VideoCapture
+    
+    height, width = frame.shape[:2]
     
     # show the raw frame (with ROI rect)
     frameDisp = frame.copy()
@@ -494,7 +497,7 @@ while True:
     elif key != 0xFF:
         onKey(key)
 
-# When everything done, release the capture
+# cleanup VideoCapture, windows, and CSV output
 cap.release()
 cv2.destroyAllWindows()
 if args.csv_output is not None:
