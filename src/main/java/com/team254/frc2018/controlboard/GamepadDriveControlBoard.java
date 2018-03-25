@@ -31,7 +31,7 @@ public class GamepadDriveControlBoard implements IDriveControlBoard {
     }
 
     @Override
-    public boolean getAutoExchange() {
+    public boolean getPoopyShoot() {
         return false;
     }
 

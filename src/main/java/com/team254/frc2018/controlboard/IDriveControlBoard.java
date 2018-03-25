@@ -5,7 +5,7 @@ public interface IDriveControlBoard {
 
     double getTurn();
 
-    boolean getAutoExchange();
+    boolean getPoopyShoot();
 
     boolean getQuickTurn();
 
