@@ -465,6 +465,7 @@ while True:
             print("Got a bad frame, reinitializing.")
             cap.release()
             cap = initCapture() # reopen the VideoCapture
+            continue
         if args.scale != 1.0:
             frame = cv2.resize(frame, (0,0), fx=args.scale, fy=args.scale)
     else:
