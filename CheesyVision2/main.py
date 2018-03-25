@@ -1,14 +1,16 @@
 import numpy as np
 import cv2
+from networktables import NetworkTables
+
 import math
 import time
 import collections
+import socket
+import argparse
 
 def fadeHSV(image, mask):
     fade = cv2.multiply(image, (0.3,))
     cv2.subtract(image, fade, image, cv2.bitwise_not(mask))
-
-VIEW_SCALE = 2.0
 
 def process(input):
     height, width = input.shape[:2]
@@ -35,12 +37,17 @@ def process(input):
     # reduce noise with morphology
     def getKernel(size):
         return cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (size,size))
-    KERNEL_SIZE = 4#10
+    KERNEL_SIZE = 4
     cv2.morphologyEx(mask, cv2.MORPH_CLOSE, getKernel(KERNEL_SIZE), mask)
     cv2.morphologyEx(mask, cv2.MORPH_OPEN,  getKernel(KERNEL_SIZE//2), mask)
     #cv2.imshow("mask", mask)
     
     # find & filter blobs in the mask
+    def getMedian(contour):
+        xs, ys = zip(*(p[0] for p in contour))
+        medianX = (max(xs) + min(xs)) / 2
+        medianY = (max(ys) + min(ys)) / 2
+        return (medianX, medianY)
     def getBlobs(mask):
         # find contours
         _, contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -52,7 +59,8 @@ def process(input):
             m = cv2.moments(contour)
             area = m["m00"]
             centroid = (m["m10"]/m["m00"], m["m01"]/m["m00"]) if area>0 else (math.inf, math.inf)
-            blobs.append({"contour": contour, "area": area, "centroid": centroid})
+            median = getMedian(contour)
+            blobs.append({"contour": contour, "area": area, "centroid": centroid, "median": median})
             maxArea = max(maxArea, area)
         
         # prune blobs
@@ -61,6 +69,15 @@ def process(input):
         # return the final list
         return blobs
     blobs = getBlobs(mask)
+    
+    # compute angles from blob centers to the pivot
+    centerAngles = []
+    for b in blobs:
+        x, y = b["median"]
+        dx, dy = x-pivotLoc[0], y-pivotLoc[1]
+        if dx == 0: continue
+        angle = -math.degrees(math.atan(dy/dx))
+        centerAngles.append(angle)
     
     # convert contours to a mask for line detection
     contourMask = np.zeros((height-2,width-2,1), np.uint8)
@@ -107,8 +124,11 @@ def process(input):
             # print(numIters, midT)
             break
     
+    # send angle data to be processed
+    lineAngles = None
     if len(lines) == NUM_LINES:
-        updateAngle(*[90 - l[1]*180/math.pi for l in lines])
+        lineAngles = (90 - math.degrees(l[1]) for l in lines)
+    updateAngle(lineAngles, centerAngles)
     
     
     ### draw debug info onto the input image and show it ###
@@ -131,9 +151,14 @@ def process(input):
     for b in blobs:
         cv2.drawContours(output, [b["contour"]], 0, (0, 255, 0), 1)
         cv2.drawMarker(output, tuple(int(v) for v in b["centroid"]), (255,0,255), cv2.MARKER_CROSS)
+        cv2.drawMarker(output, tuple(int(v) for v in b["median"]), (0,255,255), cv2.MARKER_CROSS)
+    
+    # scale pivot location
+    cv2.circle(output, pivotLoc, 3, (255,230,0), lineType=cv2.LINE_AA)
     
     # blow up image for easier viewing
-    output = cv2.resize(output, (0,0), fx=VIEW_SCALE, fy=VIEW_SCALE, interpolation=cv2.INTER_NEAREST)
+    if args.roi_scale != 1.0:
+        output = cv2.resize(output, (0,0), fx=args.roi_scale, fy=args.roi_scale, interpolation=cv2.INTER_NEAREST)
     
     def drawText(text, x, y, color, size=0.4, fromM=0):
         textSz, _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, size, 1)
@@ -148,17 +173,18 @@ def process(input):
         debugStr += f"{int(dt*1000)} ms"
     if fps is not None:
         debugStr += f" ({int(fps)} FPS)"
-    drawText(debugStr, 10, int(height*VIEW_SCALE)-10, (0,255,0))
+    drawText(debugStr, 10, int(height*args.roi_scale)-10, (0,255,0))
     
     # visualize the detected angle and state
     angle = getAngle()
     if angle is not None:
-        cv2.rectangle(output, (0, 0), (50, 50), (255,255,255), cv2.FILLED)
-        rads = angle*math.pi/180
-        offX = 25*math.cos(rads)
-        offY = -25*math.sin(rads)
-        cv2.line(output, (int(25-offX),int(25-offY)), (int(25+offX),int(25+offY)), (0,0,0), 1, cv2.LINE_AA)
-        drawText(f"angle = {int(angle*10)/10} deg", 60, 25, (0,255,0), fromM=0.5)
+        PRE_SZ = 50
+        cv2.rectangle(output, (0, 0), (PRE_SZ, PRE_SZ), (255,255,255), cv2.FILLED)
+        rads = math.radians(angle)
+        offX = 200*math.cos(rads)
+        offY = -200*math.sin(rads)
+        cv2.line(output[0:PRE_SZ, 0:PRE_SZ], (int(PRE_SZ/2-offX),int(PRE_SZ/2-offY)), (int(PRE_SZ/2+offX),int(PRE_SZ/2+offY)), (0,0,0), lineType=cv2.LINE_AA)
+        drawText(f"angle = {int(angle*10)/10} deg  (tip = {getTip()})", 60, PRE_SZ//2, (0,255,0), fromM=0.5)
         if errorMsg is not None:
             drawText(errorMsg, 5, 60, (0,0,255), fromM=1)
     
@@ -171,66 +197,155 @@ def process(input):
 #########################################
 
 # constants (TODO: tune these)
-MAX_SCALE_SPEED = 10.0 # maximum normal movement speed (degrees per second)
-STEADY_HISTORY = 2.0 # amount of history to consider (seconds)
+MAX_SCALE_SPEED = 60.0 # maximum normal movement speed (degrees per second)
+SMOOTH_HISTORY = 1.5 # amount of history to consider for smoothing (seconds)
+SMOOTH_FIT_DEGREE = 2 # degree of polynomial fit for smoothing
+STEADY_HISTORY = 1.0 # amount of history to consider for steadiness (seconds)
 STEADY_THRESHOLD = 4.0 # angle variation considered "steady" (degrees)
 MAX_SKEW = 10.0 # maximum skew between the top & bottom lines (degrees)
+CENTER_ANGLE_REJECT_THRESHOLD = 7.0 # reject blob-center-angles farther off than this (degrees)
+TIPPED_THRESHOLD = 5.0 # angle at which the scale is "tipped" (degrees)
+
+# ignore RankWarnings from np.polyfit
+import warnings
+warnings.simplefilter("ignore", np.RankWarning)
 
 curAngle = 0
 zeroPoint = 0
 lastUpdate = None
-lastAngles = collections.deque()
+smoothHistory = collections.deque()
+steadyHistory = collections.deque()
 waitingForSteady = True
 
 errorMsg = None
 
 def isSteady():
-    if len(lastAngles) == 0: return False
-    angles = [e[1] for e in lastAngles]
+    if len(steadyHistory) == 0: return False
+    angles = [e[1] for e in steadyHistory]
     minA = min(angles)
     maxA = max(angles)
     return maxA - minA < STEADY_THRESHOLD
 
-def updateAngle(a1, a2):
-    global curAngle, zeroPoint, lastUpdate, lastAngles, waitingForSteady, errorMsg
+def updateAngle(lineAngles, centerAngles):
+    global curAngle, zeroPoint, lastUpdate, waitingForSteady, errorMsg
+    errorMsg = None
+    
+    # calculate dt
     now = time.perf_counter()
     if lastUpdate is None: lastUpdate = now
     dt = now - lastUpdate
     lastUpdate = now
     
-    if abs(a1 - a2) > MAX_SKEW:
-        errorMsg = "SKEWED"
-        return # the lines are too skewed
-    newAngle = (a1 + a2) / 2
+    maxDelta = MAX_SCALE_SPEED*dt
+    newAngle = None
+    
+    # history update functions
+    def updateHistory(list, history, value):
+        list.append((now, value))
+        while now - list[0][0] > history:
+            list.popleft()
+    def updateSmoothHistory():
+        updateHistory(smoothHistory, SMOOTH_HISTORY, curAngle)
+    
+    # use the the angles from the lines, if available
+    if lineAngles is None:
+        errorMsg = "LINES FAILED"
+    else:
+        a1, a2 = lineAngles
+        if abs(a1 - a2) > MAX_SKEW:
+            errorMsg = "SKEWED"
+        else:
+            newAngle = (a1 + a2) / 2
+    
+    # fall back to angles from centers of blobs, if necessary
+    if newAngle is None:
+        centerAngles = [a for a in centerAngles if abs(a-curAngle) < CENTER_ANGLE_REJECT_THRESHOLD]
+        if len(centerAngles) > 0:
+            newAngle = sum(centerAngles)/len(centerAngles)
+        else:
+            errorMsg = "NO GOOD DATA"
+            updateSmoothHistory()
+            return
+    
     delta = newAngle - curAngle
     
     # update history
-    lastAngles.append((now, newAngle))
-    while now - lastAngles[0][0] > STEADY_HISTORY:
-        lastAngles.popleft()
+    updateHistory(steadyHistory, STEADY_HISTORY, newAngle)
     
     # if it's moving too fast, stop updating until it's steady again
-    if abs(delta) > MAX_SCALE_SPEED*dt:
+    if abs(delta) > maxDelta:
         waitingForSteady = True
     if waitingForSteady and not isSteady():
         errorMsg = "STEADYING"
+        updateSmoothHistory()
         return
     waitingForSteady = False
     
-    curAngle += min(max(delta, -MAX_SCALE_SPEED*dt), +MAX_SCALE_SPEED*dt)
-    errorMsg = None
+    curAngle += min(max(delta, -maxDelta), +maxDelta)
+    updateSmoothHistory()
 
 def getRawAngle():
     return curAngle
 
+SCALE_VIEW_ANGLE = 0 # degrees
+COS_SCALE_VIEW_ANGLE = math.cos(math.radians(SCALE_VIEW_ANGLE))
 def getAngle():
-    return curAngle - zeroPoint
+    if len(smoothHistory) == 0: return 0.0
+    # do a polynomial fit on the history, putting more weight on recent data points
+    weights = [x**0 for x in range(1, len(smoothHistory)+1)]
+    fitFunc = np.poly1d(np.polyfit(*zip(*smoothHistory), SMOOTH_FIT_DEGREE, w=weights))
+    lastTime = smoothHistory[-1][0]
+    screenAngle = math.radians(fitFunc(lastTime) - zeroPoint)
+    return math.degrees(math.atan(COS_SCALE_VIEW_ANGLE*math.tan(screenAngle)))
+
+def getTip(): # TODO: hysteresis?
+    angle = getAngle()
+    if angle > +TIPPED_THRESHOLD: return +1
+    if angle < -TIPPED_THRESHOLD: return -1
+    return 0
 
 def zeroAngle():
     global zeroPoint
     angle = getRawAngle()
     if angle is not None:
         zeroPoint = angle
+
+
+
+##########################################
+######### command-line arguments #########
+##########################################
+
+parser = argparse.ArgumentParser(description="Program to track the scale arm using OpenCV. (by Quinn Tucker '18)")
+parser.add_argument("-n", "--no-network", action="store_true", help="don't initialize/output to NetworkTables")
+parser.add_argument("-d", "--device", type=int, default=2, metavar="ID",
+                    help="device ID of the camera to use (default: %(default)s)")
+parser.add_argument("--raw-scale", type=float, default=1.0, metavar="FACTOR",
+                    help="amount to scale the raw frame display by (default: %(default)s)")
+parser.add_argument("--roi-scale", type=float, default=2.0, metavar="FACTOR",
+                    help="amount to scale the region-of-interest display by (default: %(default)s)")
+parser.add_argument("--csv-output", type=argparse.FileType("w"), metavar="FILE",
+                    help="optional file to write angle data to")
+args = parser.parse_args()
+
+
+
+#########################################
+########## robot communication ##########
+#########################################
+
+if args.no_network:
+    print("Skipping NetworkTables initialization")
+else:
+    robotIP = None
+    print("Resolving robot IP...")
+    try:
+        robotIP = socket.gethostbyname("roborio-254-frc.local")
+        print(f"    robot IP: {robotIP}")
+    except:
+        print("    failed.")
+    NetworkTables.initialize(server=robotIP)
+    smartDashboard = NetworkTables.getTable("SmartDashboard")
 
 
 
@@ -248,11 +363,14 @@ V_PAD = 30
 roi = None
 gotROI = False
 
+pivotLoc = None
+gotPivotLoc = False
+
 global width, height
 def onMouse_raw(event, x, y, flags, param):
-    global roi, gotROI, width, height, rawViewScale
-    x = int(x/rawViewScale)
-    y = int(y/rawViewScale)
+    global roi, gotROI, width, height
+    x = int(x/args.raw_scale)
+    y = int(y/args.raw_scale)
     x = min(max(x, 0), width-1)
     y = min(max(y, 0), height-1)
     if event == cv2.EVENT_LBUTTONDOWN:
@@ -268,22 +386,30 @@ def onMouse_raw(event, x, y, flags, param):
         roi = roi[:2] + (x, y)
 
 def onMouse(event, x, y, flags, param):
-    global curFrame, minColor, maxColor
+    global curFrame, minColor, maxColor, pivotLoc, gotPivotLoc
     h, w = curFrame.shape[:2]
-    x = int(x/VIEW_SCALE)
-    y = int(y/VIEW_SCALE)
+    x = int(x/args.roi_scale)
+    y = int(y/args.roi_scale)
     if x >= w or y >= h:
         return
     
-    color = curFrame[y, x]
-    newMinColor = (float(color[0])-H_PAD, float(color[1])-S_PAD, float(color[2])-V_PAD)
-    newMaxColor = (float(color[0])+H_PAD, float(color[1])+S_PAD, float(color[2])+V_PAD)
-    if event == cv2.EVENT_RBUTTONDOWN or ((event == cv2.EVENT_LBUTTONDOWN) and maxColor == (0,0,0)):
-        minColor = newMinColor
-        maxColor = newMaxColor
-    if event == cv2.EVENT_LBUTTONDOWN or flags & cv2.EVENT_FLAG_LBUTTON != 0:
-        minColor = tuple(map(min, minColor, newMinColor))
-        maxColor = tuple(map(max, maxColor, newMaxColor))
+    leftDown  = flags & cv2.EVENT_FLAG_LBUTTON != 0
+    shiftDown = flags & cv2.EVENT_FLAG_SHIFTKEY != 0
+    if not gotPivotLoc or shiftDown:
+        if leftDown:
+            pivotLoc = (x, y)
+        if event == cv2.EVENT_LBUTTONUP:
+            gotPivotLoc = True
+    else:
+        color = curFrame[y, x]
+        newMinColor = (float(color[0])-H_PAD, float(color[1])-S_PAD, float(color[2])-V_PAD)
+        newMaxColor = (float(color[0])+H_PAD, float(color[1])+S_PAD, float(color[2])+V_PAD)
+        if event == cv2.EVENT_RBUTTONDOWN or ((event == cv2.EVENT_LBUTTONDOWN) and maxColor == (0,0,0)):
+            minColor = newMinColor
+            maxColor = newMaxColor
+        if event == cv2.EVENT_LBUTTONDOWN or leftDown:
+            minColor = tuple(map(min, minColor, newMinColor))
+            maxColor = tuple(map(max, maxColor, newMaxColor))
 
 def onKey(key):
     global minColor, maxColor
@@ -296,26 +422,26 @@ def onKey(key):
 
 ######### VideoCapture #########
 def initCapture():
-    cap = cv2.VideoCapture(1)
+    print("Initializing VideoCapture...")
+    cap = cv2.VideoCapture(args.device)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+    # cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+    # cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+    print("    done.")
     return cap
 cap = initCapture()
-# cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
-# cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
 
 global dt, fps
 dt = fps = None
 frameCount = 0
 lastSecond = time.perf_counter()
 
-global rawViewScale
 while True:
     # Capture frame-by-frame
     ret, frame = cap.read()
     # frame = cv2.imread("inputP1.jpg")
     height, width = frame.shape[:2]
-    # print([width, height])
     
     def isFrameOK():
         if not ret:
@@ -325,14 +451,19 @@ while True:
                 return True
         return False
     if not isFrameOK():
-        print("FRAME IS NOT OK, ret:", ret)
+        print("Got a bad frame, reinitializing.")
+        cap.release()
+        cap = initCapture() # reopen the VideoCapture
     
     # show the raw frame (with ROI rect)
     frameDisp = frame.copy()
     if roi is not None:
         cv2.rectangle(frameDisp, roi[:2], roi[2:], (0, 0, 255), 2)
-    rawViewScale = 1.0#800/width
-    # frameDisp = cv2.resize(frameDisp, (800, 450), interpolation=cv2.INTER_NEAREST)
+    if args.raw_scale != 1.0:
+        frameDisp = cv2.resize(frameDisp, (0,0), fx=args.raw_scale, fy=args.raw_scale)#, interpolation=cv2.INTER_NEAREST)
+    if not NetworkTables.isConnected():
+        cv2.putText(frameDisp, "NetworkTables is not connected", (10, height-10),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0,0,255), 1, cv2.LINE_AA)
     cv2.imshow("raw", frameDisp)
     cv2.setMouseCallback("raw", onMouse_raw)
     
@@ -349,6 +480,13 @@ while True:
             frameCount = 0
         
         cv2.setMouseCallback("output", onMouse)
+        
+        if args.csv_output is not None:
+            args.csv_output.write(f"{start}, {curAngle}, {getAngle()}, {getTip()}\n")
+    
+    if not args.no_network:
+        smartDashboard.putNumber("scaleAngle", getAngle())
+        smartDashboard.putNumber("scaleTip", getTip())
     
     key = cv2.waitKey(1) & 0xFF
     if key == 27:
@@ -359,3 +497,5 @@ while True:
 # When everything done, release the capture
 cap.release()
 cv2.destroyAllWindows()
+if args.csv_output is not None:
+    args.csv_output.close()
