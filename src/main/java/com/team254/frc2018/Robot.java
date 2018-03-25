@@ -15,6 +15,10 @@ import com.team254.lib.util.CheesyDriveHelper;
 import com.team254.lib.util.CrashTracker;
 import com.team254.lib.util.LatchedBoolean;
 import com.team254.lib.util.MinTimeBoolean;
+import edu.wpi.cscore.MjpegServer;
+import edu.wpi.cscore.UsbCamera;
+import edu.wpi.cscore.VideoMode;
+import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Timer;
@@ -80,6 +84,12 @@ public class Robot extends IterativeRobot {
     @Override
     public void robotInit() {
         try {
+            //init camera stream
+            UsbCamera camera = CameraServer.getInstance().startAutomaticCapture();
+            camera.setVideoMode(VideoMode.PixelFormat.kMJPEG, 320, 240, 30);
+            MjpegServer cameraServer = new MjpegServer("serve_USB Camera 0", Constants.kCameraStreamPort);
+            cameraServer.setSource(camera);
+
             CrashTracker.logRobotInit();
 
             mSubsystemManager.registerEnabledLoops(mEnabledLooper);

@@ -47,6 +47,8 @@ public class Constants {
     public static final String kChezyLidarPath = "/home/root/chezy_lidar";
     public static final double kChezyLidarRestartTime = 2.5;
 
+    public static final int kCameraStreamPort = 8002;
+
     /* CONTROL LOOP GAINS */
 
     // Gearing and mechanical constants.
