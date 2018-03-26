@@ -76,6 +76,11 @@ public class GamepadButtonControlBoard implements IButtonControlBoard {
         return mJoystick.getRawAxis(3) > Constants.kJoystickThreshold;
     }
 
+    @Override
+    public boolean getAutoHeightModifier() {
+        return mJoystick.getRawButton(7);
+    }
+
     //Jog Elevator
     @Override
     public double getJogElevatorThrottle() {

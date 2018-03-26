@@ -113,6 +113,11 @@ public class ControlBoard implements IControlBoard {
     }
 
     @Override
+    public boolean getAutoHeightModifier() {
+        return mButtonControlBoard.getAutoHeightModifier();
+    }
+
+    @Override
     public double getJogElevatorThrottle() {
         return mButtonControlBoard.getJogElevatorThrottle();
     }

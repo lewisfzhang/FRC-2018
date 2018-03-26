@@ -74,6 +74,11 @@ public class MainButtonBoard implements IButtonControlBoard {
         return false;
     }
 
+    @Override
+    public boolean getAutoHeightModifier() {
+        return mButtonBoard.getRawButton(8);
+    }
+
     //Jog Elevator
     @Override
     public double getJogElevatorThrottle() {
