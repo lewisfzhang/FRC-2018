@@ -60,7 +60,12 @@ public class NearScaleOnlyMode extends AutoModeBase {
         // Get second cube
         runAction(new ParallelAction(
                 Arrays.asList(
-                        mNearScaleToNearFence,
+                        new SeriesAction(
+                                Arrays.asList(
+                                        new WaitAction(0.25),
+                                        mNearScaleToNearFence
+                                )
+                        ),
                         new SetIntaking(true, false)
                 )
         ));
@@ -76,7 +81,7 @@ public class NearScaleOnlyMode extends AutoModeBase {
                                                 SuperstructureConstants.kScoreBackwardsAngle, true),
                                         new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d
                                                 (260, 1000), mStartedLeft),
-                                        new ShootCube(AutoConstants.kStrongShootPower)
+                                        new ShootCube(0.85)
                                 )
                         )
                 )
@@ -102,7 +107,7 @@ public class NearScaleOnlyMode extends AutoModeBase {
                                                 SuperstructureConstants.kScoreBackwardsAngle, true),
                                         new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d
                                                 (260, 1000), mStartedLeft),
-                                        new ShootCube(AutoConstants.kStrongShootPower)
+                                        new ShootCube(1.0)
                                 )
                         )
                 )
@@ -128,7 +133,7 @@ public class NearScaleOnlyMode extends AutoModeBase {
                                                 SuperstructureConstants.kScoreBackwardsAngle, true),
                                         new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d
                                                 (260, 1000), mStartedLeft),
-                                        new ShootCube(AutoConstants.kStrongShootPower)
+                                        new ShootCube(1.0)
                                 )
                         )
                 )

@@ -6,7 +6,7 @@ import edu.wpi.first.wpilibj.Timer;
 
 public class ShootCube implements Action {
     private static final Intake mIntake = Intake.getInstance();
-    private static final double kShootTime = 0.5;
+    private static final double kShootTime = 0.35;
     private final double mPower;
 
     private double mStartTime;
