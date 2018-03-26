@@ -180,7 +180,7 @@ def process(input):
         offX = 200*math.cos(rads)
         offY = -200*math.sin(rads)
         cv2.line(output[0:PRE_SZ, 0:PRE_SZ], (int(PRE_SZ/2-offX),int(PRE_SZ/2-offY)), (int(PRE_SZ/2+offX),int(PRE_SZ/2+offY)), (0,0,0), lineType=cv2.LINE_AA)
-        drawText(f"angle = {int(angle*10)/10} deg  (tip = {getTip()})", 60, PRE_SZ//2, (0,255,0), fromM=0.5)
+        drawText(f"angle = {int(angle*100)/100} deg  (tip = {getTip()})", 60, PRE_SZ//2, (0,255,0), fromM=0.5)
         if errorMsg is not None:
             drawText(errorMsg, 5, 60, (0,0,255), fromM=1)
     
@@ -277,7 +277,7 @@ STEADY_HISTORY = 1.0 # amount of history to consider for steadiness (seconds)
 STEADY_THRESHOLD = 4.0 # angle variation considered "steady" (degrees)
 MAX_SKEW = 10.0 # maximum skew between the top & bottom lines (degrees)
 CENTER_ANGLE_REJECT_THRESHOLD = 7.0 # reject blob-center-angles farther off than this (degrees)
-TIPPED_THRESHOLD = 5.0 # angle at which the scale is "tipped" (degrees)
+TIPPED_THRESHOLD = 3.5 # angle at which the scale is "tipped" (degrees)
 
 # ignore RankWarnings from np.polyfit
 import warnings
