@@ -50,7 +50,7 @@ public class Constants {
     public static final int kCameraStreamPort = 8002;
 
     /* LIDAR CONSTANTS */
-    public static final double kScaleTrackerTimeout = 2.0;
+    public static final double kScaleTrackerTimeout = 0.6;
 
     /* CONTROL LOOP GAINS */
 
