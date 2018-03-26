@@ -75,18 +75,22 @@ public class TrajectoryGenerator {
     public static final Pose2d kSideStartPose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(180.0));
     public static final Pose2d kNearScaleEmptyPose = new Pose2d(new Translation2d(250.0, 32.0), Rotation2d
             .fromDegrees(10.0+180.0));
-    public static final Pose2d kNearScaleFullPose = new Pose2d(new Translation2d(250.0, 38.0), Rotation2d.fromDegrees
+    public static final Pose2d kNearScaleFullPose = new Pose2d(new Translation2d(250.0, 32.0 + 6), Rotation2d.fromDegrees
             (15.0+180.0));
 
-    public static final Pose2d kNearScaleFullPose1 = new Pose2d(new Translation2d(250.0, 50.0), Rotation2d.fromDegrees
+    public static final Pose2d kNearScaleFullPose1 = new Pose2d(new Translation2d(250.0, 32.0 + 18.0), Rotation2d.fromDegrees
             (15.0+180.0));
 
-    public static final Pose2d kNearScaleFullPose2 = new Pose2d(new Translation2d(250.0, 70.0), Rotation2d.fromDegrees
+    public static final Pose2d kNearScaleFullPose2 = new Pose2d(new Translation2d(250.0, 32.0 + 38.0), Rotation2d.fromDegrees
             (15.0+180.0));
 
-    public static final Pose2d kFarScaleEmptyPose = new Pose2d(new Translation2d(250.0, 205.0), Rotation2d
+    public static final Pose2d kFarScaleEmptyPose = new Pose2d(new Translation2d(250.0, 225.0), Rotation2d
             .fromDegrees(-10.0+180.0));
-    public static final Pose2d kFarScaleFullPose = new Pose2d(new Translation2d(250.0, 205.0), Rotation2d.fromDegrees
+    public static final Pose2d kFarScaleFullPose = new Pose2d(new Translation2d(250.0, 225.0 - 6.0), Rotation2d.fromDegrees
+            (-15.0+180.0));
+    public static final Pose2d kFarScaleFullPose1 = new Pose2d(new Translation2d(250.0, 225.0 - 18.0), Rotation2d.fromDegrees
+            (-15.0+180.0));
+    public static final Pose2d kFarScaleFullPose2 = new Pose2d(new Translation2d(250.0, 225.0 - 38.0), Rotation2d.fromDegrees
             (-15.0+180.0));
 
     public static final Pose2d kNearFence1Pose = new Pose2d(new Translation2d(199.0, 42.0), Rotation2d.fromDegrees
@@ -96,11 +100,11 @@ public class TrajectoryGenerator {
     public static final Pose2d kNearFence3Pose = new Pose2d(new Translation2d(194.0, 42.0 + 63.0), Rotation2d
             .fromDegrees(-45.0+180.0));
 
-    public static final Pose2d kFarFence1Pose = new Pose2d(new Translation2d(199, 195.0), Rotation2d.fromDegrees
+    public static final Pose2d kFarFence1Pose = new Pose2d(new Translation2d(199, 215.0), Rotation2d.fromDegrees
             (45.0+180.0));
-    public static final Pose2d kFarFence2Pose = new Pose2d(new Translation2d(199.0, 195.0 - 28.0), Rotation2d
+    public static final Pose2d kFarFence2Pose = new Pose2d(new Translation2d(199.0, 215.0 - 28.0), Rotation2d
             .fromDegrees(45.0+180.0));
-    public static final Pose2d kFarFence3Pose = new Pose2d(new Translation2d(199.0, 195.0 - 28.0 * 2.0), Rotation2d
+    public static final Pose2d kFarFence3Pose = new Pose2d(new Translation2d(199.0, 215.0 - 63.0), Rotation2d
             .fromDegrees(45.0+180.0));
 
     // STARTING IN CENTER
@@ -277,7 +281,7 @@ public class TrajectoryGenerator {
 
         private Trajectory<TimedState<Pose2dWithCurvature>> getFarScaleToFarFence3() {
             List<Pose2d> waypoints = new ArrayList<>();
-            waypoints.add(kFarScaleFullPose);
+            waypoints.add(kFarScaleFullPose1);
             waypoints.add(kFarFence3Pose.transformBy(Pose2d.fromTranslation(new Translation2d(-12.0, 0.0))));
             waypoints.add(kFarFence3Pose);
 
@@ -297,7 +301,7 @@ public class TrajectoryGenerator {
         private Trajectory<TimedState<Pose2dWithCurvature>> getFarFence2ToFarScale() {
             List<Pose2d> waypoints = new ArrayList<>();
             waypoints.add(kFarFence2Pose);
-            waypoints.add(kFarScaleFullPose);
+            waypoints.add(kFarScaleFullPose1);
 
             return generateTrajectory(true, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxCentripetalAccel)
             ), kMaxVelocity, kMaxAccel, kMaxVoltage);
@@ -306,7 +310,7 @@ public class TrajectoryGenerator {
         private Trajectory<TimedState<Pose2dWithCurvature>> getFarFence3ToFarScale() {
             List<Pose2d> waypoints = new ArrayList<>();
             waypoints.add(kFarFence3Pose);
-            waypoints.add(kFarScaleFullPose);
+            waypoints.add(kFarScaleFullPose2);
 
             return generateTrajectory(true, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxCentripetalAccel)
             ), kMaxVelocity, kMaxAccel, kMaxVoltage);
