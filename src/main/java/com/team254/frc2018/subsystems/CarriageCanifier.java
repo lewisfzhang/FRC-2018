@@ -18,6 +18,9 @@ public class CarriageCanifier extends Subsystem {
         mCanifier.setStatusFramePeriod(CANifierStatusFrame.Status_2_General, 5, Constants.kLongCANTimeoutMs);
         mPeriodicInputs = new PeriodicInputs();
         mPeriodicOutputs = new PeriodicOutputs();
+
+        // Force a first update.
+        mOutputsChanged = true;
     }
 
     public synchronized static CarriageCanifier getInstance() {
