@@ -124,6 +124,25 @@ public class Elevator extends Subsystem {
                         Constants.kElevatorRampRate, Constants.kLongCANTimeoutMs),
                 "Could not set elevator voltage ramp rate: ");
 
+        TalonSRXUtil.checkError(
+                mMaster.configContinuousCurrentLimit(20, Constants.kLongCANTimeoutMs),
+                "Could not set wrist continuous current limit.");
+
+        TalonSRXUtil.checkError(
+                mMaster.configPeakCurrentLimit(35, Constants.kLongCANTimeoutMs),
+                "Could not set wrist peak current limit.");
+
+        TalonSRXUtil.checkError(
+                mMaster.configPeakCurrentDuration(200, Constants.kLongCANTimeoutMs),
+                "Could not set wrist peak current duration.");
+
+        TalonSRXUtil.checkError(
+                mMaster.configClosedloopRamp(
+                        Constants.kWristRampRate, Constants.kLongCANTimeoutMs),
+                "Could not set wrist voltage ramp rate: ");
+
+        mMaster.enableCurrentLimit(true);
+
 
 
         mMaster.configSetParameter(ParamEnum.eClearPositionOnLimitF, 0, 0, 0, 0);
@@ -218,6 +237,7 @@ public class Elevator extends Subsystem {
     public void outputTelemetry() {
         SmartDashboard.putNumber("Elevator Output %", mPeriodicIO.output_percent);
         SmartDashboard.putNumber("Elevator RPM", getRPM());
+        SmartDashboard.putNumber("Elevator Current", mMaster.getOutputCurrent());
         // SmartDashboard.putNumber("Elevator Error", mMaster.getClosedLoopError(0) / kEncoderTicksPerInch);
         SmartDashboard.putNumber("Elevator Height", getInchesOffGround());
         SmartDashboard.putBoolean("Elevator Limit", mPeriodicIO.limit_switch);
