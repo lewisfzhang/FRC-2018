@@ -1,8 +1,10 @@
 package com.team254.frc2018.subsystems;
 
+import com.team254.frc2018.Constants;
 import com.team254.frc2018.loops.ILooper;
 import com.team254.frc2018.loops.Loop;
 
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
@@ -23,6 +25,14 @@ public class CheesyVision2 extends Subsystem {
     
     
     private double angle = 0, tip = 0;
+    private double lastHeartbeatValue = -1, lastHeartbeatTime = Double.NEGATIVE_INFINITY;
+    
+    /**
+     * @return true if the robot is receiving data from the scale tracker
+     */
+    public boolean isConnected() {
+        return Timer.getFPGATimestamp() < lastHeartbeatTime + Constants.kScaleTrackerTimeout;
+    }
     
     /**
      * @return the current angle of the scale, in degrees, as seen
@@ -67,6 +77,12 @@ public class CheesyVision2 extends Subsystem {
         public synchronized void onLoop(double timestamp) {
             angle = SmartDashboard.getNumber("scaleAngle", Double.NaN);
             tip = SmartDashboard.getNumber("scaleTip", Double.NaN);
+            double heartbeat = SmartDashboard.getNumber("scaleHeartbeat", -2);
+            if (heartbeat > lastHeartbeatValue) {
+                lastHeartbeatValue = heartbeat;
+                lastHeartbeatTime = timestamp;
+            }
+            
             SmartDashboard.putNumber("scaleAngleEcho", angle);
             SmartDashboard.putNumber("scaleTipEcho", tip);
         }

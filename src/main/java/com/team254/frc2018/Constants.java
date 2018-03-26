@@ -49,6 +49,9 @@ public class Constants {
 
     public static final int kCameraStreamPort = 8002;
 
+    /* LIDAR CONSTANTS */
+    public static final double kScaleTrackerTimeout = 2.0;
+
     /* CONTROL LOOP GAINS */
 
     // Gearing and mechanical constants.
