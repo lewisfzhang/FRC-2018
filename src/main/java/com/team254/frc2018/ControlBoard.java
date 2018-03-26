@@ -40,8 +40,8 @@ public class ControlBoard implements IControlBoard {
     }
 
     @Override
-    public boolean getAutoExchange() {
-        return mDriveControlBoard.getAutoExchange();
+    public boolean getPoopyShoot() {
+        return mDriveControlBoard.getPoopyShoot();
     }
 
     @Override

@@ -47,6 +47,8 @@ public class Constants {
     public static final String kChezyLidarPath = "/home/root/chezy_lidar";
     public static final double kChezyLidarRestartTime = 2.5;
 
+    public static final int kCameraStreamPort = 8002;
+
     /* CONTROL LOOP GAINS */
 
     // Gearing and mechanical constants.
@@ -81,14 +83,14 @@ public class Constants {
     public static final int kElevatorHighGearIZone = 0;
     public static final int kElevatorHighGearDeadband = 0;
     public static final int kElevatorHighGearCruiseVelocity = 12500;
-    public static final int kElevatorHighGearAcceleration = 33000;//33000;
+    public static final int kElevatorHighGearAcceleration = 27000;//33000;
     public static final double kElevatorEpsilon = 1.0;//33000;
     public static final double kElevatorRampRate = 0.1;
 
-    public static final double kWristKp = 4.0;
+    public static final double kWristKp = 3.0;
     public static final double kWristKi = 0.0;
-    public static final double kWristKd = 200.0;
-    public static final double kWristKf = 1.1;
+    public static final double kWristKd = 80.0;
+    public static final double kWristKf = 1.0;
     public static final double kWristKaWithCube = 0.009;
     public static final double kWristKaWithoutCube = 0.003;
     public static final double kWristKfMultiplierWithCube = 0.15;
@@ -100,8 +102,8 @@ public class Constants {
     public static final int kWristIZone = 500; //todo: tune me
     public static final int kWristDeadband = 5; //todo: tune me
     public static final int kWristCruiseVelocity = 800; //todo: tune me
-    public static final int kWristAcceleration = 2000; //todo: tune me
-    public static final double kWristRampRate = 0.0;
+    public static final int kWristAcceleration = 1000; //2000 //todo: tune me
+    public static final double kWristRampRate = 0.1;
 
     // Do not change anything after this line unless you rewire the robot and
     // update the spreadsheet!
@@ -171,7 +173,7 @@ public class Constants {
     public static final double kLowSensitivityFactor = 1.0 / 4.0;
 
     public static final double kElevatorThrottleDeadband = 0.3;
-    public static final double kMinShootTimeSec = 0.25;
+    public static final double kMinShootTimeSec = 0.2;
     public static final double kJazzHandsEpsilon = 2.5;
 
     /**

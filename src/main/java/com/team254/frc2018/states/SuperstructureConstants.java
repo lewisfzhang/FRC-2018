@@ -3,7 +3,7 @@ package com.team254.frc2018.states;
 public class SuperstructureConstants {
     public static final double kWristMinAngle = 0.0;
     public static final double kWristMaxAngle = 180.0;
-    public static final double kElevatorMaxHeight = 84.0;
+    public static final double kElevatorMaxHeight = 85.0;
     public static final double kElevatorMinHeight = 4.0;
 
     public static final double kClearFirstStageMaxHeight = 33.0;
@@ -35,7 +35,7 @@ public class SuperstructureConstants {
     public final static double kIntakePositionAngle = 180.0;
 
     // Elevator Heights.
-    public final static double kScaleHighHeight = 82.0;
+    public final static double kScaleHighHeight = 85.0;
     public final static double kScaleNeutralHeight = 75.0;
     public final static double kScaleLowHeight = 63.0;
 

@@ -2,7 +2,6 @@ package com.team254.frc2018;
 
 import com.team254.frc2018.auto.AutoModeBase;
 import com.team254.frc2018.auto.AutoModeExecuter;
-import com.team254.frc2018.auto.actions.CollectCurvatureData;
 import com.team254.frc2018.auto.modes.*;
 import com.team254.frc2018.loops.Looper;
 import com.team254.frc2018.paths.TrajectoryGenerator;
@@ -12,24 +11,20 @@ import com.team254.frc2018.statemachines.SuperstructureStateMachine;
 import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.frc2018.subsystems.*;
 import com.team254.lib.geometry.Pose2d;
-import com.team254.lib.geometry.Pose2dWithCurvature;
-import com.team254.lib.geometry.Rotation2d;
-import com.team254.lib.geometry.Translation2d;
-import com.team254.lib.trajectory.TimedView;
-import com.team254.lib.trajectory.Trajectory;
-import com.team254.lib.trajectory.TrajectoryIterator;
-import com.team254.lib.trajectory.timing.TimedState;
 import com.team254.lib.util.CheesyDriveHelper;
 import com.team254.lib.util.CrashTracker;
 import com.team254.lib.util.LatchedBoolean;
+import com.team254.lib.util.MinTimeBoolean;
+import edu.wpi.cscore.MjpegServer;
+import edu.wpi.cscore.UsbCamera;
+import edu.wpi.cscore.VideoMode;
+import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
 public class Robot extends IterativeRobot {
@@ -70,12 +65,13 @@ public class Robot extends IterativeRobot {
     private LatchedBoolean mRunIntakeReleased = new LatchedBoolean();
     private LatchedBoolean mShootReleased = new LatchedBoolean();
     private LatchedBoolean mRunIntakePressed = new LatchedBoolean();
-    private double mLastShootTime = Double.NaN;
 
     private LatchedBoolean mHangModeEnablePressed = new LatchedBoolean();
     private LatchedBoolean mLowShiftPressed = new LatchedBoolean();
     private LatchedBoolean mHighShiftPressed = new LatchedBoolean();
-    private LatchedBoolean mAutoExchangePressed = new LatchedBoolean();
+
+    private MinTimeBoolean mShootDelayed = new MinTimeBoolean(Constants.kMinShootTimeSec);
+    private MinTimeBoolean mPoopyShootDelayed = new MinTimeBoolean(Constants.kMinShootTimeSec);
 
     private boolean mInHangMode;
 
@@ -88,6 +84,12 @@ public class Robot extends IterativeRobot {
     @Override
     public void robotInit() {
         try {
+            //init camera stream
+            UsbCamera camera = CameraServer.getInstance().startAutomaticCapture();
+            camera.setVideoMode(VideoMode.PixelFormat.kMJPEG, 320, 240, 30);
+            MjpegServer cameraServer = new MjpegServer("serve_USB Camera 0", Constants.kCameraStreamPort);
+            cameraServer.setSource(camera);
+
             CrashTracker.logRobotInit();
 
             mSubsystemManager.registerEnabledLoops(mEnabledLooper);
@@ -100,6 +102,7 @@ public class Robot extends IterativeRobot {
 
             mRunIntakeReleased.update(true);
             mShootReleased.update(true);
+
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
             throw t;
@@ -180,6 +183,9 @@ public class Robot extends IterativeRobot {
             mLED.setEnableFaults(false);
             mInHangMode = false;
             mForklift.retract();
+
+            mShootDelayed.update(false, Double.POSITIVE_INFINITY);
+            mPoopyShootDelayed.update(false, Double.POSITIVE_INFINITY);
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
             throw t;
@@ -251,15 +257,10 @@ public class Robot extends IterativeRobot {
         double turn = mControlBoard.getTurn();
 
         try {
-            if(mControlBoard.getAutoExchange()) {
-                //get turn from vision feedback
-            } else {
-                // When elevator is up, tune sensitivity on tune a little.
-                if (mElevator.getInchesOffGround() > Constants.kElevatorLowSensitivityThreshold) {
-                    turn *= Constants.kLowSensitivityFactor;
-                }
+            // When elevator is up, tune sensitivity on tune a little.
+            if (mElevator.getInchesOffGround() > Constants.kElevatorLowSensitivityThreshold) {
+                turn *= Constants.kLowSensitivityFactor;
             }
-
             mDrive.setOpenLoop(mCheesyDriveHelper.cheesyDrive(throttle, turn, mControlBoard.getQuickTurn(),
                     mDrive.isHighGear()));
 
@@ -305,26 +306,21 @@ public class Robot extends IterativeRobot {
                 boolean runIntakePosition = mControlBoard.getIntakePosition() &&
                         (mWrist.getAngle() > SuperstructureConstants.kMinIntakePositionAngle);
                 boolean runIntake = mControlBoard.getRunIntake() || runIntakePosition;
-                boolean shoot = mControlBoard.getShoot();
                 boolean runIntakeReleased = mRunIntakeReleased.update(!runIntake);
                 boolean intakeAction = false;
 
-                if (shoot) {
-                    mLastShootTime = timestamp;
+                boolean normalShoot = mControlBoard.getShoot();
+                boolean poopyShoot = mControlBoard.getPoopyShoot();
 
-                }
-                if (!shoot && !Double.isNaN(mLastShootTime) &&
-                        (timestamp - mLastShootTime < Constants.kMinShootTimeSec)) {
-                    shoot = true;
-                }
-                boolean shootReleased = mShootReleased.update(!shoot);
+                boolean shootReleased = mShootReleased.update(!(normalShoot || poopyShoot));
+
                 if (runIntake) {
                     mIntake.getOrKeepCube();
                     intakeAction = true;
-                } else if (shoot) {
+                } else if (normalShoot) {
                     intakeAction = true;
-                    if(mElevator.getInchesOffGround() < SuperstructureConstants.kSwitchHeight + 5.0) {
-                        if(mWrist.getAngle() > SuperstructureConstants.kWeakShootAngle) {
+                    if (mElevator.getInchesOffGround() < SuperstructureConstants.kSwitchHeight + 5.0) {
+                        if (mWrist.getAngle() > SuperstructureConstants.kWeakShootAngle) {
                             mIntake.shoot(IntakeStateMachine.kSwitchShootSetpoint);
                         } else {
                             mIntake.shoot(IntakeStateMachine.kExchangeShootSetpoint);
@@ -336,6 +332,8 @@ public class Robot extends IterativeRobot {
                             mIntake.shoot(IntakeStateMachine.kStrongShootSetpoint);
                         }
                     }
+                } else if(poopyShoot) {
+                    mIntake.shoot(IntakeStateMachine.kPoopyShootSetpoint);
                 } else if (runIntakeReleased) {
                     if (mIntake.hasCube()) {
                         mIntake.getOrKeepCube();
@@ -357,7 +355,7 @@ public class Robot extends IterativeRobot {
                         mIntake.setState(IntakeStateMachine.WantedAction.WANT_MANUAL);
                         mIntake.setPower(0.0);
                     }
-                } else if (shoot) {
+                } else if (normalShoot) {
                     mIntake.clampJaw();
                 } else {
                     mIntake.closeJaw();
