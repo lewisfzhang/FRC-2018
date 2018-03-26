@@ -583,6 +583,7 @@ while True:
     if not args.no_network:
         smartDashboard.putNumber("scaleAngle", getAngle())
         smartDashboard.putNumber("scaleTip", getTip())
+        smartDashboard.putBoolean("scaleError", errorMsg is not None)
         smartDashboard.putNumber("scaleHeartbeat", heartbeat)
         heartbeat += 1
     
