@@ -47,7 +47,7 @@ public class Constants {
     public static final String kChezyLidarPath = "/home/root/chezy_lidar";
     public static final double kChezyLidarRestartTime = 2.5;
 
-    public static final int kCameraStreamPort = 8002;
+    public static final int kCameraStreamPort = 5810;
 
     /* LIDAR CONSTANTS */
     public static final double kScaleTrackerTimeout = 0.6;
@@ -157,7 +157,7 @@ public class Constants {
     public static final int kForkliftDeploySolenoid = 7;  // CURRENTLY 6 ON PRACTICE!!!
     public static final int kFollowerWheelSolenoid = 11;
     public static final int kElevatorShifterSolenoidId = 8;
-    public static final int kUnlockHookSolenoid = 6;
+    public static final int kUnlockHookSolenoid = 4;
     public static final int kJazzHandsSolenoid = 5;
 
     // Control Board
