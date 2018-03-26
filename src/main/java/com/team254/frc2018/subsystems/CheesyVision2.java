@@ -25,6 +25,7 @@ public class CheesyVision2 extends Subsystem {
     
     
     private double angle = 0, tip = 0;
+    private boolean error = true;
     private double lastHeartbeatValue = -1, lastHeartbeatTime = Double.NEGATIVE_INFINITY;
     
     /**
@@ -32,6 +33,13 @@ public class CheesyVision2 extends Subsystem {
      */
     public boolean isConnected() {
         return Timer.getFPGATimestamp() < lastHeartbeatTime + Constants.kScaleTrackerTimeout;
+    }
+    
+    /**
+     * @return true if the system doesn't have a good reading of the scale
+     */
+    public boolean getError() {
+        return error;
     }
     
     /**
@@ -77,6 +85,7 @@ public class CheesyVision2 extends Subsystem {
         public synchronized void onLoop(double timestamp) {
             angle = SmartDashboard.getNumber("scaleAngle", Double.NaN);
             tip = SmartDashboard.getNumber("scaleTip", Double.NaN);
+            error = SmartDashboard.getBoolean("scaleError", true);
             double heartbeat = SmartDashboard.getNumber("scaleHeartbeat", -2);
             if (heartbeat > lastHeartbeatValue) {
                 lastHeartbeatValue = heartbeat;
