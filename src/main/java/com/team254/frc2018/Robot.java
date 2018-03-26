@@ -396,6 +396,36 @@ public class Robot extends IterativeRobot {
                     } else if (go_low_scale) {
                         desired_height = SuperstructureConstants.kIntakeFloorLevelHeight;
                     }
+                } else if (mControlBoard.getAutoHeightModifier()) {
+                    if (mControlBoard.getBackwardsModifier()) {
+                        if (go_high_scale) {
+                            desired_height = mCheesyVision2.getDesiredHeight(true, 2);
+                            desired_angle = SuperstructureConstants.kScoreBackwardsAngle;
+                        } else if (go_neutral_scale) {
+                            desired_height = mCheesyVision2.getDesiredHeight(true, 1);
+                            desired_angle = SuperstructureConstants.kScoreBackwardsAngle;
+                        } else if (go_low_scale) {
+                            desired_height = mCheesyVision2.getDesiredHeight(true, 0);
+                            desired_angle = SuperstructureConstants.kScoreBackwardsAngle;
+                        } else if (go_switch) {
+                            desired_height = SuperstructureConstants.kSwitchHeightBackwards;
+                            desired_angle = SuperstructureConstants.kScoreSwitchBackwardsAngle;
+                        }
+                    } else {
+                        if (go_high_scale) {
+                            desired_height = mCheesyVision2.getDesiredHeight(false, 2);
+                            desired_angle = SuperstructureConstants.kScoreForwardAngledAngle;
+                        } else if (go_neutral_scale) {
+                            desired_height = mCheesyVision2.getDesiredHeight(false, 1);
+                            desired_angle = SuperstructureConstants.kScoreForwardAngledAngle;
+                        } else if (go_low_scale) {
+                            desired_height = mCheesyVision2.getDesiredHeight(false, 0);
+                            desired_angle = SuperstructureConstants.kScoreForwardAngledAngle;
+                        } else if (go_switch) {
+                            desired_height = SuperstructureConstants.kSwitchHeight;
+                            desired_angle = SuperstructureConstants.kPlacingLowAngle;
+                        }
+                    }
                 } else if (mControlBoard.getBackwardsModifier()) {
                     // These are score backwards
                     if (go_high_scale) {

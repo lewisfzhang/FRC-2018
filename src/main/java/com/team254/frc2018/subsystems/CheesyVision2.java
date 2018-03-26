@@ -1,8 +1,10 @@
 package com.team254.frc2018.subsystems;
 
+import com.team254.frc2018.AutoFieldState;
 import com.team254.frc2018.Constants;
 import com.team254.frc2018.loops.ILooper;
 import com.team254.frc2018.loops.Loop;
+import com.team254.frc2018.states.SuperstructureConstants;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -57,6 +59,32 @@ public class CheesyVision2 extends Subsystem {
      */
     public double getTip() {
         return tip;
+    }
+    
+    
+    public static final double[] DEFAULT_HEIGHT = new double[] {SuperstructureConstants.kScaleNeutralHeight, SuperstructureConstants.kScaleNeutralHeightBackwards};
+    public static final double[] LOW_HEIGHT     = new double[] {SuperstructureConstants.kScaleLowHeight, SuperstructureConstants.kScaleLowHeightBackwards};
+    public static final double[] NEUTRAL_HEIGHT = new double[] {SuperstructureConstants.kScaleNeutralHeight, SuperstructureConstants.kScaleNeutralHeightBackwards};
+    public static final double[] HIGH_HEIGHT    = new double[] {SuperstructureConstants.kScaleHighHeight, SuperstructureConstants.kScaleHighHeightBackwards};
+    
+    public double getDesiredHeight(boolean backwards) {
+        int i = backwards? 1 : 0;
+        if (getError()) return DEFAULT_HEIGHT[i];
+        
+        double tip = getTip();
+        AutoFieldState state = new AutoFieldState();
+        state.setSides();
+        if (state.getScaleSide() == AutoFieldState.Side.LEFT)
+            tip = -tip;
+        
+        double[] height = NEUTRAL_HEIGHT;
+        if (tip < 0) height = LOW_HEIGHT;
+        if (tip > 0) height = HIGH_HEIGHT;
+        return height[i];
+    }
+    
+    public double getDesiredHeight(boolean backwards, int cubeNum) {
+        return getDesiredHeight(backwards) + 10.0*cubeNum;
     }
     
     
