@@ -13,14 +13,14 @@ def fadeHSV(image, mask):
     fade = cv2.multiply(image, (0.3,))
     cv2.subtract(image, fade, image, cv2.bitwise_not(mask))
 
+def processMask(mask, closeSize=4, openSize=2):
+    def getKernel(size):
+        return cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (size,size))
+    cv2.morphologyEx(mask, cv2.MORPH_CLOSE, getKernel(closeSize), mask)
+    cv2.morphologyEx(mask, cv2.MORPH_OPEN,  getKernel(openSize), mask)
+
 def process(input):
     height, width = input.shape[:2]
-    #cv2.imshow("input", input)
-    
-    # downsample
-    #DOWNSCALE = 0.4
-    #input = cv2.resize(input, (0,0), fx=DOWNSCALE, fy=DOWNSCALE)
-    #print(f"downsampled input size: [{width}, {height}]")
     
     # convert to HSV
     hsv = cv2.cvtColor(input, cv2.COLOR_BGR2HSV)
@@ -35,13 +35,8 @@ def process(input):
     #mask = cv2.inRange(hsv, (130, 130, 80), (160, 255, 255)) # actual
     #cv2.imshow("raw mask", mask)
     
-    # reduce noise with morphology
-    def getKernel(size):
-        return cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (size,size))
-    KERNEL_SIZE = 4
-    cv2.morphologyEx(mask, cv2.MORPH_CLOSE, getKernel(KERNEL_SIZE), mask)
-    cv2.morphologyEx(mask, cv2.MORPH_OPEN,  getKernel(KERNEL_SIZE//2), mask)
-    #cv2.imshow("mask", mask)
+    # reduce noise with morphological operations
+    processMask(mask)
     
     # find & filter blobs in the mask
     def getMedian(contour):
@@ -190,6 +185,83 @@ def process(input):
             drawText(errorMsg, 5, 60, (0,0,255), fromM=1)
     
     cv2.imshow("output", output)
+
+def autoSetColor(input):
+    start = time.perf_counter()
+    
+    # downsample
+    DOWNSCALE = 0.2
+    input = cv2.resize(input, (0,0), fx=DOWNSCALE, fy=DOWNSCALE)
+    # height, width = input.shape[:2]
+    # print(f"downsampled input size: [{width}, {height}]")
+    
+    # convert to HSV
+    hsv = cv2.cvtColor(input, cv2.COLOR_BGR2HSV)
+    
+    # calculate histogram
+    def getHistogram(channel, mask, normMax=255):
+        maxV = [180,255,255][channel]
+        hist = cv2.calcHist([hsv[:, :, channel]], [0], mask, [maxV//3], [0,maxV])
+        cv2.normalize(hist, hist, 0, normMax, cv2.NORM_MINMAX)
+        return hist
+    mask = cv2.inRange(hsv, (0, 64, 64), (180, 255, 255))
+    # cv2.imshow("mask", mask)
+    hist = getHistogram(0, mask)
+    
+    # find maxima
+    VALID_DEPTH = 15
+    def isValidMax(i):
+        mVal = hist[i]
+        left, right = False, False
+        for dx in range(1, min(i+1, len(hist)-i)):
+            vl, vr = hist[i-dx], hist[i+dx]
+            if vl >= mVal or vr >= mVal: return False
+            if vl < mVal-VALID_DEPTH: left = True
+            if vr < mVal-VALID_DEPTH: right = True
+            if left and right: return True
+        return False
+    maxima = [i for i in range(1, len(hist)-1) if isValidMax(i)]
+    if len(maxima) == 0: return
+    CENTER_HUE = 140/3
+    bestMax = maxima[np.argmin([abs(i-CENTER_HUE) for i in maxima])]
+    
+    # set color range
+    global minColor, maxColor, pivotLoc
+    bestHue = bestMax*3
+    minColor = (bestHue-15, 90, 40)
+    maxColor = (bestHue+15, 255, 255)
+    pivotLoc=(10,10)
+    mask = cv2.inRange(hsv, minColor, maxColor)
+    processMask(mask, 2, 3)
+    cv2.imshow("mask", mask)
+    
+    hists = [getHistogram(ch, mask, 1.0) for ch in range(3)]
+    minColor, maxColor = [0,0,0], [0,0,0]
+    for i in range(3):
+        cs = hists[i].cumsum()
+        minColor[i] = np.searchsorted(cs, np.percentile(cs, 25))*3
+        maxColor[i] = np.searchsorted(cs, np.percentile(cs, 75))*3
+    minColor = tuple(minColor)
+    maxColor = tuple(maxColor)
+    
+    print("auto:", minColor, maxColor)
+    
+    # draw histogram
+    if True:
+        histImage = np.zeros((256, 180, 3), np.uint8)
+        hist = np.int32(np.around(hist))
+        for x,y in enumerate(hist):
+            cv2.line(histImage, (x*3,256), (x*3,256-y), (x*3,255,255))
+            cv2.line(histImage, (x*3+1,256), (x*3+1,256-y), (x*3+1,255,255))
+            if x in maxima:
+                color = (0,0,255)
+                if x == bestMax: color = (60,255,255)
+                cv2.line(histImage, (x*3,0), (x*3,256-y), color)
+        histImage = cv2.cvtColor(histImage, cv2.COLOR_HSV2BGR)
+        cv2.imshow("histogram", histImage)
+    
+    end = time.perf_counter()
+    # print(f"autoSetColor took {int((end-start)*1000)} ms")
 
 
 
@@ -424,6 +496,10 @@ def onKey(key):
         maxColor = (0,0,0)
     if key == ord("z") or key == ord("Z"):
         zeroAngle()
+    if key == ord("a") or key == ord("A"):
+        autoSetColor(frame)
+        print("user:", minColor, maxColor)
+        print()
 
 ######### VideoCapture #########
 def initCapture():
@@ -448,6 +524,7 @@ if args.input_image is not None:
 global dt, fps
 dt = fps = None
 frameCount = 0
+heartbeat = 0
 lastSecond = time.perf_counter()
 
 while True:
@@ -506,6 +583,8 @@ while True:
     if not args.no_network:
         smartDashboard.putNumber("scaleAngle", getAngle())
         smartDashboard.putNumber("scaleTip", getTip())
+        smartDashboard.putNumber("scaleHeartbeat", heartbeat)
+        heartbeat += 1
     
     key = cv2.waitKey(1) & 0xFF
     if key == 27:
