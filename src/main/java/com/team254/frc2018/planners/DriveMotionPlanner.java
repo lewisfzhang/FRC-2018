@@ -47,6 +47,9 @@ public class DriveMotionPlanner implements CSVWritable {
     Pose2d mError = Pose2d.identity();
     Output mOutput = new Output();
 
+    DifferentialDrive.ChassisState prev_velocity_ = new DifferentialDrive.ChassisState();
+    double t = 0.0;
+
     public DriveMotionPlanner() {
         final DCMotorTransmission transmission = new DCMotorTransmission(
                 1.0 / Constants.kDriveKv,
@@ -273,13 +276,21 @@ public class DriveMotionPlanner implements CSVWritable {
                                 (current_state.getRotation().cos() * translation_error.y() - current_state
                                         .getRotation().sin() * translation_error.x()));
 
-        System.out.println("ffv: " + dynamics.chassis_velocity + ", newv: " +
-         adjusted_velocity + ", error (m): " + translation_error + ", (deg): " + angle_error);
+//        System.out.println("ffv: " + dynamics.chassis_velocity + ", newv: " +
+//         adjusted_velocity + ", error (m): " + translation_error + ", (deg): " + angle_error);
 
         // Compute adjusted left and right wheel velocities.
         dynamics.chassis_velocity = adjusted_velocity;
         dynamics.wheel_velocity = mModel.solveInverseKinematics(adjusted_velocity);
-        return new Output(dynamics.wheel_velocity.left, dynamics.wheel_velocity.right, dynamics.voltage.left, dynamics.voltage.right);
+
+        dynamics.chassis_acceleration.linear = t == 0 ? 0.0 : (dynamics.chassis_velocity.linear - prev_velocity_.linear) / t;
+        dynamics.chassis_acceleration.angular = t == 0 ? 0.0 : (dynamics.chassis_velocity.angular - prev_velocity_.angular) / t;
+
+        prev_velocity_ = dynamics.chassis_velocity;
+
+        DifferentialDrive.WheelState feedforward_voltages = mModel.solveInverseDynamics(dynamics.chassis_velocity, dynamics.chassis_acceleration).voltage;
+
+        return new Output(dynamics.wheel_velocity.left, dynamics.wheel_velocity.right, feedforward_voltages.left, feedforward_voltages.right);
     }
 
     public Output update(double timestamp, Pose2d current_state) {
@@ -289,7 +300,7 @@ public class DriveMotionPlanner implements CSVWritable {
             mLastTime = timestamp;
         }
 
-        final double t = timestamp - mLastTime;
+        t = timestamp - mLastTime;
         mLastTime = timestamp;
         TrajectorySamplePoint<TimedState<Pose2dWithCurvature>> sample_point = mCurrentTrajectory.advance(t);
         mSetpoint = sample_point.state();
