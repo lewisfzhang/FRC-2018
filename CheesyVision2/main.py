@@ -244,7 +244,7 @@ def autoSetColor(input):
     
     
     # draw histogram
-    if True:
+    if False:
         histImage = np.zeros((256, 180, 3), np.uint8)
         hist = np.int32(np.around(hist))
         for x,y in enumerate(hist):
@@ -258,7 +258,7 @@ def autoSetColor(input):
         cv2.imshow("histogram", histImage)
     
     end = time.perf_counter()
-    # print(f"autoSetColor took {int((end-start)*1000)} ms")
+    print(f"autoSetColor took {int((end-start)*1000)} ms")
 
 
 
@@ -272,7 +272,7 @@ SMOOTH_HISTORY = 1.0 # amount of history to consider for smoothing (seconds)
 SMOOTH_FIT_DEGREE = 2 # degree of polynomial fit for smoothing
 STEADY_HISTORY = 1.0 # amount of history to consider for steadiness (seconds)
 STEADY_THRESHOLD = 4.0 # angle variation considered "steady" (degrees)
-MAX_SKEW = 10.0 # maximum skew between the top & bottom lines (degrees)
+MAX_SKEW = 5.0 # maximum skew between the top & bottom lines (degrees)
 CENTER_ANGLE_REJECT_THRESHOLD = 7.0 # reject blob-center-angles farther off than this (degrees)
 TIPPED_THRESHOLD = 3.5 # angle at which the scale is "tipped" (degrees)
 
@@ -282,6 +282,7 @@ warnings.simplefilter("ignore", np.RankWarning)
 
 curAngle = 0
 zeroPoint = 0
+zeroed = False
 lastUpdate = None
 smoothHistory = collections.deque()
 steadyHistory = collections.deque()
@@ -297,8 +298,10 @@ def isSteady():
     return maxA - minA < STEADY_THRESHOLD
 
 def updateAngle(lineAngles, centerAngles):
-    global curAngle, zeroPoint, lastUpdate, waitingForSteady, errorMsg
+    global curAngle, zeroPoint, zeroed, lastUpdate, waitingForSteady, errorMsg
     errorMsg = None
+    if not zeroed:
+        errorMsg = "NOT ZEROED YET"
     
     # calculate dt
     now = time.perf_counter()
@@ -375,10 +378,11 @@ def getTip(): # TODO: hysteresis?
     return 0
 
 def zeroAngle():
-    global zeroPoint
+    global zeroPoint, zeroed
     angle = getRawAngle()
     if angle is not None:
         zeroPoint = angle
+        zeroed = True
 
 
 
