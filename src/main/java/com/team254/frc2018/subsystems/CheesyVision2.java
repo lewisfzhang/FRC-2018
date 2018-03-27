@@ -78,8 +78,8 @@ public class CheesyVision2 extends Subsystem {
             tip = -tip;
         
         double[] height = NEUTRAL_HEIGHT;
-        if (tip < 0) height = LOW_HEIGHT;
-        if (tip > 0) height = HIGH_HEIGHT;
+        if (tip < -0.5) height = LOW_HEIGHT;
+        if (tip > +0.5) height = HIGH_HEIGHT;
         return height[i];
     }
     
