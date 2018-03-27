@@ -36,11 +36,10 @@ public class FarScaleOnlyMode extends AutoModeBase {
     protected void routine() throws AutoModeEndedException {
         System.out.println("Running far scale only");
 
-        runAction(new SetIntaking(false, false));
-
         // Score first cube
         runAction(new ParallelAction(
                 Arrays.asList(
+                        new SetIntaking(false, false),
                         mSideStartToFarScale,
                         new SeriesAction(
                                 Arrays.asList(
@@ -60,7 +59,12 @@ public class FarScaleOnlyMode extends AutoModeBase {
         runAction(new ParallelAction(
                 Arrays.asList(
                         mFarScaleToFarFence,
-                        new SetIntaking(true, false)
+                        new OpenCloseJawAction(true),
+                        new SetIntaking(true, false),
+                        new SeriesAction(Arrays.asList(
+                                new WaitUntilInsideRegion(new Translation2d(0.0, -1000.0), new Translation2d(205.0, 1000.0), mStartedLeft),
+                                new OpenCloseJawAction(false)
+                        ))
                 )
         ));
         runAction(new WaitAction(AutoConstants.kWaitForCubeTime));
@@ -85,9 +89,11 @@ public class FarScaleOnlyMode extends AutoModeBase {
         runAction(new ParallelAction(
                 Arrays.asList(
                         mFarScaleToFarFence2,
+                        new OpenCloseJawAction(true),
                         new SetIntaking(true, false)
                 )
         ));
+        runAction(new OpenCloseJawAction(false));
         runAction(new WaitAction(AutoConstants.kWaitForCubeTime));
 
         // Score third cube
@@ -110,9 +116,10 @@ public class FarScaleOnlyMode extends AutoModeBase {
         runAction(new ParallelAction(
                 Arrays.asList(
                         mFarScaleToFarFence3,
+                        new OpenCloseJawAction(true),
                         new SetIntaking(true, false)
                 )
         ));
-
+        runAction(new OpenCloseJawAction(false));
     }
 }

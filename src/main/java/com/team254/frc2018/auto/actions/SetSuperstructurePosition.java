@@ -1,6 +1,7 @@
 package com.team254.frc2018.auto.actions;
 
 import com.team254.frc2018.statemachines.SuperstructureStateMachine;
+import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.frc2018.states.SuperstructureState;
 import com.team254.frc2018.subsystems.Superstructure;
 import com.team254.lib.util.Util;
@@ -17,6 +18,7 @@ public class SetSuperstructurePosition implements Action {
 
     public SetSuperstructurePosition(double height, double angle, boolean waitForCompletion) {
         mHeight = height;
+        // mHeight = SuperstructureConstants.kElevatorMinHeight;
         mAngle = angle;
         mWaitForCompletion = waitForCompletion;
     }

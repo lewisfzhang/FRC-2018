@@ -151,10 +151,6 @@ public class Robot extends IterativeRobot {
             Drive.getInstance().zeroSensors();
             mInfrastructure.setIsDuringAuto(true);
 
-            Optional<AutoModeBase> selectedMode = mAutoModeSelector.getAutoMode(mAutoFieldState);
-            AutoModeBase autoMode = selectedMode.isPresent() ? selectedMode.get() : new DoNothingMode();
-            mAutoModeExecuter.setAutoMode(autoMode);
-            System.out.println("Set auto mode to: " + autoMode.getClass().toString());
             mAutoModeExecuter.start();
 
             mLED.setEnableFaults(false);
@@ -227,6 +223,12 @@ public class Robot extends IterativeRobot {
             // Poll FMS auto mode info and update mode creator cache
             mAutoFieldState.setSides(DriverStation.getInstance().getGameSpecificMessage());
             mAutoModeSelector.updateModeCreator(false);
+
+            Optional<AutoModeBase> autoMode = mAutoModeSelector.getAutoMode(mAutoFieldState);
+            if (autoMode.isPresent() && autoMode.get() != mAutoModeExecuter.getAutoMode()) {
+                System.out.println("Set auto mode to: " + autoMode.getClass().toString());
+                mAutoModeExecuter.setAutoMode(autoMode.get());
+            }
 
             System.gc();
         } catch (Throwable t) {
