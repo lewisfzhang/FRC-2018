@@ -65,9 +65,9 @@ public class Constants {
 
     // PID gains for drive velocity loop (LOW GEAR)
     // Units: setpoint, error, and output are in ticks per second.
-    public static final double kDriveLowGearVelocityKp = 0.4;
+    public static final double kDriveLowGearVelocityKp = 0.9;
     public static final double kDriveLowGearVelocityKi = 0.0;
-    public static final double kDriveLowGearVelocityKd = 2.0;
+    public static final double kDriveLowGearVelocityKd = 10.0;
     public static final double kDriveLowGearVelocityKf = 0.0;
     public static final int kDriveLowGearVelocityIZone = 0;
     public static final double kDriveVoltageRampRate = 0.0;
