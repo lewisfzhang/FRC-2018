@@ -267,7 +267,7 @@ def autoSetColor(input):
 #########################################
 
 # constants (TODO: tune these)
-MAX_SCALE_SPEED = 60.0 # maximum normal movement speed (degrees per second)
+MAX_SCALE_SPEED = 40.0 # maximum normal movement speed (degrees per second)
 SMOOTH_HISTORY = 1.0 # amount of history to consider for smoothing (seconds)
 SMOOTH_FIT_DEGREE = 2 # degree of polynomial fit for smoothing
 STEADY_HISTORY = 1.0 # amount of history to consider for steadiness (seconds)
