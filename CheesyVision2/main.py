@@ -19,52 +19,49 @@ def processMask(mask, closeSize=4, openSize=2):
     cv2.morphologyEx(mask, cv2.MORPH_CLOSE, getKernel(closeSize), mask)
     cv2.morphologyEx(mask, cv2.MORPH_OPEN,  getKernel(openSize), mask)
 
-def process(input):
+# returns: blobs, hsv
+def getBlobs(input):
     height, width = input.shape[:2]
     
     # convert to HSV
     hsv = cv2.cvtColor(input, cv2.COLOR_BGR2HSV)
     cv2.medianBlur(hsv, 5, hsv)
-    global curFrame
-    curFrame = hsv
     
     # threshold
-    global minColor, maxColor
+    global minColor, maxColor, pivotLoc
     mask = cv2.inRange(hsv, minColor, maxColor)
-    #mask = cv2.inRange(hsv, (110, 30, 30), (140, 255, 255))
-    #mask = cv2.inRange(hsv, (130, 130, 80), (160, 255, 255)) # actual
-    #cv2.imshow("raw mask", mask)
     
     # reduce noise with morphological operations
     processMask(mask)
     
-    # find & filter blobs in the mask
+    # find contours
+    _, contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    
+    # construct list of blobs
+    blobs = []
+    maxArea = 0
     def getMedian(contour):
         xs, ys = zip(*(p[0] for p in contour))
         medianX = (max(xs) + min(xs)) / 2
         medianY = (max(ys) + min(ys)) / 2
         return (medianX, medianY)
-    def getBlobs(mask):
-        # find contours
-        _, contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        
-        # construct list of blobs
-        blobs = []
-        maxArea = 0
-        for contour in contours:
-            m = cv2.moments(contour)
-            area = m["m00"]
-            centroid = (m["m10"]/m["m00"], m["m01"]/m["m00"]) if area>0 else (math.inf, math.inf)
-            median = getMedian(contour)
-            blobs.append({"contour": contour, "area": area, "centroid": centroid, "median": median})
-            maxArea = max(maxArea, area)
-        
-        # prune blobs
-        blobs = [b for b in blobs if b["area"] > maxArea*0.30]
-        
-        # return the final list
-        return blobs
-    blobs = getBlobs(mask)
+    for contour in contours:
+        m = cv2.moments(contour)
+        area = m["m00"]
+        centroid = (m["m10"]/m["m00"], m["m01"]/m["m00"]) if area>0 else (math.inf, math.inf)
+        median = getMedian(contour)
+        blobs.append({"contour": contour, "area": area, "centroid": centroid, "median": median})
+        maxArea = max(maxArea, area)
+    
+    # prune blobs
+    blobs = [b for b in blobs if b["area"] > maxArea*0.30]
+    
+    # return the final list
+    return blobs, hsv, mask
+
+def process(input):
+    global curFrame
+    blobs, curFrame, mask = getBlobs(input)
     
     # compute angles from blob centers to the pivot
     centerAngles = []
@@ -191,12 +188,12 @@ def autoSetColor(input):
     
     # downsample
     DOWNSCALE = 0.2
-    input = cv2.resize(input, (0,0), fx=DOWNSCALE, fy=DOWNSCALE)
-    # height, width = input.shape[:2]
+    inputSmall = cv2.resize(input, (0,0), fx=DOWNSCALE, fy=DOWNSCALE)
+    # height, width = inputSmall.shape[:2]
     # print(f"downsampled input size: [{width}, {height}]")
     
     # convert to HSV
-    hsv = cv2.cvtColor(input, cv2.COLOR_BGR2HSV)
+    hsv = cv2.cvtColor(inputSmall, cv2.COLOR_BGR2HSV)
     
     # calculate histogram
     def getHistogram(channel, mask, normMax=255):
@@ -205,11 +202,11 @@ def autoSetColor(input):
         cv2.normalize(hist, hist, 0, normMax, cv2.NORM_MINMAX)
         return hist
     mask = cv2.inRange(hsv, (0, 64, 64), (180, 255, 255))
-    # cv2.imshow("mask", mask)
+    cv2.imshow("mask", mask)
     hist = getHistogram(0, mask)
     
     # find maxima
-    VALID_DEPTH = 15
+    VALID_DEPTH = 7
     def isValidMax(i):
         mVal = hist[i]
         left, right = False, False
@@ -222,29 +219,30 @@ def autoSetColor(input):
         return False
     maxima = [i for i in range(1, len(hist)-1) if isValidMax(i)]
     if len(maxima) == 0: return
-    CENTER_HUE = 140/3
+    CENTER_HUE = 145/3
     bestMax = maxima[np.argmin([abs(i-CENTER_HUE) for i in maxima])]
     
     # set color range
-    global minColor, maxColor, pivotLoc
+    global minColor, maxColor, pivotLoc, gotPivotLoc
     bestHue = bestMax*3
-    minColor = (bestHue-15, 90, 40)
+    minColor = (bestHue-15, 75, 40)
     maxColor = (bestHue+15, 255, 255)
-    pivotLoc=(10,10)
-    mask = cv2.inRange(hsv, minColor, maxColor)
-    processMask(mask, 2, 3)
-    cv2.imshow("mask", mask)
-    
-    hists = [getHistogram(ch, mask, 1.0) for ch in range(3)]
-    minColor, maxColor = [0,0,0], [0,0,0]
-    for i in range(3):
-        cs = hists[i].cumsum()
-        minColor[i] = np.searchsorted(cs, np.percentile(cs, 25))*3
-        maxColor[i] = np.searchsorted(cs, np.percentile(cs, 75))*3
-    minColor = tuple(minColor)
-    maxColor = tuple(maxColor)
-    
     print("auto:", minColor, maxColor)
+    
+    # auto-detect pivot location
+    def blobError(b):
+        rect = cv2.minAreaRect(b["contour"])
+        fullness = b["area"] / (rect[1][0]*rect[1][1])
+        aspectRatio = rect[1][0]/rect[1][1]
+        if aspectRatio < 1.0: aspectRatio = 1/aspectRatio
+        return abs(aspectRatio - 2.80) - fullness
+    blobs = getBlobs(input)[0]
+    if len(blobs) >= 2:
+        blobs.sort(key=blobError)
+        c0, c1 = blobs[0]["centroid"], blobs[1]["centroid"]
+        pivotLoc = (int(c0[0]+c1[0])//2, int(c0[1]+c1[1])//2)
+        gotPivotLoc = True
+    
     
     # draw histogram
     if True:
@@ -440,7 +438,7 @@ V_PAD = 30
 roi = None
 gotROI = False
 
-pivotLoc = None
+pivotLoc = (10,10)
 gotPivotLoc = False
 
 global width, height
@@ -497,9 +495,10 @@ def onKey(key):
     if key == ord("z") or key == ord("Z"):
         zeroAngle()
     if key == ord("a") or key == ord("A"):
-        autoSetColor(frame)
-        print("user:", minColor, maxColor)
-        print()
+        if frameROI is not None:
+            print("user:", minColor, maxColor)
+            autoSetColor(frameROI)
+            print()
 
 ######### VideoCapture #########
 def initCapture():
@@ -565,7 +564,8 @@ while True:
     
     if gotROI:
         start = time.perf_counter()
-        process(frame[roi[1]:roi[3], roi[0]:roi[2]])
+        frameROI = frame[roi[1]:roi[3], roi[0]:roi[2]]
+        process(frameROI)
         end = time.perf_counter()
         dt = end - start
         
@@ -579,6 +579,8 @@ while True:
         
         if args.csv_output is not None:
             args.csv_output.write(f"{start}, {curAngle}, {getAngle()}, {getTip()}\n")
+    else:
+        frameROI = None
     
     if not args.no_network:
         smartDashboard.putNumber("scaleAngle", getAngle())
