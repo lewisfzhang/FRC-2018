@@ -1,20 +1,16 @@
 package com.team254.frc2018.subsystems;
 
+import com.team254.frc2018.AutoFieldState;
+import com.team254.frc2018.Constants;
 import com.team254.frc2018.loops.ILooper;
 import com.team254.frc2018.loops.Loop;
 import com.team254.frc2018.states.SuperstructureConstants;
 
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
- * The Subsystem abstract class, which serves as a basic framework for all robot subsystems. Each subsystem outputs
- * commands to SmartDashboard, has a stop routine (for after each match), and a routine to zero all sensors, which helps
- * with calibration.
- * <p>
- * All Subsystems only have one instance (after all, one robot does not have two drivetrains), and functions get the
- * instance of the drivetrain and act accordingly. Subsystems are also a state machine with a desired state and actual
- * state; the robot code will try to match the two states with actions. Each Subsystem also is responsible for
- * instantializing all member components at the start of the match.
+ * Handles things related to scale angle detection.
  */
 public class CheesyVision2 extends Subsystem {
     
@@ -29,8 +25,24 @@ public class CheesyVision2 extends Subsystem {
     
     private CheesyVision2() {}
     
+    
     private double angle = 0, tip = 0;
-    private boolean mConnectedToNetworkTables = false;
+    private boolean error = true;
+    private double lastHeartbeatValue = -1, lastHeartbeatTime = Double.NEGATIVE_INFINITY;
+    
+    /**
+     * @return true if the robot is receiving data from the scale tracker
+     */
+    public boolean isConnected() {
+        return Timer.getFPGATimestamp() < lastHeartbeatTime + Constants.kScaleTrackerTimeout;
+    }
+    
+    /**
+     * @return true if the system doesn't have a good reading of the scale
+     */
+    public boolean getError() {
+        return error;
+    }
     
     /**
      * @return the current angle of the scale, in degrees, as seen
@@ -42,98 +54,79 @@ public class CheesyVision2 extends Subsystem {
     }
     
     /**
-     * Enum that represents the current height of the scale, based on data sent by the CheesyVision2 python app over Network Tables
+     * @return the current thresholded "height" of the <em>right</em> scale
+     *         plate, as seen from the driver station (-1, 0, or +1)
      */
-    public enum ScaleHeight {
-        HIGH(SuperstructureConstants.kScaleHighHeight),
-        NEUTRAL(SuperstructureConstants.kScaleNeutralHeight),
-        LOW(SuperstructureConstants.kScaleLowHeight),
-        UNKNOWN(SuperstructureConstants.kScaleHighHeight); // Worst case: go to highest preset
-
-        private double mHeight;
-
-        ScaleHeight(double height) {
-            this.mHeight = height;
-        }
-
-        public double getHeight() {
-            return this.mHeight;
-        }
+    public double getTip() {
+        return tip;
     }
-
-    /**
-     * @return the current ScaleHeight of the <em>right</em> scale
-     *         plate, as seen from the driver station
-     */
-    public ScaleHeight getRightScaleHeight() {
-        if ((int) tip > 2) {
-            mConnectedToNetworkTables = false;
-            return ScaleHeight.UNKNOWN;
-        }
-
-        mConnectedToNetworkTables = true;
-
-        if (tip > 0.9) {
-            return ScaleHeight.HIGH;
-        } else if (tip < -0.9) {
-            return ScaleHeight.LOW;
-        } else {
-            return ScaleHeight.NEUTRAL;
-        }
+    
+    
+    public static final double[] DEFAULT_HEIGHT = new double[] {SuperstructureConstants.kScaleNeutralHeight, SuperstructureConstants.kScaleNeutralHeightBackwards};
+    public static final double[] LOW_HEIGHT     = new double[] {SuperstructureConstants.kScaleLowHeight, SuperstructureConstants.kScaleLowHeightBackwards};
+    public static final double[] NEUTRAL_HEIGHT = new double[] {SuperstructureConstants.kScaleNeutralHeight, SuperstructureConstants.kScaleNeutralHeightBackwards};
+    public static final double[] HIGH_HEIGHT    = new double[] {SuperstructureConstants.kScaleHighHeight, SuperstructureConstants.kScaleHighHeightBackwards};
+    
+    public double getDesiredHeight(boolean backwards) {
+        int i = backwards? 1 : 0;
+        if (getError()) return DEFAULT_HEIGHT[i];
+        
+        double tip = getTip();
+        AutoFieldState state = new AutoFieldState();
+        state.setSides();
+        if (state.getScaleSide() == AutoFieldState.Side.LEFT)
+            tip = -tip;
+        
+        double[] height = NEUTRAL_HEIGHT;
+        if (tip < 0) height = LOW_HEIGHT;
+        if (tip > 0) height = HIGH_HEIGHT;
+        return height[i];
     }
-    /**
-     * @return the current ScaleHeight of the <em>left</em> scale
-     *         plate, as seen from the driver station
-     */
-    public ScaleHeight getLeftScaleHeight() {
-        ScaleHeight right = getRightScaleHeight();
-
-        switch(right) {
-            case HIGH:
-                return ScaleHeight.LOW;
-            case NEUTRAL:
-                return ScaleHeight.NEUTRAL;
-            case LOW:
-                return ScaleHeight.HIGH;
-            case UNKNOWN:
-            default:
-                return ScaleHeight.UNKNOWN;
-        }
+    
+    public double getDesiredHeight(boolean backwards, int cubeNum) {
+        return getDesiredHeight(backwards) + 10.0*cubeNum;
     }
-
+    
+    
     @Override
     public boolean checkSystem() {
         return false;
     }
     
     @Override
-    public void outputTelemetry() {
-        SmartDashboard.putBoolean("Connected to Cheesy Vision 2", mConnectedToNetworkTables);
-        SmartDashboard.putString("Right Scale", getRightScaleHeight().toString());
-        SmartDashboard.putString("Left Scale", getLeftScaleHeight().toString());
-    }
+    public void outputTelemetry() {}
     
     @Override
     public void stop() {}
     
     @Override
     public void registerEnabledLoops(ILooper looper) {
-        Loop loop = new Loop() {
-            @Override
-            public void onStart(double timestamp) {}
+        looper.register(new EnabledLoop());
+    }
+    
+    private class EnabledLoop implements Loop {
+        @Override
+        public synchronized void onStart(double timestamp) {
+        }
         
-            @Override
-            public void onLoop(double timestamp) {
-                angle = SmartDashboard.getNumber("scaleAngle", 1000); // Set default value out of [-1, 1] range
-                tip = SmartDashboard.getNumber("scaleTip", 1000); // Set default value out of [-1, 1] range
+        @Override
+        public synchronized void onLoop(double timestamp) {
+            angle = SmartDashboard.getNumber("scaleAngle", Double.NaN);
+            tip = SmartDashboard.getNumber("scaleTip", Double.NaN);
+            error = SmartDashboard.getBoolean("scaleError", true);
+            double heartbeat = SmartDashboard.getNumber("scaleHeartbeat", -2);
+            if (heartbeat > lastHeartbeatValue) {
+                lastHeartbeatValue = heartbeat;
+                lastHeartbeatTime = timestamp;
             }
-
-            @Override
-            public void onStop(double timestamp) {
-                stop();
-            }
-        };
-
-        looper.register(loop);
+            
+            SmartDashboard.putNumber("scaleAngleEcho", angle);
+            SmartDashboard.putNumber("scaleTipEcho", tip);
+        }
+        
+        @Override
+        public void onStop(double timestamp) {
+            stop();
+        }
     }
 }

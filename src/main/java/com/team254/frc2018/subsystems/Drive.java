@@ -53,7 +53,7 @@ public class Drive extends Subsystem {
             synchronized (Drive.this) {
                 setOpenLoop(DriveSignal.NEUTRAL);
                 setBrakeMode(false);
-                // startLogging();
+                 startLogging();
             }
         }
 
@@ -89,7 +89,7 @@ public class Drive extends Subsystem {
     };
 
     private void configureMaster(TalonSRX talon, boolean left) {
-        talon.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 10, 100);
+        talon.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 5, 100);
         final ErrorCode sensorPresent = talon.configSelectedFeedbackSensor(FeedbackDevice
                 .CTRE_MagEncoder_Relative, 0, 100); //primary closed-loop, 100 ms timeout
         if (sensorPresent != ErrorCode.OK) {
@@ -100,7 +100,7 @@ public class Drive extends Subsystem {
         talon.enableVoltageCompensation(true);
         talon.configVoltageCompSaturation(12.0, Constants.kLongCANTimeoutMs);
         talon.configVelocityMeasurementPeriod(VelocityMeasPeriod.Period_20Ms, Constants.kLongCANTimeoutMs);
-        talon.configVelocityMeasurementWindow(1, Constants.kLongCANTimeoutMs);
+        talon.configVelocityMeasurementWindow(16, Constants.kLongCANTimeoutMs);
         talon.configClosedloopRamp(Constants.kDriveVoltageRampRate, Constants.kLongCANTimeoutMs);
         talon.configNeutralDeadband(0.04, 0);
     }

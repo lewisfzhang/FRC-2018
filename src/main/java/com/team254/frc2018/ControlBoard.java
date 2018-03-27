@@ -40,8 +40,8 @@ public class ControlBoard implements IControlBoard {
     }
 
     @Override
-    public boolean getAutoExchange() {
-        return mDriveControlBoard.getAutoExchange();
+    public boolean getPoopyShoot() {
+        return mDriveControlBoard.getPoopyShoot();
     }
 
     @Override
@@ -110,6 +110,11 @@ public class ControlBoard implements IControlBoard {
     @Override
     public boolean getBackwardsModifier() {
         return mButtonControlBoard.getBackwardsModifier();
+    }
+
+    @Override
+    public boolean getAutoHeightModifier() {
+        return mButtonControlBoard.getAutoHeightModifier();
     }
 
     @Override

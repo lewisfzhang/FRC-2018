@@ -23,16 +23,16 @@ public class MainDriveControlBoard implements IDriveControlBoard {
 
     @Override
     public double getThrottle() {
-        return -mThrottleStick.getRawAxis(0);
+        return mThrottleStick.getRawAxis(1);
     }
 
     @Override
     public double getTurn() {
-        return -mTurnStick.getRawAxis(1);
+        return -mTurnStick.getRawAxis(0);
     }
 
     @Override
-    public boolean getAutoExchange() {
+    public boolean getPoopyShoot() {
         return mThrottleStick.getRawButton(1);
     }
 
@@ -43,11 +43,11 @@ public class MainDriveControlBoard implements IDriveControlBoard {
 
     @Override
     public boolean getOpenJaw() {
-        return mThrottleStick.getRawButton(2);
+        return mTurnStick.getRawButton(2);
     }
 
     @Override
     public boolean getShoot() {
-        return mTurnStick.getRawButton(2);
+        return mThrottleStick.getRawButton(2);
     }
 }

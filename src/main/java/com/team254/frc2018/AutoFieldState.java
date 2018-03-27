@@ -1,6 +1,8 @@
 package com.team254.frc2018;
 
 import com.team254.lib.geometry.Pose2d;
+
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
@@ -59,6 +61,10 @@ public class AutoFieldState {
         scaleSide = s1;
         opponentSwitchSide = s2;
         return true;
+    }
+    
+    public boolean setSides() {
+        return setSides(DriverStation.getInstance().getGameSpecificMessage());
     }
     
     /** Helper method to convert 'L' or 'R' to their respective Side. */

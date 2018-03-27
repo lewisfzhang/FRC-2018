@@ -6,9 +6,6 @@ import com.team254.frc2018.auto.actions.*;
 import com.team254.frc2018.auto.AutoConstants;
 import com.team254.frc2018.paths.TrajectoryGenerator;
 import com.team254.frc2018.states.SuperstructureConstants;
-import com.team254.lib.geometry.Pose2dWithCurvature;
-import com.team254.lib.trajectory.Trajectory;
-import com.team254.lib.trajectory.timing.TimedState;
 
 import java.util.Arrays;
 
@@ -42,6 +39,6 @@ public class SideStartSwitchMode extends AutoModeBase {
                 )
         ));
 
-        runAction(new ShootCube(AutoConstants.kStrongShootPower));
+        runAction(new ShootCube(AutoConstants.kMediumShootPower));
     }
 }
