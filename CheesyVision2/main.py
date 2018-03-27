@@ -202,7 +202,6 @@ def autoSetColor(input):
         cv2.normalize(hist, hist, 0, normMax, cv2.NORM_MINMAX)
         return hist
     mask = cv2.inRange(hsv, (0, 64, 64), (180, 255, 255))
-    cv2.imshow("mask", mask)
     hist = getHistogram(0, mask)
     
     # find maxima
