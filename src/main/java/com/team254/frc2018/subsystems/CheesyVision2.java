@@ -2,6 +2,7 @@ package com.team254.frc2018.subsystems;
 
 import com.team254.frc2018.AutoFieldState;
 import com.team254.frc2018.Constants;
+import com.team254.frc2018.AutoFieldState.Side;
 import com.team254.frc2018.loops.ILooper;
 import com.team254.frc2018.loops.Loop;
 import com.team254.frc2018.states.SuperstructureConstants;
@@ -26,8 +27,23 @@ public class CheesyVision2 extends Subsystem {
     private CheesyVision2() {}
     
     private double angle = 0, tip = 0;
-    private boolean mConnectedToNetworkTables = false;
+    private boolean error = true;
+    private double lastHeartbeatValue = -1, lastHeartbeatTime = Double.NEGATIVE_INFINITY;
 
+    /**
+     * @return true if the robot is receiving data from the scale tracker
+     */
+    public boolean isConnected() {
+        return Timer.getFPGATimestamp() < lastHeartbeatTime + Constants.kScaleTrackerTimeout;
+    }
+
+    /**
+     * @return true if the system doesn't have a good reading of the scale
+     */
+    public boolean getError() {
+        return error;
+    }
+    
     /**
      * @return the current angle of the scale, in degrees, as seen
      *         from the driver station (positive = right side raised;
@@ -36,7 +52,7 @@ public class CheesyVision2 extends Subsystem {
     public double getAngle() {
         return angle;
     }
-    
+
     /**
      * Enum that represents the current height of the scale, based on data sent by the CheesyVision2 python app over Network Tables
      */
@@ -58,20 +74,41 @@ public class CheesyVision2 extends Subsystem {
     }
 
     /**
+     * Enum that represents the current height of the scale, based on data sent by the CheesyVision2 python app over Network Tables
+     */
+    public static enum ScaleHeight {
+        HIGH(SuperstructureConstants.kScaleHighHeight, SuperstructureConstants.kScaleHighHeightBackwards),
+        NEUTRAL(SuperstructureConstants.kScaleNeutralHeight, SuperstructureConstants.kScaleNeutralHeightBackwards),
+        LOW(SuperstructureConstants.kScaleLowHeight, SuperstructureConstants.kScaleLowHeightBackwards),
+        UNKNOWN(SuperstructureConstants.kScaleHighHeight, SuperstructureConstants.kScaleHighHeightBackwards); // Worst case: go to highest preset
+
+        private final double mForwardsHeight, mBackwardsHeight;
+
+        ScaleHeight(double forwardsHeight, double backwardsHeight) {
+            this.mForwardsHeight = forwardsHeight;
+            this.mBackwardsHeight = backwardsHeight;
+        }
+    
+        public double getHeight(boolean backwards) {
+            return backwards ? mBackwardsHeight : mForwardsHeight;
+        }
+    }
+
+    public double getDesiredHeight(AutoFieldState fieldState, boolean backwards, int cubeNum) {
+        ScaleHeight state = fieldState.getScaleSide() == Side.RIGHT ? getRightScaleHeight() : getLeftScaleHeight();
+        return state.getHeight(backwards) + 10.0*cubeNum;
+    }
+    
+    /**
      * @return the current ScaleHeight of the <em>right</em> scale
      *         plate, as seen from the driver station
      */
-    public ScaleHeight getRightScaleHeight() {
-        if ((int) tip > 2) {
-            mConnectedToNetworkTables = false;
+    public ScaleHeight getRightScaleHeight() {    
+        if (getError() || !isConnected()) {
             return ScaleHeight.UNKNOWN;
-        }
-
-        mConnectedToNetworkTables = true;
-
-        if (tip > 0.9) {
+        } else if (getTip() > 0.5) {
             return ScaleHeight.HIGH;
-        } else if (tip < -0.9) {
+        } else if (getTip() < -0.5) {
             return ScaleHeight.LOW;
         } else {
             return ScaleHeight.NEUTRAL;
@@ -83,8 +120,7 @@ public class CheesyVision2 extends Subsystem {
      */
     public ScaleHeight getLeftScaleHeight() {
         ScaleHeight right = getRightScaleHeight();
-
-        switch(right) {
+        switch (right) {
             case HIGH:
                 return ScaleHeight.LOW;
             case NEUTRAL:
@@ -96,7 +132,7 @@ public class CheesyVision2 extends Subsystem {
                 return ScaleHeight.UNKNOWN;
         }
     }
-
+    
     @Override
     public boolean checkSystem() {
         return false;
@@ -104,7 +140,7 @@ public class CheesyVision2 extends Subsystem {
     
     @Override
     public void outputTelemetry() {
-        SmartDashboard.putBoolean("Connected to Cheesy Vision 2", mConnectedToNetworkTables);
+        SmartDashboard.putBoolean("Connected to CheesyVision2", isConnected());
         SmartDashboard.putString("Right Scale", getRightScaleHeight().toString());
         SmartDashboard.putString("Left Scale", getLeftScaleHeight().toString());
     }
@@ -117,13 +153,18 @@ public class CheesyVision2 extends Subsystem {
         Loop loop = new Loop() {
             @Override
             public void onStart(double timestamp) {}
-
             @Override
             public void onLoop(double timestamp) {
-                angle = SmartDashboard.getNumber("scaleAngle", 1000); // Set default value out of [-1, 1] range
-                tip = SmartDashboard.getNumber("scaleTip", 1000); // Set default value out of [-1, 1] range
+                angle = SmartDashboard.getNumber("scaleAngle", Double.NaN);
+                tip = SmartDashboard.getNumber("scaleTip", Double.NaN);
+                error = SmartDashboard.getBoolean("scaleError", true);
+                double heartbeat = SmartDashboard.getNumber("scaleHeartbeat", -2);
+                if (heartbeat > lastHeartbeatValue) {
+                    lastHeartbeatValue = heartbeat;
+                    lastHeartbeatTime = timestamp;
+                }
             }
-
+            
             @Override
             public void onStop(double timestamp) {
                 stop();
