@@ -11,32 +11,127 @@ import java.util.Arrays;
 
 public class SimpleSwitchMode extends AutoModeBase {
 
-    final boolean mGoLeft;
-    private DriveTrajectory mTrajectory;
+    private static final TrajectoryGenerator mTrajectoryGenerator = TrajectoryGenerator.getInstance();
+    final boolean mStartedLeft;
+    private DriveTrajectory mStartToSwitch;
+
+    private DriveTrajectory mSwitchToPyramidCube;
+    private DriveTrajectory mSwitchToPyramidCube1;
+    private DriveTrajectory mSwitchToPyramidCube2;
+
+    private DriveTrajectory mPyramidCubeToSwitch;
+    private DriveTrajectory mPyramidCube1ToSwitch;
+    private DriveTrajectory mPyramidCube2ToCenterField;
+
+    private double mPyramidCubeWaitTime, mPyramidCube1WaitTime, mPyramidCube2WaitTime;
 
     public SimpleSwitchMode(boolean driveToLeftSwitch) {
-        mGoLeft = driveToLeftSwitch;
+        mStartedLeft = driveToLeftSwitch;
 
-        if(mGoLeft) {
-            mTrajectory = new DriveTrajectory(TrajectoryGenerator.getInstance().getTrajectorySet().centerStartToLeftSwitch, true);
+        if(mStartedLeft) {
+            mStartToSwitch = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().centerStartToLeftSwitch, true);
         } else {
-            mTrajectory = new DriveTrajectory(TrajectoryGenerator.getInstance().getTrajectorySet().centerStartToRightSwitch, true);
+            mStartToSwitch = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().centerStartToRightSwitch, true);
         }
+
+        mSwitchToPyramidCube = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().switchToPyramidCube.get(mStartedLeft), true);
+        mSwitchToPyramidCube1 = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().switchToPyramidCube1.get(mStartedLeft));
+        mSwitchToPyramidCube2 = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().switchToPyramidCube2.get(mStartedLeft));
+
+        mPyramidCubeToSwitch = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().pyramidCubeToSwitch.get(mStartedLeft));
+        mPyramidCube1ToSwitch = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().pyramidCube1ToSwitch.get(mStartedLeft));
+        mPyramidCube2ToCenterField = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().pyramidCube2ToCenterField.get(mStartedLeft));
+
+        mPyramidCubeWaitTime = mTrajectoryGenerator.getTrajectorySet().switchToPyramidCube.get(mStartedLeft).getLastState().t() - 0.1;
+        mPyramidCube1WaitTime = mTrajectoryGenerator.getTrajectorySet().switchToPyramidCube1.get(mStartedLeft).getLastState().t() - 0.1;
+        mPyramidCube2WaitTime = mTrajectoryGenerator.getTrajectorySet().switchToPyramidCube2.get(mStartedLeft).getLastState().t() - 0.1;
     }
 
 
     @Override
     protected void routine() throws AutoModeEndedException {
         System.out.println("Running Simple switch");
-        runAction(new SetIntaking(false, false));
 
+        //Score first cube
         runAction(new ParallelAction(
                 Arrays.asList(
-                        mTrajectory,
+                        mStartToSwitch,
                         (new SetSuperstructurePosition(SuperstructureConstants.kSwitchHeightBackwards, SuperstructureConstants.kStowedPositionAngle, true))
                 )
         ));
-
         runAction(new ShootCube(AutoConstants.kMediumShootPower));
+
+        // Get second cube
+        runAction(new ParallelAction(
+                Arrays.asList(
+                        mSwitchToPyramidCube,
+                        new SetIntaking(true, false),
+                        new SeriesAction(Arrays.asList(
+                                new WaitAction(mPyramidCubeWaitTime),
+                                new OpenCloseJawAction(false)
+                        ))
+                )
+        ));
+        runAction(new WaitAction(AutoConstants.kWaitForCubeTime));
+
+        //Score second cube
+        runAction(new ParallelAction(
+                Arrays.asList(
+                        mPyramidCubeToSwitch,
+                        new SeriesAction(
+                                Arrays.asList(
+                                        new WaitAction(0.5),
+                                        new SetSuperstructurePosition(SuperstructureConstants.kSwitchHeightBackwards, SuperstructureConstants.kStowedPositionAngle, true)
+
+                                )
+                        )
+                )
+        ));
+        runAction(new ShootCube(AutoConstants.kMediumShootPower));
+
+        // Get third cube
+        runAction(new ParallelAction(
+                Arrays.asList(
+                        mSwitchToPyramidCube1,
+                        new SetSuperstructurePosition(SuperstructureConstants.kIntakeSecondLevelHeight, SuperstructureConstants.kIntakePositionAngle, true),
+                        new SetIntaking(false, false),
+                        new SeriesAction(Arrays.asList(
+                                new WaitAction(mPyramidCube1WaitTime),
+                                new OpenCloseJawAction(false)
+                        ))
+                )
+        ));
+        runAction(new WaitAction(AutoConstants.kWaitForCubeTime));
+
+        //Score third cube
+        runAction(new ParallelAction(
+                Arrays.asList(
+                        mPyramidCube1ToSwitch,
+                        (new SetSuperstructurePosition(SuperstructureConstants.kSwitchHeightBackwards, SuperstructureConstants.kStowedPositionAngle, true))
+                )
+        ));
+        runAction(new ShootCube(AutoConstants.kMediumShootPower));
+
+        // Get fourth cube
+        runAction(new ParallelAction(
+                Arrays.asList(
+                        mSwitchToPyramidCube2,
+                        new SetIntaking(true, false),
+                        new SeriesAction(Arrays.asList(
+                                new WaitAction(mPyramidCube2WaitTime),
+                                new OpenCloseJawAction(false)
+                        ))
+                )
+        ));
+        runAction(new WaitAction(AutoConstants.kWaitForCubeTime));
+
+
+        //Drive to center field
+        runAction(new ParallelAction(
+                Arrays.asList(
+                        mPyramidCube2ToCenterField,
+                        (new SetSuperstructurePosition(SuperstructureConstants.kSwitchHeightBackwards, SuperstructureConstants.kStowedPositionAngle, true))
+                )
+        ));
     }
 }
