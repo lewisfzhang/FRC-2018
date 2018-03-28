@@ -53,7 +53,7 @@ public class Drive extends Subsystem {
             synchronized (Drive.this) {
                 setOpenLoop(DriveSignal.NEUTRAL);
                 setBrakeMode(false);
-                 startLogging();
+//                 startLogging();
             }
         }
 
