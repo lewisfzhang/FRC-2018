@@ -22,6 +22,8 @@ public class FarScaleOnlyMode extends AutoModeBase {
     private DriveTrajectory mFarFence2ToFarScale;
     private DriveTrajectory mFarScaleToFarFence3;
 
+    private double mFarFenceWaitTime, mFarFence2WaitTime, mFarFence3WaitTime;
+
     public FarScaleOnlyMode(boolean robotStartedOnLeft) {
         mStartedLeft = robotStartedOnLeft;
         mSideStartToFarScale = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().sideStartToFarScale.get(mStartedLeft), true);
@@ -30,6 +32,10 @@ public class FarScaleOnlyMode extends AutoModeBase {
         mFarScaleToFarFence2 = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().farScaleToFarFence2.get(mStartedLeft));
         mFarFence2ToFarScale = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().farFence2ToFarScale.get(mStartedLeft));
         mFarScaleToFarFence3 = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().farScaleToFarFence3.get(mStartedLeft));
+
+        mFarFenceWaitTime = mTrajectoryGenerator.getTrajectorySet().nearScaleToNearFence.get(mStartedLeft).getLastState().t() - 0.1;
+        mFarFence2WaitTime = mTrajectoryGenerator.getTrajectorySet().nearScaleToNearFence2.get(mStartedLeft).getLastState().t() - 0.1;
+        mFarFence3WaitTime = mTrajectoryGenerator.getTrajectorySet().nearScaleToNearFence3.get(mStartedLeft).getLastState().t() - 0.1;
     }
 
     @Override
@@ -43,11 +49,11 @@ public class FarScaleOnlyMode extends AutoModeBase {
                         mSideStartToFarScale,
                         new SeriesAction(
                                 Arrays.asList(
-                                        new WaitUntilInsideRegion(new Translation2d(130.0, 170.0), new Translation2d
+                                        new WaitUntilInsideRegion(new Translation2d(130.0, 150.0), new Translation2d
                                                 (260, 200.0), mStartedLeft),
                                         new SetSuperstructurePosition(SuperstructureConstants.kScaleLowHeight,
                                                 SuperstructureConstants.kScoreBackwardsAngle, true),
-                                        new WaitUntilInsideRegion(new Translation2d(245.0, 170.0), new Translation2d
+                                        new WaitUntilInsideRegion(new Translation2d(245.0, 150.0), new Translation2d
                                                 (260, 1000), mStartedLeft),
                                         new ShootCube(AutoConstants.kMediumShootPower)
                                 )
@@ -58,11 +64,16 @@ public class FarScaleOnlyMode extends AutoModeBase {
         // Get second cube
         runAction(new ParallelAction(
                 Arrays.asList(
-                        mFarScaleToFarFence,
+                        new SeriesAction(
+                                Arrays.asList(
+                                        new WaitAction(0.25),
+                                        mFarScaleToFarFence
+                                )
+                        ),
                         new OpenCloseJawAction(true),
                         new SetIntaking(true, false),
                         new SeriesAction(Arrays.asList(
-                                new WaitUntilInsideRegion(new Translation2d(0.0, -1000.0), new Translation2d(205.0, 1000.0), mStartedLeft),
+                                new WaitAction(mFarFenceWaitTime),
                                 new OpenCloseJawAction(false)
                         ))
                 )
@@ -75,11 +86,12 @@ public class FarScaleOnlyMode extends AutoModeBase {
                         mFarFenceToFarScale,
                         new SeriesAction(
                                 Arrays.asList(
+                                        new WaitAction(AutoConstants.kWaitForCubeTime),
                                         new SetSuperstructurePosition(SuperstructureConstants.kScaleLowHeight - 8.0,
                                                 SuperstructureConstants.kScoreBackwardsAngle, true),
                                         new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d
                                                 (260, 1000), mStartedLeft),
-                                        new ShootCube(AutoConstants.kStrongShootPower)
+                                        new ShootCube(AutoConstants.kFullShootPower)
                                 )
                         )
                 )
@@ -90,10 +102,13 @@ public class FarScaleOnlyMode extends AutoModeBase {
                 Arrays.asList(
                         mFarScaleToFarFence2,
                         new OpenCloseJawAction(true),
-                        new SetIntaking(true, false)
+                        new SetIntaking(true, false),
+                        new SeriesAction(Arrays.asList(
+                                new WaitAction(mFarFence2WaitTime),
+                                new OpenCloseJawAction(false)
+                        ))
                 )
         ));
-        runAction(new OpenCloseJawAction(false));
         runAction(new WaitAction(AutoConstants.kWaitForCubeTime));
 
         // Score third cube
@@ -102,6 +117,7 @@ public class FarScaleOnlyMode extends AutoModeBase {
                         mFarFence2ToFarScale,
                         new SeriesAction(
                                 Arrays.asList(
+                                        new WaitAction(AutoConstants.kWaitForCubeTime),
                                         new SetSuperstructurePosition(SuperstructureConstants.kScaleLowHeight - 8.0,
                                                 SuperstructureConstants.kScoreBackwardsAngle, true),
                                         new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d
@@ -117,9 +133,12 @@ public class FarScaleOnlyMode extends AutoModeBase {
                 Arrays.asList(
                         mFarScaleToFarFence3,
                         new OpenCloseJawAction(true),
-                        new SetIntaking(true, false)
+                        new SetIntaking(true, false),
+                        new SeriesAction(Arrays.asList(
+                                new WaitAction(mFarFence3WaitTime),
+                                new OpenCloseJawAction(false)
+                        ))
                 )
         ));
-        runAction(new OpenCloseJawAction(false));
     }
 }

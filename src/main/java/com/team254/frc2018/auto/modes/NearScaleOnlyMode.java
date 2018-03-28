@@ -21,6 +21,9 @@ public class NearScaleOnlyMode extends AutoModeBase {
     private DriveTrajectory mNearFence2ToNearScale;
     private DriveTrajectory mNearScaleToNearFence3;
     private DriveTrajectory mNearFence3ToNearScale;
+    private DriveTrajectory mNearFence3ToEndPose;
+
+    private double mNearFenceWaitTime, mNearFence2WaitTime, mNearFence3WaitTime;
 
     public NearScaleOnlyMode(boolean robotStartedOnLeft) {
         mStartedLeft = robotStartedOnLeft;
@@ -31,13 +34,17 @@ public class NearScaleOnlyMode extends AutoModeBase {
         mNearFence2ToNearScale = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().nearFence2ToNearScale.get(mStartedLeft));
         mNearScaleToNearFence3 = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().nearScaleToNearFence3.get(mStartedLeft));
         mNearFence3ToNearScale = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().nearFence3ToNearScale.get(mStartedLeft));
+        mNearFence3ToEndPose = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().nearFence3ToEndPose.get(mStartedLeft));
+
+        mNearFenceWaitTime = mTrajectoryGenerator.getTrajectorySet().nearScaleToNearFence.get(mStartedLeft).getLastState().t() - 0.1;
+        mNearFence2WaitTime = mTrajectoryGenerator.getTrajectorySet().nearScaleToNearFence2.get(mStartedLeft).getLastState().t() - 0.1;
+        mNearFence3WaitTime = mTrajectoryGenerator.getTrajectorySet().nearScaleToNearFence3.get(mStartedLeft).getLastState().t() - 0.1;
+
     }
 
     @Override
     protected void routine() throws AutoModeEndedException {
         System.out.println("Running easy scale only");
-
-        // runAction(new WaitAction(0.1));
 
         // Score first cube
         runAction(new ParallelAction(
@@ -70,7 +77,7 @@ public class NearScaleOnlyMode extends AutoModeBase {
                         new OpenCloseJawAction(true),
                         new SetIntaking(true, false),
                         new SeriesAction(Arrays.asList(
-                                new WaitUntilInsideRegion(new Translation2d(0.0, -1000.0), new Translation2d(205.0, 1000.0), mStartedLeft),
+                                new WaitAction(mNearFenceWaitTime),
                                 new OpenCloseJawAction(false)
                         ))
                 )
@@ -83,6 +90,7 @@ public class NearScaleOnlyMode extends AutoModeBase {
                         mNearFenceToNearScale,
                         new SeriesAction(
                                 Arrays.asList(
+                                        new WaitAction(AutoConstants.kWaitForCubeTime),
                                         new SetSuperstructurePosition(SuperstructureConstants.kScaleLowHeight - 8.0,
                                                 SuperstructureConstants.kScoreBackwardsAngle, true),
                                         new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d
@@ -100,7 +108,7 @@ public class NearScaleOnlyMode extends AutoModeBase {
                         new OpenCloseJawAction(true),
                         new SetIntaking(true, false),
                         new SeriesAction(Arrays.asList(
-                                new WaitUntilInsideRegion(new Translation2d(0.0, -1000.0), new Translation2d(205.0, 1000.0), mStartedLeft),
+                                new WaitAction(mNearFence2WaitTime),
                                 new OpenCloseJawAction(false)
                         ))
                 )
@@ -113,7 +121,7 @@ public class NearScaleOnlyMode extends AutoModeBase {
                         mNearFence2ToNearScale,
                         new SeriesAction(
                                 Arrays.asList(
-                                        new WaitAction(AutoConstants.kWaitForCubeTime), //drive backwards for a little with the intake down so it gets the chance to pick up cubes jammed against the wall
+                                        new WaitAction(AutoConstants.kWaitForCubeTime),
                                         new SetSuperstructurePosition(SuperstructureConstants.kScaleLowHeight - 8.0,
                                                 SuperstructureConstants.kScoreBackwardsAngle, true),
                                         new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d
@@ -131,7 +139,7 @@ public class NearScaleOnlyMode extends AutoModeBase {
                         new OpenCloseJawAction(true),
                         new SetIntaking(true, false),
                         new SeriesAction(Arrays.asList(
-                                new WaitUntilInsideRegion(new Translation2d(0.0, -1000.0), new Translation2d(205.0, 1000.0), mStartedLeft),
+                                new WaitAction(mNearFence3WaitTime),
                                 new OpenCloseJawAction(false)
                         ))
                 )
@@ -139,13 +147,27 @@ public class NearScaleOnlyMode extends AutoModeBase {
         runAction(new OpenCloseJawAction(false));
         runAction(new WaitAction(AutoConstants.kWaitForCubeTime));
 
-        // Score fourth cube
+        // Get fourth cube in position to score
+        runAction(new ParallelAction(
+                Arrays.asList(
+                        mNearFence3ToEndPose,
+                        new SeriesAction(
+                                Arrays.asList(
+                                        new WaitAction(AutoConstants.kWaitForCubeTime),
+                                        new SetSuperstructurePosition(SuperstructureConstants.kSwitchHeight,
+                                                SuperstructureConstants.kStowedPositionAngle, true)
+                                )
+                        )
+                )
+        ));
+
+        /*// Score fourth cube
         runAction(new ParallelAction(
                 Arrays.asList(
                         mNearFence3ToNearScale,
                         new SeriesAction(
                                 Arrays.asList(
-                                        new WaitAction(AutoConstants.kWaitForCubeTime), //drive backwards for a little with the intake down so it gets the chance to pick up cubes jammed against the wall
+                                        new WaitAction(AutoConstants.kWaitForCubeTime),
                                         new SetSuperstructurePosition(SuperstructureConstants.kScaleLowHeight - 8.0,
                                                 SuperstructureConstants.kScoreBackwardsAngle, true),
                                         new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d
@@ -154,6 +176,7 @@ public class NearScaleOnlyMode extends AutoModeBase {
                                 )
                         )
                 )
-        ));
+        ));*/
+
     }
 }
