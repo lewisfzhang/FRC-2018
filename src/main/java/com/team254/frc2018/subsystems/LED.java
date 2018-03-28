@@ -19,8 +19,8 @@ public class LED extends Subsystem {
 
     private boolean mFaultsEnabled = false;
 
-    private LEDState mDesiredLEDState = new LEDState();
-    private LEDState mIntakeLEDState = new LEDState();
+    private LEDState mDesiredLEDState = new LEDState(0.0, 0.0, 0.0);
+    private LEDState mIntakeLEDState = new LEDState(0.0, 0.0, 0.0);
 
     public synchronized static LED getInstance() {
         if (mInstance == null) {
