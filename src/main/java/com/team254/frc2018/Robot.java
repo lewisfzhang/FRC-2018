@@ -11,10 +11,7 @@ import com.team254.frc2018.statemachines.SuperstructureStateMachine;
 import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.frc2018.subsystems.*;
 import com.team254.lib.geometry.Pose2d;
-import com.team254.lib.util.CheesyDriveHelper;
-import com.team254.lib.util.CrashTracker;
-import com.team254.lib.util.LatchedBoolean;
-import com.team254.lib.util.MinTimeBoolean;
+import com.team254.lib.util.*;
 import edu.wpi.cscore.MjpegServer;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.VideoMode;
@@ -182,6 +179,7 @@ public class Robot extends IterativeRobot {
 
             mShootDelayed.update(false, Double.POSITIVE_INFINITY);
             mPoopyShootDelayed.update(false, Double.POSITIVE_INFINITY);
+            mDrive.setOpenLoop(DriveSignal.NEUTRAL);
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
             throw t;
