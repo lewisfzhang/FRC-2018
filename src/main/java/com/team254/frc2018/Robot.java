@@ -100,6 +100,7 @@ public class Robot extends IterativeRobot {
             mRunIntakeReleased.update(true);
             mShootReleased.update(true);
 
+            mAutoModeSelector.updateModeCreator();
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
             throw t;
