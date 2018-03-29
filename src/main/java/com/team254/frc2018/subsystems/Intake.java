@@ -117,20 +117,18 @@ public class Intake extends Subsystem {
             return;
         }
         mJawState = state;
-        // Solenoid: 10 -> small
-        // Solenoid: 9 ->  big
         switch (mJawState) {
             case OPEN:
-                mCloseSolenoid.set(true);
-                mClampSolenoid.set(true);
+                mCloseSolenoid.set(!kClosed);
+                mClampSolenoid.set(!kClamped);
                 break;
             case CLOSED:
-                mCloseSolenoid.set(false);
-                mClampSolenoid.set(true);
+                mCloseSolenoid.set(kClosed);
+                mClampSolenoid.set(!kClamped);
                 break;
             case CLAMPED:
-                mCloseSolenoid.set(false);
-                mClampSolenoid.set(false);
+                mCloseSolenoid.set(kClosed);
+                mClampSolenoid.set(kClamped);
                 break;
         }
     }

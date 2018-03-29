@@ -67,8 +67,8 @@ public class CarriageCanifier extends Subsystem {
     public synchronized void readPeriodicInputs() {
         CANifier.PinValues pins = new CANifier.PinValues();
         mCanifier.getGeneralInputs(pins);
-        mPeriodicInputs.left_sensor_state_ = pins.SCL;
-        mPeriodicInputs.right_sensor_state_ = pins.SDA;
+        mPeriodicInputs.left_sensor_state_ = !pins.LIMF;
+        mPeriodicInputs.right_sensor_state_ = !pins.SDA;
         mPeriodicInputs.limr_ = !pins.LIMR;
     }
 
