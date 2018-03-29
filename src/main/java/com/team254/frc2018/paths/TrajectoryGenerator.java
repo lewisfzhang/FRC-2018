@@ -79,10 +79,10 @@ public class TrajectoryGenerator {
     public static final Pose2d kNearScaleFullPose = new Pose2d(new Translation2d(250.0, 32.0), Rotation2d.fromDegrees
             (15.0+180.0));
 
-    public static final Pose2d kNearScaleFullPose1 = new Pose2d(new Translation2d(250.0, 32.0 + 6.0), Rotation2d.fromDegrees
+    public static final Pose2d kNearScaleFullPose1 = new Pose2d(new Translation2d(250.0, 32.0 + 2.0), Rotation2d.fromDegrees
             (15.0+180.0));
 
-    public static final Pose2d kNearScaleFullPose2 = new Pose2d(new Translation2d(250.0, 32.0 + 12.0), Rotation2d.fromDegrees
+    public static final Pose2d kNearScaleFullPose2 = new Pose2d(new Translation2d(250.0, 32.0 + 4.0), Rotation2d.fromDegrees
             (15.0+180.0));
 
     public static final Pose2d kNearScaleEndPose = new Pose2d(new Translation2d(220.0, 0.0), Rotation2d.fromDegrees
@@ -92,9 +92,9 @@ public class TrajectoryGenerator {
             .fromDegrees(-5.0+180.0));
     public static final Pose2d kFarScaleFullPose = new Pose2d(new Translation2d(250.0, 205.0), Rotation2d.fromDegrees
             (-15.0+180.0));
-    public static final Pose2d kFarScaleFullPose1 = new Pose2d(new Translation2d(250.0, 205.0 - 6.0), Rotation2d.fromDegrees
+    public static final Pose2d kFarScaleFullPose1 = new Pose2d(new Translation2d(250.0, 205.0 - 2.0), Rotation2d.fromDegrees
             (-15.0+180.0));
-    public static final Pose2d kFarScaleFullPose2 = new Pose2d(new Translation2d(250.0, 205.0 - 12.0), Rotation2d.fromDegrees
+    public static final Pose2d kFarScaleFullPose2 = new Pose2d(new Translation2d(250.0, 205.0 - 4.0), Rotation2d.fromDegrees
             (-15.0+180.0));
 
     public static final Pose2d kCenterToIntake = new Pose2d(new Translation2d(-24.0, 0.0), Rotation2d.identity());
