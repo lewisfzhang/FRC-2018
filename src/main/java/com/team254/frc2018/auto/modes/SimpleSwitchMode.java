@@ -23,7 +23,7 @@ public class SimpleSwitchMode extends AutoModeBase {
     private DriveTrajectory mPyramidCube1ToSwitch;
     private DriveTrajectory mPyramidCube2ToCenterField;
 
-    private double mPyramidCubeWaitTime, mPyramidCube1WaitTime, mPyramidCube2WaitTime;
+    private double mPyramidCubeWaitTime, mPyramidCube1WaitTime, mStartCubeWaitTime;
 
     public SimpleSwitchMode(boolean driveToLeftSwitch) {
         mStartedLeft = driveToLeftSwitch;
@@ -42,9 +42,13 @@ public class SimpleSwitchMode extends AutoModeBase {
         mPyramidCube1ToSwitch = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().pyramidCube1ToSwitch.get(mStartedLeft));
         mPyramidCube2ToCenterField = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().pyramidCube2ToCenterField.get(mStartedLeft));
 
-        mPyramidCubeWaitTime = mTrajectoryGenerator.getTrajectorySet().switchToPyramidCube.get(mStartedLeft).getLastState().t() - 0.1;
-        mPyramidCube1WaitTime = mTrajectoryGenerator.getTrajectorySet().switchToPyramidCube1.get(mStartedLeft).getLastState().t() - 0.1;
-        mPyramidCube2WaitTime = mTrajectoryGenerator.getTrajectorySet().switchToPyramidCube2.get(mStartedLeft).getLastState().t() - 0.1;
+        if(mStartedLeft) {
+            mStartCubeWaitTime = mTrajectoryGenerator.getTrajectorySet().centerStartToLeftSwitch.getLastState().t() - 0.2;
+        } else {
+            mStartCubeWaitTime = mTrajectoryGenerator.getTrajectorySet().centerStartToRightSwitch.getLastState().t() - 0.2;
+        }
+        mPyramidCubeWaitTime = mTrajectoryGenerator.getTrajectorySet().pyramidCubeToSwitch.get(mStartedLeft).getLastState().t() - 0.2;
+        mPyramidCube1WaitTime = mTrajectoryGenerator.getTrajectorySet().pyramidCube1ToSwitch.get(mStartedLeft).getLastState().t() - 0.2;
     }
 
 
@@ -56,20 +60,22 @@ public class SimpleSwitchMode extends AutoModeBase {
         runAction(new ParallelAction(
                 Arrays.asList(
                         mStartToSwitch,
-                        (new SetSuperstructurePosition(SuperstructureConstants.kSwitchHeightBackwards, SuperstructureConstants.kStowedPositionAngle, true))
+                        new SetSuperstructurePosition(SuperstructureConstants.kSwitchHeightBackwards, SuperstructureConstants.kStowedPositionAngle, true),
+                        new SeriesAction(
+                                Arrays.asList(
+                                        new WaitAction(mStartCubeWaitTime),
+                                        new ShootCube(AutoConstants.kMediumShootPower)
+                                )
+                        )
                 )
         ));
-        runAction(new ShootCube(AutoConstants.kMediumShootPower));
 
         // Get second cube
         runAction(new ParallelAction(
                 Arrays.asList(
                         mSwitchToPyramidCube,
                         new SetIntaking(true, false),
-                        new SeriesAction(Arrays.asList(
-                                new WaitAction(mPyramidCubeWaitTime),
-                                new OpenCloseJawAction(false)
-                        ))
+                        new OpenCloseJawAction(false)
                 )
         ));
         runAction(new WaitAction(AutoConstants.kWaitForCubeTime));
@@ -82,12 +88,16 @@ public class SimpleSwitchMode extends AutoModeBase {
                                 Arrays.asList(
                                         new WaitAction(0.5),
                                         new SetSuperstructurePosition(SuperstructureConstants.kSwitchHeightBackwards, SuperstructureConstants.kStowedPositionAngle, true)
-
+                                )
+                        ),
+                        new SeriesAction(
+                                Arrays.asList(
+                                        new WaitAction(mPyramidCubeWaitTime),
+                                        new ShootCube(AutoConstants.kMediumShootPower)
                                 )
                         )
                 )
         ));
-        runAction(new ShootCube(AutoConstants.kMediumShootPower));
 
         // Get third cube
         runAction(new ParallelAction(
@@ -95,10 +105,7 @@ public class SimpleSwitchMode extends AutoModeBase {
                         mSwitchToPyramidCube1,
                         new SetSuperstructurePosition(SuperstructureConstants.kIntakeSecondLevelHeight, SuperstructureConstants.kIntakePositionAngle, true),
                         new SetIntaking(false, false),
-                        new SeriesAction(Arrays.asList(
-                                new WaitAction(mPyramidCube1WaitTime),
-                                new OpenCloseJawAction(false)
-                        ))
+                        new OpenCloseJawAction(false)
                 )
         ));
         runAction(new WaitAction(AutoConstants.kWaitForCubeTime));
@@ -107,20 +114,22 @@ public class SimpleSwitchMode extends AutoModeBase {
         runAction(new ParallelAction(
                 Arrays.asList(
                         mPyramidCube1ToSwitch,
-                        (new SetSuperstructurePosition(SuperstructureConstants.kSwitchHeightBackwards, SuperstructureConstants.kStowedPositionAngle, true))
+                        new SetSuperstructurePosition(SuperstructureConstants.kSwitchHeightBackwards, SuperstructureConstants.kStowedPositionAngle, true),
+                        new SeriesAction(
+                                Arrays.asList(
+                                        new WaitAction(mPyramidCube1WaitTime),
+                                        new ShootCube(AutoConstants.kMediumShootPower)
+                                )
+                        )
                 )
         ));
-        runAction(new ShootCube(AutoConstants.kMediumShootPower));
 
         // Get fourth cube
         runAction(new ParallelAction(
                 Arrays.asList(
                         mSwitchToPyramidCube2,
                         new SetIntaking(true, false),
-                        new SeriesAction(Arrays.asList(
-                                new WaitAction(mPyramidCube2WaitTime),
-                                new OpenCloseJawAction(false)
-                        ))
+                        new OpenCloseJawAction(false)
                 )
         ));
         runAction(new WaitAction(AutoConstants.kWaitForCubeTime));
