@@ -6,6 +6,7 @@ import com.team254.frc2018.states.LEDState;
 
 public class LED extends Subsystem {
     private static final double kHangingBlinkDuration = 0.5; // In sec
+    private static final double kWantsCubeBlinkDuration = 0.075; // In sec
     private static final double kFaultBlinkDuration = 0.25; // In sec
 
     private static LED mInstance;
@@ -75,6 +76,9 @@ public class LED extends Subsystem {
                         case DISPLAYING_HANG:
                             setHangLEDCommand(timeInState);
                             break;
+                        case DISPLAYING_WANTS_CUBE:
+                            setBlinkLEDCommand(timeInState);
+                            break;
                         default:
                             System.out.println("Fell through on LED commands: " + mSystemState);
                             break;
@@ -111,6 +115,15 @@ public class LED extends Subsystem {
         }
     }
 
+    private void setBlinkLEDCommand(double timeInState) {
+        // Blink white.
+        if ((int)(timeInState / kWantsCubeBlinkDuration) % 2 == 0) {
+            mDesiredLEDState.copyFrom(LEDState.kWantsCube);
+        } else {
+            mDesiredLEDState.copyFrom(LEDState.kOff);
+        }
+    }
+
     private SystemState getStateTransition() {
         if (mFaultsEnabled && (!mWrist.hasBeenZeroed() || !mElevator.hasBeenZeroed())) {
             return SystemState.DISPLAYING_FAULT;
@@ -120,6 +133,8 @@ public class LED extends Subsystem {
                 return SystemState.DISPLAYING_HANG;
             case DISPLAY_INTAKE:
                 return SystemState.DISPLAYING_INTAKE;
+            case DISPLAY_WANTS_CUBE:
+                return SystemState.DISPLAYING_WANTS_CUBE;
             default:
                 System.out.println("Fell through on LED wanted action check: " + mWantedAction);
                 return SystemState.DISPLAYING_INTAKE;
@@ -144,11 +159,13 @@ public class LED extends Subsystem {
     public enum WantedAction {
         DISPLAY_HANG,
         DISPLAY_INTAKE,
+        DISPLAY_WANTS_CUBE,
     }
 
     private enum SystemState {
         DISPLAYING_FAULT,
         DISPLAYING_INTAKE,
         DISPLAYING_HANG,
+        DISPLAYING_WANTS_CUBE,
     }
 }

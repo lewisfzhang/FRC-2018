@@ -302,7 +302,14 @@ public class Robot extends IterativeRobot {
             } else {
                 mSuperstructure.setUnlockHookSolenoid(false);
                 mForklift.retract();
-                mLED.setWantedAction(LED.WantedAction.DISPLAY_INTAKE);
+
+                // LEDs
+
+                if (mControlBoard.getWantsCubeLEDBlink()) {
+                    mLED.setWantedAction(LED.WantedAction.DISPLAY_WANTS_CUBE);
+                } else {
+                    mLED.setWantedAction(LED.WantedAction.DISPLAY_INTAKE);
+                }
 
                 // Intake/Shoot
                 boolean runIntakePosition = mControlBoard.getIntakePosition() &&

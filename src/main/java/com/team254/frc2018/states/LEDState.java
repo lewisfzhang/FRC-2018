@@ -11,6 +11,8 @@ public class LEDState {
 
     public static final LEDState kHanging = new LEDState(0.0, 0.3, 1.0);
 
+    public static final LEDState kWantsCube = new LEDState(0.0, 1.0, 1.0);
+
     public LEDState() {}
 
     public LEDState(double b, double g, double r) {

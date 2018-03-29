@@ -134,4 +134,9 @@ public class GamepadButtonControlBoard implements IButtonControlBoard {
     public boolean getElevatorHighShift() {
         return mJoystick.getRawButton(4);
     }
+
+    @Override
+    public boolean getWantsCubeLEDBlink() {
+        return mJoystick.getRawButton(8);
+    }
 }
