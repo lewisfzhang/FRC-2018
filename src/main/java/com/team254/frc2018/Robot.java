@@ -83,7 +83,7 @@ public class Robot extends IterativeRobot {
         try {
             //init camera stream
             UsbCamera camera = CameraServer.getInstance().startAutomaticCapture();
-            camera.setVideoMode(VideoMode.PixelFormat.kMJPEG, 320, 240, 30);
+            camera.setVideoMode(VideoMode.PixelFormat.kMJPEG, 320, 240, 15);
             MjpegServer cameraServer = new MjpegServer("serve_USB Camera 0", Constants.kCameraStreamPort);
             cameraServer.setSource(camera);
 
@@ -179,7 +179,7 @@ public class Robot extends IterativeRobot {
 
             mShootDelayed.update(false, Double.POSITIVE_INFINITY);
             mPoopyShootDelayed.update(false, Double.POSITIVE_INFINITY);
-            mDrive.setOpenLoop(DriveSignal.NEUTRAL);
+            mDrive.setOpenLoop(new DriveSignal(0.05, 0.05));
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
             throw t;

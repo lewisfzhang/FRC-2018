@@ -152,6 +152,7 @@ public class NearScaleOnlyMode extends AutoModeBase {
         runAction(new OpenCloseJawAction(false));
         runAction(new WaitAction(AutoConstants.kWaitForCubeTime));
 
+        /*
         // Get fourth cube in position to score
         runAction(new ParallelAction(
                 Arrays.asList(
@@ -164,7 +165,7 @@ public class NearScaleOnlyMode extends AutoModeBase {
                                 )
                         )
                 )
-        ));
+        ));*/
 
         /*// Score fourth cube
         runAction(new ParallelAction(

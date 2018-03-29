@@ -51,7 +51,7 @@ public class Drive extends Subsystem {
         @Override
         public void onStart(double timestamp) {
             synchronized (Drive.this) {
-                setOpenLoop(new DriveSignal(0.01, 0.01));
+                setOpenLoop(new DriveSignal(0.05, 0.05));
                 setBrakeMode(false);
 //                 startLogging();
             }
@@ -188,6 +188,8 @@ public class Drive extends Subsystem {
             setBrakeMode(false);
             mAutoShift = true;
 
+            System.out.println("Switching to open loop");
+            System.out.println(signal);
             mDriveControlState = DriveControlState.OPEN_LOOP;
             mLeftMaster.configNeutralDeadband(0.04, 0);
             mRightMaster.configNeutralDeadband(0.04, 0);
