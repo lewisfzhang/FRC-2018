@@ -40,7 +40,7 @@ public class FarScaleOnlyMode extends AutoModeBase {
 
     @Override
     protected void routine() throws AutoModeEndedException {
-        System.out.println("Running far scale only");
+        // System.out.println("Running far scale only");
 
         // Score first cube
         runAction(new ParallelAction(

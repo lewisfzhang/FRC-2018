@@ -123,8 +123,8 @@ public class Robot extends IterativeRobot {
 
             // Reset all auto mode state.
             mAutoModeSelector.reset();
+            mAutoModeSelector.updateModeCreator();
             mAutoModeExecuter = new AutoModeExecuter();
-            mAutoModeSelector.updateModeCreator(true);
 
             mDisabledLooper.start();
 
@@ -220,7 +220,7 @@ public class Robot extends IterativeRobot {
 
             // Poll FMS auto mode info and update mode creator cache
             mAutoFieldState.setSides(DriverStation.getInstance().getGameSpecificMessage());
-            mAutoModeSelector.updateModeCreator(false);
+            mAutoModeSelector.updateModeCreator();
 
             Optional<AutoModeBase> autoMode = mAutoModeSelector.getAutoMode(mAutoFieldState);
             if (autoMode.isPresent() && autoMode.get() != mAutoModeExecuter.getAutoMode()) {

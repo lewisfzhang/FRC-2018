@@ -44,7 +44,7 @@ public class NearScaleOnlyMode extends AutoModeBase {
 
     @Override
     protected void routine() throws AutoModeEndedException {
-        System.out.println("Running easy scale only");
+        // System.out.println("Running easy scale only");
 
         // Score first cube
         runAction(new ParallelAction(
