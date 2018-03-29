@@ -141,5 +141,8 @@ public class AutoModeSelector {
         }
     }
 
+    public boolean overrideFMSFieldState() {
+        return mOverrideFieldState.isPresent() && mCachedSwitchScalePosition != SwitchScalePosition.USE_FMS_DATA;
+    }
 
 }

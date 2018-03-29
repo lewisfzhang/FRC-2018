@@ -35,7 +35,11 @@ public class DriveTrajectory implements Action {
 
     @Override
     public boolean isFinished() {
-        return mDrive.isDoneWithTrajectory();
+        if (mDrive.isDoneWithTrajectory()) {
+            System.out.println("Trajectory finished");
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -48,6 +52,7 @@ public class DriveTrajectory implements Action {
 
     @Override
     public void start() {
+        System.out.println("Starting trajectory! (length=" + mTrajectory.getRemainingProgress() + ")");
         if(mResetPose) {
             mRobotState.reset(Timer.getFPGATimestamp(), mTrajectory.getState().state().getPose());
         }

@@ -442,7 +442,7 @@ public class Drive extends Subsystem {
             mCSVWriter.add(mPeriodicIO);
         }
 
-        System.out.println("control state: " + mDriveControlState + ", left: " + mPeriodicIO.left_demand + ", right: " + mPeriodicIO.right_demand);
+        // System.out.println("control state: " + mDriveControlState + ", left: " + mPeriodicIO.left_demand + ", right: " + mPeriodicIO.right_demand);
     }
 
     @Override

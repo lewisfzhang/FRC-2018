@@ -196,9 +196,9 @@ public class Robot extends IterativeRobot {
             mDisabledLooper.stop();
             mEnabledLooper.stop();
 
-            mDrive.checkSystem();
-            mIntake.checkSystem();
-            mWrist.checkSystem();
+            //mDrive.checkSystem();
+            //mIntake.checkSystem();
+            //mWrist.checkSystem();
             mElevator.checkSystem();
 
         } catch (Throwable t) {
@@ -222,10 +222,12 @@ public class Robot extends IterativeRobot {
             mAutoFieldState.setSides(DriverStation.getInstance().getGameSpecificMessage());
             mAutoModeSelector.updateModeCreator();
 
-            Optional<AutoModeBase> autoMode = mAutoModeSelector.getAutoMode(mAutoFieldState);
-            if (autoMode.isPresent() && autoMode.get() != mAutoModeExecuter.getAutoMode()) {
-                System.out.println("Set auto mode to: " + autoMode.getClass().toString());
-                mAutoModeExecuter.setAutoMode(autoMode.get());
+            if (mAutoFieldState.isValid() || mAutoModeSelector.overrideFMSFieldState()) {
+                Optional<AutoModeBase> autoMode = mAutoModeSelector.getAutoMode(mAutoFieldState);
+                if (autoMode.isPresent() && autoMode.get() != mAutoModeExecuter.getAutoMode()) {
+                    System.out.println("Set auto mode to: " + autoMode.get().getClass().toString());
+                    mAutoModeExecuter.setAutoMode(autoMode.get());
+                }
             }
 
             System.gc();

@@ -49,8 +49,13 @@ public class NearScaleOnlyMode extends AutoModeBase {
         // Score first cube
         runAction(new ParallelAction(
                 Arrays.asList(
-                        new SetIntaking(false, false),
                         mSideStartToNearScale,
+                        new SeriesAction(
+                                Arrays.asList(
+                                        new WaitAction(1.0),
+                                        new SetIntaking(false, false)
+                                )
+                        ),
                         new SeriesAction(
                                 Arrays.asList(
                                         new WaitUntilInsideRegion(new Translation2d(130.0, -20.0), new Translation2d
