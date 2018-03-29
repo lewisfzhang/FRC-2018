@@ -134,13 +134,13 @@ public class SimpleSwitchMode extends AutoModeBase {
         ));
         runAction(new WaitAction(AutoConstants.kWaitForCubeTime));
 
-
+        /*
         //Drive to center field
         runAction(new ParallelAction(
                 Arrays.asList(
                         mPyramidCube2ToCenterField,
                         (new SetSuperstructurePosition(SuperstructureConstants.kSwitchHeightBackwards, SuperstructureConstants.kStowedPositionAngle, true))
                 )
-        ));
+        ));*/
     }
 }
