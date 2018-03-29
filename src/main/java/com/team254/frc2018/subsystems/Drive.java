@@ -203,7 +203,7 @@ public class Drive extends Subsystem {
     /**
      * Configures talons for velocity control
      */
-    private synchronized void setVelocity(DriveSignal signal, DriveSignal feedforward) {
+    public synchronized void setVelocity(DriveSignal signal, DriveSignal feedforward) {
         if (mDriveControlState != DriveControlState.PATH_FOLLOWING) {
             // We entered a velocity control state.
             setBrakeMode(true);

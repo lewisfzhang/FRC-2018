@@ -179,6 +179,7 @@ public class Robot extends IterativeRobot {
 
             mShootDelayed.update(false, Double.POSITIVE_INFINITY);
             mPoopyShootDelayed.update(false, Double.POSITIVE_INFINITY);
+            mDrive.setVelocity(DriveSignal.NEUTRAL, DriveSignal.NEUTRAL);
             mDrive.setOpenLoop(new DriveSignal(0.05, 0.05));
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
