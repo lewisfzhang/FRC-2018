@@ -34,7 +34,7 @@ public class SimpleSwitchMode extends AutoModeBase {
             mStartToSwitch = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().centerStartToRightSwitch, true);
         }
 
-        mSwitchToPyramidCube = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().switchToPyramidCube.get(mStartedLeft), true);
+        mSwitchToPyramidCube = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().switchToPyramidCube.get(mStartedLeft));
         mSwitchToPyramidCube1 = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().switchToPyramidCube1.get(mStartedLeft));
         mSwitchToPyramidCube2 = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().switchToPyramidCube2.get(mStartedLeft));
 
