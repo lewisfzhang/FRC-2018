@@ -51,7 +51,7 @@ public class Drive extends Subsystem {
         @Override
         public void onStart(double timestamp) {
             synchronized (Drive.this) {
-                setOpenLoop(DriveSignal.NEUTRAL);
+                setOpenLoop(new DriveSignal(0.01, 0.01));
                 setBrakeMode(false);
 //                 startLogging();
             }
@@ -441,6 +441,8 @@ public class Drive extends Subsystem {
         if (mCSVWriter != null) {
             mCSVWriter.add(mPeriodicIO);
         }
+
+        System.out.println("control state: " + mDriveControlState + ", left: " + mPeriodicIO.left_demand + ", right: " + mPeriodicIO.right_demand);
     }
 
     @Override
