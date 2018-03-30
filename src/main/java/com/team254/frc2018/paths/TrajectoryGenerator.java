@@ -122,7 +122,7 @@ public class TrajectoryGenerator {
 
     public static final Pose2d kPyramidCubePose = new Pose2d(new Translation2d(82.0, 5.0), Rotation2d.fromDegrees(0.0 + 60.0))
             .transformBy(kCenterToIntake);
-    public static final Pose2d kPyramidCube1Pose = new Pose2d(new Translation2d(82.0 + 15, 6.0), Rotation2d.fromDegrees(0.0 + 60.0))
+    public static final Pose2d kPyramidCube1Pose = new Pose2d(new Translation2d(82.0 + 16.0, 7.5), Rotation2d.fromDegrees(0.0 + 60.0))
             .transformBy(kCenterToIntake);
     public static final Pose2d kPyramidCube2Pose = new Pose2d(new Translation2d(82.0 + 14.0, 5.0 - 2.0), Rotation2d.fromDegrees(0.0 + 60.0))
             .transformBy(kCenterToIntake);
