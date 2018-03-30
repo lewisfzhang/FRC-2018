@@ -230,9 +230,8 @@ public class Robot extends IterativeRobot {
                     System.out.println("Set auto mode to: " + autoMode.get().getClass().toString());
                     mAutoModeExecuter.setAutoMode(autoMode.get());
                 }
+                System.gc();
             }
-
-            System.gc();
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
             throw t;
