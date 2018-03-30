@@ -14,7 +14,6 @@ public class CarriageCanifier extends Subsystem {
     private CarriageCanifier() {
         mCanifier = new CANifier(Constants.kCanifierId);
         mCanifier.setStatusFramePeriod(CANifierStatusFrame.Status_1_General, 100, Constants.kLongCANTimeoutMs);
-        // TODO maybe go to 5ms on status 2 (quadrature)?
         mCanifier.setStatusFramePeriod(CANifierStatusFrame.Status_2_General, 5, Constants.kLongCANTimeoutMs);
         mPeriodicInputs = new PeriodicInputs();
         mPeriodicOutputs = new PeriodicOutputs();
@@ -67,8 +66,8 @@ public class CarriageCanifier extends Subsystem {
     public synchronized void readPeriodicInputs() {
         CANifier.PinValues pins = new CANifier.PinValues();
         mCanifier.getGeneralInputs(pins);
-        mPeriodicInputs.left_sensor_state_ = !pins.LIMF;
-        mPeriodicInputs.right_sensor_state_ = !pins.SDA;
+        mPeriodicInputs.left_sensor_state_ = pins.SCL;
+        mPeriodicInputs.right_sensor_state_ = pins.SDA;
         mPeriodicInputs.limr_ = !pins.LIMR;
     }
 
