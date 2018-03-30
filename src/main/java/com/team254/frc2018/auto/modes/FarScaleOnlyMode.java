@@ -143,16 +143,16 @@ public class FarScaleOnlyMode extends AutoModeBase {
         ));
 
         // Get fourth cube
-//        runAction(new ParallelAction(
-//                Arrays.asList(
-//                        mFarScaleToFarFence3,
-//                        new OpenCloseJawAction(true),
-//                        new SetIntaking(true, false),
-//                        new SeriesAction(Arrays.asList(
-//                                new WaitAction(mFarFence3WaitTime),
-//                                new OpenCloseJawAction(false)
-//                        ))
-//                )
-//        ));
+        runAction(new ParallelAction(
+                Arrays.asList(
+                        mFarScaleToFarFence3,
+                        new OpenCloseJawAction(true),
+                        new SetIntaking(true, false),
+                        new SeriesAction(Arrays.asList(
+                                new WaitAction(mFarFence3WaitTime),
+                                new OpenCloseJawAction(false)
+                        ))
+                )
+        ));
     }
 }

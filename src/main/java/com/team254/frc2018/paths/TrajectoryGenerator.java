@@ -109,7 +109,7 @@ public class TrajectoryGenerator {
 
     public static final Pose2d kFarCube1Pose = new Pose2d(new Translation2d(183.0, 187.0), Rotation2d.fromDegrees(180.0 + 25.0));
     public static final Pose2d kFarCube2Pose = new Pose2d(new Translation2d(184.5, 190.0 - 30.0 - 12.0), Rotation2d.fromDegrees(180.0 + 65.0));
-    public static final Pose2d kFarCube3Pose = new Pose2d(new Translation2d(179.0, 204.0 - 30.0 * 2 - 12.0), Rotation2d.fromDegrees(180.0 + 65.0));
+    public static final Pose2d kFarCube3Pose = new Pose2d(new Translation2d(179.0, 200.0 - 30.0 * 2 - 12.0), Rotation2d.fromDegrees(180.0 + 65.0));
 
     public static final Pose2d kFarFence1Pose = kFarCube1Pose.transformBy(kCenterToIntake);
     public static final Pose2d kFarFence2Pose = kFarCube2Pose.transformBy(kCenterToIntake);
