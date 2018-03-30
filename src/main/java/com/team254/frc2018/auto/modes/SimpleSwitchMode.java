@@ -86,7 +86,7 @@ public class SimpleSwitchMode extends AutoModeBase {
                         mPyramidCubeToSwitch,
                         new SeriesAction(
                                 Arrays.asList(
-                                        new WaitAction(0.5),
+                                        new SetIntaking(false, true),
                                         new SetSuperstructurePosition(SuperstructureConstants.kSwitchHeightBackwards, SuperstructureConstants.kStowedPositionAngle, true)
                                 )
                         ),
@@ -114,7 +114,12 @@ public class SimpleSwitchMode extends AutoModeBase {
         runAction(new ParallelAction(
                 Arrays.asList(
                         mPyramidCube1ToSwitch,
-                        new SetSuperstructurePosition(SuperstructureConstants.kSwitchHeightBackwards, SuperstructureConstants.kStowedPositionAngle, true),
+                        new SeriesAction(
+                                Arrays.asList(
+                                        new SetIntaking(false, true),
+                                        new SetSuperstructurePosition(SuperstructureConstants.kSwitchHeightBackwards, SuperstructureConstants.kStowedPositionAngle, true)
+                                )
+                        ),
                         new SeriesAction(
                                 Arrays.asList(
                                         new WaitAction(mPyramidCube1WaitTime),

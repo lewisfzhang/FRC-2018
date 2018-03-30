@@ -96,6 +96,7 @@ public class NearScaleOnlyMode extends AutoModeBase {
                         new SeriesAction(
                                 Arrays.asList(
                                         new WaitAction(AutoConstants.kWaitForCubeTime),
+                                        new SetIntaking(false, true),
                                         new SetSuperstructurePosition(SuperstructureConstants.kScaleLowHeight - 8.0,
                                                 SuperstructureConstants.kScoreBackwardsAngle, true),
                                         new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d
@@ -127,6 +128,7 @@ public class NearScaleOnlyMode extends AutoModeBase {
                         new SeriesAction(
                                 Arrays.asList(
                                         new WaitAction(AutoConstants.kWaitForCubeTime),
+                                        new SetIntaking(false, true),
                                         new SetSuperstructurePosition(SuperstructureConstants.kScaleLowHeight - 8.0,
                                                 SuperstructureConstants.kScoreBackwardsAngle, true),
                                         new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d
