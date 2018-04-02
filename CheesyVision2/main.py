@@ -405,8 +405,8 @@ global minColor, maxColor
 minColor = (0,0,0)
 maxColor = (0,0,0)
 H_PAD = 10
-S_PAD = 30
-V_PAD = 30
+S_PAD = 20
+V_PAD = 20
 
 roi = None
 gotROI = False
