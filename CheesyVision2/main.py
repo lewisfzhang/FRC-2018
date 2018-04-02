@@ -435,21 +435,33 @@ def onMouse(event, x, y, flags, param):
     h, w = curFrame.shape[:2]
     x = int(x/args.roi_scale)
     y = int(y/args.roi_scale)
-    if x >= w or y >= h:
-        return
     
     leftDown  = flags & cv2.EVENT_FLAG_LBUTTON != 0
-    shiftDown = flags & cv2.EVENT_FLAG_SHIFTKEY != 0
+    rightDown = flags & cv2.EVENT_FLAG_RBUTTON != 0
+    if not (leftDown or rightDown):
+        return
     
-    color = curFrame[y, x]
-    newMinColor = (float(color[0])-H_PAD, float(color[1])-S_PAD, float(color[2])-V_PAD)
-    newMaxColor = (float(color[0])+H_PAD, float(color[1])+S_PAD, float(color[2])+V_PAD)
-    if event == cv2.EVENT_RBUTTONDOWN or ((event == cv2.EVENT_LBUTTONDOWN) and maxColor == (0,0,0)):
-        minColor = newMinColor
-        maxColor = newMaxColor
-    if event == cv2.EVENT_LBUTTONDOWN or leftDown:
-        minColor = tuple(map(min, minColor, newMinColor))
-        maxColor = tuple(map(max, maxColor, newMaxColor))
+    if event == cv2.EVENT_RBUTTONDOWN:
+        maxColor = (0,0,0)
+    
+    def addPixel(x, y):
+        global curFrame, minColor, maxColor
+        if x >= w or y >= h:
+            return
+        color = curFrame[y, x]
+        newMinColor = (float(color[0])-H_PAD, float(color[1])-S_PAD, float(color[2])-V_PAD)
+        newMaxColor = (float(color[0])+H_PAD, float(color[1])+S_PAD, float(color[2])+V_PAD)
+        if maxColor == (0,0,0):
+            minColor = newMinColor
+            maxColor = newMaxColor
+        elif leftDown or rightDown:
+            minColor = tuple(map(min, minColor, newMinColor))
+            maxColor = tuple(map(max, maxColor, newMaxColor))
+    
+    BRUSH_R = 4 # radius of brush
+    for x2 in range(x-BRUSH_R, x+BRUSH_R+1):
+        for y2 in range(y-BRUSH_R, y+BRUSH_R+1):
+            addPixel(x2, y2)
 
 def onKey(key):
     global minColor, maxColor
