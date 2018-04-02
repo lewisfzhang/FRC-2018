@@ -396,6 +396,7 @@ optGroup = parser.add_mutually_exclusive_group()
 optGroup.add_argument("-d", "--device", type=int, default=2, metavar="ID",
                     help="device ID of the camera to use (default: %(default)s)")
 optGroup.add_argument("-i", "--input-image", metavar="FILE", help="optional image to use instead of a live camera")
+optGroup.add_argument("-v", "--input-video", metavar="FILE", help="optional video to use instead of a live camera")
 parser.add_argument("-s", "--scale", type=float, default=1.0, metavar="FACTOR",
                       help="amount to up/downsample each frame (optional)")
 parser.add_argument("--raw-scale", type=float, default=1.0, metavar="FACTOR",
@@ -507,10 +508,13 @@ def onKey(key):
 def initCapture():
     if args.input_image is not None: return None
     print("Initializing VideoCapture...")
-    cap = cv2.VideoCapture(args.device)
-    if not cap.isOpened():
-        print(f"    failed to open camera device {args.device}")
-        sys.exit(1)
+    if args.input_video is not None:
+        cap = cv2.VideoCapture(args.input_video)
+    else:
+        cap = cv2.VideoCapture(args.device)
+        if not cap.isOpened():
+            print(f"    failed to open camera device {args.device}")
+            sys.exit(1)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
     # cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
