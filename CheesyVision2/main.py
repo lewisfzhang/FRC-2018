@@ -19,10 +19,8 @@ def processMask(mask, closeSize=4, openSize=2):
     cv2.morphologyEx(mask, cv2.MORPH_CLOSE, getKernel(closeSize), mask)
     cv2.morphologyEx(mask, cv2.MORPH_OPEN,  getKernel(openSize), mask)
 
-# returns: blobs, hsv
+# returns: blobs, hsv, mask
 def getBlobs(input):
-    height, width = input.shape[:2]
-    
     # convert to HSV
     hsv = cv2.cvtColor(input, cv2.COLOR_BGR2HSV)
     cv2.medianBlur(hsv, 5, hsv)
@@ -60,6 +58,8 @@ def getBlobs(input):
     return blobs, hsv, mask
 
 def process(input):
+    height, width = input.shape[:2]
+    
     global curFrame
     blobs, curFrame, mask = getBlobs(input)
     
