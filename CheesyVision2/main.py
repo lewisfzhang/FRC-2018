@@ -466,7 +466,7 @@ def onMouse(event, x, y, flags, param):
 def onKey(key):
     global minColor, maxColor
     print(f"key: {key}")
-    if key == 32:
+    if key == ord("c") or key == ord("C"):
         minColor = (0,0,0)
         maxColor = (0,0,0)
     if key == ord("z") or key == ord("Z"):
