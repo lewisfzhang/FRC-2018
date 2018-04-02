@@ -26,7 +26,7 @@ def getBlobs(input):
     cv2.medianBlur(hsv, 5, hsv)
     
     # threshold
-    global minColor, maxColor, pivotLoc
+    global minColor, maxColor
     mask = cv2.inRange(hsv, minColor, maxColor)
     
     # reduce noise with morphological operations
@@ -62,15 +62,6 @@ def process(input):
     
     global curFrame
     blobs, curFrame, mask = getBlobs(input)
-    
-    # compute angles from blob centers to the pivot
-    centerAngles = []
-    for b in blobs:
-        x, y = b["median"]
-        dx, dy = x-pivotLoc[0], y-pivotLoc[1]
-        if dx == 0: continue
-        angle = -math.degrees(math.atan(dy/dx))
-        centerAngles.append(angle)
     
     # convert contours to a mask for line detection
     contourMask = np.zeros((height-2,width-2,1), np.uint8)
@@ -121,7 +112,7 @@ def process(input):
     lineAngles = None
     if len(lines) == NUM_LINES:
         lineAngles = (90 - math.degrees(l[1]) for l in lines)
-    updateAngle(lineAngles, centerAngles)
+    updateAngle(lineAngles)
     
     
     ### draw debug info onto the input image and show it ###
@@ -145,9 +136,6 @@ def process(input):
         cv2.drawContours(output, [b["contour"]], 0, (0, 255, 0), 1)
         cv2.drawMarker(output, tuple(int(v) for v in b["centroid"]), (255,0,255), cv2.MARKER_CROSS)
         cv2.drawMarker(output, tuple(int(v) for v in b["median"]), (0,255,255), cv2.MARKER_CROSS)
-    
-    # scale pivot location
-    cv2.circle(output, pivotLoc, 3, (255,230,0), lineType=cv2.LINE_AA)
     
     # blow up image for easier viewing
     if args.roi_scale != 1.0:
@@ -222,25 +210,11 @@ def autoSetColor(input):
     bestMax = maxima[np.argmin([abs(i-CENTER_HUE) for i in maxima])]
     
     # set color range
-    global minColor, maxColor, pivotLoc, gotPivotLoc
+    global minColor, maxColor
     bestHue = bestMax*3
     minColor = (bestHue-15, 75, 40)
     maxColor = (bestHue+15, 255, 255)
     print("auto:", minColor, maxColor)
-    
-    # auto-detect pivot location
-    def blobError(b):
-        rect = cv2.minAreaRect(b["contour"])
-        fullness = b["area"] / (rect[1][0]*rect[1][1])
-        aspectRatio = rect[1][0]/rect[1][1]
-        if aspectRatio < 1.0: aspectRatio = 1/aspectRatio
-        return abs(aspectRatio - 2.80) - fullness
-    blobs = getBlobs(input)[0]
-    if len(blobs) >= 2:
-        blobs.sort(key=blobError)
-        c0, c1 = blobs[0]["centroid"], blobs[1]["centroid"]
-        pivotLoc = (int(c0[0]+c1[0])//2, int(c0[1]+c1[1])//2)
-        gotPivotLoc = True
     
     
     # draw histogram
@@ -273,7 +247,6 @@ SMOOTH_FIT_DEGREE = 2 # degree of polynomial fit for smoothing
 STEADY_HISTORY = 1.0 # amount of history to consider for steadiness (seconds)
 STEADY_THRESHOLD = 4.0 # angle variation considered "steady" (degrees)
 MAX_SKEW = 5.0 # maximum skew between the top & bottom lines (degrees)
-CENTER_ANGLE_REJECT_THRESHOLD = 7.0 # reject blob-center-angles farther off than this (degrees)
 TIPPED_THRESHOLD = 3.5 # angle at which the scale is "tipped" (degrees)
 
 # ignore RankWarnings from np.polyfit
@@ -297,7 +270,7 @@ def isSteady():
     maxA = max(angles)
     return maxA - minA < STEADY_THRESHOLD
 
-def updateAngle(lineAngles, centerAngles):
+def updateAngle(lineAngles):
     global curAngle, zeroPoint, zeroed, lastUpdate, waitingForSteady, errorMsg
     errorMsg = None
     if not zeroed:
@@ -332,13 +305,9 @@ def updateAngle(lineAngles, centerAngles):
     
     # fall back to angles from centers of blobs, if necessary
     if newAngle is None:
-        centerAngles = [a for a in centerAngles if abs(a-curAngle) < CENTER_ANGLE_REJECT_THRESHOLD]
-        if len(centerAngles) > 0:
-            newAngle = sum(centerAngles)/len(centerAngles)
-        else:
-            errorMsg = "NO GOOD DATA"
-            updateSmoothHistory()
-            return
+        errorMsg = "NO GOOD DATA"
+        updateSmoothHistory()
+        return
     
     delta = newAngle - curAngle
     
@@ -442,9 +411,6 @@ V_PAD = 30
 roi = None
 gotROI = False
 
-pivotLoc = (10,10)
-gotPivotLoc = False
-
 global width, height
 def onMouse_raw(event, x, y, flags, param):
     global roi, gotROI, width, height
@@ -465,7 +431,7 @@ def onMouse_raw(event, x, y, flags, param):
         roi = roi[:2] + (x, y)
 
 def onMouse(event, x, y, flags, param):
-    global curFrame, minColor, maxColor, pivotLoc, gotPivotLoc
+    global curFrame, minColor, maxColor
     h, w = curFrame.shape[:2]
     x = int(x/args.roi_scale)
     y = int(y/args.roi_scale)
@@ -474,21 +440,16 @@ def onMouse(event, x, y, flags, param):
     
     leftDown  = flags & cv2.EVENT_FLAG_LBUTTON != 0
     shiftDown = flags & cv2.EVENT_FLAG_SHIFTKEY != 0
-    if not gotPivotLoc or shiftDown:
-        if leftDown:
-            pivotLoc = (x, y)
-        if event == cv2.EVENT_LBUTTONUP:
-            gotPivotLoc = True
-    else:
-        color = curFrame[y, x]
-        newMinColor = (float(color[0])-H_PAD, float(color[1])-S_PAD, float(color[2])-V_PAD)
-        newMaxColor = (float(color[0])+H_PAD, float(color[1])+S_PAD, float(color[2])+V_PAD)
-        if event == cv2.EVENT_RBUTTONDOWN or ((event == cv2.EVENT_LBUTTONDOWN) and maxColor == (0,0,0)):
-            minColor = newMinColor
-            maxColor = newMaxColor
-        if event == cv2.EVENT_LBUTTONDOWN or leftDown:
-            minColor = tuple(map(min, minColor, newMinColor))
-            maxColor = tuple(map(max, maxColor, newMaxColor))
+    
+    color = curFrame[y, x]
+    newMinColor = (float(color[0])-H_PAD, float(color[1])-S_PAD, float(color[2])-V_PAD)
+    newMaxColor = (float(color[0])+H_PAD, float(color[1])+S_PAD, float(color[2])+V_PAD)
+    if event == cv2.EVENT_RBUTTONDOWN or ((event == cv2.EVENT_LBUTTONDOWN) and maxColor == (0,0,0)):
+        minColor = newMinColor
+        maxColor = newMaxColor
+    if event == cv2.EVENT_LBUTTONDOWN or leftDown:
+        minColor = tuple(map(min, minColor, newMinColor))
+        maxColor = tuple(map(max, maxColor, newMaxColor))
 
 def onKey(key):
     global minColor, maxColor
