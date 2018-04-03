@@ -63,6 +63,9 @@ def process(input):
     
     global curFrame
     blobs, curFrame, mask = getBlobs(input)
+    if args.debug_mask:
+        scaledMask = cv2.resize(mask, (0,0), fx=args.roi_scale, fy=args.roi_scale, interpolation=cv2.INTER_NEAREST)
+        cv2.imshow("mask", scaledMask)
     
     # convert contours to a mask for line detection
     contourMask = np.zeros((height-2,width-2,1), np.uint8)
@@ -251,6 +254,8 @@ def getClosestMinRight(hist, maxI):
 lastMax, lastMin0, lastMin1 = None, None, None
 MIN_HUE, TARGET_HUE, MAX_HUE = 126, 138, 154
 def computeHueRange(hsv):
+    start = time.perf_counter()
+    
     # compute hue histogram
     mask = cv2.inRange(hsv, (0, 64, 64), (180, 255, 255))
     hist = getHistogram(hsv, 0, mask, reduce=2)
@@ -273,9 +278,13 @@ def computeHueRange(hsv):
     lastMin0 = update(lastMin0, min0)
     lastMin1 = update(lastMin1, min1)
     
-    # visualize the histogram
-    drawHistogram(hist, [lastMin0, lastMin1], lastMax)
-    # drawHistogram(hist, [MIN_HUE//2, MAX_HUE//2], TARGET_HUE//2)
+    end = time.perf_counter()
+    if args.debug_timing: print(f"    computeHueRange took {int((end-start)*1000)} ms")
+    
+    if args.debug_histograms:
+        # visualize the histogram
+        drawHistogram(hist, [lastMin0, lastMin1], lastMax)
+        #drawHistogram(hist, [MIN_HUE//2, MAX_HUE//2], TARGET_HUE//2)
     
     return lastMin0*2, lastMin1*2, lastMax*2
 
@@ -284,6 +293,8 @@ H_BINS = 256//SCALE
 hists = collections.deque(maxlen=15)
 
 def svHist(hsv, mask, peakHue):
+    start = time.perf_counter()
+    
     # compute histogram
     hsv = hsv[mask > 128]
     weights = hsv[:,0] - peakHue
@@ -319,17 +330,22 @@ def svHist(hsv, mask, peakHue):
     
     contour, score, mask = tryThreshold(0.08)
     
-    cv2.imshow("mask", cv2.resize(mask, (512,512), interpolation=cv2.INTER_NEAREST))
+    if args.debug_histograms:
+        cv2.imshow("SV mask", cv2.resize(mask, (512,512), interpolation=cv2.INTER_NEAREST))
     
     # get bounding rect
     x,y,w,h = cv2.boundingRect(contour)
     
-    # display
-    # hist = mask.astype(np.float)/255
-    hist = cv2.resize((hist*255).astype(np.uint8), (512,512), interpolation=cv2.INTER_NEAREST)
-    hist = cv2.cvtColor(hist, cv2.COLOR_GRAY2BGR)
-    cv2.rectangle(hist, (x*SCALE*2,y*SCALE*2), ((x+w)*SCALE*2,(y+h)*SCALE*2), (0,255,0))
-    cv2.imshow("SV histogram", hist)
+    end = time.perf_counter()
+    if args.debug_timing: print(f"    svHist took {int((end-start)*1000)} ms")
+    
+    if args.debug_histograms:
+        # display
+        # hist = mask.astype(np.float)/255
+        hist = cv2.resize((hist*255).astype(np.uint8), (512,512), interpolation=cv2.INTER_NEAREST)
+        hist = cv2.cvtColor(hist, cv2.COLOR_GRAY2BGR)
+        cv2.rectangle(hist, (x*SCALE*2,y*SCALE*2), ((x+w)*SCALE*2,(y+h)*SCALE*2), (0,255,0))
+        cv2.imshow("SV histogram", hist)
     
     return x*SCALE, (x+w)*SCALE, y*SCALE, (y+h)*SCALE
 
@@ -354,7 +370,7 @@ def autoSetColor(input):
     
     
     end = time.perf_counter()
-    print(f"autoSetColor took {int((end-start)*1000)} ms")
+    if args.debug_timing: print(f"autoSetColor took {int((end-start)*1000)} ms")
 
 
 
@@ -498,6 +514,10 @@ parser.add_argument("--roi-scale", type=float, default=2.0, metavar="FACTOR",
                     help="amount to scale the region-of-interest display by (default: %(default)s)")
 parser.add_argument("--csv-output", type=argparse.FileType("w"), metavar="FILE",
                     help="optional file to write angle data to")
+debugGroup = parser.add_argument_group(title="debug flags")
+debugGroup.add_argument("--debug-histograms", action="store_true", help="show the hue and saturation-value histograms")
+debugGroup.add_argument("--debug-mask", action="store_true", help="show the thresholded color mask")
+debugGroup.add_argument("--debug-timing", action="store_true", help="print how long various operations take")
 args = parser.parse_args()
 
 
@@ -654,7 +674,7 @@ while True:
     height, width = frame.shape[:2]
     
     if args.hue_shift != 0.0:
-        # start = time.perf_counter()
+        start = time.perf_counter()
         
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         shift = (args.hue_shift//2) % 180
@@ -667,8 +687,8 @@ while True:
             frame[:, :, 0] += np.uint8(shift)
         frame = cv2.cvtColor(frame, cv2.COLOR_HSV2BGR)
         
-        # end = time.perf_counter()
-        # print(f"hue shift took {int((end-start)*1000)} ms")
+        end = time.perf_counter()
+        if args.debug_timing: print(f"hue shift took {int((end-start)*1000)} ms")
     
     # show the raw frame (with ROI rect)
     frameDisp = frame.copy()
