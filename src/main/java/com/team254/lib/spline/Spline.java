@@ -12,12 +12,14 @@ public abstract class Spline {
 
     public abstract double getCurvature(double t);
 
+    public abstract double getDCurvature(double t);
+
     public Pose2d getPose2d(double t) {
         return new Pose2d(getPoint(t), getHeading(t));
     }
 
     public Pose2dWithCurvature getPose2dWithCurvature(double t) {
-        return new Pose2dWithCurvature(getPoint(t), getHeading(t), getCurvature(t));
+        return new Pose2dWithCurvature(getPose2d(t), getCurvature(t), getDCurvature(t));
     }
 
     // TODO add toString

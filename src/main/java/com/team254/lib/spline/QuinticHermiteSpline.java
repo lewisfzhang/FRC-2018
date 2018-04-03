@@ -139,15 +139,22 @@ public class QuinticHermiteSpline extends Spline {
         return 60 * ay * t * t + 24 * by * t + 6 * cy;
     }
 
+    @Override
     public double getCurvature(double t) {
         return (dx(t) * ddy(t) - ddx(t) * dy(t)) / ((dx(t) * dx(t) + dy(t) * dy(t)) * Math.sqrt((dx(t) * dx(t) + dy
                 (t) * dy(t))));
     }
 
+    @Override
+    public  double getDCurvature(double t) {
+        double dx2dy2 = (dx(t) * dx(t) + dy(t) * dy(t));
+        double num = (dx(t)*dddy(t) - dddx(t)*dy(t)) * dx2dy2 - 3 * (dx(t) * ddy(t) - ddx(t) * dy(t)) * (dx(t) * ddx(t) + dy(t) * ddy(t));
+        return num / (dx2dy2 * dx2dy2 * Math.sqrt(dx2dy2));
+    }
+
     private double dCurvature2(double t) {
         double dx2dy2 = (dx(t) * dx(t) + dy(t) * dy(t));
         double num = (dx(t)*dddy(t) - dddx(t)*dy(t)) * dx2dy2 - 3 * (dx(t) * ddy(t) - ddx(t) * dy(t)) * (dx(t) * ddx(t) + dy(t) * ddy(t));
-
         return num * num / (dx2dy2 * dx2dy2 * dx2dy2 * dx2dy2 * dx2dy2);
     }
 
