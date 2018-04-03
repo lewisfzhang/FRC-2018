@@ -213,25 +213,42 @@ def getMaxima(hist):
             if left and right: return True
         return False
     return [i for i in range(1, len(hist)-1) if isValidMax(i)]
-def getMinima(hist):
-    def isValidMin(i):
-        mVal = hist[i]
-        left, right = False, False
-        for dx in range(1, min(i+1, len(hist)-i)):
-            vl, vr = hist[i-dx], hist[i+dx]
-            if (vl < mVal and not left) or (vr < mVal and not right): return False
-            if vl > mVal+VALID_DEPTH: left = True
-            if vr > mVal+VALID_DEPTH: right = True
-            if left and right: return True
-        return False
-    return [i for i in range(1, len(hist)-1) if isValidMin(i)]
 def getClosestExtremum(extrema, target):
     return extrema[np.argmin([abs(i-target) for i in extrema])]
-def getClosestExtremumLeft(extrema, target, default):
-    return max([i for i in extrema if i < target], default=default)
-def getClosestExtremumRight(extrema, target, default):
-    return min([i for i in extrema if i > target], default=default)
+def getClosestMinLeft(hist, maxI):
+    mVal = hist[maxI]
+    minI = maxI
+    def isValid():
+        if hist[minI] > mVal-VALID_DEPTH or hist[minI] > hist[minI-1]:
+            return True
+        for d in range(len(hist)):
+            i = (minI+d) % len(hist)
+            if hist[i] > hist[minI]+VALID_DEPTH:
+                return True
+            if hist[i] < hist[minI]:
+                return False
+        return False
+    while minI > 1 and isValid():
+        minI -= 1
+    return minI
+def getClosestMinRight(hist, maxI):
+    mVal = hist[maxI]
+    minI = maxI
+    def isValid():
+        if hist[minI] > mVal-VALID_DEPTH or hist[minI] > hist[minI+1]:
+            return True
+        for d in range(len(hist)):
+            i = (minI-d) % len(hist)
+            if hist[i] > hist[minI]+VALID_DEPTH:
+                return True
+            if hist[i] < hist[minI]:
+                return False
+        return False
+    while minI < len(hist)-2 and isValid():
+        minI += 1
+    return minI
 
+lastMax, lastMin0, lastMin1 = None, None, None
 def computeHueRange(hsv):
     # compute hue histogram
     mask = cv2.inRange(hsv, (0, 64, 64), (180, 255, 255))
@@ -239,15 +256,25 @@ def computeHueRange(hsv):
     
     # find hue range
     maxima = getMaxima(hist)
-    minima = getMinima(hist)
     bestMax = getClosestExtremum(maxima, 140 / 2)
-    min0 = getClosestExtremumLeft(minima, bestMax, 0)
-    min1 = getClosestExtremumRight(minima, bestMax, len(hist))
+    min0 = getClosestMinLeft(hist, bestMax)
+    min1 = getClosestMinRight(hist, bestMax)
+    
+    # update positions
+    global lastMax, lastMin0, lastMin1
+    def update(last, cur):
+        if last is None: return cur
+        if cur > last: return last+1
+        if cur < last: return last-1
+        return last
+    lastMax = update(lastMax, bestMax)
+    lastMin0 = update(lastMin0, min0)
+    lastMin1 = update(lastMin1, min1)
     
     # visualize the histogram
-    drawHistogram(hist, [min0, bestMax, min1], bestMax)
+    drawHistogram(hist, [lastMin0, lastMin1], lastMax)
     
-    return min0*2, min1*2, bestMax*2
+    return lastMin0*2, lastMin1*2, lastMax*2
 
 SCALE = 8
 H_BINS = 256//SCALE
