@@ -181,9 +181,18 @@ def process(input):
 ######### automatic calibration #########
 #########################################
 
+HIST_SMOOTH_RADIUS = 5
+HIST_SMOOTH_KERNEL = np.hamming(HIST_SMOOTH_RADIUS*2 + 1)
+HIST_SMOOTH_KERNEL /= HIST_SMOOTH_KERNEL.sum()
 def getHistogram(hsv, channel, mask, normMax=255, reduce=3):
     maxV = [180,255,255][channel]
     hist = cv2.calcHist([hsv[:, :, channel]], [0], mask, [maxV//reduce], [0,maxV])
+    
+    # smooth histogram
+    hist = np.r_[hist[-HIST_SMOOTH_RADIUS:], hist, hist[:HIST_SMOOTH_RADIUS]]
+    hist = hist.reshape(len(hist))
+    hist = np.convolve(hist, HIST_SMOOTH_KERNEL, mode="valid")
+    
     cv2.normalize(hist, hist, 0, normMax, cv2.NORM_MINMAX)
     return hist
 
@@ -203,51 +212,19 @@ def drawHistogram(hist, markers=[], bestMarker=-1):
     histImage = cv2.cvtColor(histImage, cv2.COLOR_HSV2BGR)
     cv2.imshow("histogram", histImage)
 
-VALID_DEPTH = 7
 def getMaxima(hist):
-    def isValidMax(i):
-        mVal = hist[i]
-        left, right = False, False
-        for dx in range(1, min(i+1, len(hist)-i)):
-            vl, vr = hist[i-dx], hist[i+dx]
-            if (vl > mVal and not left) or (vr > mVal and not right): return False
-            if vl < mVal-VALID_DEPTH: left = True
-            if vr < mVal-VALID_DEPTH: right = True
-            if left and right: return True
-        return False
-    return [i for i in range(1, len(hist)-1) if isValidMax(i)]
+    def at(i): return hist[(i) % len(hist)]
+    return [i for i in range(1, len(hist)-1) if hist[i] > at(i-1) and hist[i] > at(i+1)]
 def getClosestExtremum(extrema, target):
     return extrema[np.argmin([abs(i-target) for i in extrema])]
 def getClosestMinLeft(hist, maxI):
-    mVal = hist[maxI]
     minI = maxI
-    def isValid():
-        if hist[minI] > mVal-VALID_DEPTH or hist[minI] > hist[minI-1]:
-            return True
-        for d in range(len(hist)):
-            i = (minI+d) % len(hist)
-            if hist[i] > hist[minI]+VALID_DEPTH:
-                return True
-            if hist[i] < hist[minI]:
-                return False
-        return False
-    while minI > 1 and isValid():
+    while minI > 1 and hist[minI] > hist[minI-1]:
         minI -= 1
     return minI
 def getClosestMinRight(hist, maxI):
-    mVal = hist[maxI]
     minI = maxI
-    def isValid():
-        if hist[minI] > mVal-VALID_DEPTH or hist[minI] > hist[minI+1]:
-            return True
-        for d in range(len(hist)):
-            i = (minI-d) % len(hist)
-            if hist[i] > hist[minI]+VALID_DEPTH:
-                return True
-            if hist[i] < hist[minI]:
-                return False
-        return False
-    while minI < len(hist)-2 and isValid():
+    while minI < len(hist)-2 and hist[minI] > hist[minI+1]:
         minI += 1
     return minI
 
@@ -328,7 +305,7 @@ def svHist(hsv, mask, peakHue):
         bestIndex = np.argmax(scores)
         return contours[bestIndex], scores[bestIndex], mask
     
-    contour, score, mask = tryThreshold(0.08)
+    contour, score, mask = tryThreshold(0.07)
     
     if args.debug_histograms:
         cv2.imshow("SV mask", cv2.resize(mask, (512,512), interpolation=cv2.INTER_NEAREST))
