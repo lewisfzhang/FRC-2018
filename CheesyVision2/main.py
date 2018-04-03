@@ -58,6 +58,7 @@ def getBlobs(input):
     return blobs, hsv, mask
 
 def process(input):
+    autoSetColor(input)
     height, width = input.shape[:2]
     
     global curFrame
@@ -171,11 +172,88 @@ def process(input):
     
     cv2.imshow("output", output)
 
+
+
+#########################################
+######### automatic calibration #########
+#########################################
+
+def getHistogram(hsv, channel, mask, normMax=255, reduce=3):
+    maxV = [180,255,255][channel]
+    hist = cv2.calcHist([hsv[:, :, channel]], [0], mask, [maxV//reduce], [0,maxV])
+    cv2.normalize(hist, hist, 0, normMax, cv2.NORM_MINMAX)
+    return hist
+
+def drawHistogram(hist, markers=[], bestMarker=-1):
+    n = hist.shape[0]
+    m = 180//n
+    histImage = np.zeros((256, n*2, 3), np.uint8)
+    hist = np.int32(np.around(hist))
+    markers = markers + [bestMarker]
+    for x,y in enumerate(hist):
+        cv2.line(histImage, (x*2,256), (x*2,256-y), (x*m,255,255))
+        cv2.line(histImage, (x*2+1,256), (x*2+1,256-y), (x*m+1,255,255))
+        if x in markers:
+            color = (0,0,255)
+            if x == bestMarker: color = (60,255,255)
+            cv2.line(histImage, (x*2,0), (x*2,256-y), color)
+    histImage = cv2.cvtColor(histImage, cv2.COLOR_HSV2BGR)
+    cv2.imshow("histogram", histImage)
+
+VALID_DEPTH = 7
+def getMaxima(hist):
+    def isValidMax(i):
+        mVal = hist[i]
+        left, right = False, False
+        for dx in range(1, min(i+1, len(hist)-i)):
+            vl, vr = hist[i-dx], hist[i+dx]
+            if (vl > mVal and not left) or (vr > mVal and not right): return False
+            if vl < mVal-VALID_DEPTH: left = True
+            if vr < mVal-VALID_DEPTH: right = True
+            if left and right: return True
+        return False
+    return [i for i in range(1, len(hist)-1) if isValidMax(i)]
+def getMinima(hist):
+    def isValidMin(i):
+        mVal = hist[i]
+        left, right = False, False
+        for dx in range(1, min(i+1, len(hist)-i)):
+            vl, vr = hist[i-dx], hist[i+dx]
+            if (vl < mVal and not left) or (vr < mVal and not right): return False
+            if vl > mVal+VALID_DEPTH: left = True
+            if vr > mVal+VALID_DEPTH: right = True
+            if left and right: return True
+        return False
+    return [i for i in range(1, len(hist)-1) if isValidMin(i)]
+def getClosestExtremum(extrema, target):
+    return extrema[np.argmin([abs(i-target) for i in extrema])]
+def getClosestExtremumLeft(extrema, target, default):
+    return max([i for i in extrema if i < target], default=default)
+def getClosestExtremumRight(extrema, target, default):
+    return min([i for i in extrema if i > target], default=default)
+
+def computeHueRange(hsv):
+    # compute hue histogram
+    mask = cv2.inRange(hsv, (0, 64, 64), (180, 255, 255))
+    hist = getHistogram(hsv, 0, mask, reduce=2)
+    
+    # find hue range
+    maxima = getMaxima(hist)
+    minima = getMinima(hist)
+    bestMax = getClosestExtremum(maxima, 140 / 2)
+    min0 = getClosestExtremumLeft(minima, bestMax, 0)
+    min1 = getClosestExtremumRight(minima, bestMax, len(hist))
+    
+    # visualize the histogram
+    drawHistogram(hist, [min0, bestMax, min1], bestMax)
+    
+    return min0*2, min1*2
+
 def autoSetColor(input):
     start = time.perf_counter()
     
     # downsample
-    DOWNSCALE = 0.2
+    DOWNSCALE = 1.0
     inputSmall = cv2.resize(input, (0,0), fx=DOWNSCALE, fy=DOWNSCALE)
     # height, width = inputSmall.shape[:2]
     # print(f"downsampled input size: [{width}, {height}]")
@@ -183,53 +261,18 @@ def autoSetColor(input):
     # convert to HSV
     hsv = cv2.cvtColor(inputSmall, cv2.COLOR_BGR2HSV)
     
-    # calculate histogram
-    def getHistogram(channel, mask, normMax=255):
-        maxV = [180,255,255][channel]
-        hist = cv2.calcHist([hsv[:, :, channel]], [0], mask, [maxV//3], [0,maxV])
-        cv2.normalize(hist, hist, 0, normMax, cv2.NORM_MINMAX)
-        return hist
-    mask = cv2.inRange(hsv, (0, 64, 64), (180, 255, 255))
-    hist = getHistogram(0, mask)
-    
-    # find maxima
-    VALID_DEPTH = 7
-    def isValidMax(i):
-        mVal = hist[i]
-        left, right = False, False
-        for dx in range(1, min(i+1, len(hist)-i)):
-            vl, vr = hist[i-dx], hist[i+dx]
-            if vl >= mVal or vr >= mVal: return False
-            if vl < mVal-VALID_DEPTH: left = True
-            if vr < mVal-VALID_DEPTH: right = True
-            if left and right: return True
-        return False
-    maxima = [i for i in range(1, len(hist)-1) if isValidMax(i)]
-    if len(maxima) == 0: return
-    CENTER_HUE = 145/3
-    bestMax = maxima[np.argmin([abs(i-CENTER_HUE) for i in maxima])]
+    # get the hue range
+    minH, maxH = computeHueRange(hsv)
     
     # set color range
     global minColor, maxColor
-    bestHue = bestMax*3
-    minColor = (bestHue-15, 75, 40)
-    maxColor = (bestHue+15, 255, 255)
-    print("auto:", minColor, maxColor)
+    minColor = (minH, 75, 40)
+    maxColor = (maxH, 255, 255)
+    # print("auto:", minColor, maxColor)
     
+    # visualize S-V histogram
+    mask = cv2.inRange(hsv, minColor, maxColor)
     
-    # draw histogram
-    if False:
-        histImage = np.zeros((256, 180, 3), np.uint8)
-        hist = np.int32(np.around(hist))
-        for x,y in enumerate(hist):
-            cv2.line(histImage, (x*3,256), (x*3,256-y), (x*3,255,255))
-            cv2.line(histImage, (x*3+1,256), (x*3+1,256-y), (x*3+1,255,255))
-            if x in maxima:
-                color = (0,0,255)
-                if x == bestMax: color = (60,255,255)
-                cv2.line(histImage, (x*3,0), (x*3,256-y), color)
-        histImage = cv2.cvtColor(histImage, cv2.COLOR_HSV2BGR)
-        cv2.imshow("histogram", histImage)
     
     end = time.perf_counter()
     print(f"autoSetColor took {int((end-start)*1000)} ms")
