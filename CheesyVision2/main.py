@@ -333,12 +333,8 @@ def svHist(hsv, mask, peakHue):
 def autoSetColor(input):
     start = time.perf_counter()
     
-    # downsample
-    DOWNSCALE = 1.0
-    inputSmall = cv2.resize(input, (0,0), fx=DOWNSCALE, fy=DOWNSCALE)
-    
     # convert to HSV
-    hsv = cv2.cvtColor(inputSmall, cv2.COLOR_BGR2HSV)
+    hsv = cv2.cvtColor(input, cv2.COLOR_BGR2HSV)
     
     # get the hue range
     minH, maxH, peakHue = computeHueRange(hsv)
