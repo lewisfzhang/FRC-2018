@@ -87,7 +87,7 @@ def process(input):
         lines = [] if lines is None else [a[0] for a in lines]
         
         # remove clearly invalid lines
-        lines = [l for l in lines if l[1] > np.pi/4 and l[1] < np.pi*3/4]
+        lines = [l for l in lines if l[1] > np.pi*3/8 and l[1] < np.pi*5/8]
         
         # remove close-dulplicate lines
         BUCKET_SIZE = 15
@@ -181,7 +181,7 @@ def process(input):
 ######### automatic calibration #########
 #########################################
 
-HIST_SMOOTH_RADIUS = 5
+HIST_SMOOTH_RADIUS = 2
 HIST_SMOOTH_KERNEL = np.hamming(HIST_SMOOTH_RADIUS*2 + 1)
 HIST_SMOOTH_KERNEL /= HIST_SMOOTH_KERNEL.sum()
 def getHistogram(hsv, channel, mask, normMax=255, reduce=3):
@@ -361,7 +361,7 @@ SMOOTH_HISTORY = 1.0 # amount of history to consider for smoothing (seconds)
 SMOOTH_FIT_DEGREE = 2 # degree of polynomial fit for smoothing
 STEADY_HISTORY = 1.0 # amount of history to consider for steadiness (seconds)
 STEADY_THRESHOLD = 4.0 # angle variation considered "steady" (degrees)
-MAX_SKEW = 5.0 # maximum skew between the top & bottom lines (degrees)
+MAX_SKEW = 2.2 # maximum skew between the top & bottom lines (degrees)
 TIPPED_THRESHOLD = 3.5 # angle at which the scale is "tipped" (degrees)
 
 # ignore RankWarnings from np.polyfit
@@ -420,7 +420,7 @@ def updateAngle(lineAngles):
     
     # fall back to angles from centers of blobs, if necessary
     if newAngle is None:
-        errorMsg = "NO GOOD DATA"
+        if errorMsg is None: errorMsg = "NO GOOD DATA"
         updateSmoothHistory()
         return
     
