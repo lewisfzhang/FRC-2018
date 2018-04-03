@@ -250,27 +250,32 @@ def computeHueRange(hsv):
     return min0*2, min1*2, bestMax*2
 
 SCALE = 8
-histVals = np.zeros((256//SCALE, 256//SCALE))
+histTotal = np.zeros((256//SCALE, 256//SCALE))
+hists = collections.deque(maxlen=15)
 def svHist(hsv, mask, peakHue):
     # compute histogram
-    global histVals
+    global histTotal
     hsv = hsv[mask > 128]
     weights = hsv[:,0] - peakHue
     weights = 1 / (0.1 + weights*weights)
     hist, _, _ = np.histogram2d(hsv[:,2], hsv[:,1], weights=weights, bins=256//SCALE, range=[[0,255],[0,255]])
-    histVals += hist
+    histTotal += hist
+    hists.append(hist)
     
     # normalize
-    # hist = histVals # uncomment to show accumulated histogram
+    # hist = histTotal # uncomment to show total accumulated histogram
+    hist = np.sum(hists, axis=0)
     hist = (hist*255/np.max(hist)).astype(np.uint8)
     
     # create mask
     cv2.GaussianBlur(hist, (3,3), 2.5, hist)
-    mask = cv2.inRange(hist, 20, 255)
+    mask = cv2.inRange(hist, 15, 255)
     # cv2.erode(mask, cv2.getStructuringElement(cv2.MORPH_RECT, (2,2)), mask)
     
     # find biggest contour and bounding rectangle
     _, contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # def contourScore(c):
+    #     # TAKE INTO ACCOUNT POSITION
     biggestI = np.argmax([cv2.contourArea(c) for c in contours])
     x,y,w,h = cv2.boundingRect(contours[biggestI])
     
@@ -288,8 +293,6 @@ def autoSetColor(input):
     # downsample
     DOWNSCALE = 1.0
     inputSmall = cv2.resize(input, (0,0), fx=DOWNSCALE, fy=DOWNSCALE)
-    # height, width = inputSmall.shape[:2]
-    # print(f"downsampled input size: [{width}, {height}]")
     
     # convert to HSV
     hsv = cv2.cvtColor(inputSmall, cv2.COLOR_BGR2HSV)
@@ -297,8 +300,9 @@ def autoSetColor(input):
     # get the hue range
     minH, maxH, peakHue = computeHueRange(hsv)
     
-    # visualize S-V histogram
-    mask = cv2.inRange(hsv, (minH, 64, 64), (maxH, 255, 255))
+    # process/visualize S-V histogram
+    mask = cv2.inRange(hsv, (minH, 40, 40), (maxH, 255, 255))
+    # cv2.imshow("mask", mask)
     minS,maxS,minV,maxV = svHist(hsv, mask, peakHue)
     
     # set color range
