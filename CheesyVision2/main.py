@@ -490,6 +490,8 @@ optGroup.add_argument("-i", "--input-image", metavar="FILE", help="optional imag
 optGroup.add_argument("-v", "--input-video", metavar="FILE", help="optional video to use instead of a live camera")
 parser.add_argument("-s", "--scale", type=float, default=1.0, metavar="FACTOR",
                       help="amount to up/downsample each frame (optional)")
+parser.add_argument("--hue-shift", type=float, default=0.0, metavar="DEGREES",
+                      help="amount to shift the hue of each frame (optional)")
 parser.add_argument("--raw-scale", type=float, default=1.0, metavar="FACTOR",
                     help="amount to scale the raw frame display by (default: %(default)s)")
 parser.add_argument("--roi-scale", type=float, default=2.0, metavar="FACTOR",
@@ -650,6 +652,23 @@ while True:
         frame = inputImage.copy()
     
     height, width = frame.shape[:2]
+    
+    if args.hue_shift != 0.0:
+        # start = time.perf_counter()
+        
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        shift = (args.hue_shift//2) % 180
+        if shift < 0: shift += 180
+        if 180+shift > 255:
+            tmp = frame[:, :, 0].astype(np.uint16) + np.uint16(shift)
+            tmp[tmp > 180] -= 180
+            frame[:, :, 0] = tmp
+        else:
+            frame[:, :, 0] += np.uint8(shift)
+        frame = cv2.cvtColor(frame, cv2.COLOR_HSV2BGR)
+        
+        # end = time.perf_counter()
+        # print(f"hue shift took {int((end-start)*1000)} ms")
     
     # show the raw frame (with ROI rect)
     frameDisp = frame.copy()
