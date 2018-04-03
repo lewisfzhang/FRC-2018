@@ -155,16 +155,22 @@ public class DriveMotionPlanner implements CSVWritable {
         public Output() {
         }
 
-        public Output(double left_velocity, double right_velocity, double left_feedforward_voltage, double
+        public Output(double left_velocity, double right_velocity, double left_accel, double right_accel,
+                      double left_feedforward_voltage, double
                 right_feedforward_voltage) {
             this.left_velocity = left_velocity;
             this.right_velocity = right_velocity;
+            this.left_accel = left_accel;
+            this.right_accel = right_accel;
             this.left_feedforward_voltage = left_feedforward_voltage;
             this.right_feedforward_voltage = right_feedforward_voltage;
         }
 
         public double left_velocity;  // rad/s
         public double right_velocity;  // rad/s
+
+        public double left_accel;  // rad/s^2
+        public double right_accel;  // rad/s^2
 
         public double left_feedforward_voltage;
         public double right_feedforward_voltage;
@@ -173,6 +179,10 @@ public class DriveMotionPlanner implements CSVWritable {
             double tmp_left_velocity = left_velocity;
             left_velocity = -right_velocity;
             right_velocity = -tmp_left_velocity;
+
+            double tmp_left_accel = left_accel;
+            left_accel = -right_accel;
+            right_accel = -tmp_left_accel;
 
             double tmp_left_feedforward = left_feedforward_voltage;
             left_feedforward_voltage = -right_feedforward_voltage;
@@ -204,7 +214,7 @@ public class DriveMotionPlanner implements CSVWritable {
         final double right_voltage = dynamics.voltage.right + (wheel_velocities.right - dynamics.wheel_velocity
                 .right) / mModel.right_transmission().speed_per_volt();
 
-        return new Output(wheel_velocities.left, wheel_velocities.right, left_voltage, right_voltage);
+        return new Output(wheel_velocities.left, wheel_velocities.right, dynamics.wheel_acceleration.left, dynamics.wheel_acceleration.right, left_voltage, right_voltage);
     }
 
     protected Output updatePurePursuit(DifferentialDrive.DriveDynamics dynamics, Pose2d current_state) {
@@ -245,7 +255,7 @@ public class DriveMotionPlanner implements CSVWritable {
 
         dynamics.chassis_velocity = adjusted_velocity;
         dynamics.wheel_velocity = mModel.solveInverseKinematics(adjusted_velocity);
-        return new Output(dynamics.wheel_velocity.left, dynamics.wheel_velocity.right, dynamics.voltage.left, dynamics.voltage.right);
+        return new Output(dynamics.wheel_velocity.left, dynamics.wheel_velocity.right, dynamics.wheel_acceleration.left, dynamics.wheel_acceleration.right, dynamics.voltage.left, dynamics.voltage.right);
     }
 
     protected Output updateNonlinearFeedback(DifferentialDrive.DriveDynamics dynamics, Pose2d current_state) {
@@ -290,7 +300,7 @@ public class DriveMotionPlanner implements CSVWritable {
 
         DifferentialDrive.WheelState feedforward_voltages = mModel.solveInverseDynamics(dynamics.chassis_velocity, dynamics.chassis_acceleration).voltage;
 
-        return new Output(dynamics.wheel_velocity.left, dynamics.wheel_velocity.right, feedforward_voltages.left, feedforward_voltages.right);
+        return new Output(dynamics.wheel_velocity.left, dynamics.wheel_velocity.right, dynamics.wheel_acceleration.left, dynamics.wheel_acceleration.right, feedforward_voltages.left, feedforward_voltages.right);
     }
 
     public Output update(double timestamp, Pose2d current_state) {
@@ -326,7 +336,7 @@ public class DriveMotionPlanner implements CSVWritable {
             mError = current_state.inverse().transformBy(mSetpoint.state().getPose());
 
             if (mFollowerType == FollowerType.FEEDFORWARD_ONLY) {
-                mOutput = new Output(dynamics.wheel_velocity.left, dynamics.wheel_velocity.right, dynamics.voltage
+                mOutput = new Output(dynamics.wheel_velocity.left, dynamics.wheel_velocity.right, dynamics.wheel_acceleration.left, dynamics.wheel_acceleration.right, dynamics.voltage
                         .left, dynamics.voltage.right);
             } else if (mFollowerType == FollowerType.PURE_PURSUIT) {
                 mOutput = updatePurePursuit(dynamics, current_state);

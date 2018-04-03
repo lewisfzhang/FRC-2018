@@ -16,9 +16,9 @@ import java.util.Arrays;
 import java.util.List;
 
 public class TrajectoryGenerator {
-    private static final double kMaxVelocity = 100.0;
-    private static final double kMaxAccel = 120.0;
-    private static final double kMaxCentripetalAccel = 100.0;
+    private static final double kMaxVelocity = 120.0;
+    private static final double kMaxAccel = 100.0;
+    private static final double kMaxCentripetalAccel = 80.0;
     private static final double kMaxVoltage = 9.0;
 
     private static TrajectoryGenerator mInstance = new TrajectoryGenerator();
@@ -75,36 +75,36 @@ public class TrajectoryGenerator {
     public static final Pose2d kSideStartPose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(180.0));
     public static final Pose2d kNearScaleEmptyPose = new Pose2d(new Translation2d(250.0, 32.0), Rotation2d
             .fromDegrees(10.0+180.0));
-    public static final Pose2d kNearScaleFullPose = new Pose2d(new Translation2d(250.0, 32.0 + 6), Rotation2d.fromDegrees
+    public static final Pose2d kNearScaleFullPose = new Pose2d(new Translation2d(250.0, 32.0), Rotation2d.fromDegrees
             (15.0+180.0));
 
-    public static final Pose2d kNearScaleFullPose1 = new Pose2d(new Translation2d(250.0, 32.0 + 18.0), Rotation2d.fromDegrees
+    public static final Pose2d kNearScaleFullPose1 = new Pose2d(new Translation2d(250.0, 32.0), Rotation2d.fromDegrees
             (15.0+180.0));
 
-    public static final Pose2d kNearScaleFullPose2 = new Pose2d(new Translation2d(250.0, 32.0 + 38.0), Rotation2d.fromDegrees
+    public static final Pose2d kNearScaleFullPose2 = new Pose2d(new Translation2d(250.0, 32.0), Rotation2d.fromDegrees
             (15.0+180.0));
 
     public static final Pose2d kFarScaleEmptyPose = new Pose2d(new Translation2d(250.0, 225.0), Rotation2d
             .fromDegrees(-10.0+180.0));
-    public static final Pose2d kFarScaleFullPose = new Pose2d(new Translation2d(250.0, 225.0 - 6.0), Rotation2d.fromDegrees
+    public static final Pose2d kFarScaleFullPose = new Pose2d(new Translation2d(250.0, 225.0), Rotation2d.fromDegrees
             (-15.0+180.0));
-    public static final Pose2d kFarScaleFullPose1 = new Pose2d(new Translation2d(250.0, 225.0 - 18.0), Rotation2d.fromDegrees
+    public static final Pose2d kFarScaleFullPose1 = new Pose2d(new Translation2d(250.0, 225.0), Rotation2d.fromDegrees
             (-15.0+180.0));
-    public static final Pose2d kFarScaleFullPose2 = new Pose2d(new Translation2d(250.0, 225.0 - 38.0), Rotation2d.fromDegrees
+    public static final Pose2d kFarScaleFullPose2 = new Pose2d(new Translation2d(250.0, 225.0), Rotation2d.fromDegrees
             (-15.0+180.0));
 
     public static final Pose2d kNearFence1Pose = new Pose2d(new Translation2d(199.0, 42.0), Rotation2d.fromDegrees
             (-45.0+180.0));
     public static final Pose2d kNearFence2Pose = new Pose2d(new Translation2d(199.0, 42.0 + 28.0), Rotation2d
             .fromDegrees(-45.0+180.0));
-    public static final Pose2d kNearFence3Pose = new Pose2d(new Translation2d(194.0, 42.0 + 63.0), Rotation2d
+    public static final Pose2d kNearFence3Pose = new Pose2d(new Translation2d(197.0, 42.0 + 28.0 * 2), Rotation2d
             .fromDegrees(-45.0+180.0));
 
-    public static final Pose2d kFarFence1Pose = new Pose2d(new Translation2d(199, 215.0), Rotation2d.fromDegrees
+    public static final Pose2d kFarFence1Pose = new Pose2d(new Translation2d(199.0, 215.0), Rotation2d.fromDegrees
             (45.0+180.0));
     public static final Pose2d kFarFence2Pose = new Pose2d(new Translation2d(199.0, 215.0 - 28.0), Rotation2d
             .fromDegrees(45.0+180.0));
-    public static final Pose2d kFarFence3Pose = new Pose2d(new Translation2d(199.0, 215.0 - 63.0), Rotation2d
+    public static final Pose2d kFarFence3Pose = new Pose2d(new Translation2d(197.0, 215.0 - 28.0 * 2), Rotation2d
             .fromDegrees(45.0+180.0));
 
     // STARTING IN CENTER
@@ -239,9 +239,9 @@ public class TrajectoryGenerator {
             waypoints.add(kSideStartPose);
             waypoints.add(kSideStartPose.transformBy(new Pose2d(new Translation2d(-160.0, 0.0), Rotation2d
                     .fromDegrees(0.0))));
-            waypoints.add(kSideStartPose.transformBy(new Pose2d(new Translation2d(-225.0, -60.0), Rotation2d
+            waypoints.add(kSideStartPose.transformBy(new Pose2d(new Translation2d(-220.0, -60.0), Rotation2d
                     .fromDegrees(90.0))));
-            waypoints.add(kSideStartPose.transformBy(new Pose2d(new Translation2d(-225.0, -180.0), Rotation2d
+            waypoints.add(kSideStartPose.transformBy(new Pose2d(new Translation2d(-220.0, -180.0), Rotation2d
                     .fromDegrees(90.0))));
             // waypoints.add(kSideStartPose.transformBy(new Pose2d(new Translation2d(250.0, 205.0), Rotation2d
             // .fromDegrees(-10.0))));

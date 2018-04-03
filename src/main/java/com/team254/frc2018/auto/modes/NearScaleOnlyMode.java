@@ -37,11 +37,12 @@ public class NearScaleOnlyMode extends AutoModeBase {
     protected void routine() throws AutoModeEndedException {
         System.out.println("Running easy scale only");
 
-        runAction(new SetIntaking(false, false));
+        // runAction(new WaitAction(0.1));
 
         // Score first cube
         runAction(new ParallelAction(
                 Arrays.asList(
+                        new SetIntaking(false, false),
                         mSideStartToNearScale,
                         new SeriesAction(
                                 Arrays.asList(
@@ -66,7 +67,12 @@ public class NearScaleOnlyMode extends AutoModeBase {
                                         mNearScaleToNearFence
                                 )
                         ),
-                        new SetIntaking(true, false)
+                        new OpenCloseJawAction(true),
+                        new SetIntaking(true, false),
+                        new SeriesAction(Arrays.asList(
+                                new WaitUntilInsideRegion(new Translation2d(0.0, -1000.0), new Translation2d(205.0, 1000.0), mStartedLeft),
+                                new OpenCloseJawAction(false)
+                        ))
                 )
         ));
         runAction(new WaitAction(AutoConstants.kWaitForCubeTime));
@@ -91,7 +97,12 @@ public class NearScaleOnlyMode extends AutoModeBase {
         runAction(new ParallelAction(
                 Arrays.asList(
                         mNearScaleToNearFence2,
-                        new SetIntaking(true, false)
+                        new OpenCloseJawAction(true),
+                        new SetIntaking(true, false),
+                        new SeriesAction(Arrays.asList(
+                                new WaitUntilInsideRegion(new Translation2d(0.0, -1000.0), new Translation2d(205.0, 1000.0), mStartedLeft),
+                                new OpenCloseJawAction(false)
+                        ))
                 )
         ));
         runAction(new WaitAction(AutoConstants.kWaitForCubeTime));
@@ -117,9 +128,15 @@ public class NearScaleOnlyMode extends AutoModeBase {
         runAction(new ParallelAction(
                 Arrays.asList(
                         mNearScaleToNearFence3,
-                        new SetIntaking(true, false)
+                        new OpenCloseJawAction(true),
+                        new SetIntaking(true, false),
+                        new SeriesAction(Arrays.asList(
+                                new WaitUntilInsideRegion(new Translation2d(0.0, -1000.0), new Translation2d(205.0, 1000.0), mStartedLeft),
+                                new OpenCloseJawAction(false)
+                        ))
                 )
         ));
+        runAction(new OpenCloseJawAction(false));
         runAction(new WaitAction(AutoConstants.kWaitForCubeTime));
 
         // Score fourth cube

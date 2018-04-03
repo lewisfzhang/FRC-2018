@@ -99,8 +99,8 @@ public class Drive extends Subsystem {
         talon.setSensorPhase(true);
         talon.enableVoltageCompensation(true);
         talon.configVoltageCompSaturation(12.0, Constants.kLongCANTimeoutMs);
-        talon.configVelocityMeasurementPeriod(VelocityMeasPeriod.Period_20Ms, Constants.kLongCANTimeoutMs);
-        talon.configVelocityMeasurementWindow(16, Constants.kLongCANTimeoutMs);
+        talon.configVelocityMeasurementPeriod(VelocityMeasPeriod.Period_50Ms, Constants.kLongCANTimeoutMs);
+        talon.configVelocityMeasurementWindow(1, Constants.kLongCANTimeoutMs);
         talon.configClosedloopRamp(Constants.kDriveVoltageRampRate, Constants.kLongCANTimeoutMs);
         talon.configNeutralDeadband(0.04, 0);
     }
@@ -222,6 +222,7 @@ public class Drive extends Subsystem {
     public synchronized void setTrajectory(TrajectoryIterator<TimedState<Pose2dWithCurvature>> trajectory) {
         if(mMotionPlanner != null) {
             mOverrideTrajectory = false;
+            mMotionPlanner.reset();
             mMotionPlanner.setTrajectory(trajectory);
             mDriveControlState = DriveControlState.PATH_FOLLOWING;
         }
@@ -372,8 +373,12 @@ public class Drive extends Subsystem {
             if(!mOverrideTrajectory) {
                 setVelocity(new DriveSignal(radiansPerSecondToTicksPer100ms(output.left_velocity), radiansPerSecondToTicksPer100ms(output.right_velocity)),
                         new DriveSignal(output.left_feedforward_voltage / 12.0, output.right_feedforward_voltage / 12.0));
+
+                mPeriodicIO.left_accel = radiansPerSecondToTicksPer100ms(output.left_accel) / 1000.0;
+                mPeriodicIO.right_accel = radiansPerSecondToTicksPer100ms(output.right_accel) / 1000.0;
             } else {
                 setVelocity(DriveSignal.BRAKE, DriveSignal.BRAKE);
+                mPeriodicIO.left_accel = mPeriodicIO.right_accel = 0.0;
             }
         } else {
             DriverStation.reportError("Drive is not in path following state", false);
@@ -440,10 +445,15 @@ public class Drive extends Subsystem {
 
     @Override
     public synchronized void writePeriodicOutputs() {
-        mLeftMaster.set(mDriveControlState == DriveControlState.OPEN_LOOP ? ControlMode.PercentOutput :
-                ControlMode.Velocity, mPeriodicIO.left_demand, DemandType.ArbitraryFeedForward, mPeriodicIO.left_feedforward);
-        mRightMaster.set(mDriveControlState == DriveControlState.OPEN_LOOP ? ControlMode.PercentOutput :
-                ControlMode.Velocity, mPeriodicIO.right_demand, DemandType.ArbitraryFeedForward, mPeriodicIO.right_feedforward);
+        if (mDriveControlState == DriveControlState.OPEN_LOOP) {
+            mLeftMaster.set(ControlMode.PercentOutput, mPeriodicIO.left_demand);
+            mRightMaster.set(ControlMode.PercentOutput, mPeriodicIO.right_demand);
+        } else {
+            mLeftMaster.set(ControlMode.Velocity, mPeriodicIO.left_demand, DemandType.ArbitraryFeedForward,
+                    mPeriodicIO.left_feedforward + Constants.kDriveLowGearVelocityKd * mPeriodicIO.left_accel / 1023.0);
+            mRightMaster.set(ControlMode.Velocity, mPeriodicIO.right_demand, DemandType.ArbitraryFeedForward,
+                    mPeriodicIO.right_feedforward + Constants.kDriveLowGearVelocityKd * mPeriodicIO.right_accel / 1023.0);
+        }
     }
 
     @Override
@@ -522,6 +532,8 @@ public class Drive extends Subsystem {
         // OUTPUTS
         public double left_demand;
         public double right_demand;
+        public double left_accel;
+        public double right_accel;
         public double left_feedforward;
         public double right_feedforward;
         public TimedState<Pose2dWithCurvature> path_setpoint = new TimedState<Pose2dWithCurvature>(Pose2dWithCurvature.identity());
