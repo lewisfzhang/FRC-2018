@@ -249,6 +249,7 @@ def getClosestMinRight(hist, maxI):
     return minI
 
 lastMax, lastMin0, lastMin1 = None, None, None
+MIN_HUE, TARGET_HUE, MAX_HUE = 126, 138, 154
 def computeHueRange(hsv):
     # compute hue histogram
     mask = cv2.inRange(hsv, (0, 64, 64), (180, 255, 255))
@@ -256,13 +257,14 @@ def computeHueRange(hsv):
     
     # find hue range
     maxima = getMaxima(hist)
-    bestMax = getClosestExtremum(maxima, 140 / 2)
+    bestMax = getClosestExtremum(maxima, TARGET_HUE / 2)
     min0 = getClosestMinLeft(hist, bestMax)
     min1 = getClosestMinRight(hist, bestMax)
     
     # update positions
     global lastMax, lastMin0, lastMin1
     def update(last, cur):
+        cur = min(max(cur, MIN_HUE//2), MAX_HUE//2) # clamp to for-sure range
         if last is None: return cur
         if cur > last: return last+1
         if cur < last: return last-1
@@ -273,6 +275,7 @@ def computeHueRange(hsv):
     
     # visualize the histogram
     drawHistogram(hist, [lastMin0, lastMin1], lastMax)
+    # drawHistogram(hist, [MIN_HUE//2, MAX_HUE//2], TARGET_HUE//2)
     
     return lastMin0*2, lastMin1*2, lastMax*2
 
