@@ -247,7 +247,40 @@ def computeHueRange(hsv):
     # visualize the histogram
     drawHistogram(hist, [min0, bestMax, min1], bestMax)
     
-    return min0*2, min1*2
+    return min0*2, min1*2, bestMax*2
+
+SCALE = 8
+histVals = np.zeros((256//SCALE, 256//SCALE))
+def svHist(hsv, mask, peakHue):
+    # compute histogram
+    global histVals
+    hsv = hsv[mask > 128]
+    weights = hsv[:,0] - peakHue
+    weights = 1 / (0.1 + weights*weights)
+    hist, _, _ = np.histogram2d(hsv[:,2], hsv[:,1], weights=weights, bins=256//SCALE, range=[[0,255],[0,255]])
+    histVals += hist
+    
+    # normalize
+    # hist = histVals # uncomment to show accumulated histogram
+    hist = (hist*255/np.max(hist)).astype(np.uint8)
+    
+    # create mask
+    cv2.GaussianBlur(hist, (3,3), 2.5, hist)
+    mask = cv2.inRange(hist, 20, 255)
+    # cv2.erode(mask, cv2.getStructuringElement(cv2.MORPH_RECT, (2,2)), mask)
+    
+    # find biggest contour and bounding rectangle
+    _, contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    biggestI = np.argmax([cv2.contourArea(c) for c in contours])
+    x,y,w,h = cv2.boundingRect(contours[biggestI])
+    
+    # display
+    hist = cv2.resize(hist, (512,512), interpolation=cv2.INTER_NEAREST)
+    hist = cv2.cvtColor(hist, cv2.COLOR_GRAY2BGR)
+    cv2.rectangle(hist, (x*SCALE*2,y*SCALE*2), ((x+w)*SCALE*2,(y+h)*SCALE*2), (0,255,0))
+    cv2.imshow("SV histogram", hist)
+    
+    return x*SCALE, (x+w)*SCALE, y*SCALE, (y+h)*SCALE
 
 def autoSetColor(input):
     start = time.perf_counter()
@@ -262,16 +295,17 @@ def autoSetColor(input):
     hsv = cv2.cvtColor(inputSmall, cv2.COLOR_BGR2HSV)
     
     # get the hue range
-    minH, maxH = computeHueRange(hsv)
+    minH, maxH, peakHue = computeHueRange(hsv)
+    
+    # visualize S-V histogram
+    mask = cv2.inRange(hsv, (minH, 64, 64), (maxH, 255, 255))
+    minS,maxS,minV,maxV = svHist(hsv, mask, peakHue)
     
     # set color range
     global minColor, maxColor
-    minColor = (minH, 75, 40)
+    minColor = (minH, minS, minV)
     maxColor = (maxH, 255, 255)
-    # print("auto:", minColor, maxColor)
-    
-    # visualize S-V histogram
-    mask = cv2.inRange(hsv, minColor, maxColor)
+    print("auto:", minColor, maxColor)
     
     
     end = time.perf_counter()
