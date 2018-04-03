@@ -10,7 +10,7 @@ import argparse
 import sys
 
 def fadeHSV(image, mask):
-    fade = cv2.multiply(image, (0.3,))
+    fade = cv2.multiply(image, (0.7,))
     cv2.subtract(image, fade, image, cv2.bitwise_not(mask))
 
 def processMask(mask, closeSize=4, openSize=2):
@@ -250,37 +250,53 @@ def computeHueRange(hsv):
     return min0*2, min1*2, bestMax*2
 
 SCALE = 8
-histTotal = np.zeros((256//SCALE, 256//SCALE))
+H_BINS = 256//SCALE
 hists = collections.deque(maxlen=15)
+
 def svHist(hsv, mask, peakHue):
     # compute histogram
-    global histTotal
     hsv = hsv[mask > 128]
     weights = hsv[:,0] - peakHue
-    weights = 1 / (0.1 + weights*weights)
-    hist, _, _ = np.histogram2d(hsv[:,2], hsv[:,1], weights=weights, bins=256//SCALE, range=[[0,255],[0,255]])
-    histTotal += hist
+    weights = 1 / (0.004 + weights*weights)
+    hist, _, _ = np.histogram2d(hsv[:,2], hsv[:,1], weights=weights, bins=H_BINS, range=[[0,255],[0,255]])
     hists.append(hist)
     
     # normalize
-    # hist = histTotal # uncomment to show total accumulated histogram
     hist = np.sum(hists, axis=0)
-    hist = (hist*255/np.max(hist)).astype(np.uint8)
+    cv2.GaussianBlur(hist, (3,3), 0.5, hist)
+    hist = hist/hist.max() # normalize
     
-    # create mask
-    cv2.GaussianBlur(hist, (3,3), 2.5, hist)
-    mask = cv2.inRange(hist, 15, 255)
-    # cv2.erode(mask, cv2.getStructuringElement(cv2.MORPH_RECT, (2,2)), mask)
+    def tryThreshold(thresh):
+        # create mask
+        mask = cv2.inRange(hist, thresh, 999999)
+        # cv2.erode(mask, cv2.getStructuringElement(cv2.MORPH_RECT, (2,2)), mask)
+        
+        # find best contour
+        _, contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        if len(contours) == 0:
+            return None, 0, mask
+        
+        def contourScore(c):
+            cMask = np.zeros((H_BINS,H_BINS), dtype=np.uint8)
+            cv2.drawContours(cMask, [c], 0, 255, cv2.FILLED)
+            integral = hist[cMask>128].sum()
+            x,y,w,h = cv2.boundingRect(c)
+            d = (x+w/2) + (y+h/2) # distance along diagonal
+            return integral + d*0.5
+        scores = [contourScore(c) for c in contours]
+        bestIndex = np.argmax(scores)
+        return contours[bestIndex], scores[bestIndex], mask
     
-    # find biggest contour and bounding rectangle
-    _, contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    # def contourScore(c):
-    #     # TAKE INTO ACCOUNT POSITION
-    biggestI = np.argmax([cv2.contourArea(c) for c in contours])
-    x,y,w,h = cv2.boundingRect(contours[biggestI])
+    contour, score, mask = tryThreshold(0.08)
+    
+    cv2.imshow("mask", cv2.resize(mask, (512,512), interpolation=cv2.INTER_NEAREST))
+    
+    # get bounding rect
+    x,y,w,h = cv2.boundingRect(contour)
     
     # display
-    hist = cv2.resize(hist, (512,512), interpolation=cv2.INTER_NEAREST)
+    # hist = mask.astype(np.float)/255
+    hist = cv2.resize((hist*255).astype(np.uint8), (512,512), interpolation=cv2.INTER_NEAREST)
     hist = cv2.cvtColor(hist, cv2.COLOR_GRAY2BGR)
     cv2.rectangle(hist, (x*SCALE*2,y*SCALE*2), ((x+w)*SCALE*2,(y+h)*SCALE*2), (0,255,0))
     cv2.imshow("SV histogram", hist)
@@ -302,14 +318,13 @@ def autoSetColor(input):
     
     # process/visualize S-V histogram
     mask = cv2.inRange(hsv, (minH, 40, 40), (maxH, 255, 255))
-    # cv2.imshow("mask", mask)
     minS,maxS,minV,maxV = svHist(hsv, mask, peakHue)
     
     # set color range
     global minColor, maxColor
     minColor = (minH, minS, minV)
     maxColor = (maxH, 255, 255)
-    print("auto:", minColor, maxColor)
+    # print("auto:", minColor, maxColor)
     
     
     end = time.perf_counter()
