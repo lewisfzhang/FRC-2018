@@ -18,6 +18,7 @@ import java.util.List;
 public class TrajectoryGenerator {
     private static final double kMaxVelocity = 120.0;
     private static final double kMaxAccel = 100.0;
+    private static final double kMaxCentripetalAccelElevatorDown = 100.0;
     private static final double kMaxCentripetalAccel = 80.0;
     private static final double kMaxVoltage = 9.0;
 
@@ -73,45 +74,61 @@ public class TrajectoryGenerator {
     // +y is to the left.
     // ALL POSES DEFINED FOR THE CASE THAT ROBOT STARTS ON RIGHT! (mirrored about +x axis for LEFT)
     public static final Pose2d kSideStartPose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(180.0));
-    public static final Pose2d kNearScaleEmptyPose = new Pose2d(new Translation2d(250.0, 32.0), Rotation2d
+    public static final Pose2d kNearScaleEmptyPose = new Pose2d(new Translation2d(253.0, 28.0), Rotation2d
             .fromDegrees(10.0+180.0));
-    public static final Pose2d kNearScaleFullPose = new Pose2d(new Translation2d(250.0, 32.0), Rotation2d.fromDegrees
+    public static final Pose2d kNearScaleFullPose = new Pose2d(new Translation2d(253.0, 28.0), Rotation2d.fromDegrees
             (15.0+180.0));
 
-    public static final Pose2d kNearScaleFullPose1 = new Pose2d(new Translation2d(250.0, 32.0), Rotation2d.fromDegrees
+    public static final Pose2d kNearScaleFullPose1 = new Pose2d(new Translation2d(253.0, 28.0 + 2.0), Rotation2d.fromDegrees
             (15.0+180.0));
 
-    public static final Pose2d kNearScaleFullPose2 = new Pose2d(new Translation2d(250.0, 32.0), Rotation2d.fromDegrees
+    public static final Pose2d kNearScaleFullPose2 = new Pose2d(new Translation2d(253.0, 28.0 + 4.0), Rotation2d.fromDegrees
             (15.0+180.0));
 
-    public static final Pose2d kFarScaleEmptyPose = new Pose2d(new Translation2d(250.0, 225.0), Rotation2d
+    public static final Pose2d kNearScaleEndPose = new Pose2d(new Translation2d(220.0, 0.0), Rotation2d.fromDegrees
+            (45.0));
+
+    public static final Pose2d kFarScaleEmptyPose = new Pose2d(new Translation2d(254.0, 201.0), Rotation2d
             .fromDegrees(-10.0+180.0));
-    public static final Pose2d kFarScaleFullPose = new Pose2d(new Translation2d(250.0, 225.0), Rotation2d.fromDegrees
+    public static final Pose2d kFarScaleFullPose = new Pose2d(new Translation2d(254.0, 202.0), Rotation2d.fromDegrees
             (-15.0+180.0));
-    public static final Pose2d kFarScaleFullPose1 = new Pose2d(new Translation2d(250.0, 225.0), Rotation2d.fromDegrees
+    public static final Pose2d kFarScaleFullPose1 = new Pose2d(new Translation2d(254.0, 202.0 - 2.0), Rotation2d.fromDegrees
             (-15.0+180.0));
-    public static final Pose2d kFarScaleFullPose2 = new Pose2d(new Translation2d(250.0, 225.0), Rotation2d.fromDegrees
+    public static final Pose2d kFarScaleFullPose2 = new Pose2d(new Translation2d(254.0, 202.0 - 4.0), Rotation2d.fromDegrees
             (-15.0+180.0));
 
-    public static final Pose2d kNearFence1Pose = new Pose2d(new Translation2d(199.0, 42.0), Rotation2d.fromDegrees
-            (-45.0+180.0));
-    public static final Pose2d kNearFence2Pose = new Pose2d(new Translation2d(199.0, 42.0 + 28.0), Rotation2d
-            .fromDegrees(-45.0+180.0));
-    public static final Pose2d kNearFence3Pose = new Pose2d(new Translation2d(197.0, 42.0 + 28.0 * 2), Rotation2d
-            .fromDegrees(-45.0+180.0));
+    public static final Pose2d kCenterToIntake = new Pose2d(new Translation2d(-24.0, 0.0), Rotation2d.identity());
 
-    public static final Pose2d kFarFence1Pose = new Pose2d(new Translation2d(199.0, 215.0), Rotation2d.fromDegrees
-            (45.0+180.0));
-    public static final Pose2d kFarFence2Pose = new Pose2d(new Translation2d(199.0, 215.0 - 28.0), Rotation2d
-            .fromDegrees(45.0+180.0));
-    public static final Pose2d kFarFence3Pose = new Pose2d(new Translation2d(197.0, 215.0 - 28.0 * 2), Rotation2d
-            .fromDegrees(45.0+180.0));
+    public static final Pose2d kNearCube1Pose = new Pose2d(new Translation2d(182.0, 46.0), Rotation2d.fromDegrees(180.0 - 25.0));
+    public static final Pose2d kNearCube2Pose = new Pose2d(new Translation2d(182.0, 46.0 + 30.0 + 12.0), Rotation2d.fromDegrees(180.0 - 65.0));
+    public static final Pose2d kNearCube3Pose = new Pose2d(new Translation2d(179.0, 46.0 + 30.0 * 2 + 12.0), Rotation2d.fromDegrees(180.0 - 65.0));
+
+    public static final Pose2d kNearFence1Pose = kNearCube1Pose.transformBy(kCenterToIntake);
+    public static final Pose2d kNearFence2Pose = kNearCube2Pose.transformBy(kCenterToIntake);
+    public static final Pose2d kNearFence3Pose = kNearCube3Pose.transformBy(kCenterToIntake);
+
+    public static final Pose2d kFarCube1Pose = new Pose2d(new Translation2d(183.0, 187.0), Rotation2d.fromDegrees(180.0 + 25.0));
+    public static final Pose2d kFarCube2Pose = new Pose2d(new Translation2d(184.5, 190.0 - 30.0 - 12.0), Rotation2d.fromDegrees(180.0 + 65.0));
+    public static final Pose2d kFarCube3Pose = new Pose2d(new Translation2d(179.0, 200.0 - 30.0 * 2 - 12.0), Rotation2d.fromDegrees(180.0 + 65.0));
+
+    public static final Pose2d kFarFence1Pose = kFarCube1Pose.transformBy(kCenterToIntake);
+    public static final Pose2d kFarFence2Pose = kFarCube2Pose.transformBy(kCenterToIntake);
+    public static final Pose2d kFarFence3Pose = kFarCube3Pose.transformBy(kCenterToIntake);
 
     // STARTING IN CENTER
-    public static final Pose2d kCenterStartPose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(180.0));
-    public static final Pose2d kLeftSwitchPose = new Pose2d(new Translation2d(100, 60.0), Rotation2d.fromDegrees(0.0+180.0));
-    public static final Pose2d kRightSwitchPose = new Pose2d(new Translation2d(100, -46.0), Rotation2d.fromDegrees
-            (0.0+180.0));
+    public static final Pose2d kCenterStartPose = new Pose2d(0.0, -2.0, Rotation2d.fromDegrees(180.0));
+    public static final Pose2d kLeftSwitchPose = new Pose2d(new Translation2d(100.0, 60.0), Rotation2d.fromDegrees(0.0+180.0));
+    public static final Pose2d kRightSwitchPose = new Pose2d(new Translation2d(100.0, -60.0), Rotation2d.fromDegrees(0.0+180.0));
+
+    public static final Pose2d kPyramidCubePose = new Pose2d(new Translation2d(82.0, 5.0), Rotation2d.fromDegrees(0.0 + 60.0))
+            .transformBy(kCenterToIntake);
+    public static final Pose2d kPyramidCube1Pose = new Pose2d(new Translation2d(82.0 + 15.5, 7.5), Rotation2d.fromDegrees(0.0 + 60.0))
+            .transformBy(kCenterToIntake);
+    public static final Pose2d kPyramidCube2Pose = new Pose2d(new Translation2d(82.0 + 14.0, 6.0 - 2.0), Rotation2d.fromDegrees(0.0 + 60.0))
+            .transformBy(kCenterToIntake);
+
+    public static final Pose2d kSimpleSwitchEndPose = new Pose2d(new Translation2d(200, -120.0), Rotation2d.fromDegrees(180.0 + 25.0))
+            .transformBy(kCenterToIntake);
 
     public class TrajectorySet {
         public class MirroredTrajectory {
@@ -139,6 +156,7 @@ public class TrajectoryGenerator {
         public final MirroredTrajectory nearFenceToNearScale;
         public final MirroredTrajectory nearFence2ToNearScale;
         public final MirroredTrajectory nearFence3ToNearScale;
+        public final MirroredTrajectory nearFence3ToEndPose;
         public final MirroredTrajectory farScaleToFarFence;
         public final MirroredTrajectory farScaleToFarFence2;
         public final MirroredTrajectory farScaleToFarFence3;
@@ -147,8 +165,15 @@ public class TrajectoryGenerator {
         public final MirroredTrajectory farFence3ToFarScale;
         public final MirroredTrajectory nearFenceToFarSwitch;
         public final MirroredTrajectory farFenceToNearSwitch;
+
         public final Trajectory<TimedState<Pose2dWithCurvature>> centerStartToLeftSwitch;
         public final Trajectory<TimedState<Pose2dWithCurvature>> centerStartToRightSwitch;
+        public final MirroredTrajectory switchToPyramidCube;
+        public final MirroredTrajectory pyramidCubeToSwitch;
+        public final MirroredTrajectory switchToPyramidCube1;
+        public final MirroredTrajectory pyramidCube1ToSwitch;
+        public final MirroredTrajectory switchToPyramidCube2;
+        public final MirroredTrajectory pyramidCube2ToCenterField;
 
         private TrajectorySet() {
             sideStartToNearScale = new MirroredTrajectory(getSideStartToNearScale());
@@ -160,6 +185,7 @@ public class TrajectoryGenerator {
             nearFenceToNearScale = new MirroredTrajectory(getNearFenceToNearScale());
             nearFence2ToNearScale = new MirroredTrajectory(getNearFence2ToNearScale());
             nearFence3ToNearScale = new MirroredTrajectory(getNearFence3ToNearScale());
+            nearFence3ToEndPose = new MirroredTrajectory(getNearFence3ToEndPose());
             farScaleToFarFence = new MirroredTrajectory(getFarScaleToFarFence());
             farScaleToFarFence2 = new MirroredTrajectory(getFarScaleToFarFence2());
             farScaleToFarFence3 = new MirroredTrajectory(getFarScaleToFarFence3());
@@ -170,8 +196,15 @@ public class TrajectoryGenerator {
             sideStartToFarSwitch = new MirroredTrajectory(getSideStartToFarSwitch());
             nearFenceToFarSwitch = new MirroredTrajectory(getNearFenceToFarSwitch());
             farFenceToNearSwitch = new MirroredTrajectory(getFarFenceToNearSwitch());
+
             centerStartToLeftSwitch = getCenterStartToLeftSwitch();
             centerStartToRightSwitch = getCenterStartToRightSwitch();
+            switchToPyramidCube = new MirroredTrajectory(getSwitchToPyramidCube());
+            pyramidCubeToSwitch = new MirroredTrajectory(getPyramidCubeToSwitch());
+            switchToPyramidCube1 = new MirroredTrajectory(getSwitchToPyramidCube1());
+            pyramidCube1ToSwitch = new MirroredTrajectory(getPyramidCube1ToSwitch());
+            switchToPyramidCube2 = new MirroredTrajectory(getSwitchToPyramidCube2());
+            pyramidCube2ToCenterField = new MirroredTrajectory(getPyramidCube2ToCenterField());
         }
 
         private Trajectory<TimedState<Pose2dWithCurvature>> getSideStartToNearScale() {
@@ -179,14 +212,13 @@ public class TrajectoryGenerator {
             waypoints.add(kSideStartPose);
             waypoints.add(kSideStartPose.transformBy(Pose2d.fromTranslation(new Translation2d(-120.0, 0.0))));
             waypoints.add(kNearScaleEmptyPose);
-            return generateTrajectory(true, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxCentripetalAccel)),
+            return generateTrajectory(true, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxCentripetalAccelElevatorDown)),
                     120.0, 140.0, kMaxVoltage);
         }
 
         private Trajectory<TimedState<Pose2dWithCurvature>> getNearScaleToNearFence() {
             List<Pose2d> waypoints = new ArrayList<>();
             waypoints.add(kNearScaleEmptyPose);
-            waypoints.add(kNearFence1Pose.transformBy(Pose2d.fromTranslation(new Translation2d(-12.0, 0.0))));
             waypoints.add(kNearFence1Pose);
 
             return generateTrajectory(false, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxCentripetalAccel)
@@ -196,7 +228,6 @@ public class TrajectoryGenerator {
         private Trajectory<TimedState<Pose2dWithCurvature>> getNearScaleToNearFence2() {
             List<Pose2d> waypoints = new ArrayList<>();
             waypoints.add(kNearScaleFullPose);
-            waypoints.add(kNearFence2Pose.transformBy(Pose2d.fromTranslation(new Translation2d(-12.0, 0.0))));
             waypoints.add(kNearFence2Pose);
 
             return generateTrajectory(false, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxCentripetalAccel)
@@ -206,7 +237,6 @@ public class TrajectoryGenerator {
         private Trajectory<TimedState<Pose2dWithCurvature>> getNearScaleToNearFence3() {
             List<Pose2d> waypoints = new ArrayList<>();
             waypoints.add(kNearScaleFullPose1);
-            waypoints.add(kNearFence3Pose.transformBy(Pose2d.fromTranslation(new Translation2d(-12.0, 0.0))));
             waypoints.add(kNearFence3Pose);
 
             return generateTrajectory(false, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxCentripetalAccel)
@@ -247,8 +277,8 @@ public class TrajectoryGenerator {
             // .fromDegrees(-10.0))));
             waypoints.add(kFarScaleEmptyPose);
 
-            return generateTrajectory(true, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxCentripetalAccel)),
-                    kMaxVelocity, kMaxAccel, kMaxVoltage);
+            return generateTrajectory(true, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxCentripetalAccelElevatorDown)),
+                    120.0, 140.0, kMaxVoltage);
         }
 
         private Trajectory<TimedState<Pose2dWithCurvature>> getSideStartToFarSwitch() {
@@ -262,7 +292,6 @@ public class TrajectoryGenerator {
         private Trajectory<TimedState<Pose2dWithCurvature>> getFarScaleToFarFence() {
             List<Pose2d> waypoints = new ArrayList<>();
             waypoints.add(kFarScaleEmptyPose);
-            waypoints.add(kFarFence1Pose.transformBy(Pose2d.fromTranslation(new Translation2d(-12.0, 0.0))));
             waypoints.add(kFarFence1Pose);
 
             return generateTrajectory(false, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxCentripetalAccel)),
@@ -272,7 +301,6 @@ public class TrajectoryGenerator {
         private Trajectory<TimedState<Pose2dWithCurvature>> getFarScaleToFarFence2() {
             List<Pose2d> waypoints = new ArrayList<>();
             waypoints.add(kFarScaleFullPose);
-            waypoints.add(kFarFence2Pose.transformBy(Pose2d.fromTranslation(new Translation2d(-12.0, 0.0))));
             waypoints.add(kFarFence2Pose);
 
             return generateTrajectory(false, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxCentripetalAccel)
@@ -282,7 +310,6 @@ public class TrajectoryGenerator {
         private Trajectory<TimedState<Pose2dWithCurvature>> getFarScaleToFarFence3() {
             List<Pose2d> waypoints = new ArrayList<>();
             waypoints.add(kFarScaleFullPose1);
-            waypoints.add(kFarFence3Pose.transformBy(Pose2d.fromTranslation(new Translation2d(-12.0, 0.0))));
             waypoints.add(kFarFence3Pose);
 
             return generateTrajectory(false, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxCentripetalAccel)
@@ -316,24 +343,6 @@ public class TrajectoryGenerator {
             ), kMaxVelocity, kMaxAccel, kMaxVoltage);
         }
 
-        private Trajectory<TimedState<Pose2dWithCurvature>> getCenterStartToLeftSwitch() {
-            List<Pose2d> waypoints = new ArrayList<>();
-            waypoints.add(kCenterStartPose);
-            waypoints.add(kLeftSwitchPose);
-
-            return generateTrajectory(true, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxCentripetalAccel)),
-                    kMaxVelocity, kMaxAccel, kMaxVoltage);
-        }
-
-        private Trajectory<TimedState<Pose2dWithCurvature>> getCenterStartToRightSwitch() {
-            List<Pose2d> waypoints = new ArrayList<>();
-            waypoints.add(kCenterStartPose);
-            waypoints.add(kRightSwitchPose);
-
-            return generateTrajectory(true, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxCentripetalAccel)),
-                    kMaxVelocity, kMaxAccel, kMaxVoltage);
-        }
-
         private Trajectory<TimedState<Pose2dWithCurvature>> getNearFenceToNearScale() {
             List<Pose2d> waypoints = new ArrayList<>();
             waypoints.add(kNearFence1Pose);
@@ -361,6 +370,15 @@ public class TrajectoryGenerator {
                     kMaxVelocity, kMaxAccel, kMaxVoltage);
         }
 
+        private Trajectory<TimedState<Pose2dWithCurvature>> getNearFence3ToEndPose() {
+            List<Pose2d> waypoints = new ArrayList<>();
+            waypoints.add(kNearFence3Pose);
+            waypoints.add(kNearScaleEndPose);
+
+            return generateTrajectory(true, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxCentripetalAccel)),
+                    kMaxVelocity, kMaxAccel, kMaxVoltage);
+        }
+
         private Trajectory<TimedState<Pose2dWithCurvature>> getFarFenceToNearSwitch() {
             List<Pose2d> waypoints = new ArrayList<>();
 
@@ -381,5 +399,83 @@ public class TrajectoryGenerator {
 
             return generateTrajectory(true, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxCentripetalAccel)), kMaxVelocity, kMaxAccel, kMaxVoltage);
         }
+
+
+
+        private Trajectory<TimedState<Pose2dWithCurvature>> getCenterStartToLeftSwitch() {
+            List<Pose2d> waypoints = new ArrayList<>();
+            waypoints.add(kCenterStartPose);
+            waypoints.add(kLeftSwitchPose);
+
+            return generateTrajectory(true, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxCentripetalAccel)),
+                    kMaxVelocity, kMaxAccel, kMaxVoltage);
+        }
+
+        private Trajectory<TimedState<Pose2dWithCurvature>> getCenterStartToRightSwitch() {
+            List<Pose2d> waypoints = new ArrayList<>();
+            waypoints.add(kCenterStartPose);
+            waypoints.add(kRightSwitchPose);
+
+            return generateTrajectory(true, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxCentripetalAccel)),
+                    kMaxVelocity, kMaxAccel, kMaxVoltage);
+        }
+
+        private Trajectory<TimedState<Pose2dWithCurvature>> getSwitchToPyramidCube() {
+            List<Pose2d> waypoints = new ArrayList<>();
+            waypoints.add(kRightSwitchPose);
+            waypoints.add(kPyramidCubePose.transformBy(Pose2d.fromTranslation(new Translation2d(-12.0, 0.0))));
+            waypoints.add(kPyramidCubePose);
+
+            return generateTrajectory(false, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxCentripetalAccel)),
+                    kMaxVelocity, kMaxAccel, kMaxVoltage);
+        }
+
+        private Trajectory<TimedState<Pose2dWithCurvature>> getPyramidCubeToSwitch() {
+            List<Pose2d> waypoints = new ArrayList<>();
+            waypoints.add(kPyramidCubePose);
+            waypoints.add(kRightSwitchPose);
+
+            return generateTrajectory(true, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxCentripetalAccel)),
+                    kMaxVelocity, kMaxAccel, kMaxVoltage);
+        }
+
+        private Trajectory<TimedState<Pose2dWithCurvature>> getSwitchToPyramidCube1() {
+            List<Pose2d> waypoints = new ArrayList<>();
+            waypoints.add(kRightSwitchPose);
+            waypoints.add(kPyramidCube1Pose.transformBy(Pose2d.fromTranslation(new Translation2d(-12.0, 0.0))));
+            waypoints.add(kPyramidCube1Pose);
+
+            return generateTrajectory(false, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxCentripetalAccel)),
+                    kMaxVelocity, kMaxAccel, kMaxVoltage);
+        }
+
+        private Trajectory<TimedState<Pose2dWithCurvature>> getPyramidCube1ToSwitch() {
+            List<Pose2d> waypoints = new ArrayList<>();
+            waypoints.add(kPyramidCube1Pose);
+            waypoints.add(kRightSwitchPose);
+
+            return generateTrajectory(true, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxCentripetalAccel)),
+                    kMaxVelocity, kMaxAccel, kMaxVoltage);
+        }
+
+        private Trajectory<TimedState<Pose2dWithCurvature>> getSwitchToPyramidCube2() {
+            List<Pose2d> waypoints = new ArrayList<>();
+            waypoints.add(kRightSwitchPose);
+            waypoints.add(kPyramidCube2Pose.transformBy(Pose2d.fromTranslation(new Translation2d(-12.0, 0.0))));
+            waypoints.add(kPyramidCube2Pose);
+
+            return generateTrajectory(false, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxCentripetalAccel)),
+                    kMaxVelocity, kMaxAccel, kMaxVoltage);
+        }
+
+        private Trajectory<TimedState<Pose2dWithCurvature>> getPyramidCube2ToCenterField() {
+            List<Pose2d> waypoints = new ArrayList<>();
+            waypoints.add(kPyramidCube1Pose);
+            waypoints.add(kSimpleSwitchEndPose);
+
+            return generateTrajectory(true, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxCentripetalAccel)),
+                    kMaxVelocity, kMaxAccel, kMaxVoltage);
+        }
+
     }
 }

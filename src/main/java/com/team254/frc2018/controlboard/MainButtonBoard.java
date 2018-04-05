@@ -130,4 +130,9 @@ public class MainButtonBoard implements IButtonControlBoard {
     public boolean getElevatorHighShift() {
         return false;
     }
+
+    @Override
+    public boolean getWantsCubeLEDBlink() {
+        return false;
+    }
 }

@@ -49,4 +49,7 @@ public interface IButtonControlBoard {
 
     boolean getElevatorLowShift();
     boolean getElevatorHighShift();
+
+    // LED
+    boolean getWantsCubeLEDBlink();
 }
