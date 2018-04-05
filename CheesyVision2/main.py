@@ -338,6 +338,9 @@ def autoSetColor(input):
     # process/visualize S-V histogram
     mask = cv2.inRange(hsv, (minH, 40, 40), (maxH, 255, 255))
     minS,maxS,minV,maxV = svHist(hsv, mask, peakHue)
+    if args.debug_hue_mask:
+        scaledMask = cv2.resize(mask, (0,0), fx=args.roi_scale, fy=args.roi_scale, interpolation=cv2.INTER_NEAREST)
+        cv2.imshow("hue mask", scaledMask)
     
     # set color range
     global minColor, maxColor
@@ -494,6 +497,7 @@ parser.add_argument("--csv-output", type=argparse.FileType("w"), metavar="FILE",
 debugGroup = parser.add_argument_group(title="debug flags")
 debugGroup.add_argument("--debug-histograms", action="store_true", help="show the hue and saturation-value histograms")
 debugGroup.add_argument("--debug-mask", action="store_true", help="show the thresholded color mask")
+debugGroup.add_argument("--debug-hue-mask", action="store_true", help="show the hue mask")
 debugGroup.add_argument("--debug-timing", action="store_true", help="print how long various operations take")
 args = parser.parse_args()
 
