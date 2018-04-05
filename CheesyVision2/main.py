@@ -229,7 +229,7 @@ def getClosestMinRight(hist, maxI):
     return minI
 
 lastMax, lastMin0, lastMin1 = None, None, None
-MIN_HUE, TARGET_HUE, MAX_HUE = 126, 138, 154
+MIN_HUE, TARGET_HUE, MAX_HUE = 126, 138, 164
 def computeHueRange(hsv):
     start = time.perf_counter()
     
