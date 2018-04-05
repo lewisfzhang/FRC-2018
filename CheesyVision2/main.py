@@ -305,7 +305,7 @@ def svHist(hsv, mask, peakHue):
         bestIndex = np.argmax(scores)
         return contours[bestIndex], scores[bestIndex], mask
     
-    contour, score, mask = tryThreshold(0.07)
+    contour, score, mask = tryThreshold(np.percentile(hist, 90))
     
     if args.debug_histograms:
         cv2.imshow("SV mask", cv2.resize(mask, (512,512), interpolation=cv2.INTER_NEAREST))
