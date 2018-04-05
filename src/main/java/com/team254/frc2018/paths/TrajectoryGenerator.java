@@ -74,27 +74,27 @@ public class TrajectoryGenerator {
     // +y is to the left.
     // ALL POSES DEFINED FOR THE CASE THAT ROBOT STARTS ON RIGHT! (mirrored about +x axis for LEFT)
     public static final Pose2d kSideStartPose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(180.0));
-    public static final Pose2d kNearScaleEmptyPose = new Pose2d(new Translation2d(250.0, 28.0), Rotation2d
+    public static final Pose2d kNearScaleEmptyPose = new Pose2d(new Translation2d(253.0, 28.0), Rotation2d
             .fromDegrees(10.0+180.0));
-    public static final Pose2d kNearScaleFullPose = new Pose2d(new Translation2d(251.0, 28.0), Rotation2d.fromDegrees
+    public static final Pose2d kNearScaleFullPose = new Pose2d(new Translation2d(253.0, 28.0), Rotation2d.fromDegrees
             (15.0+180.0));
 
-    public static final Pose2d kNearScaleFullPose1 = new Pose2d(new Translation2d(251.0, 28.0 + 2.0), Rotation2d.fromDegrees
+    public static final Pose2d kNearScaleFullPose1 = new Pose2d(new Translation2d(253.0, 28.0 + 2.0), Rotation2d.fromDegrees
             (15.0+180.0));
 
-    public static final Pose2d kNearScaleFullPose2 = new Pose2d(new Translation2d(251.0, 28.0 + 4.0), Rotation2d.fromDegrees
+    public static final Pose2d kNearScaleFullPose2 = new Pose2d(new Translation2d(253.0, 28.0 + 4.0), Rotation2d.fromDegrees
             (15.0+180.0));
 
     public static final Pose2d kNearScaleEndPose = new Pose2d(new Translation2d(220.0, 0.0), Rotation2d.fromDegrees
             (45.0));
 
-    public static final Pose2d kFarScaleEmptyPose = new Pose2d(new Translation2d(251.0, 201.0), Rotation2d
+    public static final Pose2d kFarScaleEmptyPose = new Pose2d(new Translation2d(254.0, 201.0), Rotation2d
             .fromDegrees(-10.0+180.0));
-    public static final Pose2d kFarScaleFullPose = new Pose2d(new Translation2d(251.0, 202.0), Rotation2d.fromDegrees
+    public static final Pose2d kFarScaleFullPose = new Pose2d(new Translation2d(254.0, 202.0), Rotation2d.fromDegrees
             (-15.0+180.0));
-    public static final Pose2d kFarScaleFullPose1 = new Pose2d(new Translation2d(251.0, 202.0 - 2.0), Rotation2d.fromDegrees
+    public static final Pose2d kFarScaleFullPose1 = new Pose2d(new Translation2d(254.0, 202.0 - 2.0), Rotation2d.fromDegrees
             (-15.0+180.0));
-    public static final Pose2d kFarScaleFullPose2 = new Pose2d(new Translation2d(251.0, 202.0 - 4.0), Rotation2d.fromDegrees
+    public static final Pose2d kFarScaleFullPose2 = new Pose2d(new Translation2d(254.0, 202.0 - 4.0), Rotation2d.fromDegrees
             (-15.0+180.0));
 
     public static final Pose2d kCenterToIntake = new Pose2d(new Translation2d(-24.0, 0.0), Rotation2d.identity());
