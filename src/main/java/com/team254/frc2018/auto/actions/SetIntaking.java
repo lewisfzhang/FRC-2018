@@ -5,12 +5,14 @@ import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.frc2018.subsystems.Intake;
 import com.team254.frc2018.subsystems.Superstructure;
 import com.team254.lib.util.TimeDelayedBoolean;
+import edu.wpi.first.wpilibj.Timer;
 
 public class SetIntaking implements Action {
     private static final Superstructure mSuperstructure = Superstructure.getInstance();
     private static final Intake mIntake = Intake.getInstance();
 
     private final boolean mWaitUntilHasCube;
+    private double mStartTime;
     private final boolean mMoveToIntakingPosition;
     private final TimeDelayedBoolean mDebounce = new TimeDelayedBoolean();
 
@@ -24,9 +26,9 @@ public class SetIntaking implements Action {
         if(mMoveToIntakingPosition) {
             mSuperstructure.setDesiredAngle(SuperstructureConstants.kIntakePositionAngle);
             mSuperstructure.setDesiredHeight(SuperstructureConstants.kIntakeFloorLevelHeight);
-        } else {
-            mIntake.getOrKeepCube();
         }
+        mIntake.getOrKeepCube();
+        mStartTime = Timer.getFPGATimestamp();
     }
 
     @Override
@@ -39,7 +41,11 @@ public class SetIntaking implements Action {
     @Override
     public boolean isFinished() {
         if(mWaitUntilHasCube) {
-            return mDebounce.update(mIntake.hasCube(), .1);
+            boolean timedOut = Timer.getFPGATimestamp() - mStartTime > 0.5;
+            if(timedOut) {
+                System.out.println("Timed out!!!!!");
+            }
+            return mDebounce.update(mIntake.hasCube(), .1) || timedOut;
         } else {
             return true;
         }

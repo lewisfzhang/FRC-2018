@@ -62,6 +62,10 @@ public class AutoFieldState {
         opponentSwitchSide = s2;
         return true;
     }
+
+    public boolean isValid() {
+        return scaleSide != null && ourSwitchSide != null;
+    }
     
     public boolean setSides() {
         return setSides(DriverStation.getInstance().getGameSpecificMessage());

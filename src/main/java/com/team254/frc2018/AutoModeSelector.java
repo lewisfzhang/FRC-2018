@@ -68,11 +68,11 @@ public class AutoModeSelector {
 
     }
 
-    public void updateModeCreator(boolean force_reset) {
+    public void updateModeCreator() {
         DesiredMode desiredMode = mModeChooser.getSelected();
         StartingPosition staringPosition = mStartPositionChooser.getSelected();
         SwitchScalePosition switchScalePosition = mSwitchScalePositionChooser.getSelected();
-        if(mCachedDesiredMode != desiredMode || staringPosition != mCachedStartingPosition || switchScalePosition != mCachedSwitchScalePosition || force_reset) {
+        if(mCachedDesiredMode != desiredMode || staringPosition != mCachedStartingPosition || switchScalePosition != mCachedSwitchScalePosition) {
             System.out.println("Auto selection changed, updating creator: desiredMode->" + desiredMode.name() + ", starting position->" + staringPosition.name() + ", switch/scale position->" + switchScalePosition.name());
             mCreator = getCreatorForParams(desiredMode, staringPosition);
             mOverrideFieldState = getFieldStateForParams(switchScalePosition);
@@ -141,5 +141,8 @@ public class AutoModeSelector {
         }
     }
 
+    public boolean overrideFMSFieldState() {
+        return mOverrideFieldState.isPresent() && mCachedSwitchScalePosition != SwitchScalePosition.USE_FMS_DATA;
+    }
 
 }

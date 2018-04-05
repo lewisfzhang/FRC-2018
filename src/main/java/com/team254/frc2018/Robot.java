@@ -11,10 +11,7 @@ import com.team254.frc2018.statemachines.SuperstructureStateMachine;
 import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.frc2018.subsystems.*;
 import com.team254.lib.geometry.Pose2d;
-import com.team254.lib.util.CheesyDriveHelper;
-import com.team254.lib.util.CrashTracker;
-import com.team254.lib.util.LatchedBoolean;
-import com.team254.lib.util.MinTimeBoolean;
+import com.team254.lib.util.*;
 import edu.wpi.cscore.MjpegServer;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.VideoMode;
@@ -86,7 +83,7 @@ public class Robot extends IterativeRobot {
         try {
             //init camera stream
             UsbCamera camera = CameraServer.getInstance().startAutomaticCapture();
-            camera.setVideoMode(VideoMode.PixelFormat.kMJPEG, 320, 240, 30);
+            camera.setVideoMode(VideoMode.PixelFormat.kMJPEG, 320, 240, 15);
             MjpegServer cameraServer = new MjpegServer("serve_USB Camera 0", Constants.kCameraStreamPort);
             cameraServer.setSource(camera);
 
@@ -103,6 +100,7 @@ public class Robot extends IterativeRobot {
             mRunIntakeReleased.update(true);
             mShootReleased.update(true);
 
+            mAutoModeSelector.updateModeCreator();
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
             throw t;
@@ -126,8 +124,8 @@ public class Robot extends IterativeRobot {
 
             // Reset all auto mode state.
             mAutoModeSelector.reset();
+            mAutoModeSelector.updateModeCreator();
             mAutoModeExecuter = new AutoModeExecuter();
-            mAutoModeSelector.updateModeCreator(true);
 
             mDisabledLooper.start();
 
@@ -182,6 +180,8 @@ public class Robot extends IterativeRobot {
 
             mShootDelayed.update(false, Double.POSITIVE_INFINITY);
             mPoopyShootDelayed.update(false, Double.POSITIVE_INFINITY);
+            mDrive.setVelocity(DriveSignal.NEUTRAL, DriveSignal.NEUTRAL);
+            mDrive.setOpenLoop(new DriveSignal(0.05, 0.05));
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
             throw t;
@@ -198,9 +198,9 @@ public class Robot extends IterativeRobot {
             mDisabledLooper.stop();
             mEnabledLooper.stop();
 
-            mDrive.checkSystem();
-            mIntake.checkSystem();
-            mWrist.checkSystem();
+            //mDrive.checkSystem();
+            //mIntake.checkSystem();
+            //mWrist.checkSystem();
             mElevator.checkSystem();
 
         } catch (Throwable t) {
@@ -222,15 +222,16 @@ public class Robot extends IterativeRobot {
 
             // Poll FMS auto mode info and update mode creator cache
             mAutoFieldState.setSides(DriverStation.getInstance().getGameSpecificMessage());
-            mAutoModeSelector.updateModeCreator(false);
+            mAutoModeSelector.updateModeCreator();
 
-            Optional<AutoModeBase> autoMode = mAutoModeSelector.getAutoMode(mAutoFieldState);
-            if (autoMode.isPresent() && autoMode.get() != mAutoModeExecuter.getAutoMode()) {
-                System.out.println("Set auto mode to: " + autoMode.getClass().toString());
-                mAutoModeExecuter.setAutoMode(autoMode.get());
+            if (mAutoFieldState.isValid() || mAutoModeSelector.overrideFMSFieldState()) {
+                Optional<AutoModeBase> autoMode = mAutoModeSelector.getAutoMode(mAutoFieldState);
+                if (autoMode.isPresent() && autoMode.get() != mAutoModeExecuter.getAutoMode()) {
+                    System.out.println("Set auto mode to: " + autoMode.get().getClass().toString());
+                    mAutoModeExecuter.setAutoMode(autoMode.get());
+                }
+                System.gc();
             }
-
-            System.gc();
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
             throw t;
@@ -302,7 +303,14 @@ public class Robot extends IterativeRobot {
             } else {
                 mSuperstructure.setUnlockHookSolenoid(false);
                 mForklift.retract();
-                mLED.setWantedAction(LED.WantedAction.DISPLAY_INTAKE);
+
+                // LEDs
+
+                if (mControlBoard.getWantsCubeLEDBlink()) {
+                    mLED.setWantedAction(LED.WantedAction.DISPLAY_WANTS_CUBE);
+                } else {
+                    mLED.setWantedAction(LED.WantedAction.DISPLAY_INTAKE);
+                }
 
                 // Intake/Shoot
                 boolean runIntakePosition = mControlBoard.getIntakePosition() &&
@@ -335,7 +343,11 @@ public class Robot extends IterativeRobot {
                         }
                     }
                 } else if(poopyShoot) {
-                    mIntake.shoot(IntakeStateMachine.kPoopyShootSetpoint);
+                    if(mElevator.getInchesOffGround() < SuperstructureConstants.kSwitchHeight + 5.0 && mWrist.getAngle() < SuperstructureConstants.kWeakShootAngle) {
+                        mIntake.shoot(IntakeStateMachine.kExchangeShootSetpoint);
+                    } else {
+                        mIntake.shoot(IntakeStateMachine.kPoopyShootSetpoint);
+                    }
                 } else if (runIntakeReleased) {
                     if (mIntake.hasCube()) {
                         mIntake.getOrKeepCube();

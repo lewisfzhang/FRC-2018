@@ -51,9 +51,9 @@ public class Drive extends Subsystem {
         @Override
         public void onStart(double timestamp) {
             synchronized (Drive.this) {
-                setOpenLoop(DriveSignal.NEUTRAL);
+                setOpenLoop(new DriveSignal(0.05, 0.05));
                 setBrakeMode(false);
-                 startLogging();
+//                 startLogging();
             }
         }
 
@@ -188,6 +188,8 @@ public class Drive extends Subsystem {
             setBrakeMode(false);
             mAutoShift = true;
 
+            System.out.println("Switching to open loop");
+            System.out.println(signal);
             mDriveControlState = DriveControlState.OPEN_LOOP;
             mLeftMaster.configNeutralDeadband(0.04, 0);
             mRightMaster.configNeutralDeadband(0.04, 0);
@@ -201,7 +203,7 @@ public class Drive extends Subsystem {
     /**
      * Configures talons for velocity control
      */
-    private synchronized void setVelocity(DriveSignal signal, DriveSignal feedforward) {
+    public synchronized void setVelocity(DriveSignal signal, DriveSignal feedforward) {
         if (mDriveControlState != DriveControlState.PATH_FOLLOWING) {
             // We entered a velocity control state.
             setBrakeMode(true);
@@ -441,13 +443,15 @@ public class Drive extends Subsystem {
         if (mCSVWriter != null) {
             mCSVWriter.add(mPeriodicIO);
         }
+
+        // System.out.println("control state: " + mDriveControlState + ", left: " + mPeriodicIO.left_demand + ", right: " + mPeriodicIO.right_demand);
     }
 
     @Override
     public synchronized void writePeriodicOutputs() {
         if (mDriveControlState == DriveControlState.OPEN_LOOP) {
-            mLeftMaster.set(ControlMode.PercentOutput, mPeriodicIO.left_demand);
-            mRightMaster.set(ControlMode.PercentOutput, mPeriodicIO.right_demand);
+            mLeftMaster.set(ControlMode.PercentOutput, mPeriodicIO.left_demand, DemandType.ArbitraryFeedForward, 0.0);
+            mRightMaster.set(ControlMode.PercentOutput, mPeriodicIO.right_demand, DemandType.ArbitraryFeedForward, 0.0);
         } else {
             mLeftMaster.set(ControlMode.Velocity, mPeriodicIO.left_demand, DemandType.ArbitraryFeedForward,
                     mPeriodicIO.left_feedforward + Constants.kDriveLowGearVelocityKd * mPeriodicIO.left_accel / 1023.0);

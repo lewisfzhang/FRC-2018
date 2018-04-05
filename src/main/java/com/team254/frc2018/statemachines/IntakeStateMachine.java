@@ -9,7 +9,7 @@ public class IntakeStateMachine {
     public final static double kActuationTime = 0.0;
     public final static double kExchangeShootSetpoint = 1.0;
     public final static double kSwitchShootSetpoint = 0.65;
-    public final static double kStrongShootSetpoint = 0.85;
+    public final static double kStrongShootSetpoint = 0.65;
     public final static double kWeakShootSetpoint = .5;
     public final static double kPoopyShootSetpoint = .40;
     public final static double kIntakeCubeSetpoint = -1.0;

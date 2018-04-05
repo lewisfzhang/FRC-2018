@@ -157,7 +157,7 @@ public class DriveMotionPlanner implements CSVWritable {
 
         public Output(double left_velocity, double right_velocity, double left_accel, double right_accel,
                       double left_feedforward_voltage, double
-                right_feedforward_voltage) {
+                              right_feedforward_voltage) {
             this.left_velocity = left_velocity;
             this.right_velocity = right_velocity;
             this.left_accel = left_accel;
@@ -214,7 +214,8 @@ public class DriveMotionPlanner implements CSVWritable {
         final double right_voltage = dynamics.voltage.right + (wheel_velocities.right - dynamics.wheel_velocity
                 .right) / mModel.right_transmission().speed_per_volt();
 
-        return new Output(wheel_velocities.left, wheel_velocities.right, dynamics.wheel_acceleration.left, dynamics.wheel_acceleration.right, left_voltage, right_voltage);
+        return new Output(wheel_velocities.left, wheel_velocities.right, dynamics.wheel_acceleration.left, dynamics
+                .wheel_acceleration.right, left_voltage, right_voltage);
     }
 
     protected Output updatePurePursuit(DifferentialDrive.DriveDynamics dynamics, Pose2d current_state) {
@@ -255,7 +256,8 @@ public class DriveMotionPlanner implements CSVWritable {
 
         dynamics.chassis_velocity = adjusted_velocity;
         dynamics.wheel_velocity = mModel.solveInverseKinematics(adjusted_velocity);
-        return new Output(dynamics.wheel_velocity.left, dynamics.wheel_velocity.right, dynamics.wheel_acceleration.left, dynamics.wheel_acceleration.right, dynamics.voltage.left, dynamics.voltage.right);
+        return new Output(dynamics.wheel_velocity.left, dynamics.wheel_velocity.right, dynamics.wheel_acceleration
+                .left, dynamics.wheel_acceleration.right, dynamics.voltage.left, dynamics.voltage.right);
     }
 
     protected Output updateNonlinearFeedback(DifferentialDrive.DriveDynamics dynamics, Pose2d current_state) {
@@ -293,14 +295,18 @@ public class DriveMotionPlanner implements CSVWritable {
         dynamics.chassis_velocity = adjusted_velocity;
         dynamics.wheel_velocity = mModel.solveInverseKinematics(adjusted_velocity);
 
-        dynamics.chassis_acceleration.linear = t == 0 ? 0.0 : (dynamics.chassis_velocity.linear - prev_velocity_.linear) / t;
-        dynamics.chassis_acceleration.angular = t == 0 ? 0.0 : (dynamics.chassis_velocity.angular - prev_velocity_.angular) / t;
+        dynamics.chassis_acceleration.linear = t == 0 ? 0.0 : (dynamics.chassis_velocity.linear - prev_velocity_
+                .linear) / t;
+        dynamics.chassis_acceleration.angular = t == 0 ? 0.0 : (dynamics.chassis_velocity.angular - prev_velocity_
+                .angular) / t;
 
         prev_velocity_ = dynamics.chassis_velocity;
 
-        DifferentialDrive.WheelState feedforward_voltages = mModel.solveInverseDynamics(dynamics.chassis_velocity, dynamics.chassis_acceleration).voltage;
+        DifferentialDrive.WheelState feedforward_voltages = mModel.solveInverseDynamics(dynamics.chassis_velocity,
+                dynamics.chassis_acceleration).voltage;
 
-        return new Output(dynamics.wheel_velocity.left, dynamics.wheel_velocity.right, dynamics.wheel_acceleration.left, dynamics.wheel_acceleration.right, feedforward_voltages.left, feedforward_voltages.right);
+        return new Output(dynamics.wheel_velocity.left, dynamics.wheel_velocity.right, dynamics.wheel_acceleration
+                .left, dynamics.wheel_acceleration.right, feedforward_voltages.left, feedforward_voltages.right);
     }
 
     public Output update(double timestamp, Pose2d current_state) {
@@ -336,7 +342,8 @@ public class DriveMotionPlanner implements CSVWritable {
             mError = current_state.inverse().transformBy(mSetpoint.state().getPose());
 
             if (mFollowerType == FollowerType.FEEDFORWARD_ONLY) {
-                mOutput = new Output(dynamics.wheel_velocity.left, dynamics.wheel_velocity.right, dynamics.wheel_acceleration.left, dynamics.wheel_acceleration.right, dynamics.voltage
+                mOutput = new Output(dynamics.wheel_velocity.left, dynamics.wheel_velocity.right, dynamics
+                        .wheel_acceleration.left, dynamics.wheel_acceleration.right, dynamics.voltage
                         .left, dynamics.voltage.right);
             } else if (mFollowerType == FollowerType.PURE_PURSUIT) {
                 mOutput = updatePurePursuit(dynamics, current_state);

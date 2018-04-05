@@ -162,6 +162,12 @@ public class ControlBoard implements IControlBoard {
         return mButtonControlBoard.getElevatorHighShift();
     }
 
+    @Override
+    public boolean getWantsCubeLEDBlink() {
+        return mButtonControlBoard.getWantsCubeLEDBlink();
+    }
+
+    @Override
     public void setRumble(boolean on) {
         mButtonControlBoard.setRumble(on);
     }
