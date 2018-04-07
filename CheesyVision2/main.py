@@ -58,7 +58,8 @@ def getBlobs(input):
     return blobs, hsv, mask
 
 def process(input):
-    autoSetColor(input)
+    if not args.manual:
+        autoSetColor(input)
     height, width = input.shape[:2]
     
     global curFrame
@@ -486,6 +487,8 @@ optGroup.add_argument("-i", "--input-image", metavar="FILE", help="optional imag
 optGroup.add_argument("-v", "--input-video", metavar="FILE", help="optional video to use instead of a live camera")
 parser.add_argument("-s", "--scale", type=float, default=1.0, metavar="FACTOR",
                       help="amount to up/downsample each frame (optional)")
+parser.add_argument("-m", "--manual", action='store_true', default=False,
+                    help="set hue value manually")
 parser.add_argument("--hue-shift", type=float, default=0.0, metavar="DEGREES",
                       help="amount to shift the hue of each frame (optional)")
 parser.add_argument("--raw-scale", type=float, default=1.0, metavar="FACTOR",
