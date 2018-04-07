@@ -376,12 +376,11 @@ public class Wrist extends Subsystem {
                 sensorUnitsToDegrees(mPeriodicIO.active_trajectory_position) > Constants.kWristEpsilon) {
             double wristGravityComponent = Math.cos(Math.toRadians(getAngle())) * (mIntake.hasCube() ? Constants
                     .kWristKfMultiplierWithCube : Constants.kWristKfMultiplierWithoutCube);
-            wristGravityComponent = 0.0;
             double elevatorAccelerationComponent = mElevator.getActiveTrajectoryAccelG() * Constants
                     .kWristElevatorAccelerationMultiplier;
             double wristAccelerationComponent = mPeriodicIO.active_trajectory_acceleration_rad_per_s2 *
                     (mIntake.hasCube() ? Constants.kWristKaWithCube : Constants.kWristKaWithoutCube);
-            mPeriodicIO.feedforward = (elevatorAccelerationComponent + 1.0) * wristGravityComponent + wristAccelerationComponent;
+            mPeriodicIO.feedforward = (elevatorAccelerationComponent) * wristGravityComponent + wristAccelerationComponent;
         } else {
             mPeriodicIO.feedforward = 0.0;
         }
