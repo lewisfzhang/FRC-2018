@@ -135,12 +135,6 @@ public class Elevator extends Subsystem {
         TalonSRXUtil.checkError(
                 mMaster.configPeakCurrentDuration(200, Constants.kLongCANTimeoutMs),
                 "Could not set wrist peak current duration.");
-
-        TalonSRXUtil.checkError(
-                mMaster.configClosedloopRamp(
-                        Constants.kWristRampRate, Constants.kLongCANTimeoutMs),
-                "Could not set wrist voltage ramp rate: ");
-
         mMaster.enableCurrentLimit(true);
 
 

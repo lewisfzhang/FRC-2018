@@ -14,7 +14,7 @@ public class CarriageCanifier extends Subsystem {
     private CarriageCanifier() {
         mCanifier = new CANifier(Constants.kCanifierId);
         mCanifier.setStatusFramePeriod(CANifierStatusFrame.Status_1_General, 100, Constants.kLongCANTimeoutMs);
-        mCanifier.setStatusFramePeriod(CANifierStatusFrame.Status_2_General, 5, Constants.kLongCANTimeoutMs);
+        mCanifier.setStatusFramePeriod(CANifierStatusFrame.Status_2_General, 2, Constants.kLongCANTimeoutMs);
         mPeriodicInputs = new PeriodicInputs();
         mPeriodicOutputs = new PeriodicOutputs();
 
