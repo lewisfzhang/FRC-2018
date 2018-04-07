@@ -92,7 +92,7 @@ public class Constants {
 
     public static final double kWristKp = 3.0;
     public static final double kWristKi = 0.0;
-    public static final double kWristKd = 80.0;
+    public static final double kWristKd = 100.0;
     public static final double kWristKf = 1.0;
     public static final double kWristKaWithCube = 0.009;
     public static final double kWristKaWithoutCube = 0.003;
@@ -104,9 +104,9 @@ public class Constants {
     public static final int kWristMaxIntegralAccumulator = 500000; //todo: tune me
     public static final int kWristIZone = 500; //todo: tune me
     public static final int kWristDeadband = 5; //todo: tune me
-    public static final int kWristCruiseVelocity = 800; //todo: tune me
-    public static final int kWristAcceleration = 1000; //2000 //todo: tune me
-    public static final double kWristRampRate = 0.1;
+    public static final int kWristCruiseVelocity = 2000; //todo: tune me
+    public static final int kWristAcceleration = 2000; //2000 //todo: tune me
+    public static final double kWristRampRate = 0.01;
 
     // Do not change anything after this line unless you rewire the robot and
     // update the spreadsheet!
