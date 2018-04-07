@@ -106,7 +106,7 @@ public class Constants {
     public static final int kWristDeadband = 5; //todo: tune me
     public static final int kWristCruiseVelocity = 2000; //todo: tune me
     public static final int kWristAcceleration = 2000; //2000 //todo: tune me
-    public static final double kWristRampRate = 0.01;
+    public static final double kWristRampRate = 0.001;
 
     // Do not change anything after this line unless you rewire the robot and
     // update the spreadsheet!
