@@ -162,6 +162,8 @@ def process(input):
     drawText(debugStr, 10, int(height*args.roi_scale)-10, (0,255,0))
     if not NetworkTables.isConnected():
         drawText("Not Connected!", 10, int(height*args.roi_scale)-30, (0,0,255))
+    else:
+        drawText("Connected!", 10, int(height*args.roi_scale)-30, (0,255,0))
     
     # visualize the detected angle and state
     angle = getAngle()
@@ -517,12 +519,9 @@ args = parser.parse_args()
 if args.no_network:
     print("Skipping NetworkTables initialization")
 else:
-    robotIP = None
     print("Using: " + args.ip)
-    NetworkTables.initialize(server=robotIP)
+    NetworkTables.initialize(server=args.ip)
     smartDashboard = NetworkTables.getTable("SmartDashboard")
-
-
 
 #########################################
 ############### main code ###############
@@ -682,8 +681,12 @@ while True:
         sROI = tuple(int(v*args.raw_scale) for v in roi)
         cv2.rectangle(frameDisp, sROI[:2], sROI[2:], (0, 0, 255), 2)
     if not NetworkTables.isConnected():
-        cv2.putText(frameDisp, "NetworkTables is not connected", (10, height-10),
+        cv2.putText(frameDisp, "NetworkTables is not connected", (10, 20),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0,0,255), 1, cv2.LINE_AA)
+    else:
+      cv2.putText(frameDisp, "NetworkTables is connected", (10, 20),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0,255,0), 1, cv2.LINE_AA)
+
     if not gotROI:
         cv2.imshow("raw", frameDisp)
         cv2.setMouseCallback("raw", onMouse_raw)
