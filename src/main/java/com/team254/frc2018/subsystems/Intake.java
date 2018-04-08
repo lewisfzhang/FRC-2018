@@ -190,6 +190,10 @@ public class Intake extends Subsystem {
         mStateMachine.setWantedJawState(IntakeState.JawState.CLAMPED);
     }
 
+    public synchronized void forceClampJaw(boolean clamp) {
+        mStateMachine.forceClampJaw(clamp);
+    }
+
     public synchronized void closeJaw() {
         mStateMachine.setWantedJawState(IntakeState.JawState.CLOSED);
     }

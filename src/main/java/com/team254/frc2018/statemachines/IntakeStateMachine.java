@@ -36,9 +36,14 @@ public class IntakeStateMachine {
 
     private IntakeState.JawState mWantedJawState = IntakeState.JawState.CLAMPED;
     private double mWantedPower = 0.0;
+    private boolean mForceClamp = false;
 
     public synchronized void setWantedJawState(final IntakeState.JawState jaw_state) {
         mWantedJawState = jaw_state;
+    }
+
+    public synchronized void forceClampJaw(boolean clamp) {
+        mForceClamp = clamp;
     }
 
     public synchronized void setWantedPower(double power) {
@@ -120,7 +125,6 @@ public class IntakeStateMachine {
     private synchronized void getKeepingCubeCommandedState(IntakeState currentState, IntakeState commandedState, double timestamp) {
         commandedState.setPower(kIntakeCubeSetpoint);
         boolean clamp = (currentState.seesCube() && mWantedJawState != IntakeState.JawState.OPEN) || mustStayClosed(currentState);
-        final boolean open = !clamp && mWantedJawState == IntakeState.JawState.OPEN;
 
         boolean currentlySeeCube = currentState.seesCube();
         boolean resetSeenCubeTime = true;
@@ -147,7 +151,9 @@ public class IntakeStateMachine {
         } else {
             commandedState.setPower(kIntakeCubeSetpoint);
 
-            if (!Double.isNaN(mLastSeenCubeTime) &&
+            if(mForceClamp) {
+                commandedState.jawState = IntakeState.JawState.CLAMPED;
+            } else if (!Double.isNaN(mLastSeenCubeTime) &&
                     (timestamp - mLastSeenCubeTime < kUnclampWaitingTime)) {
                 commandedState.jawState = IntakeState.JawState.CLAMPED;
             } else {
