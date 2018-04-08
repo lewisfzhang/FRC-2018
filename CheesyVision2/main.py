@@ -160,6 +160,8 @@ def process(input):
     if fps is not None:
         debugStr += f" ({int(fps)} FPS)"
     drawText(debugStr, 10, int(height*args.roi_scale)-10, (0,255,0))
+    if not NetworkTables.isConnected():
+        drawText("Not Connected!", 10, int(height*args.roi_scale)-30, (0,0,255))
     
     # visualize the detected angle and state
     angle = getAngle()
