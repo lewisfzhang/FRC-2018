@@ -36,8 +36,9 @@ public class AutoModeSelector {
     private SwitchScalePosition mCachedSwitchScalePosition = null;
     private StartingPosition mCachedStartingPosition = null;
 
-    private Optional<AutoFieldState> mOverrideFieldState = Optional.empty();
     private Optional<AutoModeCreator> mCreator = Optional.empty();
+
+    private AutoFieldState mFieldState = AutoFieldState.getInstance();
 
     private SendableChooser<DesiredMode> mModeChooser;
     private SendableChooser<SwitchScalePosition> mSwitchScalePositionChooser;
@@ -75,7 +76,11 @@ public class AutoModeSelector {
         if(mCachedDesiredMode != desiredMode || staringPosition != mCachedStartingPosition || switchScalePosition != mCachedSwitchScalePosition) {
             System.out.println("Auto selection changed, updating creator: desiredMode->" + desiredMode.name() + ", starting position->" + staringPosition.name() + ", switch/scale position->" + switchScalePosition.name());
             mCreator = getCreatorForParams(desiredMode, staringPosition);
-            mOverrideFieldState = getFieldStateForParams(switchScalePosition);
+            if(switchScalePosition == SwitchScalePosition.USE_FMS_DATA) {
+                mFieldState.disableOverride();
+            } else {
+                setFieldOverride(switchScalePosition);
+            }
         }
         mCachedDesiredMode = desiredMode;
         mCachedStartingPosition = staringPosition;
@@ -101,25 +106,24 @@ public class AutoModeSelector {
         return Optional.empty();
     }
 
-    private Optional<AutoFieldState> getFieldStateForParams(SwitchScalePosition switchScalePosition) {
+    private void setFieldOverride(SwitchScalePosition switchScalePosition) {
         switch (switchScalePosition) {
             case LEFT_SWITCH_LEFT_SCALE:
-                return Optional.of(new AutoFieldState("LLL"));
+                mFieldState.overrideSides("LLL");
             case LEFT_SWITCH_RIGHT_SCALE:
-                return Optional.of(new AutoFieldState("LRL"));
+                mFieldState.overrideSides("LRL");
             case RIGHT_SWITCH_LEFT_SCALE:
-                return Optional.of(new AutoFieldState("RLR"));
+                mFieldState.overrideSides("RLR");
             case RIGHT_SWITCH_RIGHT_SCALE:
-                return Optional.of(new AutoFieldState("RRR"));
+                mFieldState.overrideSides("RRR");
             default:
                 break;
         }
-        return Optional.empty();
     }
 
     public void reset() {
         mCreator = Optional.empty();
-        mOverrideFieldState = Optional.empty();
+        mFieldState.disableOverride();
         mCachedDesiredMode = null;
     }
 
@@ -133,16 +137,10 @@ public class AutoModeSelector {
         if (!mCreator.isPresent()) {
             return Optional.empty();
         }
-        if(mCachedSwitchScalePosition != SwitchScalePosition.USE_FMS_DATA && mOverrideFieldState.isPresent()) {
+        if(fieldState.isOverridingGameData()) {
             System.out.println("Overriding FMS switch/scale positions!");
-            return Optional.of(mCreator.get().getStateDependentAutoMode(mOverrideFieldState.get()));
-        } else {
-            return Optional.of(mCreator.get().getStateDependentAutoMode(fieldState));
         }
-    }
-
-    public boolean overrideFMSFieldState() {
-        return mOverrideFieldState.isPresent() && mCachedSwitchScalePosition != SwitchScalePosition.USE_FMS_DATA;
+        return Optional.of(mCreator.get().getStateDependentAutoMode(fieldState));
     }
 
 }
