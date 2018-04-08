@@ -48,7 +48,7 @@ public class DriveMotionPlanner implements CSVWritable {
     Output mOutput = new Output();
 
     DifferentialDrive.ChassisState prev_velocity_ = new DifferentialDrive.ChassisState();
-    double t = 0.0;
+    double mDt = 0.0;
 
     public DriveMotionPlanner() {
         final DCMotorTransmission transmission = new DCMotorTransmission(
@@ -295,10 +295,10 @@ public class DriveMotionPlanner implements CSVWritable {
         dynamics.chassis_velocity = adjusted_velocity;
         dynamics.wheel_velocity = mModel.solveInverseKinematics(adjusted_velocity);
 
-        dynamics.chassis_acceleration.linear = t == 0 ? 0.0 : (dynamics.chassis_velocity.linear - prev_velocity_
-                .linear) / t;
-        dynamics.chassis_acceleration.angular = t == 0 ? 0.0 : (dynamics.chassis_velocity.angular - prev_velocity_
-                .angular) / t;
+        dynamics.chassis_acceleration.linear = mDt == 0 ? 0.0 : (dynamics.chassis_velocity.linear - prev_velocity_
+                .linear) / mDt;
+        dynamics.chassis_acceleration.angular = mDt == 0 ? 0.0 : (dynamics.chassis_velocity.angular - prev_velocity_
+                .angular) / mDt;
 
         prev_velocity_ = dynamics.chassis_velocity;
 
@@ -316,9 +316,9 @@ public class DriveMotionPlanner implements CSVWritable {
             mLastTime = timestamp;
         }
 
-        t = timestamp - mLastTime;
+        mDt = timestamp - mLastTime;
         mLastTime = timestamp;
-        TrajectorySamplePoint<TimedState<Pose2dWithCurvature>> sample_point = mCurrentTrajectory.advance(t);
+        TrajectorySamplePoint<TimedState<Pose2dWithCurvature>> sample_point = mCurrentTrajectory.advance(mDt);
         mSetpoint = sample_point.state();
 
         if (!mCurrentTrajectory.isDone()) {
