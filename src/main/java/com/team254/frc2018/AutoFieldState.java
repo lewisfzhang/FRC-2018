@@ -1,8 +1,5 @@
 package com.team254.frc2018;
 
-import com.team254.lib.geometry.Pose2d;
-
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
@@ -11,37 +8,22 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * and the state of each of the switch/scale plates.
  */
 public class AutoFieldState {
-    
-    /// TODO: fill in these values, and later replace with dynamic LIDAR reading
-    public static final Pose2d LEFT = new Pose2d();
-    public static final Pose2d CENTER = new Pose2d();
-    public static final Pose2d RIGHT = new Pose2d();
-    
+    private static AutoFieldState mInstance = null;
+
     public enum Side { LEFT, RIGHT }
     
-    protected Side ourSwitchSide, scaleSide, opponentSwitchSide;
-    protected Pose2d startPose;
-    
-    /**
-     * Initializes the start pose to null.
-     */
-    public AutoFieldState() {
-        startPose = null;
-    }
-    
-    /**
-     * Initializes the start pose to the given pose.
-     */
-    public AutoFieldState(Pose2d startPose) {
-        this.startPose = startPose;
+    private Side ourSwitchSide, scaleSide, opponentSwitchSide;
+    private Side overrideOurSwitchSide, overrideScaleSide, overrideOpponentSwitchSide;
+    private boolean overrideGameData = false;
+
+    private AutoFieldState() {
     }
 
-    /**
-     * Initializes switch/scale sides.
-     */
-    public AutoFieldState(String sideData) {
-        this.startPose = null;
-        setSides(sideData);
+    public synchronized static AutoFieldState getInstance() {
+        if (mInstance == null) {
+            mInstance = new AutoFieldState();
+        }
+        return mInstance;
     }
     
     /**
@@ -49,26 +31,61 @@ public class AutoFieldState {
      * If the message is invalid or null, returns false and leaves this
      * object unchanged; otherwise, on success, returns true.
      */
-    public boolean setSides(String gameData) {
-        if (gameData == null) return false;
+    public synchronized boolean setSides(String gameData) {
+        if (gameData == null) {
+            return false;
+        }
         gameData = gameData.trim();
-        if (gameData.length() != 3) return false;
+        if (gameData.length() != 3) {
+            return false;
+        }
         Side s0 = getCharSide(gameData.charAt(0));
         Side s1 = getCharSide(gameData.charAt(1));
         Side s2 = getCharSide(gameData.charAt(2));
-        if (s0 == null || s1 == null || s2 == null) return false;
+        if (s0 == null || s1 == null || s2 == null) {
+            return false;
+        }
         ourSwitchSide = s0;
         scaleSide = s1;
         opponentSwitchSide = s2;
         return true;
     }
 
-    public boolean isValid() {
-        return scaleSide != null && ourSwitchSide != null;
+    public synchronized boolean isValid() {
+        if(overrideGameData) {
+            return overrideScaleSide != null && overrideOurSwitchSide != null;
+        } else {
+            return scaleSide != null && ourSwitchSide != null;
+        }
     }
-    
-    public boolean setSides() {
-        return setSides(DriverStation.getInstance().getGameSpecificMessage());
+
+    public synchronized boolean overrideSides(String gameData) {
+        if (gameData == null) {
+            return false;
+        }
+        gameData = gameData.trim();
+        if (gameData.length() != 3) {
+            return false;
+        }
+        Side s0 = getCharSide(gameData.charAt(0));
+        Side s1 = getCharSide(gameData.charAt(1));
+        Side s2 = getCharSide(gameData.charAt(2));
+        if (s0 == null || s1 == null || s2 == null) {
+            return false;
+        }
+        overrideOurSwitchSide = s0;
+        overrideScaleSide = s1;
+        overrideOpponentSwitchSide = s2;
+        overrideGameData = true;
+        return true;
+    }
+
+    public synchronized void disableOverride() {
+        overrideGameData = false;
+    }
+
+    public synchronized boolean isOverridingGameData() {
+        return overrideGameData;
     }
     
     /** Helper method to convert 'L' or 'R' to their respective Side. */
@@ -79,36 +96,34 @@ public class AutoFieldState {
     /**
      * Returns which Side of our switch is our alliance's.
      */
-    public Side getOurSwitchSide() {
-        return ourSwitchSide;
+    public synchronized Side getOurSwitchSide() {
+        if(overrideGameData) {
+            return overrideOurSwitchSide;
+        } else {
+            return ourSwitchSide;
+        }
     }
     
     /**
      * Returns which Side of the scale is our alliance's.
      */
-    public Side getScaleSide() {
-        return scaleSide;
+    public synchronized Side getScaleSide() {
+        if(overrideGameData) {
+            return overrideScaleSide;
+        } else {
+            return scaleSide;
+        }
     }
     
     /**
      * Returns which Side of our opponent's switch is our alliance's.
      */
-    public Side getOpponentSwitchSide() {
-        return opponentSwitchSide;
-    }
-    
-    /**
-     * Sets the inital pose of the robot at the beginning of auton.
-     */
-    public void setStartPose(Pose2d startPose) {
-        this.startPose = startPose;
-    }
-    
-    /**
-     * Returns the inital pose of the robot at the beginning of auton.
-     */
-    public Pose2d getStartPose() {
-        return startPose;
+    public synchronized Side getOpponentSwitchSide() {
+        if(overrideGameData) {
+            return overrideOpponentSwitchSide;
+        } else {
+            return opponentSwitchSide;
+        }
     }
 
     public void outputToSmartDashboard() {
@@ -123,7 +138,6 @@ public class AutoFieldState {
                 "ourSwitchSide=" + ourSwitchSide +
                 ", scaleSide=" + scaleSide +
                 ", opponentSwitchSide=" + opponentSwitchSide +
-                ", startPose=" + startPose +
                 '}';
     }
 }
