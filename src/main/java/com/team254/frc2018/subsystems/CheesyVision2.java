@@ -54,29 +54,17 @@ public class CheesyVision2 extends Subsystem {
     }
 
     /**
-     * Enum that represents the current height of the scale, based on data sent by the CheesyVision2 python app over Network Tables
+     * @return the current thresholded "height" of the <em>right</em> scale
+     *         plate, as seen from the driver station (-1, 0, or +1)
      */
-    public enum ScaleHeight {
-        HIGH(SuperstructureConstants.kScaleHighHeight),
-        NEUTRAL(SuperstructureConstants.kScaleNeutralHeight),
-        LOW(SuperstructureConstants.kScaleLowHeight),
-        UNKNOWN(SuperstructureConstants.kScaleHighHeight); // Worst case: go to highest preset
-
-        private double mHeight;
-
-        ScaleHeight(double height) {
-            this.mHeight = height;
-        }
-
-        public double getHeight() {
-            return this.mHeight;
-        }
+    public double getTip() {
+        return tip;
     }
 
     /**
      * Enum that represents the current height of the scale, based on data sent by the CheesyVision2 python app over Network Tables
      */
-    public static enum ScaleHeight {
+    public enum ScaleHeight {
         HIGH(SuperstructureConstants.kScaleHighHeight, SuperstructureConstants.kScaleHighHeightBackwards),
         NEUTRAL(SuperstructureConstants.kScaleNeutralHeight, SuperstructureConstants.kScaleNeutralHeightBackwards),
         LOW(SuperstructureConstants.kScaleLowHeight, SuperstructureConstants.kScaleLowHeightBackwards),
