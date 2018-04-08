@@ -17,10 +17,10 @@ public class SuperstructureConstants {
     public final static double kStowedAngle = 90.0;
 
     // This is in inches / ~20ms
-    public final static double kElevatorJogThrottle = 30.0 / 50.0;
+    public final static double kElevatorJogThrottle = 60.0 / 50.0;
 
     // This is in degrees / ~20ms
-    public final static double kWristJogThrottle = 110.0 / 25.0;
+    public final static double kWristJogThrottle = 200.0 / 25.0;
 
     // In inches, the height to use the kPlacingHighAngle.
     public final static double kPlacingHighThreshold = 33.0;
@@ -32,7 +32,7 @@ public class SuperstructureConstants {
     public final static double kStowedPositionAngle = 0.0;
 
     public final static double kIntakePositionHeight = 0.0;
-    public final static double kIntakePositionAngle = 175.0;
+    public final static double kIntakePositionAngle = 180.0;
 
     // Elevator Heights.
     public final static double kScaleHighHeight = 85.0;

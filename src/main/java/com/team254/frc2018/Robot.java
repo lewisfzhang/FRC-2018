@@ -2,7 +2,6 @@ package com.team254.frc2018;
 
 import com.team254.frc2018.auto.AutoModeBase;
 import com.team254.frc2018.auto.AutoModeExecuter;
-import com.team254.frc2018.auto.modes.*;
 import com.team254.frc2018.loops.Looper;
 import com.team254.frc2018.paths.TrajectoryGenerator;
 import com.team254.frc2018.subsystems.RobotStateEstimator;
@@ -69,6 +68,8 @@ public class Robot extends IterativeRobot {
 
     private MinTimeBoolean mShootDelayed = new MinTimeBoolean(Constants.kMinShootTimeSec);
     private MinTimeBoolean mPoopyShootDelayed = new MinTimeBoolean(Constants.kMinShootTimeSec);
+
+    private DelayedBoolean mIntakeLightsDelayed = new DelayedBoolean(Timer.getFPGATimestamp(), 0.1);
 
     private boolean mInHangMode;
 
@@ -316,6 +317,7 @@ public class Robot extends IterativeRobot {
                 boolean runIntakePosition = mControlBoard.getIntakePosition() &&
                         (mWrist.getAngle() > SuperstructureConstants.kMinIntakePositionAngle);
                 boolean runIntake = mControlBoard.getRunIntake() || runIntakePosition;
+                boolean forceSuperClamp = mControlBoard.getRunIntake() && runIntakePosition;
                 boolean runIntakeReleased = mRunIntakeReleased.update(!runIntake);
                 boolean intakeAction = false;
 
@@ -323,6 +325,12 @@ public class Robot extends IterativeRobot {
                 boolean poopyShoot = mControlBoard.getPoopyShoot();
 
                 boolean shootReleased = mShootReleased.update(!(normalShoot || poopyShoot));
+
+                if(forceSuperClamp) {
+                    mIntake.forceClampJaw(true);
+                } else {
+                    mIntake.forceClampJaw(false);
+                }
 
                 if (runIntake) {
                     mIntake.getOrKeepCube();
@@ -343,6 +351,7 @@ public class Robot extends IterativeRobot {
                         }
                     }
                 } else if(poopyShoot) {
+                    intakeAction = true;
                     if(mElevator.getInchesOffGround() < SuperstructureConstants.kSwitchHeight + 5.0 && mWrist.getAngle() < SuperstructureConstants.kWeakShootAngle) {
                         mIntake.shoot(IntakeStateMachine.kExchangeShootSetpoint);
                     } else {
@@ -376,7 +385,7 @@ public class Robot extends IterativeRobot {
                 }
 
                 // Rumble
-                if (runIntake && mIntake.definitelyHasCube()) {
+                if (runIntake && mIntakeLightsDelayed.update(Timer.getFPGATimestamp(), mIntake.definitelyHasCube())) {
                     mControlBoard.setRumble(true);
                 } else {
                     mControlBoard.setRumble(false);
@@ -510,13 +519,21 @@ public class Robot extends IterativeRobot {
                 }
 
                 double elevator_jog = mControlBoard.getJogElevatorThrottle();
-                if (Math.abs(elevator_jog) > Constants.kJoystickJogThreshold) {
+                if(Math.abs(elevator_jog) > Constants.kJoystickJogThreshold) {
+                    elevator_jog =
+                            (elevator_jog - Math.signum(elevator_jog) *
+                                    Constants.kJoystickJogThreshold) /
+                                    (1.0 - Constants.kJoystickJogThreshold);
                     mSuperstructure.setElevatorJog(
                             elevator_jog * SuperstructureConstants.kElevatorJogThrottle);
                 }
 
                 double wrist_jog = mControlBoard.getJogWristThrottle();
-                if (Math.abs(wrist_jog) > Constants.kJoystickJogThreshold) {
+                if(Math.abs(wrist_jog) > Constants.kJoystickJogThreshold) {
+                    wrist_jog =
+                            (wrist_jog - Math.signum(wrist_jog) *
+                                    Constants.kJoystickJogThreshold) /
+                                    (1.0 - Constants.kJoystickJogThreshold);
                     mSuperstructure.setWristJog(
                             wrist_jog * SuperstructureConstants.kWristJogThrottle);
                 }

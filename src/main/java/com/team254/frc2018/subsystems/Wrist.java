@@ -19,6 +19,7 @@ import java.util.ArrayList;
 
 public class Wrist extends Subsystem {
     private static final int kMagicMotionSlot = 0;
+    private static final int kPositionControlSlot = 1;
     private static final int kForwardSoftLimit = 2100;  // Encoder ticks.
     private static final int kReverseSoftLimit = -500;  // Encoder ticks.  TODO make ~0 once skipping is fixed.
 
@@ -33,7 +34,7 @@ public class Wrist extends Subsystem {
     private PeriodicIO mPeriodicIO = new PeriodicIO();
     private double mZeroPosition = Double.NaN;
     private SystemState mSystemState = SystemState.HOMING;
-    private SystemState mDesiredState = SystemState.CLOSED_LOOP;
+    private SystemState mDesiredState = SystemState.MOTION_PROFILING;
     private ReflectingCSVWriter<PeriodicIO> mCSVWriter = null;
 
     private Wrist() {
@@ -116,6 +117,35 @@ public class Wrist extends Subsystem {
         errorCode = mMaster.configMotionCruiseVelocity(Constants.kWristCruiseVelocity, Constants.kLongCANTimeoutMs);
         if (errorCode != ErrorCode.OK)
             DriverStation.reportError("Could not set wrist cruise velocity: " + errorCode, false);
+
+
+        // Configure position PID
+        errorCode = mMaster.config_kP(kPositionControlSlot, Constants.kWristJogKp, Constants.kLongCANTimeoutMs);
+        if (errorCode != ErrorCode.OK)
+            DriverStation.reportError("Could not set wrist kp: " + errorCode, false);
+
+        errorCode = mMaster.config_kI(kPositionControlSlot, Constants.kWristKi, Constants.kLongCANTimeoutMs);
+        if (errorCode != ErrorCode.OK)
+            DriverStation.reportError("Could not set wrist ki: " + errorCode, false);
+
+        errorCode = mMaster.config_kD(kPositionControlSlot, Constants.kWristJogKd, Constants.kLongCANTimeoutMs);
+        if (errorCode != ErrorCode.OK)
+            DriverStation.reportError("Could not set wrist kd: " + errorCode, false);
+
+        errorCode = mMaster.configMaxIntegralAccumulator(kPositionControlSlot, Constants.kWristMaxIntegralAccumulator,
+                Constants.kLongCANTimeoutMs);
+        if (errorCode != ErrorCode.OK)
+            DriverStation.reportError("Could not set wrist max integral: " + errorCode, false);
+
+        errorCode = mMaster.config_IntegralZone(kPositionControlSlot, Constants.kWristIZone, Constants.kLongCANTimeoutMs);
+        if (errorCode != ErrorCode.OK)
+            DriverStation.reportError("Could not set wrist i zone: " + errorCode, false);
+
+        errorCode = mMaster.configAllowableClosedloopError(kPositionControlSlot, Constants.kWristDeadband, Constants
+                .kLongCANTimeoutMs);
+        if (errorCode != ErrorCode.OK)
+            DriverStation.reportError("Could not set wrist deadband: " + errorCode, false);
+
 
         TalonSRXUtil.checkError(
                 mMaster.configContinuousCurrentLimit(20, Constants.kLongCANTimeoutMs),
@@ -227,7 +257,7 @@ public class Wrist extends Subsystem {
                         case OPEN_LOOP:
                             // Handled in writePeriodicOutputs
                             break;
-                        case CLOSED_LOOP:
+                        case MOTION_PROFILING:
                             // Handled in writePeriodicOutputs
                             break;
                         case HOMING:
@@ -269,15 +299,29 @@ public class Wrist extends Subsystem {
      */
     public void setClosedLoop(int position) {
         mPeriodicIO.demand = (position);
-        mDesiredState = SystemState.CLOSED_LOOP;
+        mDesiredState = SystemState.MOTION_PROFILING;
     }
 
     /**
      * @param angle the target position of the wrist in degrees.  0 is full back, 180 is facing forwards
      */
-    public synchronized void setClosedLoopAngle(double angle) {
+    public synchronized void setMotionProfileAngle(double angle) {
         mPeriodicIO.demand = (degreesToSensorUnits(angle));
-        mDesiredState = SystemState.CLOSED_LOOP;
+        if(mDesiredState != SystemState.MOTION_PROFILING) {
+            mDesiredState = SystemState.MOTION_PROFILING;
+            mMaster.selectProfileSlot(kMagicMotionSlot, 0);
+        }
+    }
+
+    /**
+     * @param angle the target position of the wrist in degrees.  0 is full back, 180 is facing forwards
+     */
+    public synchronized void setPositionPIDAngle(double angle) {
+        mPeriodicIO.demand = (degreesToSensorUnits(angle));
+        if(mDesiredState != SystemState.POSITION_PID) {
+            mDesiredState = SystemState.POSITION_PID;
+            mMaster.selectProfileSlot(kPositionControlSlot, 0);
+        }
     }
 
     /**
@@ -317,7 +361,7 @@ public class Wrist extends Subsystem {
     }
 
     public synchronized double getSetpoint() {
-        return mDesiredState == SystemState.CLOSED_LOOP ? sensorUnitsToDegrees((mPeriodicIO
+        return mDesiredState == SystemState.MOTION_PROFILING ? sensorUnitsToDegrees((mPeriodicIO
                 .demand)) : Double.NaN;
     }
 
@@ -391,8 +435,16 @@ public class Wrist extends Subsystem {
 
     @Override
     public synchronized void writePeriodicOutputs() {
-        mMaster.set(mDesiredState == SystemState.CLOSED_LOOP ? ControlMode.MotionMagic : ControlMode.PercentOutput,
-                mPeriodicIO.demand, DemandType.ArbitraryFeedForward, mPeriodicIO.feedforward);
+        if(mDesiredState == SystemState.MOTION_PROFILING) {
+            mMaster.set(ControlMode.MotionMagic,
+                    mPeriodicIO.demand, DemandType.ArbitraryFeedForward, mPeriodicIO.feedforward);
+        } else if(mDesiredState == SystemState.POSITION_PID) {
+            mMaster.set(ControlMode.Position,
+                    mPeriodicIO.demand, DemandType.ArbitraryFeedForward, mPeriodicIO.feedforward);
+        } else {
+            mMaster.set(ControlMode.PercentOutput,
+                    mPeriodicIO.demand, DemandType.ArbitraryFeedForward, mPeriodicIO.feedforward);
+        }
     }
 
     @Override
@@ -430,7 +482,8 @@ public class Wrist extends Subsystem {
 
     public enum SystemState {
         HOMING,
-        CLOSED_LOOP,
+        MOTION_PROFILING,
+        POSITION_PID,
         OPEN_LOOP,
     }
 

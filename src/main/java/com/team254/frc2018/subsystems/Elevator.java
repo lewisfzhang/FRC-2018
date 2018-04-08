@@ -19,6 +19,7 @@ public class Elevator extends Subsystem {
     public static final double kHomePositionInches = 5.0;
     private static final int kHighGearSlot = 0;
     private static final int kLowGearSlot = 1;
+    private static final int kPositionControlSlot = 2;
     private static final int kReverseSoftLimit = -100000; // Encoder ticks (used to be -151000)
     private static final int kForwardSoftLimit = 500; // Encoder ticks.  TODO set to ~0 once skipping is fixed.
     private static final double kEncoderTicksPerInch = -1271.0;
@@ -114,6 +115,38 @@ public class Elevator extends Subsystem {
                         Constants.kElevatorHighGearCruiseVelocity, Constants.kLongCANTimeoutMs),
                 "Could not set elevator cruise velocity: ");
 
+        //configure position PID
+        TalonSRXUtil.checkError(
+                mMaster.config_kP(
+                        kPositionControlSlot, Constants.kElevatorJogKp, Constants.kLongCANTimeoutMs),
+                "Could not set elevator kp: ");
+
+        TalonSRXUtil.checkError(
+                mMaster.config_kI(
+                        kPositionControlSlot, Constants.kElevatorHighGearKi, Constants.kLongCANTimeoutMs),
+                "Could not set elevator ki: ");
+
+        TalonSRXUtil.checkError(
+                mMaster.config_kD(
+                        kPositionControlSlot, Constants.kElevatorJogKd, Constants.kLongCANTimeoutMs),
+                "Could not set elevator kd: ");
+
+        TalonSRXUtil.checkError(
+                mMaster.configMaxIntegralAccumulator(
+                        kPositionControlSlot, Constants.kElevatorHighGearMaxIntegralAccumulator, Constants.kLongCANTimeoutMs),
+                "Could not set elevator max integral: ");
+
+        TalonSRXUtil.checkError(
+                mMaster.config_IntegralZone(
+                        kPositionControlSlot, Constants.kElevatorHighGearIZone, Constants.kLongCANTimeoutMs),
+                "Could not set elevator i zone: ");
+
+        TalonSRXUtil.checkError(
+                mMaster.configAllowableClosedloopError(
+                        kPositionControlSlot, Constants.kElevatorHighGearDeadband, Constants.kLongCANTimeoutMs),
+                "Could not set elevator deadband: ");
+
+
         TalonSRXUtil.checkError(
                 mMaster.configClosedloopRamp(
                         Constants.kElevatorRampRate, Constants.kLongCANTimeoutMs),
@@ -189,14 +222,27 @@ public class Elevator extends Subsystem {
         mPeriodicIO.demand = percentage;
     }
 
-    public synchronized void setClosedLoopPosition(double positionInchesOffGround) {
+    public synchronized void setMotionMagicPosition(double positionInchesOffGround) {
         double positionInchesFromHome = positionInchesOffGround - kHomePositionInches;
         double encoderPosition = positionInchesFromHome * kEncoderTicksPerInch;
         setClosedLoopRawPosition(encoderPosition);
     }
 
+    public synchronized void setPositionPID(double positionInchesOffGround) {
+        double positionInchesFromHome = positionInchesOffGround - kHomePositionInches;
+        double encoderPosition = positionInchesFromHome * kEncoderTicksPerInch;
+        if(mElevatorControlState != ElevatorControlState.POSITION_PID) {
+            mElevatorControlState = ElevatorControlState.POSITION_PID;
+            mMaster.selectProfileSlot(kPositionControlSlot, 0);
+        }
+        mPeriodicIO.demand = encoderPosition;
+    }
+
     private synchronized void setClosedLoopRawPosition(double encoderPosition) {
-        mElevatorControlState = ElevatorControlState.MOTION_MAGIC;
+        if(mElevatorControlState != ElevatorControlState.MOTION_MAGIC) {
+            mElevatorControlState = ElevatorControlState.MOTION_MAGIC;
+            mMaster.selectProfileSlot(kHighGearSlot, 0);
+        }
         mPeriodicIO.demand = encoderPosition;
     }
 
@@ -314,9 +360,16 @@ public class Elevator extends Subsystem {
 
     @Override
     public synchronized void writePeriodicOutputs() {
-        mMaster.set(mElevatorControlState == ElevatorControlState.MOTION_MAGIC ? ControlMode.MotionMagic :
-                ControlMode.PercentOutput, mPeriodicIO.demand, DemandType.ArbitraryFeedForward, mPeriodicIO
-                .feedforward);
+        if(mElevatorControlState == ElevatorControlState.MOTION_MAGIC) {
+            mMaster.set(ControlMode.MotionMagic,
+                    mPeriodicIO.demand, DemandType.ArbitraryFeedForward, mPeriodicIO.feedforward);
+        } else if(mElevatorControlState == ElevatorControlState.POSITION_PID) {
+            mMaster.set(ControlMode.Position,
+                    mPeriodicIO.demand, DemandType.ArbitraryFeedForward, mPeriodicIO.feedforward);
+        } else {
+            mMaster.set(ControlMode.PercentOutput,
+                    mPeriodicIO.demand, DemandType.ArbitraryFeedForward, mPeriodicIO.feedforward);
+        }
     }
 
     @Override
@@ -368,7 +421,8 @@ public class Elevator extends Subsystem {
 
     private enum ElevatorControlState {
         OPEN_LOOP,
-        MOTION_MAGIC
+        MOTION_MAGIC,
+        POSITION_PID
     }
 
     public static class PeriodicIO {

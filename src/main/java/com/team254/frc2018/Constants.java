@@ -79,6 +79,8 @@ public class Constants {
     public static final double kElevatorHighGearKi = 0.0;//0.0;
     public static final double kElevatorHighGearKd = 4.0;
     public static final double kElevatorHighGearKf = 0.06; // lower speed:  0.08;
+    public static final double kElevatorJogKp =  0.1;
+    public static final double kElevatorJogKd =  3.0;
     public static final double kElevatorFeedforwardNoCube = -0.06;//33000;
     public static final double kElevatorFeedforwardWithCube = -0.07;//33000;
 
@@ -94,6 +96,8 @@ public class Constants {
     public static final double kWristKi = 0.0;
     public static final double kWristKd = 50.0;
     public static final double kWristKf = 1.05;
+    public static final double kWristJogKp = 2.0;
+    public static final double kWristJogKd = 40.0;
     public static final double kWristKaWithCube = 0.006;
     public static final double kWristKaWithoutCube = 0.003;
     public static final double kWristKfMultiplierWithCube = 0.15;

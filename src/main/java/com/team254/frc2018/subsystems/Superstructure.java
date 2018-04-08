@@ -40,6 +40,8 @@ public class Superstructure extends Subsystem {
     private Solenoid mJazzHandsSolenoid =  Constants.makeSolenoidForId(Constants.kJazzHandsSolenoid);
 
     private boolean isHangMode;
+    private boolean isWristJogging = false;
+    private boolean isElevatorJogging = false;
     private LatchedBoolean mIntoLimitEnable = new LatchedBoolean();
     private LatchedBoolean mIntoLimitDisabled = new LatchedBoolean();
 
@@ -92,14 +94,22 @@ public class Superstructure extends Subsystem {
         if (commandState.openLoopElevator) {
             mElevator.setOpenLoop(commandState.openLoopElevatorPercent);
         } else {
-            mElevator.setClosedLoopPosition(commandState.height);
+            if(isElevatorJogging) {
+                mElevator.setPositionPID(commandState.height);
+            } else {
+                mElevator.setMotionMagicPosition(commandState.height);
+            }
         }
         if (commandState.elevatorLowGear) {
             mElevator.setHangMode(true);
         } else {
             mElevator.setHangMode(false);
         }
-        mWrist.setClosedLoopAngle(commandState.wristAngle);
+        if(isWristJogging) {
+            mWrist.setPositionPIDAngle(commandState.wristAngle);
+        } else {
+            mWrist.setMotionProfileAngle(commandState.wristAngle);
+        }
 
         if(!isHangMode) {
             if (Util.epsilonEquals(mStateMachine.getScoringHeight(), SuperstructureConstants.kSwitchHeightBackwards, Constants.kJazzHandsEpsilon)
@@ -150,21 +160,25 @@ public class Superstructure extends Subsystem {
     }
 
     public synchronized void setDesiredHeight(double height) {
+        isElevatorJogging = false;
         mStateMachine.setScoringHeight(height);
         mWantedAction = SuperstructureStateMachine.WantedAction.GO_TO_POSITION;
     }
 
     public synchronized void setDesiredAngle(double angle) {
+        isWristJogging = false;
         mStateMachine.setScoringAngle(angle);
         mWantedAction = SuperstructureStateMachine.WantedAction.GO_TO_POSITION;
     }
 
     public synchronized void setElevatorJog(double relative_inches) {
+        isElevatorJogging = true;
         mStateMachine.jogElevator(relative_inches);
         mWantedAction = SuperstructureStateMachine.WantedAction.GO_TO_POSITION;
     }
 
     public synchronized void setWristJog(double relative_degrees) {
+        isWristJogging = true;
         mStateMachine.jogWrist(relative_degrees);
         mWantedAction = SuperstructureStateMachine.WantedAction.GO_TO_POSITION;
     }
