@@ -590,7 +590,7 @@ def onMouse(event, x, y, flags, param):
             addPixel(x2, y2)
 
 def onKey(key):
-    global minColor, maxColor
+    global minColor, maxColor, gotROI
     print(f"key: {key}")
     if key == ord("c") or key == ord("C"):
         minColor = (0,0,0)
@@ -602,6 +602,8 @@ def onKey(key):
             print("user:", minColor, maxColor)
             autoSetColor(frameROI)
             print()
+    if key == ord("r") or key == ord("R"):
+        gotROI = False
 
 ######### VideoCapture #########
 def initCapture():
