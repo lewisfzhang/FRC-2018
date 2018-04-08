@@ -176,7 +176,7 @@ def process(input):
         if errorMsg is not None:
             drawText(errorMsg, 5, 60, (0,0,255), fromM=1)
     
-    cv2.imshow("output", output)
+    cv2.imshow("raw", output)
 
 
 
@@ -683,8 +683,9 @@ while True:
     if not NetworkTables.isConnected():
         cv2.putText(frameDisp, "NetworkTables is not connected", (10, height-10),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0,0,255), 1, cv2.LINE_AA)
-    cv2.imshow("raw", frameDisp)
-    cv2.setMouseCallback("raw", onMouse_raw)
+    if not gotROI:
+        cv2.imshow("raw", frameDisp)
+        cv2.setMouseCallback("raw", onMouse_raw)
     
     if gotROI:
         start = time.perf_counter()
@@ -699,7 +700,7 @@ while True:
             fps = frameCount
             frameCount = 0
         
-        cv2.setMouseCallback("output", onMouse)
+        cv2.setMouseCallback("raw", onMouse)
         
         if args.csv_output is not None:
             args.csv_output.write(f"{start}, {curAngle}, {getAngle()}, {getTip()}\n")
