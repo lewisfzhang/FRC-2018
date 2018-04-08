@@ -102,6 +102,9 @@ public class Robot extends IterativeRobot {
             mShootReleased.update(true);
 
             mAutoModeSelector.updateModeCreator();
+
+            // Set the auto field state at least once.
+            mAutoFieldState.setSides(DriverStation.getInstance().getGameSpecificMessage());
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
             throw t;
