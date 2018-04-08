@@ -32,8 +32,7 @@ public class AutoSuperstructurePosition implements Action {
         if (mCheesyVision2.getError()) return mDefaultHeight;
         
         double tip = mCheesyVision2.getTip();
-        AutoFieldState state = new AutoFieldState();
-        state.setSides();
+        AutoFieldState state = AutoFieldState.getInstance();
         if (state.getScaleSide() == AutoFieldState.Side.LEFT)
             tip = -tip;
         

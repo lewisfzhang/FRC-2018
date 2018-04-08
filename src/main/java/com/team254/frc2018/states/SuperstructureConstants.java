@@ -43,6 +43,8 @@ public class SuperstructureConstants {
     public final static double kScaleNeutralHeightBackwards = 65.0;
     public final static double kScaleLowHeightBackwards = 55.0;
 
+    public final static double kCubeOffset = 10.0;
+
     public final static double kIntakeThirdLevelHeight = 25.5;
     public final static double kIntakeSecondLevelHeight = 14.5;
     public final static double kIntakeFloorLevelHeight = 0.0;

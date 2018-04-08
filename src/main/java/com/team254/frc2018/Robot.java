@@ -28,7 +28,7 @@ public class Robot extends IterativeRobot {
     private Looper mDisabledLooper = new Looper();
     private CheesyDriveHelper mCheesyDriveHelper = new CheesyDriveHelper();
     private IControlBoard mControlBoard = ControlBoard.getInstance();
-    private AutoFieldState mAutoFieldState = new AutoFieldState();
+    private AutoFieldState mAutoFieldState = AutoFieldState.getInstance();
     private TrajectoryGenerator mTrajectoryGenerator = TrajectoryGenerator.getInstance();
     private AutoModeSelector mAutoModeSelector = new AutoModeSelector();
 
@@ -174,6 +174,8 @@ public class Robot extends IterativeRobot {
                 mAutoModeExecuter.stop();
             }
 
+            mAutoFieldState.disableOverride();
+
             mInfrastructure.setIsDuringAuto(false);
 
             RobotState.getInstance().reset(Timer.getFPGATimestamp(), Pose2d.identity());
@@ -228,7 +230,7 @@ public class Robot extends IterativeRobot {
             mAutoFieldState.setSides(DriverStation.getInstance().getGameSpecificMessage());
             mAutoModeSelector.updateModeCreator();
 
-            if (mAutoFieldState.isValid() || mAutoModeSelector.overrideFMSFieldState()) {
+            if (mAutoFieldState.isValid()) {
                 Optional<AutoModeBase> autoMode = mAutoModeSelector.getAutoMode(mAutoFieldState);
                 if (autoMode.isPresent() && autoMode.get() != mAutoModeExecuter.getAutoMode()) {
                     System.out.println("Set auto mode to: " + autoMode.get().getClass().toString());
@@ -425,13 +427,13 @@ public class Robot extends IterativeRobot {
                 } else if (mControlBoard.getAutoHeightModifier()) {
                     if (mControlBoard.getBackwardsModifier()) {
                         if (go_high_scale) {
-                            desired_height = mCheesyVision2.getDesiredHeight(mAutoFieldState, true, 2);
+                            desired_height = mCheesyVision2.getDesiredHeight(true, 2);
                             desired_angle = SuperstructureConstants.kScoreBackwardsAngle;
                         } else if (go_neutral_scale) {
-                            desired_height = mCheesyVision2.getDesiredHeight(mAutoFieldState, true, 1);
+                            desired_height = mCheesyVision2.getDesiredHeight(true, 1);
                             desired_angle = SuperstructureConstants.kScoreBackwardsAngle;
                         } else if (go_low_scale) {
-                            desired_height = mCheesyVision2.getDesiredHeight(mAutoFieldState, true, 0);
+                            desired_height = mCheesyVision2.getDesiredHeight(true, 0);
                             desired_angle = SuperstructureConstants.kScoreBackwardsAngle;
                         } else if (go_switch) {
                             desired_height = SuperstructureConstants.kSwitchHeightBackwards;
@@ -439,13 +441,13 @@ public class Robot extends IterativeRobot {
                         }
                     } else {
                         if (go_high_scale) {
-                            desired_height = mCheesyVision2.getDesiredHeight(mAutoFieldState, false, 2);
+                            desired_height = mCheesyVision2.getDesiredHeight(false, 2);
                             desired_angle = SuperstructureConstants.kScoreForwardAngledAngle;
                         } else if (go_neutral_scale) {
-                            desired_height = mCheesyVision2.getDesiredHeight(mAutoFieldState, false, 1);
+                            desired_height = mCheesyVision2.getDesiredHeight(false, 1);
                             desired_angle = SuperstructureConstants.kScoreForwardAngledAngle;
                         } else if (go_low_scale) {
-                            desired_height = mCheesyVision2.getDesiredHeight(mAutoFieldState, false, 0);
+                            desired_height = mCheesyVision2.getDesiredHeight(false, 0);
                             desired_angle = SuperstructureConstants.kScoreForwardAngledAngle;
                         } else if (go_switch) {
                             desired_height = SuperstructureConstants.kSwitchHeight;

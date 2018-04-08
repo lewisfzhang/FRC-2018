@@ -61,66 +61,29 @@ public class CheesyVision2 extends Subsystem {
         return tip;
     }
 
-    /**
-     * Enum that represents the current height of the scale, based on data sent by the CheesyVision2 python app over Network Tables
-     */
-    public enum ScaleHeight {
-        HIGH(SuperstructureConstants.kScaleHighHeight, SuperstructureConstants.kScaleHighHeightBackwards),
-        NEUTRAL(SuperstructureConstants.kScaleNeutralHeight, SuperstructureConstants.kScaleNeutralHeightBackwards),
-        LOW(SuperstructureConstants.kScaleLowHeight, SuperstructureConstants.kScaleLowHeightBackwards),
-        UNKNOWN(SuperstructureConstants.kScaleHighHeight, SuperstructureConstants.kScaleHighHeightBackwards); // Worst case: go to highest preset
+    public synchronized double getDesiredHeight(boolean backwards, int cubeNum) {
+        double correctedTip = tip * (AutoFieldState.getInstance().getScaleSide() == Side.RIGHT ? 1.0 : -1.0);
 
-        private final double mForwardsHeight, mBackwardsHeight;
+        double baseHeight;
 
-        ScaleHeight(double forwardsHeight, double backwardsHeight) {
-            this.mForwardsHeight = forwardsHeight;
-            this.mBackwardsHeight = backwardsHeight;
-        }
-    
-        public double getHeight(boolean backwards) {
-            return backwards ? mBackwardsHeight : mForwardsHeight;
-        }
-    }
-
-    public double getDesiredHeight(AutoFieldState fieldState, boolean backwards, int cubeNum) {
-        ScaleHeight state = fieldState.getScaleSide() == Side.RIGHT ? getRightScaleHeight() : getLeftScaleHeight();
-        return state.getHeight(backwards) + 10.0*cubeNum;
-    }
-    
-    /**
-     * @return the current ScaleHeight of the <em>right</em> scale
-     *         plate, as seen from the driver station
-     */
-    public ScaleHeight getRightScaleHeight() {    
-        if (getError() || !isConnected()) {
-            return ScaleHeight.UNKNOWN;
-        } else if (getTip() > 0.5) {
-            return ScaleHeight.HIGH;
-        } else if (getTip() < -0.5) {
-            return ScaleHeight.LOW;
+        if(correctedTip > 0.5) {
+            baseHeight = backwards ? SuperstructureConstants.kScaleHighHeightBackwards : SuperstructureConstants.kScaleHighHeight;
+        } else if(correctedTip < -0.5) {
+            baseHeight = backwards ? SuperstructureConstants.kScaleLowHeightBackwards : SuperstructureConstants.kScaleLowHeight;
         } else {
-            return ScaleHeight.NEUTRAL;
+            baseHeight = backwards ? SuperstructureConstants.kScaleNeutralHeightBackwards : SuperstructureConstants.kScaleNeutralHeight;
         }
-    }
-    /**
-     * @return the current ScaleHeight of the <em>left</em> scale
-     *         plate, as seen from the driver station
-     */
-    public ScaleHeight getLeftScaleHeight() {
-        ScaleHeight right = getRightScaleHeight();
-        switch (right) {
-            case HIGH:
-                return ScaleHeight.LOW;
-            case NEUTRAL:
-                return ScaleHeight.NEUTRAL;
-            case LOW:
-                return ScaleHeight.HIGH;
-            case UNKNOWN:
-            default:
-                return ScaleHeight.UNKNOWN;
+
+        //assume we are losing the scale if we don't have a reading
+        if(error || !isConnected()) {
+            baseHeight = backwards ? SuperstructureConstants.kScaleHighHeightBackwards : SuperstructureConstants.kScaleHighHeight;
         }
+
+        baseHeight += cubeNum * SuperstructureConstants.kCubeOffset;
+
+        return baseHeight;
     }
-    
+
     @Override
     public boolean checkSystem() {
         return false;
@@ -129,8 +92,9 @@ public class CheesyVision2 extends Subsystem {
     @Override
     public void outputTelemetry() {
         SmartDashboard.putBoolean("Connected to CheesyVision2", isConnected());
-        SmartDashboard.putString("Right Scale", getRightScaleHeight().toString());
-        SmartDashboard.putString("Left Scale", getLeftScaleHeight().toString());
+        SmartDashboard.putNumber("Desired Height (0 cubes)", getDesiredHeight(false, 0));
+        SmartDashboard.putNumber("Desired Height (1 cube)", getDesiredHeight(false, 1));
+        SmartDashboard.putNumber("Desired Height (2 cubes)", getDesiredHeight(false, 2));
     }
     
     @Override
