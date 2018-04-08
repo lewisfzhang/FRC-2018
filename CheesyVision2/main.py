@@ -632,6 +632,7 @@ dt = fps = None
 frameCount = 0
 heartbeat = 0
 lastSecond = time.perf_counter()
+first_call = True
 
 while True:
     # read the next frame and make sure it's valid
@@ -686,6 +687,9 @@ while True:
     if not gotROI:
         cv2.imshow("raw", frameDisp)
         cv2.setMouseCallback("raw", onMouse_raw)
+    if first_call:
+        cv2.moveWindow("raw", 0, 0)
+        first_call = False
     
     if gotROI:
         start = time.perf_counter()
