@@ -497,6 +497,8 @@ parser.add_argument("--roi-scale", type=float, default=2.0, metavar="FACTOR",
                     help="amount to scale the region-of-interest display by (default: %(default)s)")
 parser.add_argument("--csv-output", type=argparse.FileType("w"), metavar="FILE",
                     help="optional file to write angle data to")
+parser.add_argument("--ip", type=str, default='10.2.54.2', metavar="IP",
+                    help="ip to connect to.")
 debugGroup = parser.add_argument_group(title="debug flags")
 debugGroup.add_argument("--debug-histograms", action="store_true", help="show the hue and saturation-value histograms")
 debugGroup.add_argument("--debug-mask", action="store_true", help="show the thresholded color mask")
@@ -514,12 +516,7 @@ if args.no_network:
     print("Skipping NetworkTables initialization")
 else:
     robotIP = None
-    print("Resolving robot IP...")
-    try:
-        robotIP = socket.gethostbyname("roborio-254-frc.local")
-        print(f"    robot IP: {robotIP}")
-    except:
-        print("    failed.")
+    print("Using: " + args.ip)
     NetworkTables.initialize(server=robotIP)
     smartDashboard = NetworkTables.getTable("SmartDashboard")
 
