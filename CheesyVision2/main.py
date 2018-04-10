@@ -161,13 +161,14 @@ def process(input):
         debugStr += f" ({int(fps)} FPS)"
     drawText(debugStr, 10, int(height*args.roi_scale)-10, (0,255,0))
     if not NetworkTables.isConnected():
-        drawText("Not Connected!", 10, int(height*args.roi_scale)-30, (0,0,255))
+        drawText("Not Connected!", 10, int(height*args.roi_scale)-45, (0,0,255))
     else:
-        drawText("Connected!", 10, int(height*args.roi_scale)-30, (0,255,0))
+        drawText("Connected!", 10, int(height*args.roi_scale)-45, (0,255,0))
     if args.auto:
         drawText("tuning mode = auto", 60, 45, (0, 255, 0))
     else:
         drawText("tuning mode = manual", 60, 45, (0, 255, 0))
+    drawText(f"using device {args.device}", 10, int(height*args.roi_scale)-30, (0,255,0))
     
     # visualize the detected angle and state
     angle = getAngle()
@@ -489,7 +490,7 @@ def zeroAngle():
 parser = argparse.ArgumentParser(description="Program to track the scale arm using OpenCV. (by Quinn Tucker '18)")
 parser.add_argument("-n", "--no-network", action="store_true", help="don't initialize/output to NetworkTables")
 optGroup = parser.add_mutually_exclusive_group()
-optGroup.add_argument("-d", "--device", type=int, default=2, metavar="ID",
+optGroup.add_argument("-d", "--device", type=int, default=0, metavar="ID",
                     help="device ID of the camera to use (default: %(default)s)")
 optGroup.add_argument("-i", "--input-image", metavar="FILE", help="optional image to use instead of a live camera")
 optGroup.add_argument("-v", "--input-video", metavar="FILE", help="optional video to use instead of a live camera")
@@ -611,6 +612,11 @@ def onKey(key):
             args.auto = False
     if key == ord("r") or key == ord("R"):
         gotROI = False
+    if key == ord("d") or key == ord("D"):
+        args.device += 1
+        print(f"    switching device id to {args.device}")
+        global cap
+        cap = initCapture()
 
 ######### VideoCapture #########
 def initCapture():
@@ -622,13 +628,16 @@ def initCapture():
         cap = cv2.VideoCapture(args.device)
         if not cap.isOpened():
             print(f"    failed to open camera device {args.device}")
-            sys.exit(1)
+            print(f"    resetting device id to 0")
+            args.device = 0
+            initCapture()
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
     # cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
     # cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
     print("    done.")
     return cap
+global cap
 cap = initCapture()
 
 if args.input_image is not None:
