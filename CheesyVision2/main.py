@@ -375,6 +375,7 @@ STEADY_HISTORY = 1.0 # amount of history to consider for steadiness (seconds)
 STEADY_THRESHOLD = 4.0 # angle variation considered "steady" (degrees)
 MAX_SKEW = 2.2 # maximum skew between the top & bottom lines (degrees)
 TIPPED_THRESHOLD = 3.5 # angle at which the scale is "tipped" (degrees)
+UNTIPPED_THRESHOLD = 2.7 # angle at which the scale is no longer "tipped" (degrees)
 
 # ignore RankWarnings from np.polyfit
 import warnings
@@ -467,11 +468,14 @@ def getAngle():
     screenAngle = math.radians(fitFunc(lastTime) - zeroPoint)
     return math.degrees(math.atan(COS_SCALE_VIEW_ANGLE*math.tan(screenAngle)))
 
-def getTip(): # TODO: hysteresis?
+curTip = 0
+def getTip():
+    global curTip
     angle = getAngle()
-    if angle > +TIPPED_THRESHOLD: return +1
-    if angle < -TIPPED_THRESHOLD: return -1
-    return 0
+    if abs(angle) < UNTIPPED_THRESHOLD: curTip = 0
+    elif angle > +TIPPED_THRESHOLD: curTip = +1
+    elif angle < -TIPPED_THRESHOLD: curTip = -1
+    return curTip
 
 def zeroAngle():
     global zeroPoint, zeroed
