@@ -58,7 +58,7 @@ def getBlobs(input):
     return blobs, hsv, mask
 
 def process(input):
-    if not args.manual:
+    if args.auto:
         autoSetColor(input)
     height, width = input.shape[:2]
     
@@ -164,6 +164,10 @@ def process(input):
         drawText("Not Connected!", 10, int(height*args.roi_scale)-30, (0,0,255))
     else:
         drawText("Connected!", 10, int(height*args.roi_scale)-30, (0,255,0))
+    if args.auto:
+        drawText("tuning mode = auto", 60, 45, (0, 255, 0))
+    else:
+        drawText("tuning mode = manual", 60, 45, (0, 255, 0))
     
     # visualize the detected angle and state
     angle = getAngle()
@@ -491,8 +495,8 @@ optGroup.add_argument("-i", "--input-image", metavar="FILE", help="optional imag
 optGroup.add_argument("-v", "--input-video", metavar="FILE", help="optional video to use instead of a live camera")
 parser.add_argument("-s", "--scale", type=float, default=1.0, metavar="FACTOR",
                       help="amount to up/downsample each frame (optional)")
-parser.add_argument("-m", "--manual", action='store_true', default=False,
-                    help="set hue value manually")
+parser.add_argument("-a", "--auto", action='store_true', default=False,
+                    help="set hue value automatically")
 parser.add_argument("--hue-shift", type=float, default=0.0, metavar="DEGREES",
                       help="amount to shift the hue of each frame (optional)")
 parser.add_argument("--raw-scale", type=float, default=1.0, metavar="FACTOR",
@@ -600,8 +604,11 @@ def onKey(key):
     if key == ord("a") or key == ord("A"):
         if frameROI is not None:
             print("user:", minColor, maxColor)
-            autoSetColor(frameROI)
+            args.auto = True
             print()
+    if key == ord("m") or key == ord("M"):
+        if frameROI is not None:
+            args.auto = False
     if key == ord("r") or key == ord("R"):
         gotROI = False
 
