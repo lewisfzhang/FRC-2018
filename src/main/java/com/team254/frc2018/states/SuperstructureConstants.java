@@ -39,9 +39,9 @@ public class SuperstructureConstants {
     public final static double kScaleNeutralHeight = 75.0;
     public final static double kScaleLowHeight = 63.0;
 
-    public final static double kScaleHighHeightBackwards = 75.0;
-    public final static double kScaleNeutralHeightBackwards = 65.0;
-    public final static double kScaleLowHeightBackwards = 55.0;
+    public final static double kScaleHighHeightBackwards = 78.0; //75.0 without kickstand
+    public final static double kScaleNeutralHeightBackwards = 68.0; //65.0 without kickstand
+    public final static double kScaleLowHeightBackwards = 58.0; //55.0 without kickstand
 
     public final static double kCubeOffset = 10.0;
 
@@ -54,7 +54,7 @@ public class SuperstructureConstants {
 
     // Wrist Angles.
     public final static double kVerticalAngle = 90.0;
-    public final static double kScoreBackwardsAngle = 45.0;
+    public final static double kScoreBackwardsAngle = 0.0; //45.0 without kickstand
     public final static double kScoreForwardAngledAngle = 135.0;
     public final static double kScoreSwitchBackwardsAngle = 0.0;
 
