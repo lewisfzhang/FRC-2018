@@ -63,11 +63,11 @@ public class FarScaleOnlyMode extends AutoModeBase {
                                 Arrays.asList(
                                         new WaitUntilInsideRegion(new Translation2d(130.0, 150.0), new Translation2d
                                                 (260, 200.0), mStartedLeft),
-                                        new SetSuperstructurePosition(SuperstructureConstants.kScaleNeutralHeightBackwards,
-                                                SuperstructureConstants.kScoreBackwardsAngle, true),
+                                        new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngle,
+                                                true),
                                         new WaitUntilInsideRegion(new Translation2d(245.0, 150.0), new Translation2d
                                                 (260, 1000), mStartedLeft),
-                                        new ShootCube(AutoConstants.kStrongShootPower)
+                                        new ShootCube(AutoConstants.kFullShootPower)
                                 )
                         )
                 )
@@ -100,8 +100,8 @@ public class FarScaleOnlyMode extends AutoModeBase {
                                 Arrays.asList(
                                         new WaitAction(AutoConstants.kWaitForCubeTime),
                                         new SetIntaking(false, true),
-                                        new SetSuperstructurePosition(SuperstructureConstants.kScaleLowHeightBackwards,
-                                                SuperstructureConstants.kScoreBackwardsAngle, true),
+                                        new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngle,
+                                                true),
                                         new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d
                                                 (260, 1000), mStartedLeft),
                                         new ShootCube(AutoConstants.kFullShootPower)
@@ -132,8 +132,8 @@ public class FarScaleOnlyMode extends AutoModeBase {
                                 Arrays.asList(
                                         new WaitAction(AutoConstants.kWaitForCubeTime),
                                         new SetIntaking(false, true),
-                                        new SetSuperstructurePosition(SuperstructureConstants.kScaleLowHeightBackwards,
-                                                SuperstructureConstants.kScoreBackwardsAngle, true),
+                                        new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngle,
+                                                true),
                                         new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d
                                                 (260, 1000), mStartedLeft),
                                         new ShootCube(AutoConstants.kFullShootPower)

@@ -60,11 +60,11 @@ public class NearScaleOnlyMode extends AutoModeBase {
                                 Arrays.asList(
                                         new WaitUntilInsideRegion(new Translation2d(130.0, -20.0), new Translation2d
                                                 (260, 50), mStartedLeft),
-                                        new SetSuperstructurePosition(SuperstructureConstants.kScaleNeutralHeightBackwards,
-                                                SuperstructureConstants.kScoreBackwardsAngle, true),
+                                        new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngle,
+                                                true),
                                         new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d
                                                 (260, 1000), mStartedLeft),
-                                        new ShootCube(AutoConstants.kMediumShootPower)
+                                        new ShootCube(AutoConstants.kFullShootPower)
                                 )
                         )
                 )
@@ -97,11 +97,11 @@ public class NearScaleOnlyMode extends AutoModeBase {
                                 Arrays.asList(
                                         new WaitAction(AutoConstants.kWaitForCubeTime),
                                         new SetIntaking(false, true),
-                                        new SetSuperstructurePosition(SuperstructureConstants.kScaleLowHeightBackwards,
-                                                SuperstructureConstants.kScoreBackwardsAngle, true),
+                                        new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngle,
+                                                true),
                                         new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d
                                                 (260, 1000), mStartedLeft),
-                                        new ShootCube(AutoConstants.kStrongShootPower)
+                                        new ShootCube(AutoConstants.kFullShootPower)
                                 )
                         )
                 )
@@ -129,8 +129,8 @@ public class NearScaleOnlyMode extends AutoModeBase {
                                 Arrays.asList(
                                         new WaitAction(AutoConstants.kWaitForCubeTime),
                                         new SetIntaking(false, true),
-                                        new SetSuperstructurePosition(SuperstructureConstants.kScaleLowHeightBackwards,
-                                                SuperstructureConstants.kScoreBackwardsAngle, true),
+                                        new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngle,
+                                                true),
                                         new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d
                                                 (260, 1000), mStartedLeft),
                                         new ShootCube(AutoConstants.kFullShootPower)
@@ -176,8 +176,8 @@ public class NearScaleOnlyMode extends AutoModeBase {
                         new SeriesAction(
                                 Arrays.asList(
                                         new WaitAction(AutoConstants.kWaitForCubeTime),
-                                        new SetSuperstructurePosition(SuperstructureConstants.kScaleLowHeightBackwards,
-                                                SuperstructureConstants.kScoreBackwardsAngle, true),
+                                        new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngle,
+                                                true),
                                         new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d
                                                 (260, 1000), mStartedLeft),
                                         new ShootCube(AutoConstants.kFullShootPower)
