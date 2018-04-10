@@ -135,9 +135,9 @@ public class AutoFieldState {
     @Override
     public String toString() {
         return "AutoFieldState{" +
-                "ourSwitchSide=" + ourSwitchSide +
-                ", scaleSide=" + scaleSide +
-                ", opponentSwitchSide=" + opponentSwitchSide +
+                "ourSwitchSide=" + getOurSwitchSide() +
+                ", scaleSide=" + getScaleSide() +
+                ", opponentSwitchSide=" + getOpponentSwitchSide() +
                 '}';
     }
 }

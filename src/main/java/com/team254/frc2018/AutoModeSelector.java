@@ -110,12 +110,16 @@ public class AutoModeSelector {
         switch (switchScalePosition) {
             case LEFT_SWITCH_LEFT_SCALE:
                 mFieldState.overrideSides("LLL");
+                break;
             case LEFT_SWITCH_RIGHT_SCALE:
                 mFieldState.overrideSides("LRL");
+                break;
             case RIGHT_SWITCH_LEFT_SCALE:
                 mFieldState.overrideSides("RLR");
+                break;
             case RIGHT_SWITCH_RIGHT_SCALE:
                 mFieldState.overrideSides("RRR");
+                break;
             default:
                 break;
         }
