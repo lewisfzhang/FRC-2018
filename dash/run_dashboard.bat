@@ -1,2 +1,2 @@
 start firstperson.html
-python main.py
+python CheesyVision2.py
