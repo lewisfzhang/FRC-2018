@@ -16,3 +16,26 @@ A program to track the angle of the scale using a webcam.
     - Make sure you wait for a moment when the scale is horizontal and the program sees the scale well. Press <kbd>Z</kbd> again at any time to re-zero.
 
 Then the program's ready.
+
+## Full controls
+
+#### In the raw camera feed view:
+
+ - left-click and drag: select the region-of-interest (RoI)
+ - <kbd>D</kbd>: switch cameras
+
+#### In the region-of-interest view:
+
+ - **left-click** (and optionally drag): add color(s)
+ - **right-click**: reset and add color
+ - <kbd>C</kbd>: reset color selection
+ - <kbd>R</kbd>: go back to re-select the RoI
+ - <kbd>Z</kbd>: zero the scale measurement
+ - <kbd>M</kbd>: switch to manual color mode (default)
+ - <kbd>A</kbd>: switch to auto-color mode (the color range is automatically detected each frame)
+ 
+ ## Command-line arguments
+ 
+ You can see the list of command-line arguments by running:
+ 
+ ```$ python CheesyVision2.py --help```
