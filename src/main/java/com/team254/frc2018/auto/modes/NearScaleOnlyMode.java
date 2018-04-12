@@ -106,7 +106,7 @@ public class NearScaleOnlyMode extends AutoModeBase {
                                         (AutoConstants.kUseAutoScaleHeight ?
                                                 new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngle,
                                                         true) :
-                                                new SetSuperstructurePosition(SuperstructureConstants.kScaleLowHeightBackwards,
+                                                new SetSuperstructurePosition(SuperstructureConstants.kScaleLowHeightBackwards + 3.0,
                                                         SuperstructureConstants.kScoreBackwardsAngle, true)
                                         ),
 

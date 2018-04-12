@@ -11,8 +11,8 @@ import edu.wpi.first.wpilibj.Timer;
 public class AutoSuperstructurePosition implements Action {
     private static final CheesyVision2 mCheesyVision2 = CheesyVision2.getInstance();
     private static final Superstructure mSuperstructure = Superstructure.getInstance();
-    private static final double kHeightEpsilon = 3.0;
-    private static final double kAngleEpsilon = 10.0;
+    private static final double kHeightEpsilon = 2.0;
+    private static final double kAngleEpsilon = 5.0;
 
     private final int mNumCubes;
     private double mHeight;

@@ -9,8 +9,8 @@ import edu.wpi.first.wpilibj.Timer;
 
 public class SetSuperstructurePosition implements Action {
     private static final Superstructure mSuperstructure = Superstructure.getInstance();
-    private static final double kHeightEpsilon = 3.0;
-    private static final double kAngleEpsilon = 10.0;
+    private static final double kHeightEpsilon = 2.0;
+    private static final double kAngleEpsilon = 5.0;
 
     private final double mHeight;
     private final double mAngle;
