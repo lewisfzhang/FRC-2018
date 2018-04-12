@@ -36,7 +36,7 @@ public class NearScaleOnlyMode extends AutoModeBase {
         mNearFence3ToNearScale = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().nearFence3ToNearScale.get(mStartedLeft));
         mNearFence3ToEndPose = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().nearFence3ToEndPose.get(mStartedLeft));
 
-        mNearFenceWaitTime = mTrajectoryGenerator.getTrajectorySet().nearScaleToNearFence.get(mStartedLeft).getLastState().t() - 0.1;
+        mNearFenceWaitTime = mTrajectoryGenerator.getTrajectorySet().nearScaleToNearFence.get(mStartedLeft).getLastState().t() - 0.15 + 0.25;
         mNearFence2WaitTime = mTrajectoryGenerator.getTrajectorySet().nearScaleToNearFence2.get(mStartedLeft).getLastState().t() - 0.1;
         mNearFence3WaitTime = mTrajectoryGenerator.getTrajectorySet().nearScaleToNearFence3.get(mStartedLeft).getLastState().t() - 0.1;
 
@@ -58,10 +58,16 @@ public class NearScaleOnlyMode extends AutoModeBase {
                         ),
                         new SeriesAction(
                                 Arrays.asList(
-                                        new WaitUntilInsideRegion(new Translation2d(130.0, -20.0), new Translation2d
+                                        new WaitUntilInsideRegion(new Translation2d(110.0, -20.0), new Translation2d
                                                 (260, 50), mStartedLeft),
-                                        new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngle,
-                                                true),
+
+                                        (AutoConstants.kUseAutoScaleHeight ?
+                                            new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngle,
+                                                    true) :
+                                            new SetSuperstructurePosition(SuperstructureConstants.kScaleNeutralHeightBackwards,
+                                                    SuperstructureConstants.kScoreBackwardsAngle, true)
+                                        ),
+
                                         new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d
                                                 (260, 1000), mStartedLeft),
                                         new ShootCube(AutoConstants.kFullShootPower)
@@ -95,10 +101,15 @@ public class NearScaleOnlyMode extends AutoModeBase {
                         mNearFenceToNearScale,
                         new SeriesAction(
                                 Arrays.asList(
-                                        new WaitAction(AutoConstants.kWaitForCubeTime),
                                         new SetIntaking(false, true),
-                                        new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngle,
-                                                true),
+
+                                        (AutoConstants.kUseAutoScaleHeight ?
+                                                new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngle,
+                                                        true) :
+                                                new SetSuperstructurePosition(SuperstructureConstants.kScaleLowHeightBackwards,
+                                                        SuperstructureConstants.kScoreBackwardsAngle, true)
+                                        ),
+
                                         new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d
                                                 (260, 1000), mStartedLeft),
                                         new ShootCube(AutoConstants.kFullShootPower)
@@ -127,10 +138,15 @@ public class NearScaleOnlyMode extends AutoModeBase {
                         mNearFence2ToNearScale,
                         new SeriesAction(
                                 Arrays.asList(
-                                        new WaitAction(AutoConstants.kWaitForCubeTime),
                                         new SetIntaking(false, true),
-                                        new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngle,
-                                                true),
+
+                                        (AutoConstants.kUseAutoScaleHeight ?
+                                                new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngle,
+                                                        true) :
+                                                new SetSuperstructurePosition(SuperstructureConstants.kScaleLowHeightBackwards,
+                                                        SuperstructureConstants.kScoreBackwardsAngle, true)
+                                        ),
+
                                         new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d
                                                 (260, 1000), mStartedLeft),
                                         new ShootCube(AutoConstants.kFullShootPower)
@@ -151,7 +167,6 @@ public class NearScaleOnlyMode extends AutoModeBase {
                         ))
                 )
         ));
-        runAction(new OpenCloseJawAction(false));
         runAction(new WaitAction(AutoConstants.kWaitForCubeTime));
 
         /*
@@ -169,22 +184,28 @@ public class NearScaleOnlyMode extends AutoModeBase {
                 )
         ));*/
 
-        /*// Score fourth cube
+        // Score fourth cube
         runAction(new ParallelAction(
                 Arrays.asList(
                         mNearFence3ToNearScale,
                         new SeriesAction(
                                 Arrays.asList(
-                                        new WaitAction(AutoConstants.kWaitForCubeTime),
-                                        new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngle,
-                                                true),
+                                        new SetIntaking(false, true),
+
+                                        (AutoConstants.kUseAutoScaleHeight ?
+                                                new AutoSuperstructurePosition(1, SuperstructureConstants.kScoreBackwardsAngle,
+                                                        true) :
+                                                new SetSuperstructurePosition(SuperstructureConstants.kScaleNeutralHeightBackwards,
+                                                        SuperstructureConstants.kScoreBackwardsAngle, true)
+                                        ),
+
                                         new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d
                                                 (260, 1000), mStartedLeft),
                                         new ShootCube(AutoConstants.kFullShootPower)
                                 )
                         )
                 )
-        ));*/
+        ));
 
     }
 }

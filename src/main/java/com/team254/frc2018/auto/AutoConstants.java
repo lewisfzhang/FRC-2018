@@ -6,6 +6,8 @@ public class AutoConstants {
     public final static double kMediumShootPower = 0.66;
     public final static double kWeakShootPower = 0.50;
 
-    public final static double kWaitForCubeTime = 0.2;
+    public final static double kWaitForCubeTime = 0.15;
+
+    public final static boolean kUseAutoScaleHeight = false;
 
 }
