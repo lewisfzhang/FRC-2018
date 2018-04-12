@@ -6,53 +6,26 @@ import com.team254.frc2018.auto.modes.*;
 
 public class SwitchAndScaleAutoModeCreator implements AutoModeCreator {
 
-    private boolean mRobotStartedOnLeft;
-    private NearScaleNearSwitchMode mEasyScaleEasySwitch;
-    private NearScaleFarSwitchMode mEasyScaleHardSwitch;
-    private FarScaleNearSwitchMode mHardScaleEasySwitch;
-    private FarScaleFarSwitchMode mHardScaleHardSwitch;
-
-    public SwitchAndScaleAutoModeCreator(boolean robotStartedOnLeft) {
-        // Make all 4 possible auto modes, and they make their paths
-        System.out.println("SwitchAndScaleAutoModeCreator, make some paths?" + robotStartedOnLeft);
-        mRobotStartedOnLeft = robotStartedOnLeft;
-        mEasyScaleEasySwitch = new NearScaleNearSwitchMode(robotStartedOnLeft);
-        mEasyScaleHardSwitch = new NearScaleFarSwitchMode(robotStartedOnLeft);
-        mHardScaleEasySwitch = new FarScaleNearSwitchMode(robotStartedOnLeft);
-        mHardScaleHardSwitch = new FarScaleFarSwitchMode(robotStartedOnLeft);
-    }
+    // Pre build trajectories to go left and right
+    private SwitchAndScaleMode mLeftSwitchLeftScale = new SwitchAndScaleMode(true, true);
+    private SwitchAndScaleMode mRightSwitchRightScale = new SwitchAndScaleMode(false, false);
+    private SwitchAndScaleMode mLeftSwitchRightScale = new SwitchAndScaleMode(true, false);
+    private SwitchAndScaleMode mRightSwitchLeftScale = new SwitchAndScaleMode(false, true);
 
     @Override
     public AutoModeBase getStateDependentAutoMode(AutoFieldState fieldState) {
-        // Return which of the 4 modes is correct for this arrangement
-        System.out.print("Getting SwitchAndScaleAutoModeCreator for " + mRobotStartedOnLeft + " / " + fieldState.toString());
-        if (mRobotStartedOnLeft) {
-            if (fieldState.getScaleSide() == AutoFieldState.Side.LEFT && fieldState.getOurSwitchSide() == AutoFieldState.Side.LEFT) {
-                return mEasyScaleEasySwitch;
-            }
-            if (fieldState.getScaleSide() == AutoFieldState.Side.LEFT && fieldState.getOurSwitchSide() == AutoFieldState.Side.RIGHT) {
-                return mEasyScaleHardSwitch;
-            }
-            if (fieldState.getScaleSide() == AutoFieldState.Side.RIGHT && fieldState.getOurSwitchSide() == AutoFieldState.Side.LEFT) {
-                return mHardScaleEasySwitch;
-            }
-            if (fieldState.getScaleSide() == AutoFieldState.Side.RIGHT && fieldState.getOurSwitchSide() == AutoFieldState.Side.RIGHT) {
-                return mHardScaleHardSwitch;
+        if (fieldState.getOurSwitchSide() == AutoFieldState.Side.LEFT) {
+            if(fieldState.getScaleSide() == AutoFieldState.Side.LEFT) {
+                return mLeftSwitchLeftScale;
+            } else {
+                return mLeftSwitchRightScale;
             }
         } else {
-            if (fieldState.getScaleSide() == AutoFieldState.Side.LEFT && fieldState.getOurSwitchSide() == AutoFieldState.Side.LEFT) {
-                return mHardScaleHardSwitch;
-            }
-            if (fieldState.getScaleSide() == AutoFieldState.Side.LEFT && fieldState.getOurSwitchSide() == AutoFieldState.Side.RIGHT) {
-                return mHardScaleEasySwitch;
-            }
-            if (fieldState.getScaleSide() == AutoFieldState.Side.RIGHT && fieldState.getOurSwitchSide() == AutoFieldState.Side.LEFT) {
-                return mEasyScaleHardSwitch;
-            }
-            if (fieldState.getScaleSide() == AutoFieldState.Side.RIGHT && fieldState.getOurSwitchSide() == AutoFieldState.Side.RIGHT) {
-                return mEasyScaleEasySwitch;
+            if(fieldState.getScaleSide() == AutoFieldState.Side.LEFT) {
+                return mRightSwitchLeftScale;
+            } else {
+                return mRightSwitchRightScale;
             }
         }
-        return null;
     }
 }

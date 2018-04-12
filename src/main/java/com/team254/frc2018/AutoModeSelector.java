@@ -95,7 +95,7 @@ public class AutoModeSelector {
             case CROSS_AUTO_LINE:
                 return Optional.of(new CrossAutoLineCreator());
             case SCALE_AND_SWITCH:
-                return Optional.of(new SwitchAndScaleAutoModeCreator(startOnLeft));
+                return Optional.of(new SwitchAndScaleAutoModeCreator());
             case ONLY_SCALE:
                 return Optional.of(new ScaleOnlyAutoModeCreator(startOnLeft));
             default:
