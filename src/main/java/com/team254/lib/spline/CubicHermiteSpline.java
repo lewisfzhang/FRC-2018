@@ -52,6 +52,12 @@ public class CubicHermiteSpline extends Spline {
     }
 
     @Override
+    public double getVelocity(double t) {
+        // TODO implement this
+        return 1.0;
+    }
+
+    @Override
     public double getCurvature(double t) {
         final double dx = 3 * t * t * ax + 2 * t * bx + cx;
         final double dy = 3 * t * t * ay + 2 * t * by + cy;

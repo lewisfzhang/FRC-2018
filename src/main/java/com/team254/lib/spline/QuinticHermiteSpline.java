@@ -140,6 +140,11 @@ public class QuinticHermiteSpline extends Spline {
     }
 
     @Override
+    public double getVelocity(double t) {
+        return Math.hypot(dx(t), dy(t));
+    }
+
+    @Override
     public double getCurvature(double t) {
         return (dx(t) * ddy(t) - ddx(t) * dy(t)) / ((dx(t) * dx(t) + dy(t) * dy(t)) * Math.sqrt((dx(t) * dx(t) + dy
                 (t) * dy(t))));

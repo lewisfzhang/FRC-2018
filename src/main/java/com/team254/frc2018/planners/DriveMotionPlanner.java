@@ -322,15 +322,6 @@ public class DriveMotionPlanner implements CSVWritable {
         TrajectorySamplePoint<TimedState<Pose2dWithCurvature>> sample_point = mCurrentTrajectory.advance(mDt);
         mSetpoint = sample_point.state();
 
-        // Compute the derivative of curvature.
-        TimedState<Pose2dWithCurvature> prev_pt = mCurrentTrajectory.trajectory().getState(sample_point.index_floor());
-        TimedState<Pose2dWithCurvature> next_pt = mCurrentTrajectory.trajectory().getState(sample_point.index_ceil());
-        double dcurvature_ds = (mIsReversed ? -1.0 : 1.0) * Units.meters_to_inches(next_pt.state().getCurvature() -
-                prev_pt.state().getCurvature()) /
-                Units.inches_to_meters(prev_pt.state().distance(next_pt.state()));
-        if (Double.isNaN(dcurvature_ds)) {
-            dcurvature_ds = 0.0;
-        }
         if (!mCurrentTrajectory.isDone()) {
             // Generate feedforward voltages.
             final double velocity_m = Units.inches_to_meters(mSetpoint.velocity());
