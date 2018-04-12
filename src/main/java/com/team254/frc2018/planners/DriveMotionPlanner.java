@@ -326,8 +326,8 @@ public class DriveMotionPlanner implements CSVWritable {
             // Generate feedforward voltages.
             final double velocity_m = Units.inches_to_meters(mSetpoint.velocity());
             final double curvature_m = Units.meters_to_inches(mSetpoint.state().getCurvature());
-            // TODO check this...units are wrong at previous head
-            final double dcurvature_ds_m = Units.meters_to_inches(Units.meters_to_inches(mSetpoint.state().getDCurvatureDs()));
+            // TODO check this...units are wrong.
+            final double dcurvature_ds_m = Units.meters_to_inches(mSetpoint.state().getDCurvatureDs());
             final double acceleration_m = Units.inches_to_meters(mSetpoint.acceleration());
             final DifferentialDrive.DriveDynamics dynamics = mModel.solveInverseDynamics(
                     new DifferentialDrive.ChassisState(velocity_m, velocity_m * curvature_m),
