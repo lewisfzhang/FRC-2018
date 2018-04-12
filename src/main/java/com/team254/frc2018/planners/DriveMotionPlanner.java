@@ -123,7 +123,7 @@ public class DriveMotionPlanner implements CSVWritable {
             List<Pose2dWithCurvature> flipped = new ArrayList<>(trajectory.length());
             for (int i = 0; i < trajectory.length(); ++i) {
                 flipped.add(new Pose2dWithCurvature(trajectory.getState(i).getPose().transformBy(flip), -trajectory
-                        .getState(i).getCurvature(), -trajectory.getState(i).getDCurvatureDs()));
+                        .getState(i).getCurvature(), trajectory.getState(i).getDCurvatureDs()));
             }
             trajectory = new Trajectory<>(flipped);
         }
@@ -335,13 +335,13 @@ public class DriveMotionPlanner implements CSVWritable {
             // Generate feedforward voltages.
             final double velocity_m = Units.inches_to_meters(mSetpoint.velocity());
             final double curvature_m = Units.meters_to_inches(mSetpoint.state().getCurvature());
-            //final double dcurvature_ds_m = Units.meters_to_inches(Units.meters_to_inches(mSetpoint.state()
-            // .getDCurvatureDs()));
+            final double dcurvature_ds_m = Units.meters_to_inches(Units.meters_to_inches(mSetpoint.state()
+                                           .getDCurvatureDs()));
             final double acceleration_m = Units.inches_to_meters(mSetpoint.acceleration());
             final DifferentialDrive.DriveDynamics dynamics = mModel.solveInverseDynamics(
                     new DifferentialDrive.ChassisState(velocity_m, velocity_m * curvature_m),
                     new DifferentialDrive.ChassisState(acceleration_m,
-                            acceleration_m * curvature_m + velocity_m * velocity_m * dcurvature_ds));
+                            acceleration_m * curvature_m + velocity_m * velocity_m * dcurvature_ds_m));
             mError = current_state.inverse().transformBy(mSetpoint.state().getPose());
 
             if (mFollowerType == FollowerType.FEEDFORWARD_ONLY) {
