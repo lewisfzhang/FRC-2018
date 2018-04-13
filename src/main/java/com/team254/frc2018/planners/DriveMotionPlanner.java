@@ -267,26 +267,18 @@ public class DriveMotionPlanner implements CSVWritable {
 
         // Compute gain parameter.
         final double k = 2.0 * kZeta * Math.sqrt(kBeta * dynamics.chassis_velocity.linear * dynamics.chassis_velocity
-                .linear +
-                dynamics.chassis_velocity.angular * dynamics.chassis_velocity.angular);
-
-        //System.out.println("k=" + k);
+                .linear + dynamics.chassis_velocity.angular * dynamics.chassis_velocity.angular);
 
         // Compute error components.
-        final Translation2d translation_error = current_state.getTranslation().inverse().translateBy(mSetpoint.state
-                ().getTranslation()).scale(Units.inches_to_meters(1.0));
-        final Rotation2d angle_error = current_state.getRotation().inverse().rotateBy(mSetpoint.state().getRotation());
-        final double angle_error_rads = angle_error.getRadians();
+        final double angle_error_rads = mError.getRotation().getRadians();
         final double sin_x_over_x = Util.epsilonEquals(angle_error_rads, 0.0, 1E-2) ?
-                1.0 : angle_error.sin() / angle_error_rads;
+                1.0 : mError.getRotation().sin() / angle_error_rads;
         final DifferentialDrive.ChassisState adjusted_velocity = new DifferentialDrive.ChassisState(
-                dynamics.chassis_velocity.linear * angle_error.cos() +
-                        k * (current_state.getRotation().cos() * translation_error.x() + current_state.getRotation()
-                                .sin() * translation_error.y()),
+                dynamics.chassis_velocity.linear * mError.getRotation().cos() +
+                        k * Units.inches_to_meters(mError.getTranslation().x()),
                 dynamics.chassis_velocity.angular + k * angle_error_rads +
-                        dynamics.chassis_velocity.linear * kBeta * sin_x_over_x *
-                                (current_state.getRotation().cos() * translation_error.y() - current_state
-                                        .getRotation().sin() * translation_error.x()));
+                        dynamics.chassis_velocity.linear * kBeta * sin_x_over_x * Units.inches_to_meters(mError
+                                .getTranslation().y()));
 
 //        System.out.println("ffv: " + dynamics.chassis_velocity + ", newv: " +
 //         adjusted_velocity + ", error (m): " + translation_error + ", (deg): " + angle_error);
@@ -327,7 +319,7 @@ public class DriveMotionPlanner implements CSVWritable {
             final double velocity_m = Units.inches_to_meters(mSetpoint.velocity());
             final double curvature_m = Units.meters_to_inches(mSetpoint.state().getCurvature());
             final double dcurvature_ds_m = Units.meters_to_inches(Units.meters_to_inches(mSetpoint.state()
-                                           .getDCurvatureDs()));
+                    .getDCurvatureDs()));
             final double acceleration_m = Units.inches_to_meters(mSetpoint.acceleration());
             final DifferentialDrive.DriveDynamics dynamics = mModel.solveInverseDynamics(
                     new DifferentialDrive.ChassisState(velocity_m, velocity_m * curvature_m),

@@ -226,13 +226,6 @@ public class DifferentialDrive {
     }
 
     public double getMaxAbsVelocity(double curvature, /*double dcurvature, */double max_abs_voltage) {
-        // a * k + v^2 * dk
-        // v^2 * dk
-        // We know wl / wr, and max wl and wr values.
-        // Rescale max velocity by max accel
-
-
-
         // Alternative implementation:
         // (Tr - Tl) * r_wb / r_w = I * v^2 * dk
         // (Tr + Tl) / r_w = 0
