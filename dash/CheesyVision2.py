@@ -25,9 +25,24 @@ def getBlobs(input):
     hsv = cv2.cvtColor(input, cv2.COLOR_BGR2HSV)
     cv2.medianBlur(hsv, 5, hsv)
     
+    # debug values
+    hue, sat, val = cv2.split(hsv)
+    cv2.imshow("hue", hue)
+    cv2.imshow("saturation", sat)
+    cv2.imshow("value", val)
+    
+    #lap = cv2.Laplacian(sat, cv2.CV_64F)
+    #lap = np.abs(lap)
+    #lap = lap - lap.min()
+    #lap = lap / lap.max()
+    #cv2.imshow("laplacian", lap)
+    
     # threshold
     global minColor, maxColor
-    mask = cv2.inRange(hsv, minColor, maxColor)
+    halfW = hsv.shape[1] // 2
+    maskL = cv2.inRange(hsv[:, :halfW], minColor[0], maxColor[0])
+    maskR = cv2.inRange(hsv[:, halfW:], minColor[1], maxColor[1])
+    mask = np.hstack((maskL, maskR))
     
     # reduce noise with morphological operations
     processMask(mask)
@@ -57,6 +72,8 @@ def getBlobs(input):
     # return the final list
     return blobs, hsv, mask
 
+MAX_LINE_ANGLE = 15
+MAX_LINE_ANGLE_RAD = math.radians(MAX_LINE_ANGLE)
 def process(input):
     if args.auto:
         autoSetColor(input)
@@ -81,26 +98,36 @@ def process(input):
     minT = 70
     maxT = 266
     numIters = 0
+    lastAngle = math.radians(90 - (getAngle() + zeroPoint))
+    MAX_ANGLE_DEV = math.radians(6)
     while maxT > minT+1:
         # detect lines with the current threshold
         midT = (minT+maxT)//2
-        lines = cv2.HoughLines(contourMask, 5, np.pi*0.1/180, midT)
+        lines = cv2.HoughLines(contourMask, 5, np.pi*0.1/180, midT,
+                               min_theta=np.pi/2-MAX_LINE_ANGLE_RAD, max_theta=np.pi/2+MAX_LINE_ANGLE_RAD)
         lines = [] if lines is None else [a[0] for a in lines]
         
         # remove clearly invalid lines
-        lines = [l for l in lines if l[1] > np.pi*3/8 and l[1] < np.pi*5/8]
+        if args.csv_output is not None:
+            for l in lines:
+                args.csv_output.write(f"{start}, {l[0]}, {0}, {getTip()}\n")
         
-        # remove close-dulplicate lines
-        BUCKET_SIZE = 15
+        # remove close-dulplicate lines by Y-intercept in the middle
+        BUCKET_SIZE = 10 # in pixels
         rBuckets = [False]*(1 + int(math.hypot(width, height)/BUCKET_SIZE))
         def keepLine(l):
-            bi1 = int(l[0]//BUCKET_SIZE)+1
-            bi2 = bi1-1 if l[0]%BUCKET_SIZE<BUCKET_SIZE/2 else bi1+1
-            if rBuckets[bi1] or rBuckets[bi2]:
+            try:
+                rho, theta = l
+                val = (rho - (width//2)*math.cos(theta)) / math.sin(theta)
+                bi1 = int(val//BUCKET_SIZE) + 1
+                bi2 = bi1-1 if val%BUCKET_SIZE < BUCKET_SIZE/2 else bi1+1
+                if rBuckets[bi1] or rBuckets[bi2]:
+                    return False
+                rBuckets[bi1] = True
+                rBuckets[bi2] = True
+                return True
+            except:
                 return False
-            rBuckets[bi1] = True
-            rBuckets[bi2] = True
-            return True
         lines = [l for l in lines if keepLine(l)]
         
         # update/end
@@ -116,7 +143,10 @@ def process(input):
     # send angle data to be processed
     lineAngles = None
     if len(lines) == NUM_LINES:
-        lineAngles = (90 - math.degrees(l[1]) for l in lines)
+        lineAngles = [90 - math.degrees(l[1]) for l in lines]
+        if args.csv_output is not None:
+            for l in lines:
+                args.csv_output.write(f"{start}, {0}, {l[0]}, {getTip()}\n")
     updateAngle(lineAngles)
     
     
@@ -354,9 +384,10 @@ def autoSetColor(input):
     
     # set color range
     global minColor, maxColor
-    minColor = (minH, minS, minV)
-    maxColor = (maxH, 255, 255)
-    # print("auto:", minColor, maxColor)
+    minColor[0] = (minH, minS, minV)
+    maxColor[0] = (maxH, 255, 255)
+    minColor[1] = minColor[0]
+    maxColor[1] = maxColor[0]
     
     
     end = time.perf_counter()
@@ -374,7 +405,7 @@ SMOOTH_HISTORY = 1.0 # amount of history to consider for smoothing (seconds)
 SMOOTH_FIT_DEGREE = 2 # degree of polynomial fit for smoothing
 STEADY_HISTORY = 1.0 # amount of history to consider for steadiness (seconds)
 STEADY_THRESHOLD = 4.0 # angle variation considered "steady" (degrees)
-MAX_SKEW = 2.2 # maximum skew between the top & bottom lines (degrees)
+MAX_SKEW = 3.0 #2.2 # maximum skew between the top & bottom lines (degrees)
 TIPPED_THRESHOLD = 3.5 # angle at which the scale is "tipped" (degrees)
 UNTIPPED_THRESHOLD = 2.7 # angle at which the scale is no longer "tipped" (degrees)
 
@@ -536,12 +567,11 @@ else:
 ############### main code ###############
 #########################################
 
-global minColor, maxColor
-minColor = (0,0,0)
-maxColor = (0,0,0)
-H_PAD = 10
-S_PAD = 20
-V_PAD = 20
+minColor = [(0,0,0), (0,0,0)]
+maxColor = [(0,0,0), (0,0,0)]
+H_PAD = 5
+S_PAD = 10
+V_PAD = 10
 
 roi = None
 gotROI = False
@@ -576,8 +606,10 @@ def onMouse(event, x, y, flags, param):
     if not (leftDown or rightDown):
         return
     
+    ci = 0 if x < w/2 else 1
+    
     if event == cv2.EVENT_RBUTTONDOWN:
-        maxColor = (0,0,0)
+        maxColor[ci] = (0,0,0)
     
     def addPixel(x, y):
         global curFrame, minColor, maxColor
@@ -586,12 +618,12 @@ def onMouse(event, x, y, flags, param):
         color = curFrame[y, x]
         newMinColor = (float(color[0])-H_PAD, float(color[1])-S_PAD, float(color[2])-V_PAD)
         newMaxColor = (float(color[0])+H_PAD, float(color[1])+S_PAD, float(color[2])+V_PAD)
-        if maxColor == (0,0,0):
-            minColor = newMinColor
-            maxColor = newMaxColor
+        if maxColor[ci] == (0,0,0):
+            minColor[ci] = newMinColor
+            maxColor[ci] = newMaxColor
         elif leftDown or rightDown:
-            minColor = tuple(map(min, minColor, newMinColor))
-            maxColor = tuple(map(max, maxColor, newMaxColor))
+            minColor[ci] = tuple(map(min, minColor[ci], newMinColor))
+            maxColor[ci] = tuple(map(max, maxColor[ci], newMaxColor))
     
     BRUSH_R = 4 # radius of brush
     for x2 in range(x-BRUSH_R, x+BRUSH_R+1):
@@ -599,21 +631,17 @@ def onMouse(event, x, y, flags, param):
             addPixel(x2, y2)
 
 def onKey(key):
-    global minColor, maxColor, gotROI
+    global minColor, maxColor, gotROI, exposure
     print(f"key: {key}")
     if key == ord("c") or key == ord("C"):
-        minColor = (0,0,0)
-        maxColor = (0,0,0)
+        minColor[0], minColor[1] = (0,0,0), (0,0,0)
+        maxColor[0], maxColor[1] = (0,0,0), (0,0,0)
     if key == ord("z") or key == ord("Z"):
         zeroAngle()
     if key == ord("a") or key == ord("A"):
-        if frameROI is not None:
-            print("user:", minColor, maxColor)
-            args.auto = True
-            print()
+        args.auto = True
     if key == ord("m") or key == ord("M"):
-        if frameROI is not None:
-            args.auto = False
+        args.auto = False
     if key == ord("r") or key == ord("R"):
         gotROI = False
     if key == ord("d") or key == ord("D"):
@@ -621,6 +649,14 @@ def onKey(key):
         print(f"    switching device id to {args.device}")
         global cap
         cap = initCapture()
+    if key == ord("s") or key == ord("S"):
+        cap.set(cv2.CAP_PROP_SETTINGS, 1)
+    if key == ord("-") or key == ord("_"):
+        exposure -= 1
+        cap.set(cv2.CAP_PROP_EXPOSURE, exposure)
+    if key == ord("=") or key == ord("+"):
+        exposure += 1
+        cap.set(cv2.CAP_PROP_EXPOSURE, exposure)
 
 ######### VideoCapture #########
 def initCapture():
@@ -637,6 +673,9 @@ def initCapture():
             initCapture()
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+    global exposure
+    exposure = cap.get(cv2.CAP_PROP_EXPOSURE)
+    cap.set(cv2.CAP_PROP_EXPOSURE, exposure) # disable auto exposure & white balance
     # cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
     # cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
     print("    done.")
@@ -731,8 +770,8 @@ while True:
         
         cv2.setMouseCallback("raw", onMouse)
         
-        if args.csv_output is not None:
-            args.csv_output.write(f"{start}, {curAngle}, {getAngle()}, {getTip()}\n")
+        # if args.csv_output is not None and dbg1 is not None:
+        #     args.csv_output.write(f"{start}, {dbg1}, {dbg2}, {getTip()}\n")
     else:
         frameROI = None
     
