@@ -6,6 +6,7 @@ import com.team254.frc2018.auto.actions.*;
 import com.team254.frc2018.auto.AutoConstants;
 import com.team254.frc2018.paths.TrajectoryGenerator;
 import com.team254.frc2018.states.SuperstructureConstants;
+import com.team254.frc2018.subsystems.CheesyVision2;
 import com.team254.lib.geometry.Translation2d;
 
 import java.util.Arrays;
@@ -61,7 +62,7 @@ public class NearScaleOnlyMode extends AutoModeBase {
                                         new WaitUntilInsideRegion(new Translation2d(110.0, -20.0), new Translation2d
                                                 (260, 50), mStartedLeft),
 
-                                        (AutoConstants.kUseAutoScaleHeight ?
+                                        (CheesyVision2.getInstance().isConnected() ?
                                             new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngle,
                                                     true) :
                                             new SetSuperstructurePosition(SuperstructureConstants.kScaleNeutralHeightBackwards,
@@ -103,10 +104,10 @@ public class NearScaleOnlyMode extends AutoModeBase {
                                 Arrays.asList(
                                         new SetIntaking(false, true),
 
-                                        (AutoConstants.kUseAutoScaleHeight ?
+                                        (CheesyVision2.getInstance().isConnected() ?
                                                 new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngle,
                                                         true) :
-                                                new SetSuperstructurePosition(SuperstructureConstants.kScaleLowHeightBackwards + 3.0,
+                                                new SetSuperstructurePosition(SuperstructureConstants.kScaleNeutralHeightBackwards + 3.0,
                                                         SuperstructureConstants.kScoreBackwardsAngle, true)
                                         ),
 
@@ -140,10 +141,10 @@ public class NearScaleOnlyMode extends AutoModeBase {
                                 Arrays.asList(
                                         new SetIntaking(false, true),
 
-                                        (AutoConstants.kUseAutoScaleHeight ?
+                                        (CheesyVision2.getInstance().isConnected() ?
                                                 new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngle,
                                                         true) :
-                                                new SetSuperstructurePosition(SuperstructureConstants.kScaleLowHeightBackwards,
+                                                new SetSuperstructurePosition(SuperstructureConstants.kScaleNeutralHeightBackwards,
                                                         SuperstructureConstants.kScoreBackwardsAngle, true)
                                         ),
 
@@ -192,7 +193,7 @@ public class NearScaleOnlyMode extends AutoModeBase {
                                 Arrays.asList(
                                         new SetIntaking(false, true),
 
-                                        (AutoConstants.kUseAutoScaleHeight ?
+                                        (CheesyVision2.getInstance().isConnected() ?
                                                 new AutoSuperstructurePosition(1, SuperstructureConstants.kScoreBackwardsAngle,
                                                         true) :
                                                 new SetSuperstructurePosition(SuperstructureConstants.kScaleNeutralHeightBackwards,

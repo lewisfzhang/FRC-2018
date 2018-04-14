@@ -6,6 +6,7 @@ import com.team254.frc2018.auto.AutoModeEndedException;
 import com.team254.frc2018.auto.actions.*;
 import com.team254.frc2018.paths.TrajectoryGenerator;
 import com.team254.frc2018.states.SuperstructureConstants;
+import com.team254.frc2018.subsystems.CheesyVision2;
 import com.team254.lib.geometry.Pose2dWithCurvature;
 import com.team254.lib.geometry.Translation2d;
 import com.team254.lib.trajectory.Trajectory;
@@ -20,8 +21,10 @@ public class SwitchAndScaleMode extends AutoModeBase {
     private DriveTrajectory mStartToSwitch;
     private DriveTrajectory mSwitchToPyramidCube;
     private DriveTrajectory mPyramidCubeToScale;
+    private DriveTrajectory mScaleToFence;
+    private DriveTrajectory mFenceToScale;
 
-    private double mStartCubeWaitTime;
+    private double mStartCubeWaitTime, mFenceWaitTime, mPyramidWaitTime;
 
     public SwitchAndScaleMode(boolean isSwitchOnLeft, boolean isScaleOnLeft) {
         mSwitchLeft = isSwitchOnLeft;
@@ -36,6 +39,12 @@ public class SwitchAndScaleMode extends AutoModeBase {
         }
         mSwitchToPyramidCube = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().switchToCenterPyramidCube.get(mSwitchLeft));
         mPyramidCubeToScale = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().centerPyramidCubeToScale.get(mScaleLeft));
+        mScaleToFence = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().scaleToFence.get(mScaleLeft));
+        mFenceToScale = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().fenceToScale.get(mScaleLeft));
+
+        mFenceWaitTime = mTrajectoryGenerator.getTrajectorySet().nearScaleToNearFence.get(mScaleLeft).getLastState().t() - 0.15 + 0.25;
+        mPyramidWaitTime = mTrajectoryGenerator.getTrajectorySet().switchToCenterPyramidCube.get(mScaleLeft).getLastState().t() - 0.15;
+
     }
 
 
@@ -51,7 +60,7 @@ public class SwitchAndScaleMode extends AutoModeBase {
                         new SeriesAction(
                                 Arrays.asList(
                                         new WaitAction(mStartCubeWaitTime),
-                                        new ShootCube(AutoConstants.kMediumShootPower)
+                                        new ShootCube(AutoConstants.kFullShootPower)
                                 )
                         )
                 )
@@ -61,11 +70,24 @@ public class SwitchAndScaleMode extends AutoModeBase {
         runAction(new ParallelAction(
                 Arrays.asList(
                         mSwitchToPyramidCube,
-                        new SetIntaking(true, false),
-                        new OpenCloseJawAction(true)
+                        new SeriesAction(
+                                Arrays.asList(
+                                        new WaitUntilInsideRegion(new Translation2d(-1000.0, -50.0), new Translation2d
+                                                (1000.0, 50.0), mSwitchLeft),
+                                        new SetIntaking(true, false),
+                                        new OpenCloseJawAction(true)
+                                )
+                        ),
+                        new SeriesAction(
+                                Arrays.asList(
+                                        new WaitAction(mPyramidWaitTime),
+                                        new OpenCloseJawAction(false)
+                                )
+                        )
+
                 )
         ));
-        new OpenCloseJawAction(false);
+
         runAction(new WaitAction(AutoConstants.kWaitForCubeTime));
 
         //Score second cube
@@ -79,22 +101,73 @@ public class SwitchAndScaleMode extends AutoModeBase {
                                         new WaitUntilInsideRegion(new Translation2d(140.0, -1000.0), new Translation2d
                                                 (260.0, 1000.0), mScaleLeft),
 
-                                        (AutoConstants.kUseAutoScaleHeight ?
+                                        (CheesyVision2.getInstance().isConnected() ?
                                                 new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngle,
                                                         true) :
-                                                new SetSuperstructurePosition(SuperstructureConstants.kScaleNeutralHeightBackwards,
-                                                        45.0, true)
+                                                new SetSuperstructurePosition(SuperstructureConstants.kScaleHighHeightBackwards,
+                                                        SuperstructureConstants.kScoreBackwardsAngle, true)
                                         ),
 
                                         new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d
-                                                (260, 1000), mScaleLeft),
+                                                (280, 1000), mScaleLeft),
                                         new ShootCube(AutoConstants.kFullShootPower)
                                 )
                         )
                 )
         ));
 
-        //Todo: grab third cube
+        // Get third cube
+        runAction(new ParallelAction(
+                Arrays.asList(
+                        new SeriesAction(
+                                Arrays.asList(
+                                        new WaitAction(0.25),
+                                        mScaleToFence
+                                )
+                        ),
+                        new OpenCloseJawAction(true),
+                        new SetIntaking(true, false),
+                        new SeriesAction(Arrays.asList(
+                                new WaitAction(mFenceWaitTime),
+                                new OpenCloseJawAction(false)
+                        ))
+                )
+        ));
+        runAction(new WaitAction(AutoConstants.kWaitForCubeTime));
+        runAction(new WaitAction(AutoConstants.kWaitForCubeTime));
+
+        // Score third cube
+        runAction(new ParallelAction(
+                Arrays.asList(
+                        mFenceToScale,
+                        new SeriesAction(
+                                Arrays.asList(
+                                        new SetIntaking(false, true),
+
+                                        (CheesyVision2.getInstance().isConnected() ?
+                                                new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngle,
+                                                        true) :
+                                                new SetSuperstructurePosition(SuperstructureConstants.kScaleNeutralHeightBackwards + 3.0,
+                                                        SuperstructureConstants.kScoreBackwardsAngle, true)
+                                        ),
+
+                                        new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d
+                                                (280, 1000), mScaleLeft),
+                                        new WaitAction(AutoConstants.kWaitForCubeTime),
+                                        new ShootCube(AutoConstants.kFullShootPower)
+                                )
+                        )
+                )
+        ));
+    }
+
+    public static void main(String[] args) {
+        mTrajectoryGenerator.generateTrajectories();
+        Trajectory<TimedState<Pose2dWithCurvature>> traj = mTrajectoryGenerator.getTrajectorySet().scaleToFence.get(false);
+        for(int i = 0; i < traj.length(); i++) {
+            Translation2d t = traj.getState(i).state().getTranslation();
+            System.out.println(t.x() + "\t" + t.y());
+        }
 
     }
 

@@ -6,6 +6,7 @@ import com.team254.frc2018.auto.actions.*;
 import com.team254.frc2018.auto.AutoConstants;
 import com.team254.frc2018.paths.TrajectoryGenerator;
 import com.team254.frc2018.states.SuperstructureConstants;
+import com.team254.frc2018.subsystems.CheesyVision2;
 import com.team254.frc2018.subsystems.Drive;
 import com.team254.lib.geometry.Translation2d;
 import com.team254.lib.util.DriveSignal;
@@ -63,8 +64,14 @@ public class FarScaleOnlyMode extends AutoModeBase {
                                 Arrays.asList(
                                         new WaitUntilInsideRegion(new Translation2d(130.0, 150.0), new Translation2d
                                                 (260, 200.0), mStartedLeft),
-                                        new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngle,
-                                                true),
+
+                                        (CheesyVision2.getInstance().isConnected() ?
+                                                new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngle,
+                                                        true) :
+                                                new SetSuperstructurePosition(SuperstructureConstants.kScaleHighHeightBackwards,
+                                                        SuperstructureConstants.kScoreBackwardsAngle, true)
+                                        ),
+
                                         new WaitUntilInsideRegion(new Translation2d(245.0, 150.0), new Translation2d
                                                 (260, 1000), mStartedLeft),
                                         new ShootCube(AutoConstants.kFullShootPower)
@@ -100,8 +107,14 @@ public class FarScaleOnlyMode extends AutoModeBase {
                                 Arrays.asList(
                                         new WaitAction(AutoConstants.kWaitForCubeTime),
                                         new SetIntaking(false, true),
-                                        new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngle,
-                                                true),
+
+                                        (CheesyVision2.getInstance().isConnected() ?
+                                                new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngle,
+                                                        true) :
+                                                new SetSuperstructurePosition(SuperstructureConstants.kScaleNeutralHeightBackwards,
+                                                        SuperstructureConstants.kScoreBackwardsAngle, true)
+                                        ),
+
                                         new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d
                                                 (260, 1000), mStartedLeft),
                                         new ShootCube(AutoConstants.kFullShootPower)
@@ -132,8 +145,14 @@ public class FarScaleOnlyMode extends AutoModeBase {
                                 Arrays.asList(
                                         new WaitAction(AutoConstants.kWaitForCubeTime),
                                         new SetIntaking(false, true),
-                                        new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngle,
-                                                true),
+
+                                        (CheesyVision2.getInstance().isConnected() ?
+                                                new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngle,
+                                                        true) :
+                                                new SetSuperstructurePosition(SuperstructureConstants.kScaleNeutralHeightBackwards,
+                                                        SuperstructureConstants.kScoreBackwardsAngle, true)
+                                        ),
+
                                         new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d
                                                 (260, 1000), mStartedLeft),
                                         new ShootCube(AutoConstants.kFullShootPower)
