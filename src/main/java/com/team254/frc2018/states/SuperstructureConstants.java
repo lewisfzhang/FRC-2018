@@ -56,7 +56,7 @@ public class SuperstructureConstants {
 
     public final static double kIntakeThirdLevelHeight = 25.5;
     public final static double kIntakeSecondLevelHeight = 14.5;
-    public final static double kIntakeFloorLevelHeight = 0.0;
+    public final static double kIntakeFloorLevelHeight = 5.75;
 
     public final static double kSwitchHeight = 30.0;
     public final static double kSwitchHeightBackwards = 27.0;
