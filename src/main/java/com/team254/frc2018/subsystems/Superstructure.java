@@ -38,6 +38,7 @@ public class Superstructure extends Subsystem {
             SuperstructureStateMachine.WantedAction.IDLE;
     private Solenoid mUnlockHookSolenoid =  Constants.makeSolenoidForId(Constants.kUnlockHookSolenoid);
     private Solenoid mJazzHandsSolenoid =  Constants.makeSolenoidForId(Constants.kJazzHandsSolenoid);
+    private Solenoid mKickstandSolenoid = Constants.makeSolenoidForId(Constants.kKickstandSolenoid);
 
     private boolean isHangMode;
     private boolean isWristJogging = false;
@@ -139,6 +140,14 @@ public class Superstructure extends Subsystem {
             public void onLoop(double timestamp) {
                 synchronized (Superstructure.this) {
                     updateObservedState(mState);
+
+                    if (mKickstandSolenoid.get()) {
+                        // Kickstand is fired, so not engaged.
+                        mStateMachine.setMaxHeight(SuperstructureConstants.kElevatorMaxHeight);
+                    } else {
+                        mStateMachine.setMaxHeight(SuperstructureConstants.kElevatorMaxHeightKickEngaged);
+                    }
+
                     mCommand = mStateMachine.update(timestamp, mWantedAction, mState);
                     setFromCommandState(mCommand);
                 }
@@ -212,5 +221,9 @@ public class Superstructure extends Subsystem {
 
     public synchronized void setHangMode(boolean activated) {
         isHangMode = activated;
+    }
+
+    public synchronized void setKickstand(boolean engaged) {
+        mKickstandSolenoid.set(!engaged);
     }
 }

@@ -163,6 +163,7 @@ public class Constants {
     public static final int kElevatorShifterSolenoidId = 8;
     public static final int kUnlockHookSolenoid = 4;
     public static final int kJazzHandsSolenoid = 5;
+    public static final int kKickstandSolenoid = 3;
 
     // Control Board
     public static final boolean kUseGamepadForDriving = false;
@@ -182,6 +183,9 @@ public class Constants {
     public static final double kElevatorThrottleDeadband = 0.3;
     public static final double kMinShootTimeSec = 0.2;
     public static final double kJazzHandsEpsilon = 2.5;
+
+    public static final double kKickstandToggleRumbleTime = 0.5;
+    public static final double kKickstandDelay = 1.0;
 
     /**
      * Make an {@link Solenoid} instance for the single-number ID of the solenoid

@@ -66,12 +66,18 @@ public class Robot extends IterativeRobot {
     private LatchedBoolean mLowShiftPressed = new LatchedBoolean();
     private LatchedBoolean mHighShiftPressed = new LatchedBoolean();
 
+    private LatchedBoolean mKickStandReleased = new LatchedBoolean();
+    private MinTimeBoolean mKickStandRumble = new MinTimeBoolean(Constants.kKickstandToggleRumbleTime);
+
     private MinTimeBoolean mShootDelayed = new MinTimeBoolean(Constants.kMinShootTimeSec);
     private MinTimeBoolean mPoopyShootDelayed = new MinTimeBoolean(Constants.kMinShootTimeSec);
 
     private DelayedBoolean mIntakeLightsDelayed = new DelayedBoolean(Timer.getFPGATimestamp(), 0.1);
 
     private boolean mInHangMode;
+    private boolean mKickStandEngaged;
+
+    private double mLastHangModeTimestamp = 0.0;
 
     private AutoModeExecuter mAutoModeExecuter;
 
@@ -105,6 +111,7 @@ public class Robot extends IterativeRobot {
 
             // Set the auto field state at least once.
             mAutoFieldState.setSides(DriverStation.getInstance().getGameSpecificMessage());
+            mKickStandEngaged = true;
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
             throw t;
@@ -157,6 +164,8 @@ public class Robot extends IterativeRobot {
 
             mLED.setEnableFaults(false);
             mEnabledLooper.start();
+
+            mSuperstructure.setKickstand(true);
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
             throw t;
@@ -188,6 +197,9 @@ public class Robot extends IterativeRobot {
             mPoopyShootDelayed.update(false, Double.POSITIVE_INFINITY);
             mDrive.setVelocity(DriveSignal.NEUTRAL, DriveSignal.NEUTRAL);
             mDrive.setOpenLoop(new DriveSignal(0.05, 0.05));
+
+            mKickStandEngaged = true;
+            mKickStandReleased.update(true);
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
             throw t;
@@ -306,6 +318,9 @@ public class Robot extends IterativeRobot {
                     mSuperstructure.setElevatorHighGear();
                 }
                 mSuperstructure.setUnlockHookSolenoid(true);
+                mKickStandEngaged = true;
+                mLastHangModeTimestamp = timestamp;
+                mKickStandReleased.update(true);
             } else {
                 mSuperstructure.setUnlockHookSolenoid(false);
                 mForklift.retract();
@@ -390,11 +405,53 @@ public class Robot extends IterativeRobot {
                 }
 
                 // Rumble
-                if (runIntake && mIntakeLightsDelayed.update(Timer.getFPGATimestamp(), mIntake.definitelyHasCube())) {
+                boolean should_rumble = runIntake &&
+                        mIntakeLightsDelayed.update(Timer.getFPGATimestamp(),
+                                mIntake.definitelyHasCube());
+
+                boolean kick_stand_released =
+                        mKickStandReleased.update(!mControlBoard.getToggleKickstand())
+                        && (timestamp - mLastHangModeTimestamp > Constants.kKickstandDelay);
+                // Only toggle if below.
+                if (kick_stand_released &&
+                        (mElevator.getInchesOffGround() <
+                                SuperstructureConstants.kClearFirstStageMaxHeight)) {
+                    mKickStandEngaged = !mKickStandEngaged;
+                    // Force a rising edge.
+                    mKickStandRumble.update(false, timestamp);
+                    mKickStandRumble.update(true, timestamp);
+                }
+
+                should_rumble = should_rumble | mKickStandRumble.update(false, timestamp);
+                if (should_rumble) {
                     mControlBoard.setRumble(true);
                 } else {
                     mControlBoard.setRumble(false);
                 }
+
+                double back_high_height = mKickStandEngaged ?
+                        SuperstructureConstants.kScaleHighHeightBackwards :
+                        SuperstructureConstants.kScaleHighHeightBackwardsNoKick;
+                double back_neutral_height = mKickStandEngaged ?
+                        SuperstructureConstants.kScaleNeutralHeightBackwards :
+                        SuperstructureConstants.kScaleNeutralHeightBackwardsNoKick;
+                double back_low_height = mKickStandEngaged ?
+                        SuperstructureConstants.kScaleLowHeightBackwards :
+                        SuperstructureConstants.kScaleLowHeightBackwardsNoKick;
+
+                double high_height = mKickStandEngaged ?
+                        SuperstructureConstants.kScaleHighHeight :
+                        SuperstructureConstants.kScaleHighHeightNoKick;
+                double neutral_height = mKickStandEngaged ?
+                        SuperstructureConstants.kScaleNeutralHeight :
+                        SuperstructureConstants.kScaleNeutralHeightNoKick;
+                double low_height = mKickStandEngaged ?
+                        SuperstructureConstants.kScaleLowHeight :
+                        SuperstructureConstants.kScaleLowHeightNoKick;
+
+                double backwards_angle = mKickStandEngaged ?
+                        SuperstructureConstants.kScoreBackwardsAngle :
+                        SuperstructureConstants.kScoreBackwardsAngleNoKick;
 
                 // Presets.
                 double desired_height = Double.NaN;
@@ -424,47 +481,17 @@ public class Robot extends IterativeRobot {
                     } else if (go_low_scale) {
                         desired_height = SuperstructureConstants.kIntakeFloorLevelHeight;
                     }
-                } else if (mControlBoard.getAutoHeightModifier()) {
-                    if (mControlBoard.getBackwardsModifier()) {
-                        if (go_high_scale) {
-                            desired_height = mCheesyVision2.getDesiredHeight(true, 2);
-                            desired_angle = SuperstructureConstants.kScoreBackwardsAngle;
-                        } else if (go_neutral_scale) {
-                            desired_height = mCheesyVision2.getDesiredHeight(true, 1);
-                            desired_angle = SuperstructureConstants.kScoreBackwardsAngle;
-                        } else if (go_low_scale) {
-                            desired_height = mCheesyVision2.getDesiredHeight(true, 0);
-                            desired_angle = SuperstructureConstants.kScoreBackwardsAngle;
-                        } else if (go_switch) {
-                            desired_height = SuperstructureConstants.kSwitchHeightBackwards;
-                            desired_angle = SuperstructureConstants.kScoreSwitchBackwardsAngle;
-                        }
-                    } else {
-                        if (go_high_scale) {
-                            desired_height = mCheesyVision2.getDesiredHeight(false, 2);
-                            desired_angle = SuperstructureConstants.kScoreForwardAngledAngle;
-                        } else if (go_neutral_scale) {
-                            desired_height = mCheesyVision2.getDesiredHeight(false, 1);
-                            desired_angle = SuperstructureConstants.kScoreForwardAngledAngle;
-                        } else if (go_low_scale) {
-                            desired_height = mCheesyVision2.getDesiredHeight(false, 0);
-                            desired_angle = SuperstructureConstants.kScoreForwardAngledAngle;
-                        } else if (go_switch) {
-                            desired_height = SuperstructureConstants.kSwitchHeight;
-                            desired_angle = SuperstructureConstants.kPlacingLowAngle;
-                        }
-                    }
                 } else if (mControlBoard.getBackwardsModifier()) {
                     // These are score backwards
                     if (go_high_scale) {
-                        desired_height = SuperstructureConstants.kScaleHighHeightBackwards;
-                        desired_angle = SuperstructureConstants.kScoreBackwardsAngle;
+                        desired_height = back_high_height;
+                        desired_angle = backwards_angle;
                     } else if (go_neutral_scale) {
-                        desired_height = SuperstructureConstants.kScaleNeutralHeightBackwards;
-                        desired_angle = SuperstructureConstants.kScoreBackwardsAngle;
+                        desired_height = back_neutral_height;
+                        desired_angle = backwards_angle;
                     } else if (go_low_scale) {
-                        desired_height = SuperstructureConstants.kScaleLowHeightBackwards;
-                        desired_angle = SuperstructureConstants.kScoreBackwardsAngle;
+                        desired_height = back_low_height;
+                        desired_angle = backwards_angle;
                     } else if (go_switch) {
                         desired_height = SuperstructureConstants.kSwitchHeightBackwards;
                         desired_angle = SuperstructureConstants.kScoreSwitchBackwardsAngle;
@@ -472,13 +499,13 @@ public class Robot extends IterativeRobot {
                 } else {
                     // These are score forward
                     if (go_high_scale) {
-                        desired_height = SuperstructureConstants.kScaleHighHeight;
+                        desired_height = high_height;
                         desired_angle = SuperstructureConstants.kScoreForwardAngledAngle;
                     } else if (go_neutral_scale) {
-                        desired_height = SuperstructureConstants.kScaleNeutralHeight;
+                        desired_height = neutral_height;
                         desired_angle = SuperstructureConstants.kScoreForwardAngledAngle;
                     } else if (go_low_scale) {
-                        desired_height = SuperstructureConstants.kScaleLowHeight;
+                        desired_height = low_height;
                         desired_angle = SuperstructureConstants.kScoreForwardAngledAngle;
                     } else if (go_switch) {
                         desired_height = SuperstructureConstants.kSwitchHeight;
@@ -542,7 +569,9 @@ public class Robot extends IterativeRobot {
                     mSuperstructure.setWristJog(
                             wrist_jog * SuperstructureConstants.kWristJogThrottle);
                 }
+
             }
+            mSuperstructure.setKickstand(mKickStandEngaged);
 
             outputToSmartDashboard();
         } catch (Throwable t) {

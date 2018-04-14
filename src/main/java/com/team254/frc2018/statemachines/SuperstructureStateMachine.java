@@ -33,10 +33,14 @@ public class SuperstructureStateMachine {
 
     private double mOpenLoopPower = 0.0;
     private boolean mManualWantsLowGear = false;
+    private double mMaxHeight = SuperstructureConstants.kElevatorMaxHeight;
 
     public synchronized void resetManual() {
         mOpenLoopPower = 0.0;
         mManualWantsLowGear = false;
+    }
+    public synchronized void setMaxHeight(double height) {
+        mMaxHeight = height;
     }
 
     public synchronized void setManualWantsLowGear(boolean wantsLowGear) {
@@ -63,7 +67,7 @@ public class SuperstructureStateMachine {
 
     public synchronized void jogElevator(double relative_inches) {
         mScoringHeight += relative_inches;
-        mScoringHeight = Math.min(mScoringHeight, SuperstructureConstants.kElevatorMaxHeight);
+        mScoringHeight = Math.min(mScoringHeight, mMaxHeight);
         mScoringHeight = Math.max(mScoringHeight, SuperstructureConstants.kElevatorMinHeight);
     }
 
@@ -112,7 +116,7 @@ public class SuperstructureStateMachine {
             // Pump elevator planner only if not jogging.
             if (!mCommand.openLoopElevator) {
                 mCommandedState = mPlanner.update(currentState);
-                mCommand.height = mCommandedState.height;
+                mCommand.height = Math.min(mCommandedState.height, mMaxHeight);
                 mCommand.wristAngle = mCommandedState.angle;
             }
 

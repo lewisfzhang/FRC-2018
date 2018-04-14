@@ -4,6 +4,7 @@ public class SuperstructureConstants {
     public static final double kWristMinAngle = 0.0;
     public static final double kWristMaxAngle = 180.0;
     public static final double kElevatorMaxHeight = 85.0;
+    public static final double kElevatorMaxHeightKickEngaged = 78.0;
     public static final double kElevatorMinHeight = 4.0;
 
     public static final double kClearFirstStageMaxHeight = 33.0;
@@ -35,13 +36,21 @@ public class SuperstructureConstants {
     public final static double kIntakePositionAngle = 180.0;
 
     // Elevator Heights.
-    public final static double kScaleHighHeight = 85.0;
-    public final static double kScaleNeutralHeight = 75.0;
-    public final static double kScaleLowHeight = 63.0;
+    public final static double kScaleHighHeight = 78.0;
+    public final static double kScaleNeutralHeight = 78.0;
+    public final static double kScaleLowHeight = 66.0;
+
+    public final static double kScaleHighHeightNoKick = 85.0;
+    public final static double kScaleNeutralHeightNoKick = 75.0;
+    public final static double kScaleLowHeightNoKick = 63.0;
 
     public final static double kScaleHighHeightBackwards = 78.0; //75.0 without kickstand
     public final static double kScaleNeutralHeightBackwards = 68.0; //65.0 without kickstand
     public final static double kScaleLowHeightBackwards = 58.0; //55.0 without kickstand
+
+    public final static double kScaleHighHeightBackwardsNoKick = 75.0;
+    public final static double kScaleNeutralHeightBackwardsNoKick = 65.0;
+    public final static double kScaleLowHeightBackwardsNoKick = 55.0;
 
     public final static double kCubeOffset = 10.0;
 
@@ -55,6 +64,7 @@ public class SuperstructureConstants {
     // Wrist Angles.
     public final static double kVerticalAngle = 90.0;
     public final static double kScoreBackwardsAngle = 0.0; //45.0 without kickstand
+    public final static double kScoreBackwardsAngleNoKick = 45.0;
     public final static double kScoreForwardAngledAngle = 135.0;
     public final static double kScoreSwitchBackwardsAngle = 0.0;
 

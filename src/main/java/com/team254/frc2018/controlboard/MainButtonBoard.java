@@ -135,4 +135,7 @@ public class MainButtonBoard implements IButtonControlBoard {
     public boolean getWantsCubeLEDBlink() {
         return false;
     }
+
+    @Override
+    public boolean getToggleKickstand() { return false; }
 }

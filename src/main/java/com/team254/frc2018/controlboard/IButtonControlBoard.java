@@ -52,4 +52,6 @@ public interface IButtonControlBoard {
 
     // LED
     boolean getWantsCubeLEDBlink();
+
+    boolean getToggleKickstand();
 }

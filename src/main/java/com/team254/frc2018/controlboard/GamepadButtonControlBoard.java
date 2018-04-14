@@ -78,7 +78,7 @@ public class GamepadButtonControlBoard implements IButtonControlBoard {
 
     @Override
     public boolean getAutoHeightModifier() {
-        return mJoystick.getRawButton(7);
+        return false;
     }
 
     //Jog Elevator
@@ -139,4 +139,7 @@ public class GamepadButtonControlBoard implements IButtonControlBoard {
     public boolean getWantsCubeLEDBlink() {
         return mJoystick.getRawButton(8);
     }
+
+    @Override
+    public boolean getToggleKickstand() { return mJoystick.getRawButton(7); }
 }

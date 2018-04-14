@@ -171,4 +171,9 @@ public class ControlBoard implements IControlBoard {
     public void setRumble(boolean on) {
         mButtonControlBoard.setRumble(on);
     }
+
+    @Override
+    public boolean getToggleKickstand() {
+        return mButtonControlBoard.getToggleKickstand();
+    }
 }
