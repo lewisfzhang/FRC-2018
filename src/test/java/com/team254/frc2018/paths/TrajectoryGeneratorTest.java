@@ -103,9 +103,7 @@ public class TrajectoryGeneratorTest {
 
         verifyMirroredTrajectories(TrajectoryGenerator.getInstance().getTrajectorySet().nearFenceToNearScale, true);
         verifyMirroredTrajectories(TrajectoryGenerator.getInstance().getTrajectorySet().nearFence2ToNearScale, true);
-        verifyMirroredTrajectories(TrajectoryGenerator.getInstance().getTrajectorySet().nearFenceToFarSwitch, true);
 
-        verifyMirroredTrajectories(TrajectoryGenerator.getInstance().getTrajectorySet().farFenceToNearSwitch, true);
         verifyMirroredTrajectories(TrajectoryGenerator.getInstance().getTrajectorySet().farFenceToFarScale, true);
         verifyMirroredTrajectories(TrajectoryGenerator.getInstance().getTrajectorySet().farFence2ToFarScale, true);
     }
