@@ -75,7 +75,7 @@ public class CheesyVision2 extends Subsystem {
         }
 
         //assume we are losing the scale if we don't have a reading
-        if(error || !isConnected()) {
+        if(!isConnected()) { // check for error as well?
             baseHeight = backwards ? SuperstructureConstants.kScaleHighHeightBackwards : SuperstructureConstants.kScaleHighHeight;
         }
 
