@@ -141,12 +141,14 @@ public class Superstructure extends Subsystem {
                 synchronized (Superstructure.this) {
                     updateObservedState(mState);
 
-                    if (mKickstandSolenoid.get()) {
+                    if (!isKickStandEngaged()) {
                         // Kickstand is fired, so not engaged.
                         mStateMachine.setMaxHeight(SuperstructureConstants.kElevatorMaxHeight);
                     } else {
                         mStateMachine.setMaxHeight(SuperstructureConstants.kElevatorMaxHeightKickEngaged);
                     }
+
+                    mIntake.setKickStand(isKickStandEngaged());
 
                     mCommand = mStateMachine.update(timestamp, mWantedAction, mState);
                     setFromCommandState(mCommand);
@@ -225,5 +227,9 @@ public class Superstructure extends Subsystem {
 
     public synchronized void setKickstand(boolean engaged) {
         mKickstandSolenoid.set(!engaged);
+    }
+
+    public synchronized boolean isKickStandEngaged() {
+        return !mKickstandSolenoid.get();
     }
 }

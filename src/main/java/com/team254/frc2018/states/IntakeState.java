@@ -16,7 +16,10 @@ public class IntakeState {
     public boolean leftCubeSensorTriggered = false;
     public boolean rightCubeSensorTriggered = false;
 
-    public LEDState ledState = new LEDState();
+    // Kinda doesn't belong, but avoid cyclic dependencies...
+    public boolean kickStandEngaged = true;
+
+    public TimedLEDState ledState = TimedLEDState.StaticLEDState.kStaticOff;
 
     public void setPower(double power) {
         leftMotor = rightMotor = power;

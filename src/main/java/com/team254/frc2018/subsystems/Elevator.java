@@ -87,7 +87,7 @@ public class Elevator extends Subsystem {
 
         TalonSRXUtil.checkError(
                 mMaster.config_kF(
-                        kHighGearSlot, Constants.kElevatorHighGearKf + Constants.kElevatorHighGearKd / 100.0, Constants.kLongCANTimeoutMs),
+                        kHighGearSlot, Constants.kElevatorHighGearKf, Constants.kLongCANTimeoutMs),
                 "Could not set elevator kf: ");
 
         TalonSRXUtil.checkError(

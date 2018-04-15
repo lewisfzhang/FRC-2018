@@ -29,6 +29,7 @@ public class Intake extends Subsystem {
     private IntakeState.JawState mJawState;
     private IntakeState mCurrentState = new IntakeState();
     private IntakeStateMachine mStateMachine = new IntakeStateMachine();
+    private boolean mKickStandEngaged = true;
 
     private Intake() {
         mCloseSolenoid = Constants.makeSolenoidForId(Constants.kIntakeCloseSolenoid);
@@ -73,6 +74,7 @@ public class Intake extends Subsystem {
         mCurrentState.rightCubeSensorTriggered = getRightBannerSensor();
         mCurrentState.wristAngle = Wrist.getInstance().getAngle();
         mCurrentState.wristSetpoint = Wrist.getInstance().getSetpoint();
+        mCurrentState.kickStandEngaged = mKickStandEngaged;
         return mCurrentState;
     }
 
@@ -196,6 +198,10 @@ public class Intake extends Subsystem {
 
     public synchronized void closeJaw() {
         mStateMachine.setWantedJawState(IntakeState.JawState.CLOSED);
+    }
+
+    public synchronized void setKickStand(boolean engaged) {
+        mKickStandEngaged = engaged;
     }
 
     @Override
