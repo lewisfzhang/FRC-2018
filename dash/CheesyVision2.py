@@ -212,7 +212,8 @@ def process(input):
         drawText(f"angle = {int(angle*100)/100} deg  (tip = {getTip()})", 60, PRE_SZ//2, (0,255,0), fromM=0.5)
         if errorMsg is not None:
             drawText(errorMsg, 5, 60, (0,0,255), fromM=1)
-    
+
+    cv2.line(output, (int(output.shape[1] / 2), 0), (int(output.shape[1]/ 2), output.shape[0]), (255, 0, 0), 2)
     cv2.imshow("raw", output)
 
 
