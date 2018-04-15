@@ -92,12 +92,12 @@ def process(input):
     contourMask = cv2.copyMakeBorder(contourMask, 1,1,1,1, cv2.BORDER_CONSTANT)
     
     # find lines using the Hough lines transform
-    lines = cv2.HoughLines(contourMask, 5, np.pi*0.1/180, 1,
+    lines = cv2.HoughLines(contourMask, 1, np.pi*0.1/180, 1,
                            min_theta=np.pi/2-MAX_LINE_ANGLE_RAD, max_theta=np.pi/2+MAX_LINE_ANGLE_RAD)
     lines = [] if lines is None else lines.reshape((len(lines), 2))
     
     # remove close-dulplicate lines by Y-intercept in the middle
-    BUCKET_SIZE = 10 # in pixels
+    BUCKET_SIZE = 5 # in pixels
     rBuckets = set()
     def keepLine(l):
         rho, theta = l
@@ -183,8 +183,8 @@ def process(input):
         drawText(f"angle = {int(angle*100)/100} deg  (tip = {getTip()})", 60, PRE_SZ//2, (0,255,0), fromM=0.5)
         if errorMsg is not None:
             drawText(errorMsg, 5, 60, (0,0,255), fromM=1)
-
-    cv2.line(output, (int(output.shape[1] / 2), 0), (int(output.shape[1]/ 2), output.shape[0]), (255, 0, 0), 2)
+    
+    cv2.line(output, (output.shape[1]//2, 0), (output.shape[1]//2, output.shape[0]), (255, 0, 0), 2)
     cv2.imshow("raw", output)
 
 
