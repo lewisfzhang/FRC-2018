@@ -90,63 +90,34 @@ def process(input):
     for b in blobs:
         cv2.drawContours(contourMask, [b["contour"]], 0, (255), offset=(-1,-1))
     contourMask = cv2.copyMakeBorder(contourMask, 1,1,1,1, cv2.BORDER_CONSTANT)
-    #cv2.imshow("contourMask", contourMask)
     
-    # binary search & Hough transform to find the two best lines
-    NUM_LINES = 2
-    lines = []
-    minT = 70
-    maxT = 266
-    numIters = 0
-    lastAngle = math.radians(90 - (getAngle() + zeroPoint))
-    MAX_ANGLE_DEV = math.radians(6)
-    while maxT > minT+1:
-        # detect lines with the current threshold
-        midT = (minT+maxT)//2
-        lines = cv2.HoughLines(contourMask, 5, np.pi*0.1/180, midT,
-                               min_theta=np.pi/2-MAX_LINE_ANGLE_RAD, max_theta=np.pi/2+MAX_LINE_ANGLE_RAD)
-        lines = [] if lines is None else [a[0] for a in lines]
-        
-        # remove clearly invalid lines
-        if args.csv_output is not None:
-            for l in lines:
-                args.csv_output.write(f"{start}, {l[0]}, {0}, {getTip()}\n")
-        
-        # remove close-dulplicate lines by Y-intercept in the middle
-        BUCKET_SIZE = 10 # in pixels
-        rBuckets = [False]*(1 + int(math.hypot(width, height)/BUCKET_SIZE))
-        def keepLine(l):
-            try:
-                rho, theta = l
-                val = (rho - (width//2)*math.cos(theta)) / math.sin(theta)
-                bi1 = int(val//BUCKET_SIZE) + 1
-                bi2 = bi1-1 if val%BUCKET_SIZE < BUCKET_SIZE/2 else bi1+1
-                if rBuckets[bi1] or rBuckets[bi2]:
-                    return False
-                rBuckets[bi1] = True
-                rBuckets[bi2] = True
-                return True
-            except:
-                return False
-        lines = [l for l in lines if keepLine(l)]
-        
-        # update/end
-        numIters += 1
-        if len(lines) < NUM_LINES:
-            maxT = midT
-        elif len(lines) > NUM_LINES:
-            minT = midT
-        else:
-            # print(numIters, midT)
-            break
+    # find lines using the Hough lines transform
+    lines = cv2.HoughLines(contourMask, 5, np.pi*0.1/180, 1,
+                           min_theta=np.pi/2-MAX_LINE_ANGLE_RAD, max_theta=np.pi/2+MAX_LINE_ANGLE_RAD)
+    lines = [] if lines is None else lines.reshape((len(lines), 2))
+    
+    # remove close-dulplicate lines by Y-intercept in the middle
+    BUCKET_SIZE = 10 # in pixels
+    rBuckets = set()
+    def keepLine(l):
+        rho, theta = l
+        val = (rho - (width//2)*math.cos(theta)) / math.sin(theta)
+        bi1 = int(val//BUCKET_SIZE) + 1
+        bi2 = bi1-1 if val%BUCKET_SIZE < BUCKET_SIZE/2 else bi1+1
+        if (bi1 in rBuckets) or (bi2 in rBuckets):
+            return False
+        rBuckets.add(bi1)
+        rBuckets.add(bi2)
+        return True
+    lines = [l for l in lines if keepLine(l)]
+    
+    # use the two best lines
+    lines = lines[:2]
     
     # send angle data to be processed
     lineAngles = None
-    if len(lines) == NUM_LINES:
+    if len(lines) == 2:
         lineAngles = [90 - math.degrees(l[1]) for l in lines]
-        if args.csv_output is not None:
-            for l in lines:
-                args.csv_output.write(f"{start}, {0}, {l[0]}, {getTip()}\n")
     updateAngle(lineAngles)
     
     
