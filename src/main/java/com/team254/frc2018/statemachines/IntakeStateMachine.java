@@ -3,6 +3,7 @@ package com.team254.frc2018.statemachines;
 import com.team254.frc2018.states.IntakeState;
 import com.team254.frc2018.states.LEDState;
 import com.team254.frc2018.states.SuperstructureConstants;
+import com.team254.frc2018.states.TimedLEDState;
 import com.team254.lib.util.TimeDelayedBoolean;
 
 public class IntakeStateMachine {
@@ -110,7 +111,7 @@ public class IntakeStateMachine {
         } else {
             commandedState.jawState = mWantedJawState;
         }
-        commandedState.ledState.copyFrom(LEDState.kIntakeOpenLoop);
+        commandedState.ledState = TimedLEDState.StaticLEDState.kStaticOff;
     }
 
     // KEEP_CUBE
@@ -144,7 +145,9 @@ public class IntakeStateMachine {
                 commandedState.setPower(kHoldSetpoint);
             }
             commandedState.jawState = clamp ? IntakeState.JawState.CLAMPED : IntakeState.JawState.OPEN;
-            commandedState.ledState.copyFrom(LEDState.kIntakeHasCube);
+            commandedState.ledState = currentState.kickStandEngaged ?
+                    TimedLEDState.StaticLEDState.kHasCube :
+                    TimedLEDState.BlinkingLEDState.kHasCube;
             if (resetSeenCubeTime) {
                 mLastSeenCubeTime = timestamp;
             }
@@ -160,7 +163,7 @@ public class IntakeStateMachine {
                 commandedState.jawState = mustStayClosed(currentState) ? IntakeState.JawState.CLOSED : (mWantedJawState == IntakeState.JawState.OPEN ? IntakeState.JawState.OPEN : IntakeState.JawState.CLOSED);
             }
 
-            commandedState.ledState.copyFrom(LEDState.kIntakeIntaking);
+            commandedState.ledState = TimedLEDState.StaticLEDState.kIntaking;
         }
     }
 

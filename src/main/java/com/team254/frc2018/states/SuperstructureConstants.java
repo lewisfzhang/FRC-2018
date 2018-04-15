@@ -32,7 +32,7 @@ public class SuperstructureConstants {
     public final static double kStowedPositionHeight = 0.0;
     public final static double kStowedPositionAngle = 0.0;
 
-    public final static double kIntakePositionHeight = 0.0;
+    public final static double kIntakePositionHeight = 5.75;
     public final static double kIntakePositionAngle = 180.0;
 
     // Elevator Heights.

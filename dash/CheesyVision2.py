@@ -27,9 +27,9 @@ def getBlobs(input):
     
     # debug values
     hue, sat, val = cv2.split(hsv)
-    cv2.imshow("hue", hue)
-    cv2.imshow("saturation", sat)
-    cv2.imshow("value", val)
+    #cv2.imshow("hue", hue)
+    #cv2.imshow("saturation", sat)
+    #cv2.imshow("value", val)
     
     #lap = cv2.Laplacian(sat, cv2.CV_64F)
     #lap = np.abs(lap)
@@ -183,7 +183,8 @@ def process(input):
         drawText(f"angle = {int(angle*100)/100} deg  (tip = {getTip()})", 60, PRE_SZ//2, (0,255,0), fromM=0.5)
         if errorMsg is not None:
             drawText(errorMsg, 5, 60, (0,0,255), fromM=1)
-    
+
+    cv2.line(output, (int(output.shape[1] / 2), 0), (int(output.shape[1]/ 2), output.shape[0]), (255, 0, 0), 2)
     cv2.imshow("raw", output)
 
 

@@ -3,6 +3,7 @@ package com.team254.frc2018.subsystems;
 import com.team254.frc2018.loops.ILooper;
 import com.team254.frc2018.loops.Loop;
 import com.team254.frc2018.states.LEDState;
+import com.team254.frc2018.states.TimedLEDState;
 
 public class LED extends Subsystem {
     private static final double kHangingBlinkDuration = 0.5; // In sec
@@ -21,7 +22,7 @@ public class LED extends Subsystem {
     private boolean mFaultsEnabled = false;
 
     private LEDState mDesiredLEDState = new LEDState(0.0, 0.0, 0.0);
-    private LEDState mIntakeLEDState = new LEDState(0.0, 0.0, 0.0);
+    private TimedLEDState mIntakeLEDState = TimedLEDState.StaticLEDState.kStaticOff;
 
     public synchronized static LED getInstance() {
         if (mInstance == null) {
@@ -34,8 +35,8 @@ public class LED extends Subsystem {
        mCarriageCanifier = CarriageCanifier.getInstance();
     }
 
-    public synchronized void setIntakeLEDState(LEDState intakeLEDState) {
-        mIntakeLEDState.copyFrom(intakeLEDState);
+    public synchronized void setIntakeLEDState(TimedLEDState intakeLEDState) {
+        mIntakeLEDState = intakeLEDState;
     }
 
     public synchronized void setWantedAction(WantedAction wantedAction) {
@@ -68,7 +69,7 @@ public class LED extends Subsystem {
 
                     switch (mSystemState) {
                         case DISPLAYING_INTAKE:
-                            setIntakeLEDCommand();
+                            setIntakeLEDCommand(timeInState);
                             break;
                         case DISPLAYING_FAULT:
                             setFaultLEDCommand(timeInState);
@@ -95,9 +96,10 @@ public class LED extends Subsystem {
         });
     }
 
-    private void setIntakeLEDCommand() {
-        mDesiredLEDState.copyFrom(mIntakeLEDState);
+    private void setIntakeLEDCommand(double timeInState) {
+        mIntakeLEDState.getCurrentLEDState(mDesiredLEDState, timeInState);
     }
+
     private void setFaultLEDCommand(double timeInState) {
          // Blink red.
         if ((int)(timeInState / kFaultBlinkDuration) % 2 == 0) {
