@@ -25,18 +25,6 @@ def getBlobs(input):
     hsv = cv2.cvtColor(input, cv2.COLOR_BGR2HSV)
     cv2.medianBlur(hsv, 5, hsv)
     
-    # debug values
-    hue, sat, val = cv2.split(hsv)
-    #cv2.imshow("hue", hue)
-    #cv2.imshow("saturation", sat)
-    #cv2.imshow("value", val)
-    
-    #lap = cv2.Laplacian(sat, cv2.CV_64F)
-    #lap = np.abs(lap)
-    #lap = lap - lap.min()
-    #lap = lap / lap.max()
-    #cv2.imshow("laplacian", lap)
-    
     # threshold
     global minColor, maxColor
     halfW = hsv.shape[1] // 2
@@ -122,7 +110,7 @@ def process(input):
     
     
     ### draw debug info onto the input image and show it ###
-    output = input
+    output = input.copy()
     fadeHSV(output, mask)
     
     # detected lines
@@ -548,6 +536,8 @@ V_PAD = 10
 roi = None
 gotROI = False
 
+frozen = False
+
 global width, height
 def onMouse_raw(event, x, y, flags, param):
     global roi, gotROI, width, height
@@ -623,6 +613,9 @@ def onKey(key):
         cap = initCapture()
     if key == ord("s") or key == ord("S"):
         cap.set(cv2.CAP_PROP_SETTINGS, 1)
+    if key == ord("f") or key == ord("F"):
+        global frozen
+        frozen = not frozen
     if key == ord("-") or key == ord("_"):
         exposure -= 1
         cap.set(cv2.CAP_PROP_EXPOSURE, exposure)
@@ -668,7 +661,9 @@ first_call = True
 
 while True:
     # read the next frame and make sure it's valid
-    if args.input_image is None:
+    if args.input_image is not None:
+        frame = inputImage.copy()
+    elif not frozen:
         ret, frame = cap.read()
         def isFrameOK():
             if not ret or frame is None:
@@ -684,8 +679,6 @@ while True:
             continue
         if args.scale != 1.0:
             frame = cv2.resize(frame, (0,0), fx=args.scale, fy=args.scale)
-    else:
-        frame = inputImage.copy()
     
     height, width = frame.shape[:2]
     
