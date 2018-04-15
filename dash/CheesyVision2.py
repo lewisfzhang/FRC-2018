@@ -27,9 +27,9 @@ def getBlobs(input):
     
     # debug values
     hue, sat, val = cv2.split(hsv)
-    cv2.imshow("hue", hue)
-    cv2.imshow("saturation", sat)
-    cv2.imshow("value", val)
+    #cv2.imshow("hue", hue)
+    #cv2.imshow("saturation", sat)
+    #cv2.imshow("value", val)
     
     #lap = cv2.Laplacian(sat, cv2.CV_64F)
     #lap = np.abs(lap)
