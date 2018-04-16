@@ -14,34 +14,46 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * Handles things related to scale angle detection.
  */
 public class CheesyVision2 extends Subsystem {
-    
+    public static final double kSmallThreshold = 2.7;
+    public static final double kLargeThreshold = 3.5;
+
     private static CheesyVision2 mInstance;
-    
+
     public synchronized static CheesyVision2 getInstance() {
         if (mInstance == null) {
             mInstance = new CheesyVision2();
         }
         return mInstance;
     }
-    
+
+    public enum ScaleHeight {
+        LOW,
+        NEUTRAL,
+        HIGH
+    }
+
     private CheesyVision2() {}
     
-    private double angle = 0, tip = 0;
-    private boolean error = true;
-    private double lastHeartbeatValue = -1, lastHeartbeatTime = Double.NEGATIVE_INFINITY;
+    private double mAngle = 0.0;
+    private double mTip = 0.0;
+    private boolean mError = true;
+    private double mLastHeartbeatValue = -1;
+    private double mLastHeartbeatTime = Double.NEGATIVE_INFINITY;
+    private ScaleHeight mFilteredHeight = ScaleHeight.HIGH;
+
 
     /**
      * @return true if the robot is receiving data from the scale tracker
      */
     public boolean isConnected() {
-        return Timer.getFPGATimestamp() < lastHeartbeatTime + Constants.kScaleTrackerTimeout;
+        return Timer.getFPGATimestamp() < mLastHeartbeatTime + Constants.kScaleTrackerTimeout;
     }
 
     /**
      * @return true if the system doesn't have a good reading of the scale
      */
     public boolean getError() {
-        return error;
+        return mError;
     }
     
     /**
@@ -50,7 +62,7 @@ public class CheesyVision2 extends Subsystem {
      *         negative = left side raised)
      */
     public double getAngle() {
-        return angle;
+        return mAngle;
     }
 
     /**
@@ -58,20 +70,18 @@ public class CheesyVision2 extends Subsystem {
      *         plate, as seen from the driver station (-1, 0, or +1)
      */
     public double getTip() {
-        return tip;
+        return mTip;
     }
 
     public synchronized double getDesiredHeight(boolean backwards, int cubeNum) {
-        double correctedTip = tip * (AutoFieldState.getInstance().getScaleSide() == Side.RIGHT ? 1.0 : -1.0);
-
         double baseHeight;
 
-        if(correctedTip > 0.5) {
-            baseHeight = backwards ? SuperstructureConstants.kScaleHighHeightBackwards : SuperstructureConstants.kScaleHighHeight;
-        } else if(correctedTip < -0.5) {
+        if (mFilteredHeight == ScaleHeight.LOW) {
             baseHeight = backwards ? SuperstructureConstants.kScaleLowHeightBackwards : SuperstructureConstants.kScaleLowHeight;
-        } else {
+        } else if (mFilteredHeight == ScaleHeight.NEUTRAL) {
             baseHeight = backwards ? SuperstructureConstants.kScaleNeutralHeightBackwards : SuperstructureConstants.kScaleNeutralHeight;
+        } else {
+            baseHeight = backwards ? SuperstructureConstants.kScaleHighHeightBackwards : SuperstructureConstants.kScaleHighHeight;
         }
 
         //assume we are losing the scale if we don't have a reading
@@ -82,6 +92,47 @@ public class CheesyVision2 extends Subsystem {
         baseHeight += cubeNum * SuperstructureConstants.kCubeOffset;
 
         return baseHeight;
+    }
+
+    private synchronized ScaleHeight getNewFilteredScaleHeight() {
+        // If we are not connected, we are just HIGH
+        if (!isConnected()) {
+            return ScaleHeight.HIGH;
+        }
+
+        double corrected_angle =
+                mAngle * (AutoFieldState.getInstance().getScaleSide() == Side.RIGHT ? 1.0 : -1.0);
+
+        // Always latch upwards.
+        switch (mFilteredHeight) {
+            case HIGH:
+                if (corrected_angle < -kSmallThreshold) {
+                    return ScaleHeight.LOW;
+                } else if (corrected_angle < kSmallThreshold) {
+                    return ScaleHeight.NEUTRAL;
+                } else {
+                    return ScaleHeight.HIGH;
+                }
+            case NEUTRAL:
+                if (corrected_angle < -kLargeThreshold) {
+                    return ScaleHeight.LOW;
+                } else if (corrected_angle > kSmallThreshold) {
+                    return ScaleHeight.HIGH;
+                } else {
+                    return ScaleHeight.NEUTRAL;
+                }
+            case LOW:
+                if (corrected_angle > kSmallThreshold) {
+                    return ScaleHeight.HIGH;
+                } else if (corrected_angle > -kSmallThreshold) {
+                    return ScaleHeight.NEUTRAL;
+                } else {
+                    return ScaleHeight.LOW;
+                }
+            default:
+                System.out.println("Invalid previous filtered height");
+                return ScaleHeight.HIGH;
+        }
     }
 
     @Override
@@ -105,15 +156,25 @@ public class CheesyVision2 extends Subsystem {
         Loop loop = new Loop() {
             @Override
             public void onStart(double timestamp) {}
+
             @Override
             public void onLoop(double timestamp) {
-                angle = SmartDashboard.getNumber("scaleAngle", Double.NaN);
-                tip = SmartDashboard.getNumber("scaleTip", Double.NaN);
-                error = SmartDashboard.getBoolean("scaleError", true);
-                double heartbeat = SmartDashboard.getNumber("scaleHeartbeat", -2);
-                if (heartbeat > lastHeartbeatValue) {
-                    lastHeartbeatValue = heartbeat;
-                    lastHeartbeatTime = timestamp;
+                synchronized (CheesyVision2.this) {
+                    mAngle = SmartDashboard.getNumber("scaleAngle", Double.NaN);
+                    mTip = SmartDashboard.getNumber("scaleTip", Double.NaN);
+                    mError = SmartDashboard.getBoolean("scaleError", true);
+                    double heartbeat = SmartDashboard.getNumber("scaleHeartbeat", -2);
+                    if (heartbeat > mLastHeartbeatValue) {
+                        mLastHeartbeatValue = heartbeat;
+                        mLastHeartbeatTime = timestamp;
+                    }
+                    ScaleHeight newHight = getNewFilteredScaleHeight();
+
+                    if (newHight != mFilteredHeight) {
+                        System.out.println("Detected scale height change: " + mFilteredHeight + " -> " + newHight);
+                        mFilteredHeight = newHight;
+                    }
+
                 }
             }
             

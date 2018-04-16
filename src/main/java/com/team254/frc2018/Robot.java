@@ -101,6 +101,7 @@ public class Robot extends IterativeRobot {
 
             mLED.registerEnabledLoops(mEnabledLooper);
             mLED.registerEnabledLoops(mDisabledLooper);
+            mCheesyVision2.registerEnabledLoops(mDisabledLooper);
 
             mTrajectoryGenerator.generateTrajectories();
 
