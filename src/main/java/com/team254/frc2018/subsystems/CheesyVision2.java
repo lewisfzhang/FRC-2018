@@ -45,8 +45,9 @@ public class CheesyVision2 extends Subsystem {
     /**
      * @return true if the robot is receiving data from the scale tracker
      */
-    public boolean isConnected() {
-        return Timer.getFPGATimestamp() < mLastHeartbeatTime + Constants.kScaleTrackerTimeout;
+    public synchronized boolean isConnected() {
+        return Timer.getFPGATimestamp() < mLastHeartbeatTime + Constants.kScaleTrackerTimeout ||
+                Double.isNaN(mAngle);
     }
 
     /**
@@ -96,7 +97,7 @@ public class CheesyVision2 extends Subsystem {
 
     private synchronized ScaleHeight getNewFilteredScaleHeight() {
         // If we are not connected, we are just HIGH
-        if (!isConnected()) {
+        if (!isConnected() || Double.isNaN(mAngle)) {
             return ScaleHeight.HIGH;
         }
 
@@ -168,11 +169,11 @@ public class CheesyVision2 extends Subsystem {
                         mLastHeartbeatValue = heartbeat;
                         mLastHeartbeatTime = timestamp;
                     }
-                    ScaleHeight newHight = getNewFilteredScaleHeight();
+                    ScaleHeight newHeight = getNewFilteredScaleHeight();
 
-                    if (newHight != mFilteredHeight) {
-                        System.out.println("Detected scale height change: " + mFilteredHeight + " -> " + newHight);
-                        mFilteredHeight = newHight;
+                    if (newHeight != mFilteredHeight) {
+                        System.out.println("Detected scale height change: " + mFilteredHeight + " -> " + newHeight);
+                        mFilteredHeight = newHeight;
                     }
 
                 }
