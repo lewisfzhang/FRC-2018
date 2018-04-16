@@ -10,17 +10,17 @@ import argparse
 import sys
 
 def fadeHSV(image, mask):
-    fade = cv2.multiply(image, (0.7,))
+    fade = cv2.multiply(image, (0.6,))
     cv2.subtract(image, fade, image, cv2.bitwise_not(mask))
 
+def getKernel(size):
+    return cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (size,size))
+
 def processMask(mask, closeSize=4, openSize=2):
-    def getKernel(size):
-        return cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (size,size))
     cv2.morphologyEx(mask, cv2.MORPH_CLOSE, getKernel(closeSize), mask)
     cv2.morphologyEx(mask, cv2.MORPH_OPEN,  getKernel(openSize), mask)
 
-# returns: blobs, hsv, mask
-def getBlobs(input):
+def getColorMask(input):
     # convert to HSV
     hsv = cv2.cvtColor(input, cv2.COLOR_BGR2HSV)
     cv2.medianBlur(hsv, 5, hsv)
@@ -31,6 +31,12 @@ def getBlobs(input):
     maskL = cv2.inRange(hsv[:, :halfW], minColor[0], maxColor[0])
     maskR = cv2.inRange(hsv[:, halfW:], minColor[1], maxColor[1])
     mask = np.hstack((maskL, maskR))
+    
+    return mask, hsv
+
+# returns: blobs, hsv, mask
+def getBlobs(input):
+    mask, hsv = getColorMask(input)
     
     # reduce noise with morphological operations
     processMask(mask)
@@ -134,6 +140,155 @@ def process(input):
     # blow up image for easier viewing
     if args.roi_scale != 1.0:
         output = cv2.resize(output, (0,0), fx=args.roi_scale, fy=args.roi_scale, interpolation=cv2.INTER_NEAREST)
+    
+    def drawText(text, x, y, color, size=0.4, fromM=0):
+        textSz, _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, size, 1)
+        y += int(textSz[1]*fromM)
+        cv2.putText(output, text, (x, y), cv2.FONT_HERSHEY_SIMPLEX,
+                    size, color, 1, cv2.LINE_AA)
+    
+    # FPS/debug text
+    global dt, fps
+    debugStr = ""
+    if dt is not None:
+        debugStr += f"{int(dt*1000)} ms"
+    if fps is not None:
+        debugStr += f" ({int(fps)} FPS)"
+    drawText(debugStr, 10, int(height*args.roi_scale)-10, (0,255,0))
+    if not NetworkTables.isConnected():
+        drawText("Not Connected!", 10, int(height*args.roi_scale)-45, (0,0,255))
+    else:
+        drawText("Connected!", 10, int(height*args.roi_scale)-45, (0,255,0))
+    if args.auto:
+        drawText("tuning mode = auto", 60, 45, (0, 255, 0))
+    else:
+        drawText("tuning mode = manual", 60, 45, (0, 255, 0))
+    drawText(f"using device {args.device}", 10, int(height*args.roi_scale)-30, (0,255,0))
+    
+    # visualize the detected angle and state
+    angle = getAngle()
+    if angle is not None:
+        PRE_SZ = 50
+        cv2.rectangle(output, (0, 0), (PRE_SZ, PRE_SZ), (255,255,255), cv2.FILLED)
+        rads = math.radians(angle)
+        offX = 200*math.cos(rads)
+        offY = -200*math.sin(rads)
+        cv2.line(output[0:PRE_SZ, 0:PRE_SZ], (int(PRE_SZ/2-offX),int(PRE_SZ/2-offY)), (int(PRE_SZ/2+offX),int(PRE_SZ/2+offY)), (0,0,0), lineType=cv2.LINE_AA)
+        drawText(f"angle = {int(angle*100)/100} deg  (tip = {getTip()})", 60, PRE_SZ//2, (0,255,0), fromM=0.5)
+        if errorMsg is not None:
+            drawText(errorMsg, 5, 60, (0,0,255), fromM=1)
+    
+    cv2.line(output, (output.shape[1]//2, 0), (output.shape[1]//2, output.shape[0]), (255, 0, 0), 2)
+    cv2.imshow("raw", output)
+
+
+
+#########################################
+############ experimentation ############
+#########################################
+
+angleMap = np.zeros((1,1))
+angleMask = None
+angleMapDirty = True
+def initAngleMap(shape):
+    start = time.perf_counter()
+    
+    global angleMap, angleMask, angleMapDirty
+    height, width = shape
+    
+    # create angleMap
+    dxs = np.tile(np.arange(width) - pivotLoc[0], (height,1))
+    dys = np.tile(np.arange(height).reshape(height,1) - pivotLoc[1], (1,width))
+    invertMask = dxs < 0
+    dxs[invertMask] = np.negative(dxs[invertMask])
+    dys[invertMask] = np.negative(dys[invertMask])
+    angleMap = np.degrees(np.arctan2(dys, dxs))
+    
+    # create angleMask
+    angleMask = cv2.inRange(angleMap, -MAX_LINE_ANGLE, +MAX_LINE_ANGLE)
+    
+    angleMapDirty = False
+    
+    end = time.perf_counter()
+    print(f"initAngleMap init took {int((end-start)*1000)} ms")
+
+autoPivotMask = None
+def autoDetectPivot():
+    global pivotLoc, angleMapDirty
+    if autoPivotMask is not None:
+        ys, xs = autoPivotMask.nonzero()
+        if len(xs) > 0 and len(ys) > 0:
+            pivotLoc = ((xs.max()+xs.min())/2, (ys.max()+ys.min())/2)
+            angleMapDirty = True
+
+def process2(input):
+    if pivotLoc == (0,0):
+        autoDetectPivot()
+    if angleMapDirty:
+        initAngleMap(input.shape[:2])
+    
+    if args.auto:
+        autoSetColor(input)
+    height, width = input.shape[:2]
+    
+    start = time.perf_counter()
+    
+    # get the color mask
+    global curFrame
+    mask, curFrame = getColorMask(input)
+    
+    # dilate the mask a bit
+    cv2.dilate(mask, getKernel(4), mask)
+    
+    # compute distance transform
+    dist = cv2.distanceTransform(cv2.copyMakeBorder(mask, 1,1,1,1, cv2.BORDER_CONSTANT, value=0), cv2.DIST_L2, 3)
+    dist = dist[1:-1, 1:-1] # cut off the temporary border
+    maxDist = float(dist.max())
+    
+    # threshold the distance transform
+    mask2 = cv2.inRange(dist, maxDist*0.7, maxDist)
+    global autoPivotMask
+    autoPivotMask = mask2.copy()
+    
+    # mask out bad angles
+    cv2.bitwise_and(mask2, angleMask, mask2)
+    
+    if cv2.countNonZero(mask2) > 0:
+        # compute average angle
+        angle = cv2.mean(angleMap, mask2)[0]
+        
+        # histogram...
+        #...
+        
+        updateAngle([-angle, -angle])
+    else:
+        angle = None
+        updateAngle(None)
+    
+    
+    
+    end = time.perf_counter()
+    if args.debug_timing: print(f"process2 took {int((end-start)*1000)} ms")
+    
+    ### draw debug info onto the input image and show it ###
+    cv2.imshow("mask", mask)
+    cv2.imshow("dist transform", dist/(maxDist+0.01))
+    if mask2 is not None: cv2.imshow("mask2", mask2)
+    
+    output = input.copy()
+    fadeHSV(output, mask)
+    
+    # blow up image for easier viewing
+    if args.roi_scale != 1.0:
+        output = cv2.resize(output, (0,0), fx=args.roi_scale, fy=args.roi_scale, interpolation=cv2.INTER_NEAREST)
+    
+    # draw pivot and detected angle
+    cx, cy = int(pivotLoc[0]*args.roi_scale), int(pivotLoc[1]*args.roi_scale)
+    if angle is not None:
+        dx = int(2000*math.cos(math.radians(angle)))
+        dy = int(2000*math.sin(math.radians(angle)))
+        cv2.line(output, (cx-dx,cy-dy), (cx+dx,cy+dy), (0,255,0), 1, cv2.LINE_AA)
+    cv2.circle(output, (cx,cy), 3, (255,255,0), cv2.FILLED)
     
     def drawText(text, x, y, color, size=0.4, fromM=0):
         textSz, _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, size, 1)
@@ -483,6 +638,7 @@ def zeroAngle():
 ##########################################
 
 parser = argparse.ArgumentParser(description="Program to track the scale arm using OpenCV. (by Quinn Tucker '18)")
+parser.add_argument("--process2", action="store_true", help="use an alternative image processing method")
 parser.add_argument("-n", "--no-network", action="store_true", help="don't initialize/output to NetworkTables")
 optGroup = parser.add_mutually_exclusive_group()
 optGroup.add_argument("-d", "--device", type=int, default=0, metavar="ID",
@@ -535,6 +691,8 @@ V_PAD = 10
 
 roi = None
 gotROI = False
+
+pivotLoc = (0,0)
 
 frozen = False
 
@@ -606,6 +764,8 @@ def onKey(key):
         args.auto = False
     if key == ord("r") or key == ord("R"):
         gotROI = False
+    if key == ord("p") or key == ord("P"):
+        autoDetectPivot()
     if key == ord("d") or key == ord("D"):
         args.device += 1
         print(f"    switching device id to {args.device}")
@@ -723,7 +883,10 @@ while True:
     if gotROI:
         start = time.perf_counter()
         frameROI = frame[roi[1]:roi[3], roi[0]:roi[2]]
-        process(frameROI)
+        if args.process2:
+            process2(frameROI)
+        else:
+            process(frameROI)
         end = time.perf_counter()
         dt = end - start
         
