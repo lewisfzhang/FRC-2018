@@ -46,8 +46,8 @@ public class CheesyVision2 extends Subsystem {
      * @return true if the robot is receiving data from the scale tracker
      */
     public synchronized boolean isConnected() {
-        return Timer.getFPGATimestamp() < mLastHeartbeatTime + Constants.kScaleTrackerTimeout ||
-                Double.isNaN(mAngle);
+        return Timer.getFPGATimestamp() < mLastHeartbeatTime + Constants.kScaleTrackerTimeout &&
+                !Double.isNaN(mAngle);
     }
 
     /**
