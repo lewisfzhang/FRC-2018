@@ -8,6 +8,7 @@ import java.util.LinkedList;
 import java.util.Optional;
 
 public class SuperstructureMotionPlanner {
+    private boolean mUpwardsSubcommandEnabled = true;
     class SubCommand {
         public SubCommand(SuperstructureState endState) {
             mEndState = endState;
@@ -81,7 +82,7 @@ public class SuperstructureMotionPlanner {
     protected LinkedList<SubCommand> mCommandQueue = new LinkedList<>();
     protected Optional<SubCommand> mCurrentCommand = Optional.empty();
 
-    public boolean setDesiredState(SuperstructureState desiredStateIn, SuperstructureState currentState) {
+    public synchronized boolean setDesiredState(SuperstructureState desiredStateIn, SuperstructureState currentState) {
         SuperstructureState desiredState = new SuperstructureState(desiredStateIn);
 
         // Limit illegal inputs.
@@ -126,8 +127,10 @@ public class SuperstructureMotionPlanner {
 
         if (longUpwardsMove) {
             // PRECONDITION: wrist is safe, we are moving upwards.
-            mCommandQueue.add(new WaitForElevatorApproachingSubcommand(new SuperstructureState(desiredState.height,
-                    firstWristAngle, true)));
+            if (mUpwardsSubcommandEnabled) {
+                mCommandQueue.add(new WaitForElevatorApproachingSubcommand(new SuperstructureState(desiredState.height,
+                        firstWristAngle, true)));
+            }
             // POSTCONDITION: elevator is approaching final goal.
         }
 
@@ -149,6 +152,10 @@ public class SuperstructureMotionPlanner {
     public boolean isFinished(SuperstructureState currentState) {
         return mCurrentCommand.isPresent() && mCommandQueue.isEmpty() && currentState.wristSentLastTrajectory &&
                 currentState.elevatorSentLastTrajectory;
+    }
+
+    public synchronized void setUpwardsSubcommandEnable(boolean enabled) {
+        mUpwardsSubcommandEnabled = enabled;
     }
 
     public SuperstructureState update(SuperstructureState currentState) {

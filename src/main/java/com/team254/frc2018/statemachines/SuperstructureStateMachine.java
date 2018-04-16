@@ -86,6 +86,10 @@ public class SuperstructureStateMachine {
         return mSystemState;
     }
 
+    public synchronized void setUpwardsSubcommandEnable(boolean enabled) {
+        mPlanner.setUpwardsSubcommandEnable(enabled);
+    }
+
     public synchronized SuperstructureCommand update(double timestamp, WantedAction wantedAction,
                                                      SuperstructureState currentState) {
         synchronized (SuperstructureStateMachine.this) {

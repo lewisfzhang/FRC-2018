@@ -54,9 +54,13 @@ public class Infrastructure extends Subsystem {
         mCompressor.stop();
     }
 
-    public void setIsDuringAuto(boolean isDuringAuto) {
+    public synchronized void setIsDuringAuto(boolean isDuringAuto) {
         mIsDuringAuto = isDuringAuto;
         if (isDuringAuto) stopCompressor();
+    }
+
+    public synchronized boolean isDuringAuto() {
+        return mIsDuringAuto;
     }
 
     @Override

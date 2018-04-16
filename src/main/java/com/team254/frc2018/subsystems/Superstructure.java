@@ -43,8 +43,6 @@ public class Superstructure extends Subsystem {
     private boolean isHangMode;
     private boolean isWristJogging = false;
     private boolean isElevatorJogging = false;
-    private LatchedBoolean mIntoLimitEnable = new LatchedBoolean();
-    private LatchedBoolean mIntoLimitDisabled = new LatchedBoolean();
 
     public synchronized static Superstructure getInstance() {
         if (mInstance == null) {
@@ -132,8 +130,7 @@ public class Superstructure extends Subsystem {
             @Override
             public void onStart(double timestamp) {
                 mStateMachine.resetManual();
-                mIntoLimitEnable.update(false);
-                mIntoLimitDisabled.update(false);
+                mStateMachine.setUpwardsSubcommandEnable(!Infrastructure.getInstance().isDuringAuto());
             }
 
             @Override
