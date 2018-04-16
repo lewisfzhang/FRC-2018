@@ -92,7 +92,7 @@ public class Wrist extends Subsystem {
         if (errorCode != ErrorCode.OK)
             DriverStation.reportError("Could not set wrist kd: " + errorCode, false);
 
-        errorCode = mMaster.config_kF(kMagicMotionSlot, Constants.kWristKf  + Constants.kWristKd / 100.0, Constants.kLongCANTimeoutMs);
+        errorCode = mMaster.config_kF(kMagicMotionSlot, Constants.kWristKf, Constants.kLongCANTimeoutMs);
         if (errorCode != ErrorCode.OK)
             DriverStation.reportError("Could not set wrist kf: " + errorCode, false);
 
@@ -214,6 +214,10 @@ public class Wrist extends Subsystem {
             mCSVWriter.write();
         }
 
+    }
+
+    public synchronized void setRampRate(double rampRate) {
+        mMaster.configClosedloopRamp(rampRate, 0);
     }
 
     @Override

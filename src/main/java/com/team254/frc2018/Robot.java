@@ -160,6 +160,8 @@ public class Robot extends IterativeRobot {
             Drive.getInstance().zeroSensors();
             mInfrastructure.setIsDuringAuto(true);
 
+            mWrist.setRampRate(Constants.kAutoWristRampRate);
+
             mAutoModeExecuter.start();
 
             mLED.setEnableFaults(false);
@@ -186,6 +188,7 @@ public class Robot extends IterativeRobot {
             mAutoFieldState.disableOverride();
 
             mInfrastructure.setIsDuringAuto(false);
+            mWrist.setRampRate(Constants.kWristRampRate);
 
             RobotState.getInstance().reset(Timer.getFPGATimestamp(), Pose2d.identity());
             mEnabledLooper.start();
