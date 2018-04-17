@@ -212,7 +212,7 @@ def initAngleMap(shape):
     angleMapDirty = False
     
     end = time.perf_counter()
-    print(f"initAngleMap init took {int((end-start)*1000)} ms")
+    if args.debug_timing: print(f"initAngleMap took {int((end-start)*1000)} ms")
 
 autoPivotMask = None
 def autoDetectPivot():
@@ -687,9 +687,9 @@ else:
 
 minColor = [(0,0,0), (0,0,0)]
 maxColor = [(0,0,0), (0,0,0)]
-H_PAD = 5
-S_PAD = 10
-V_PAD = 10
+H_PAD = 10
+S_PAD = 20
+V_PAD = 20
 
 roi = None
 gotROI = False
