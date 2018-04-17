@@ -206,6 +206,8 @@ def initAngleMap(shape):
     
     # create angleMask
     angleMask = cv2.inRange(angleMap, -MAX_LINE_ANGLE, +MAX_LINE_ANGLE)
+    cx, cy, r = int(pivotLoc[0]), int(pivotLoc[1]), shape[1]//12
+    cv2.rectangle(angleMask, (cx-r,cy-r), (cx+r,cy+r), 0, cv2.FILLED)
     
     angleMapDirty = False
     
