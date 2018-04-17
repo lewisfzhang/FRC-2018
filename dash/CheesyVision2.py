@@ -244,8 +244,9 @@ def process2(input):
     shape = input.shape[:2]
     height, width = shape
     
-    if pivotLoc == (0,0):
-        autoDetectPivot()
+    global pivotLoc
+    if pivotLoc is None:
+        pivotLoc = (width//2, height//2)
     if pivotChanged or angleMap.shape != shape:
         initAngleMap(shape)
     
@@ -267,7 +268,7 @@ def process2(input):
     maxDist = float(dist.max())
     
     # threshold the distance transform
-    mask2 = cv2.inRange(dist, maxDist*0.7, maxDist)
+    mask2 = cv2.inRange(dist, maxDist*0.7, maxDist) if maxDist > 0 else np.zeros(shape, dtype=np.uint8)
     global autoPivotMask
     autoPivotMask = mask2.copy()
     
@@ -329,10 +330,9 @@ def process2(input):
         drawText("Not Connected!", 10, int(height*args.roi_scale)-45, (0,0,255))
     else:
         drawText("Connected!", 10, int(height*args.roi_scale)-45, (0,255,0))
-    if args.auto:
-        drawText("tuning mode = auto", 60, 45, (0, 255, 0))
-    else:
-        drawText("tuning mode = manual", 60, 45, (0, 255, 0))
+    drawText("tuning mode = auto" if args.auto else "tuning mode = manual", 60, 29, (0, 255, 0))
+    if selectingPivot:
+        drawText("SELECTING PIVOT", 60, 47, (0, 255, 0))
     drawText(f"using device {args.device}", 10, int(height*args.roi_scale)-30, (0,255,0))
     
     # visualize the detected angle and state
@@ -344,7 +344,7 @@ def process2(input):
         offX = 200*math.cos(rads)
         offY = -200*math.sin(rads)
         cv2.line(output[0:PRE_SZ, 0:PRE_SZ], (int(PRE_SZ/2-offX),int(PRE_SZ/2-offY)), (int(PRE_SZ/2+offX),int(PRE_SZ/2+offY)), (0,0,0), lineType=cv2.LINE_AA)
-        drawText(f"angle = {int(angle*100)/100} deg  (tip = {getTip()})", 60, PRE_SZ//2, (0,255,0), fromM=0.5)
+        drawText(f"angle = {int(angle*100)/100} deg  (tip = {getTip()})", 60, 3, (0,255,0), fromM=1)
         if errorMsg is not None:
             drawText(errorMsg, 5, 60, (0,0,255), fromM=1)
     
@@ -713,7 +713,8 @@ V_PAD = 20
 roi = None
 gotROI = False
 
-pivotLoc = (0,0)
+pivotLoc = None
+selectingPivot = False
 
 frozen = False
 
@@ -737,14 +738,21 @@ def onMouse_raw(event, x, y, flags, param):
         roi = roi[:2] + (x, y)
 
 def onMouse(event, x, y, flags, param):
-    global curFrame, minColor, maxColor
+    global curFrame, minColor, maxColor, selectingPivot, pivotLoc
     h, w = curFrame.shape[:2]
     x = int(x/args.roi_scale)
     y = int(y/args.roi_scale)
     
+    if event == cv2.EVENT_LBUTTONUP or event == cv2.EVENT_RBUTTONUP:
+        selectingPivot = False
+    
     leftDown  = flags & cv2.EVENT_FLAG_LBUTTON != 0
     rightDown = flags & cv2.EVENT_FLAG_RBUTTON != 0
     if not (leftDown or rightDown):
+        return
+    
+    if selectingPivot:
+        pivotLoc = (x, y)
         return
     
     ci = 0 if x < w/2 else 1
@@ -772,7 +780,7 @@ def onMouse(event, x, y, flags, param):
             addPixel(x2, y2)
 
 def onKey(key):
-    global minColor, maxColor, gotROI, exposure
+    global minColor, maxColor, gotROI, exposure, selectingPivot
     print(f"key: {key}")
     if key == ord("c") or key == ord("C"):
         minColor[0], minColor[1] = (0,0,0), (0,0,0)
@@ -786,6 +794,8 @@ def onKey(key):
     if key == ord("r") or key == ord("R"):
         gotROI = False
     if key == ord("p") or key == ord("P"):
+        selectingPivot = not selectingPivot
+    if key == ord("o") or key == ord("O"):
         autoDetectPivot()
     if key == ord("d") or key == ord("D"):
         args.device += 1
