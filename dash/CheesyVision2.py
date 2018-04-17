@@ -189,11 +189,11 @@ def process(input):
 
 angleMap = np.zeros((1,1))
 angleMask = None
-angleMapDirty = True
+pivotChanged = True
 def initAngleMap(shape):
     start = time.perf_counter()
     
-    global angleMap, angleMask, angleMapDirty
+    global angleMap, angleMask, pivotChanged
     height, width = shape
     
     # create angleMap
@@ -209,29 +209,49 @@ def initAngleMap(shape):
     cx, cy, r = int(pivotLoc[0]), int(pivotLoc[1]), shape[1]//12
     cv2.rectangle(angleMask, (cx-r,cy-r), (cx+r,cy+r), 0, cv2.FILLED)
     
-    angleMapDirty = False
+    pivotChanged = False
     
     end = time.perf_counter()
     if args.debug_timing: print(f"initAngleMap took {int((end-start)*1000)} ms")
 
 autoPivotMask = None
 def autoDetectPivot():
-    global pivotLoc, angleMapDirty
+    global pivotLoc, pivotChanged
     if autoPivotMask is not None:
-        ys, xs = autoPivotMask.nonzero()
+        # filter contours by aspect ratio
+        _, contours, _ = cv2.findContours(autoPivotMask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        def keep(contour):
+            _, (w, h), _ = cv2.minAreaRect(contour)
+            if w == 0 or h == 0: return False
+            aspect = w / h
+            if aspect < 1.0: aspect = 1/aspect
+            return aspect > 4.5
+        contours = [c for c in contours if keep(c)]
+        if len(contours) == 0: return
+        
+        # draw the filtered contours onto a new mask
+        mask = np.zeros_like(autoPivotMask)
+        for i in range(len(contours)):
+            cv2.drawContours(mask, contours, i, 255, cv2.FILLED)
+        cv2.imshow("PIVOT MASK", mask)
+        
+        # set pivot to median of the filtered mask
+        ys, xs = mask.nonzero()
         if len(xs) > 0 and len(ys) > 0:
             pivotLoc = ((xs.max()+xs.min())/2, (ys.max()+ys.min())/2)
-            angleMapDirty = True
+            pivotChanged = True
 
 def process2(input):
+    shape = input.shape[:2]
+    height, width = shape
+    
     if pivotLoc == (0,0):
         autoDetectPivot()
-    if angleMapDirty:
-        initAngleMap(input.shape[:2])
+    if pivotChanged or angleMap.shape != shape:
+        initAngleMap(shape)
     
     if args.auto:
         autoSetColor(input)
-    height, width = input.shape[:2]
     
     start = time.perf_counter()
     
@@ -275,7 +295,7 @@ def process2(input):
     ### draw debug info onto the input image and show it ###
     cv2.imshow("mask", mask)
     cv2.imshow("dist transform", dist/(maxDist+0.01))
-    if mask2 is not None: cv2.imshow("mask2", mask2)
+    if mask2 is not None: cv2.imshow("mask2", autoPivotMask)
     
     output = input.copy()
     fadeHSV(output, mask)
