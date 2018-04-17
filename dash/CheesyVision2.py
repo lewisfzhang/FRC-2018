@@ -659,7 +659,7 @@ def zeroAngle():
 ##########################################
 
 parser = argparse.ArgumentParser(description="Program to track the scale arm using OpenCV. (by Quinn Tucker '18)")
-parser.add_argument("--process2", action="store_true", help="use an alternative image processing method")
+parser.add_argument("--old-process", action="store_true", help="use the old image processing method")
 parser.add_argument("-n", "--no-network", action="store_true", help="don't initialize/output to NetworkTables")
 optGroup = parser.add_mutually_exclusive_group()
 optGroup.add_argument("-d", "--device", type=int, default=0, metavar="ID",
@@ -914,10 +914,10 @@ while True:
     if gotROI:
         start = time.perf_counter()
         frameROI = frame[roi[1]:roi[3], roi[0]:roi[2]]
-        if args.process2:
-            process2(frameROI)
-        else:
+        if args.old_process:
             process(frameROI)
+        else:
+            process2(frameROI)
         end = time.perf_counter()
         dt = end - start
         
