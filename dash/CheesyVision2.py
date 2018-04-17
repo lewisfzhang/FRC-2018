@@ -739,7 +739,7 @@ def onMouse_raw(event, x, y, flags, param):
         roi = roi[:2] + (x, y)
 
 def onMouse(event, x, y, flags, param):
-    global curFrame, minColor, maxColor, selectingPivot, pivotLoc
+    global curFrame, minColor, maxColor, selectingPivot, pivotLoc, pivotChanged
     h, w = curFrame.shape[:2]
     x = int(x/args.roi_scale)
     y = int(y/args.roi_scale)
@@ -754,6 +754,7 @@ def onMouse(event, x, y, flags, param):
     
     if selectingPivot:
         pivotLoc = (x, y)
+        pivotChanged = True
         return
     
     ci = 0 if x < w/2 else 1
