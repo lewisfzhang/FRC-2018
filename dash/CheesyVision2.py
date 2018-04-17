@@ -216,6 +216,8 @@ def initAngleMap(shape):
 
 autoPivotMask = None
 def autoDetectPivot():
+    start = time.perf_counter()
+    
     global pivotLoc, pivotChanged
     if autoPivotMask is not None:
         # filter contours by aspect ratio
@@ -229,17 +231,14 @@ def autoDetectPivot():
         contours = [c for c in contours if keep(c)]
         if len(contours) == 0: return
         
-        # draw the filtered contours onto a new mask
-        mask = np.zeros_like(autoPivotMask)
-        for i in range(len(contours)):
-            cv2.drawContours(mask, contours, i, 255, cv2.FILLED)
-        cv2.imshow("PIVOT MASK", mask)
-        
-        # set pivot to median of the filtered mask
-        ys, xs = mask.nonzero()
+        # set pivot to median of the filtered blobs
+        xs, ys = np.hstack(c[:, 0, 0] for c in contours), np.hstack(c[:, 0, 1] for c in contours)
         if len(xs) > 0 and len(ys) > 0:
             pivotLoc = ((xs.max()+xs.min())/2, (ys.max()+ys.min())/2)
             pivotChanged = True
+    
+    end = time.perf_counter()
+    if args.debug_timing: print(f"autoDetectPivot took {int((end-start)*1000)} ms")
 
 def process2(input):
     shape = input.shape[:2]
