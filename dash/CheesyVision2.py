@@ -293,9 +293,10 @@ def process2(input):
     if args.debug_timing: print(f"process2 took {int((end-start)*1000)} ms")
     
     ### draw debug info onto the input image and show it ###
-    cv2.imshow("mask", mask)
-    cv2.imshow("dist transform", dist/(maxDist+0.01))
-    if mask2 is not None: cv2.imshow("mask2", autoPivotMask)
+    if args.debug_mask:
+        cv2.imshow("mask", mask)
+        cv2.imshow("dist transform", dist/(maxDist+0.01))
+        if mask2 is not None: cv2.imshow("mask2", autoPivotMask)
     
     output = input.copy()
     fadeHSV(output, mask)
@@ -682,7 +683,7 @@ parser.add_argument("--ip", type=str, default='10.2.54.2', metavar="IP",
                     help="ip to connect to.")
 debugGroup = parser.add_argument_group(title="debug flags")
 debugGroup.add_argument("--debug-histograms", action="store_true", help="show the hue and saturation-value histograms")
-debugGroup.add_argument("--debug-mask", action="store_true", help="show the thresholded color mask")
+debugGroup.add_argument("--debug-mask", action="store_true", help="show the thresholded color mask / debug masks")
 debugGroup.add_argument("--debug-hue-mask", action="store_true", help="show the hue mask")
 debugGroup.add_argument("--debug-timing", action="store_true", help="print how long various operations take")
 args = parser.parse_args()
