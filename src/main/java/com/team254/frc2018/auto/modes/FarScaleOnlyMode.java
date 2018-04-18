@@ -113,8 +113,10 @@ public class FarScaleOnlyMode extends AutoModeBase {
                         mFarFenceToFarScale,
                         new SeriesAction(
                                 Arrays.asList(
-                                        new WaitAction(AutoConstants.kWaitForCubeTime),
-                                        new SetIntaking(false, true),
+                                        new ParallelAction(Arrays.asList(
+                                                new WaitAction(AutoConstants.kWaitForCubeTime),
+                                                new SetIntaking(false, true)
+                                        )),
 
                                         (CheesyVision2.getInstance().isConnected() ?
                                                 (AutoConstants.kUseKickstand ?
@@ -156,8 +158,10 @@ public class FarScaleOnlyMode extends AutoModeBase {
                         mFarFence2ToFarScale,
                         new SeriesAction(
                                 Arrays.asList(
-                                        new WaitAction(AutoConstants.kWaitForCubeTime),
-                                        new SetIntaking(false, true),
+                                        new ParallelAction(Arrays.asList(
+                                                new WaitAction(AutoConstants.kWaitForCubeTime),
+                                                new SetIntaking(false, true)
+                                        )),
 
                                         (CheesyVision2.getInstance().isConnected() ?
                                                 (AutoConstants.kUseKickstand ?

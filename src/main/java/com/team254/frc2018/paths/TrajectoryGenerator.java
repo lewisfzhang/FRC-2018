@@ -103,16 +103,16 @@ public class TrajectoryGenerator {
     public static final Pose2d kCenterToIntake = new Pose2d(new Translation2d(-24.0, 0.0), Rotation2d.identity());
 
     public static final Pose2d kNearCube1Pose = new Pose2d(new Translation2d(183.0, 46.0), Rotation2d.fromDegrees(180.0 - 25.0));
-    public static final Pose2d kNearCube2Pose = new Pose2d(new Translation2d(182.0, 46.0 + 30.0 + 12.0), Rotation2d.fromDegrees(180.0 - 65.0));
-    public static final Pose2d kNearCube3Pose = new Pose2d(new Translation2d(175.0, 46.0 + 30.0 * 2 + 16.0), Rotation2d.fromDegrees(180.0 - 60.0));
+    public static final Pose2d kNearCube2Pose = new Pose2d(new Translation2d(180.0, 46.0 + 30.0 + 15.0), Rotation2d.fromDegrees(180.0 - 65.0));
+    public static final Pose2d kNearCube3Pose = new Pose2d(new Translation2d(170.0, 46.0 + 30.0 * 2 + 20.0), Rotation2d.fromDegrees(180.0 - 60.0));
 
     public static final Pose2d kNearFence1Pose = kNearCube1Pose.transformBy(kCenterToIntake);
     public static final Pose2d kNearFence2Pose = kNearCube2Pose.transformBy(kCenterToIntake);
     public static final Pose2d kNearFence3Pose = kNearCube3Pose.transformBy(kCenterToIntake);
 
     public static final Pose2d kFarCube1Pose = new Pose2d(new Translation2d(183.0, 184.0), Rotation2d.fromDegrees(180.0 + 25.0));
-    public static final Pose2d kFarCube2Pose = new Pose2d(new Translation2d(182.0, 184.0 - 30.0 - 12.0), Rotation2d.fromDegrees(180.0 + 65.0));
-    public static final Pose2d kFarCube3Pose = new Pose2d(new Translation2d(175.0, 184.0 - 30.0 * 2 - 16.0), Rotation2d.fromDegrees(180.0 + 60.0));
+    public static final Pose2d kFarCube2Pose = new Pose2d(new Translation2d(180.0, 184.0 - 30.0 - 15.0), Rotation2d.fromDegrees(180.0 + 65.0));
+    public static final Pose2d kFarCube3Pose = new Pose2d(new Translation2d(170.0, 184.0 - 30.0 * 2 - 20.0), Rotation2d.fromDegrees(180.0 + 60.0));
 
     public static final Pose2d kFarFence1Pose = kFarCube1Pose.transformBy(kCenterToIntake);
     public static final Pose2d kFarFence2Pose = kFarCube2Pose.transformBy(kCenterToIntake);

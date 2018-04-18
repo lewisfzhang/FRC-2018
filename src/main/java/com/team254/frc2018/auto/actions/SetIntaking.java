@@ -45,7 +45,7 @@ public class SetIntaking implements Action {
             if(timedOut) {
                 System.out.println("Timed out!!!!!");
             }
-            return mDebounce.update(mIntake.hasCube(), .1) || timedOut;
+            return mDebounce.update(mIntake.definitelyHasCube(), .1) || timedOut;
         } else {
             return true;
         }

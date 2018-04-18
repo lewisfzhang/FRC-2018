@@ -102,7 +102,6 @@ public class NearScaleOnlyMode extends AutoModeBase {
                         ))
                 )
         ));
-//        runAction(new WaitAction(AutoConstants.kWaitForCubeTime));
 
         // Score second cube
         runAction(new ParallelAction(
@@ -110,7 +109,10 @@ public class NearScaleOnlyMode extends AutoModeBase {
                         mNearFenceToNearScale,
                         new SeriesAction(
                                 Arrays.asList(
-                                        new SetIntaking(false, true),
+                                        new ParallelAction(Arrays.asList(
+                                            new WaitAction(AutoConstants.kWaitForCubeTime),
+                                            new SetIntaking(false, true)
+                                        )),
 
                                         (CheesyVision2.getInstance().isConnected() ?
                                                 (AutoConstants.kUseKickstand ?
@@ -152,7 +154,10 @@ public class NearScaleOnlyMode extends AutoModeBase {
                         mNearFence2ToNearScale,
                         new SeriesAction(
                                 Arrays.asList(
-                                        new SetIntaking(false, true),
+                                        new ParallelAction(Arrays.asList(
+                                                new WaitAction(AutoConstants.kWaitForCubeTime),
+                                                new SetIntaking(false, true)
+                                        )),
 
                                         (CheesyVision2.getInstance().isConnected() ?
                                                 (AutoConstants.kUseKickstand ?
@@ -209,7 +214,10 @@ public class NearScaleOnlyMode extends AutoModeBase {
                         mNearFence3ToNearScale,
                         new SeriesAction(
                                 Arrays.asList(
-                                        new SetIntaking(false, true),
+                                        new ParallelAction(Arrays.asList(
+                                                new WaitAction(AutoConstants.kWaitForCubeTime),
+                                                new SetIntaking(false, true)
+                                        )),
 
                                         (CheesyVision2.getInstance().isConnected() ?
                                                 (AutoConstants.kUseKickstand ?
