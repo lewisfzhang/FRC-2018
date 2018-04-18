@@ -37,12 +37,19 @@ public class SwitchAndScaleMode extends AutoModeBase {
             mStartToSwitch = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().centerStartToRightSwitch, true);
             mStartCubeWaitTime = mTrajectoryGenerator.getTrajectorySet().centerStartToRightSwitch.getLastState().t() - 0.1;
         }
-        mSwitchToPyramidCube = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().switchToCenterPyramidCube.get(mSwitchLeft));
-        mPyramidCubeToScale = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().centerPyramidCubeToScale.get(mScaleLeft));
-        mScaleToFence = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().scaleToFence.get(mScaleLeft));
-        mFenceToScale = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().fenceToScale.get(mScaleLeft));
+        if(isScaleOnLeft) {
+            mPyramidCubeToScale = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().centerPyramidCubeToScaleLeft.get(mScaleLeft));
+            mScaleToFence = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().scaleToFenceLeft.get(mScaleLeft));
+            mFenceToScale = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().fenceToScaleLeft.get(mScaleLeft));
+            mFenceWaitTime = mTrajectoryGenerator.getTrajectorySet().scaleToFenceLeft.get(mScaleLeft).getLastState().t() - 0.15 + 0.25;
+        } else {
+            mPyramidCubeToScale = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().centerPyramidCubeToScaleRight.get(mScaleLeft));
+            mScaleToFence = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().scaleToFenceRight.get(mScaleLeft));
+            mFenceToScale = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().fenceToScaleRight.get(mScaleLeft));
+            mFenceWaitTime = mTrajectoryGenerator.getTrajectorySet().scaleToFenceRight.get(mScaleLeft).getLastState().t() - 0.15 + 0.25;
+        }
 
-        mFenceWaitTime = mTrajectoryGenerator.getTrajectorySet().nearScaleToNearFence.get(mScaleLeft).getLastState().t() - 0.15 + 0.25;
+        mSwitchToPyramidCube = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().switchToCenterPyramidCube.get(mSwitchLeft));
         mPyramidWaitTime = mTrajectoryGenerator.getTrajectorySet().switchToCenterPyramidCube.get(mScaleLeft).getLastState().t() - 0.15;
 
     }
@@ -99,17 +106,17 @@ public class SwitchAndScaleMode extends AutoModeBase {
                                         new SetIntaking(false, true),
                                         new SetSuperstructurePosition(SuperstructureConstants.kSwitchHeight, SuperstructureConstants.kVerticalAngle, false),
                                         new WaitUntilInsideRegion(new Translation2d(140.0, -1000.0), new Translation2d
-                                                (260.0, 1000.0), mScaleLeft),
+                                                (300.0, 1000.0), mScaleLeft),
 
                                         (CheesyVision2.getInstance().isConnected() ?
                                                 new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngle,
-                                                        true) :
+                                                        true, true) :
                                                 new SetSuperstructurePosition(SuperstructureConstants.kScaleHighHeightBackwards,
                                                         SuperstructureConstants.kScoreBackwardsAngle, true)
                                         ),
 
                                         new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d
-                                                (280, 1000), mScaleLeft),
+                                                (300, 1000), mScaleLeft),
                                         new ShootCube(AutoConstants.kFullShootPower)
                                 )
                         )
@@ -121,7 +128,7 @@ public class SwitchAndScaleMode extends AutoModeBase {
                 Arrays.asList(
                         new SeriesAction(
                                 Arrays.asList(
-                                        new WaitAction(0.25),
+                                        new WaitAction(0.5),
                                         mScaleToFence
                                 )
                         ),
@@ -146,8 +153,8 @@ public class SwitchAndScaleMode extends AutoModeBase {
 
                                         (CheesyVision2.getInstance().isConnected() ?
                                                 new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngle,
-                                                        true) :
-                                                new SetSuperstructurePosition(SuperstructureConstants.kScaleNeutralHeightBackwards + 3.0,
+                                                        true, true) :
+                                                new SetSuperstructurePosition(SuperstructureConstants.kScaleHighHeightBackwards,
                                                         SuperstructureConstants.kScoreBackwardsAngle, true)
                                         ),
 
@@ -159,16 +166,6 @@ public class SwitchAndScaleMode extends AutoModeBase {
                         )
                 )
         ));
-    }
-
-    public static void main(String[] args) {
-        mTrajectoryGenerator.generateTrajectories();
-        Trajectory<TimedState<Pose2dWithCurvature>> traj = mTrajectoryGenerator.getTrajectorySet().scaleToFence.get(false);
-        for(int i = 0; i < traj.length(); i++) {
-            Translation2d t = traj.getState(i).state().getTranslation();
-            System.out.println(t.x() + "\t" + t.y());
-        }
-
     }
 
 }
