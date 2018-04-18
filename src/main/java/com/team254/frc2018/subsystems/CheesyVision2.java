@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  */
 public class CheesyVision2 extends Subsystem {
     public static final double kSmallThreshold = 2.7;
-    public static final double kLargeThreshold = 3.5;
+    public static final double kLargeThreshold = 4.0;
 
     private static CheesyVision2 mInstance;
 
@@ -74,20 +74,34 @@ public class CheesyVision2 extends Subsystem {
         return mTip;
     }
 
-    public synchronized double getDesiredHeight(boolean backwards, int cubeNum) {
+    public synchronized double getDesiredHeight(boolean backwards, int cubeNum, boolean useKickstand) {
         double baseHeight;
 
-        if (mFilteredHeight == ScaleHeight.LOW) {
-            baseHeight = backwards ? SuperstructureConstants.kScaleLowHeightBackwards : SuperstructureConstants.kScaleLowHeight;
-        } else if (mFilteredHeight == ScaleHeight.NEUTRAL) {
-            baseHeight = backwards ? SuperstructureConstants.kScaleNeutralHeightBackwards : SuperstructureConstants.kScaleNeutralHeight;
-        } else {
-            baseHeight = backwards ? SuperstructureConstants.kScaleHighHeightBackwards : SuperstructureConstants.kScaleHighHeight;
+        if (useKickstand) {
+            if (mFilteredHeight == ScaleHeight.LOW) {
+                baseHeight = backwards ? SuperstructureConstants.kScaleLowHeightBackwards : SuperstructureConstants.kScaleLowHeight;
+            } else if (mFilteredHeight == ScaleHeight.NEUTRAL) {
+                baseHeight = backwards ? SuperstructureConstants.kScaleNeutralHeightBackwards : SuperstructureConstants.kScaleNeutralHeight;
+            } else {
+                baseHeight = backwards ? SuperstructureConstants.kScaleHighHeightBackwards : SuperstructureConstants.kScaleHighHeight;
+             }
+         } else {
+            if (mFilteredHeight == ScaleHeight.LOW) {
+                baseHeight = backwards ? SuperstructureConstants.kScaleLowHeightBackwardsNoKick : SuperstructureConstants.kScaleLowHeightNoKick;
+            } else if (mFilteredHeight == ScaleHeight.NEUTRAL) {
+                baseHeight = backwards ? SuperstructureConstants.kScaleNeutralHeightBackwardsNoKick : SuperstructureConstants.kScaleNeutralHeightNoKick;
+            } else {
+                baseHeight = backwards ? SuperstructureConstants.kScaleHighHeightBackwardsNoKick : SuperstructureConstants.kScaleHighHeightNoKick;
+            }
         }
 
         //assume we are losing the scale if we don't have a reading
         if(!isConnected()) { // check for error as well?
-            baseHeight = backwards ? SuperstructureConstants.kScaleHighHeightBackwards : SuperstructureConstants.kScaleHighHeight;
+            if(useKickstand) {
+                baseHeight = backwards ? SuperstructureConstants.kScaleHighHeightBackwards : SuperstructureConstants.kScaleHighHeight;
+            } else {
+                baseHeight = backwards ? SuperstructureConstants.kScaleHighHeightBackwardsNoKick : SuperstructureConstants.kScaleHighHeightNoKick;
+            }
         }
 
         baseHeight += cubeNum * SuperstructureConstants.kCubeOffset;
@@ -125,7 +139,7 @@ public class CheesyVision2 extends Subsystem {
             case LOW:
                 if (corrected_angle > kSmallThreshold) {
                     return ScaleHeight.HIGH;
-                } else if (corrected_angle > -kSmallThreshold) {
+                } else if (corrected_angle > -kLargeThreshold) {
                     return ScaleHeight.NEUTRAL;
                 } else {
                     return ScaleHeight.LOW;
@@ -144,9 +158,9 @@ public class CheesyVision2 extends Subsystem {
     @Override
     public void outputTelemetry() {
         SmartDashboard.putBoolean("Connected to CheesyVision2", isConnected());
-        SmartDashboard.putNumber("Desired Height (0 cubes)", getDesiredHeight(false, 0));
-        SmartDashboard.putNumber("Desired Height (1 cube)", getDesiredHeight(false, 1));
-        SmartDashboard.putNumber("Desired Height (2 cubes)", getDesiredHeight(false, 2));
+        SmartDashboard.putNumber("Desired Height (0 cubes)", getDesiredHeight(false, 0, true));
+        SmartDashboard.putNumber("Desired Height (1 cube)", getDesiredHeight(false, 1, true));
+        SmartDashboard.putNumber("Desired Height (2 cubes)", getDesiredHeight(false, 2, true));
     }
     
     @Override

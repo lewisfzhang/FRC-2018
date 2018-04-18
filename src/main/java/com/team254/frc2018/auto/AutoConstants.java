@@ -9,5 +9,9 @@ public class AutoConstants {
     public final static double kWaitForCubeTime = 0.15;
 
     public final static boolean kUseAutoScaleHeight = false;
+    public final static boolean kUseKickstand = true;
+
+    public final static double kWristAngleEpsilon = 3.0;
+    public final static double kElevatorHeightEpsilon = 4.0;
 
 }

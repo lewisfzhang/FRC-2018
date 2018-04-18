@@ -50,6 +50,10 @@ public class FarScaleOnlyMode extends AutoModeBase {
     protected void routine() throws AutoModeEndedException {
         // System.out.println("Running far scale only");
 
+        if(!AutoConstants.kUseKickstand) {
+            runAction(new EngageKickstand(false));
+        }
+
         // Score first cube
         runAction(new ParallelAction(
                 Arrays.asList(
@@ -66,12 +70,16 @@ public class FarScaleOnlyMode extends AutoModeBase {
                                                 (260, 200.0), mStartedLeft),
 
                                         (CheesyVision2.getInstance().isConnected() ?
-                                                new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngle,
-                                                        true) :
+                                                (AutoConstants.kUseKickstand ?
+                                                        new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngle, true, true) :
+                                                        new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngleNoKick, true, false)
+                                                ) : (AutoConstants.kUseKickstand ?
                                                 new SetSuperstructurePosition(SuperstructureConstants.kScaleHighHeightBackwards,
-                                                        SuperstructureConstants.kScoreBackwardsAngle, true)
+                                                        SuperstructureConstants.kScoreBackwardsAngle, true) :
+                                                new SetSuperstructurePosition(SuperstructureConstants.kScaleHighHeightBackwardsNoKick,
+                                                        SuperstructureConstants.kScoreBackwardsAngleNoKick, true)
+                                        )
                                         ),
-
                                         new WaitUntilInsideRegion(new Translation2d(245.0, 150.0), new Translation2d
                                                 (260, 1000), mStartedLeft),
                                         new ShootCube(AutoConstants.kFullShootPower)
@@ -85,7 +93,7 @@ public class FarScaleOnlyMode extends AutoModeBase {
                 Arrays.asList(
                         new SeriesAction(
                                 Arrays.asList(
-                                        new WaitAction(0.25),
+                                        new WaitAction(AutoConstants.kUseKickstand ? 0.25 : 0.0),
                                         mFarScaleToFarFence
                                 )
                         ),
@@ -109,10 +117,15 @@ public class FarScaleOnlyMode extends AutoModeBase {
                                         new SetIntaking(false, true),
 
                                         (CheesyVision2.getInstance().isConnected() ?
-                                                new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngle,
-                                                        true) :
-                                                new SetSuperstructurePosition(SuperstructureConstants.kScaleNeutralHeightBackwards,
-                                                        SuperstructureConstants.kScoreBackwardsAngle, true)
+                                                (AutoConstants.kUseKickstand ?
+                                                        new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngle, true, true) :
+                                                        new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngleNoKick, true, false)
+                                                ) : (AutoConstants.kUseKickstand ?
+                                                new SetSuperstructurePosition(SuperstructureConstants.kScaleHighHeightBackwards,
+                                                        SuperstructureConstants.kScoreBackwardsAngle, true) :
+                                                new SetSuperstructurePosition(SuperstructureConstants.kScaleHighHeightBackwardsNoKick,
+                                                        SuperstructureConstants.kScoreBackwardsAngleNoKick, true)
+                                        )
                                         ),
 
                                         new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d
@@ -147,10 +160,15 @@ public class FarScaleOnlyMode extends AutoModeBase {
                                         new SetIntaking(false, true),
 
                                         (CheesyVision2.getInstance().isConnected() ?
-                                                new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngle,
-                                                        true) :
-                                                new SetSuperstructurePosition(SuperstructureConstants.kScaleNeutralHeightBackwards,
-                                                        SuperstructureConstants.kScoreBackwardsAngle, true)
+                                                (AutoConstants.kUseKickstand ?
+                                                        new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngle, true, true) :
+                                                        new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngleNoKick, true, false)
+                                                ) : (AutoConstants.kUseKickstand ?
+                                                new SetSuperstructurePosition(SuperstructureConstants.kScaleHighHeightBackwards,
+                                                        SuperstructureConstants.kScoreBackwardsAngle, true) :
+                                                new SetSuperstructurePosition(SuperstructureConstants.kScaleHighHeightBackwardsNoKick,
+                                                        SuperstructureConstants.kScoreBackwardsAngleNoKick, true)
+                                            )
                                         ),
 
                                         new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d

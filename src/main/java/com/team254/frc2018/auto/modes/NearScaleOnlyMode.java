@@ -37,9 +37,9 @@ public class NearScaleOnlyMode extends AutoModeBase {
         mNearFence3ToNearScale = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().nearFence3ToNearScale.get(mStartedLeft));
         mNearFence3ToEndPose = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().nearFence3ToEndPose.get(mStartedLeft));
 
-        mNearFenceWaitTime = mTrajectoryGenerator.getTrajectorySet().nearScaleToNearFence.get(mStartedLeft).getLastState().t() - 0.15 + 0.25;
-        mNearFence2WaitTime = mTrajectoryGenerator.getTrajectorySet().nearScaleToNearFence2.get(mStartedLeft).getLastState().t() - 0.1;
-        mNearFence3WaitTime = mTrajectoryGenerator.getTrajectorySet().nearScaleToNearFence3.get(mStartedLeft).getLastState().t() - 0.1;
+        mNearFenceWaitTime = mTrajectoryGenerator.getTrajectorySet().nearScaleToNearFence.get(mStartedLeft).getLastState().t() - 0.15 + (AutoConstants.kUseKickstand ? 0.25 : 0.0);
+        mNearFence2WaitTime = mTrajectoryGenerator.getTrajectorySet().nearScaleToNearFence2.get(mStartedLeft).getLastState().t() - 0.15;
+        mNearFence3WaitTime = mTrajectoryGenerator.getTrajectorySet().nearScaleToNearFence3.get(mStartedLeft).getLastState().t() - 0.15;
 
     }
 
@@ -48,6 +48,9 @@ public class NearScaleOnlyMode extends AutoModeBase {
         // System.out.println("Running easy scale only");
 
         // Score first cube
+        if(!AutoConstants.kUseKickstand) {
+            runAction(new EngageKickstand(false));
+        }
         runAction(new ParallelAction(
                 Arrays.asList(
                         mSideStartToNearScale,
@@ -59,14 +62,19 @@ public class NearScaleOnlyMode extends AutoModeBase {
                         ),
                         new SeriesAction(
                                 Arrays.asList(
-                                        new WaitUntilInsideRegion(new Translation2d(110.0, -20.0), new Translation2d
+                                        new WaitUntilInsideRegion(new Translation2d(80.0, -20.0), new Translation2d
                                                 (260, 50), mStartedLeft),
 
                                         (CheesyVision2.getInstance().isConnected() ?
-                                            new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngle,
-                                                    true) :
-                                            new SetSuperstructurePosition(SuperstructureConstants.kScaleNeutralHeightBackwards,
-                                                    SuperstructureConstants.kScoreBackwardsAngle, true)
+                                                (AutoConstants.kUseKickstand ?
+                                                        new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngle, true, true) :
+                                                        new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngleNoKick, true, false)
+                                        ) : (AutoConstants.kUseKickstand ?
+                                                        new SetSuperstructurePosition(SuperstructureConstants.kScaleNeutralHeightBackwards,
+                                                                SuperstructureConstants.kScoreBackwardsAngle, true) :
+                                                        new SetSuperstructurePosition(SuperstructureConstants.kScaleNeutralHeightBackwardsNoKick,
+                                                                SuperstructureConstants.kScoreBackwardsAngleNoKick, true)
+                                                )
                                         ),
 
                                         new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d
@@ -82,8 +90,8 @@ public class NearScaleOnlyMode extends AutoModeBase {
                 Arrays.asList(
                         new SeriesAction(
                                 Arrays.asList(
-                                        new WaitAction(0.25),
-                                        mNearScaleToNearFence
+                                    new WaitAction(AutoConstants.kUseKickstand ? 0.25 : 0.0),
+                                    mNearScaleToNearFence
                                 )
                         ),
                         new OpenCloseJawAction(true),
@@ -94,7 +102,7 @@ public class NearScaleOnlyMode extends AutoModeBase {
                         ))
                 )
         ));
-        runAction(new WaitAction(AutoConstants.kWaitForCubeTime));
+//        runAction(new WaitAction(AutoConstants.kWaitForCubeTime));
 
         // Score second cube
         runAction(new ParallelAction(
@@ -105,10 +113,15 @@ public class NearScaleOnlyMode extends AutoModeBase {
                                         new SetIntaking(false, true),
 
                                         (CheesyVision2.getInstance().isConnected() ?
-                                                new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngle,
-                                                        true) :
-                                                new SetSuperstructurePosition(SuperstructureConstants.kScaleNeutralHeightBackwards + 3.0,
-                                                        SuperstructureConstants.kScoreBackwardsAngle, true)
+                                                (AutoConstants.kUseKickstand ?
+                                                        new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngle, true, true) :
+                                                        new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngleNoKick, true, false)
+                                                ) : (AutoConstants.kUseKickstand ?
+                                                new SetSuperstructurePosition(SuperstructureConstants.kScaleNeutralHeightBackwards,
+                                                        SuperstructureConstants.kScoreBackwardsAngle, true) :
+                                                new SetSuperstructurePosition(SuperstructureConstants.kScaleNeutralHeightBackwardsNoKick,
+                                                        SuperstructureConstants.kScoreBackwardsAngleNoKick, true)
+                                        )
                                         ),
 
                                         new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d
@@ -131,7 +144,7 @@ public class NearScaleOnlyMode extends AutoModeBase {
                         ))
                 )
         ));
-        runAction(new WaitAction(AutoConstants.kWaitForCubeTime));
+//        runAction(new WaitAction(AutoConstants.kWaitForCubeTime));
 
         // Score third cube
         runAction(new ParallelAction(
@@ -142,10 +155,15 @@ public class NearScaleOnlyMode extends AutoModeBase {
                                         new SetIntaking(false, true),
 
                                         (CheesyVision2.getInstance().isConnected() ?
-                                                new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngle,
-                                                        true) :
+                                                (AutoConstants.kUseKickstand ?
+                                                        new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngle, true, true) :
+                                                        new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngleNoKick, true, false)
+                                                ) : (AutoConstants.kUseKickstand ?
                                                 new SetSuperstructurePosition(SuperstructureConstants.kScaleNeutralHeightBackwards,
-                                                        SuperstructureConstants.kScoreBackwardsAngle, true)
+                                                        SuperstructureConstants.kScoreBackwardsAngle, true) :
+                                                new SetSuperstructurePosition(SuperstructureConstants.kScaleNeutralHeightBackwardsNoKick,
+                                                        SuperstructureConstants.kScoreBackwardsAngleNoKick, true)
+                                        )
                                         ),
 
                                         new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d
@@ -168,7 +186,7 @@ public class NearScaleOnlyMode extends AutoModeBase {
                         ))
                 )
         ));
-        runAction(new WaitAction(AutoConstants.kWaitForCubeTime));
+//        runAction(new WaitAction(AutoConstants.kWaitForCubeTime));
 
         /*
         // Get fourth cube in position to score
@@ -194,15 +212,20 @@ public class NearScaleOnlyMode extends AutoModeBase {
                                         new SetIntaking(false, true),
 
                                         (CheesyVision2.getInstance().isConnected() ?
-                                                new AutoSuperstructurePosition(1, SuperstructureConstants.kScoreBackwardsAngle,
-                                                        true) :
+                                                (AutoConstants.kUseKickstand ?
+                                                        new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngle, true, true) :
+                                                        new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngleNoKick, true, false)
+                                                ) : (AutoConstants.kUseKickstand ?
                                                 new SetSuperstructurePosition(SuperstructureConstants.kScaleNeutralHeightBackwards,
-                                                        SuperstructureConstants.kScoreBackwardsAngle, true)
+                                                        SuperstructureConstants.kScoreBackwardsAngle, true) :
+                                                new SetSuperstructurePosition(SuperstructureConstants.kScaleNeutralHeightBackwardsNoKick,
+                                                        SuperstructureConstants.kScoreBackwardsAngleNoKick, true)
+                                        )
                                         ),
 
                                         new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d
                                                 (260, 1000), mStartedLeft),
-                                        new ShootCube(AutoConstants.kFullShootPower)
+                                        new ShootCube(AutoConstants.kStrongShootPower)
                                 )
                         )
                 )

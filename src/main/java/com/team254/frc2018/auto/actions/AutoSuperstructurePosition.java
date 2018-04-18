@@ -18,23 +18,25 @@ public class AutoSuperstructurePosition implements Action {
     private double mHeight;
     private final double mAngle;
     private final boolean mWaitForCompletion;
+    private final boolean mUseKickstand;
 
-    public AutoSuperstructurePosition(int numCubes, double angle, boolean waitForCompletion) {
+    public AutoSuperstructurePosition(int numCubes, double angle, boolean waitForCompletion, boolean useKickstand) {
         mNumCubes = numCubes;
         mAngle = angle;
         mWaitForCompletion = waitForCompletion;
+        mUseKickstand = useKickstand;
     }
 
     @Override
     public void start() {
-        mHeight = mCheesyVision2.getDesiredHeight((mAngle == SuperstructureConstants.kScoreBackwardsAngle), mNumCubes);
+        mHeight = mCheesyVision2.getDesiredHeight((mAngle == SuperstructureConstants.kScoreBackwardsAngle), mNumCubes, mUseKickstand);
         mSuperstructure.setDesiredHeight(mHeight);
         mSuperstructure.setDesiredAngle(mAngle);
     }
 
     @Override
     public void update() {
-        mHeight = mCheesyVision2.getDesiredHeight((mAngle == SuperstructureConstants.kScoreBackwardsAngle), mNumCubes);
+        mHeight = mCheesyVision2.getDesiredHeight((mAngle == SuperstructureConstants.kScoreBackwardsAngle), mNumCubes, mUseKickstand);
         mSuperstructure.setDesiredHeight(mHeight);
     }
 
