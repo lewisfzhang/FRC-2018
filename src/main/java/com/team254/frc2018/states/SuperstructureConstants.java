@@ -44,7 +44,7 @@ public class SuperstructureConstants {
     public final static double kScaleNeutralHeightNoKick = 75.0;
     public final static double kScaleLowHeightNoKick = 63.0;
 
-    public final static double kScaleHighHeightBackwards = 80.0; //75.0 without kickstand
+    public final static double kScaleHighHeightBackwards = 78.0; //75.0 without kickstand
     public final static double kScaleNeutralHeightBackwards = 70.0; //65.0 without kickstand
     public final static double kScaleLowHeightBackwards = 60.0; //55.0 without kickstand
 

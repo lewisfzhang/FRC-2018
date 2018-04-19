@@ -11,10 +11,12 @@ public class SetSuperstructurePosition implements Action {
     private static final Superstructure mSuperstructure = Superstructure.getInstance();
     private static final double kHeightEpsilon = 2.0;
     private static final double kAngleEpsilon = 5.0;
+    private static final double kTimeout = 4.0;
 
     private final double mHeight;
     private final double mAngle;
     private final boolean mWaitForCompletion;
+    private double mStartTime;
 
     public SetSuperstructurePosition(double height, double angle, boolean waitForCompletion) {
         mHeight = height;
@@ -27,6 +29,7 @@ public class SetSuperstructurePosition implements Action {
     public void start() {
         mSuperstructure.setDesiredHeight(mHeight);
         mSuperstructure.setDesiredAngle(mAngle);
+        mStartTime = Timer.getFPGATimestamp();
     }
 
     @Override
@@ -35,6 +38,10 @@ public class SetSuperstructurePosition implements Action {
 
     @Override
     public boolean isFinished() {
+        if(Timer.getFPGATimestamp() - mStartTime > kTimeout) {
+            System.out.println("Set Superstructure Position timed out!!!");
+            return true;
+        }
         if(mWaitForCompletion) {
             SuperstructureState state = mSuperstructure.getObservedState();
             return Util.epsilonEquals(state.height, mHeight, kHeightEpsilon) &&
@@ -46,5 +53,6 @@ public class SetSuperstructurePosition implements Action {
 
     @Override
     public void done() {
+        System.out.println("Set Superstructure Position action finished");
     }
 }

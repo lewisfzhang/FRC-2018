@@ -106,6 +106,12 @@ public class CheesyVision2 extends Subsystem {
 
         baseHeight += cubeNum * SuperstructureConstants.kCubeOffset;
 
+        if(useKickstand) {
+            baseHeight = Math.min(baseHeight, SuperstructureConstants.kElevatorMaxHeightKickEngaged);
+        } else {
+            baseHeight = Math.min(baseHeight, SuperstructureConstants.kElevatorMaxHeight);
+        }
+
         return baseHeight;
     }
 
