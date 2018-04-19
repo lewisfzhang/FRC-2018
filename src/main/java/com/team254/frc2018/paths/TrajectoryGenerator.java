@@ -25,6 +25,10 @@ public class TrajectoryGenerator {
     private static final double kFirstPathMaxAccel = 130.0;
     private static final double kFirstPathMaxVel = 130.0;
 
+    private static final double kSimpleSwitchMaxAccel = 100.0;
+    private static final double kSimpleSwitchMaxCentripetalAccel = 80.0;
+    private static final double kSimpleSwitchMaxVelocity = 120.0;
+
     private static TrajectoryGenerator mInstance = new TrajectoryGenerator();
     private final DriveMotionPlanner mMotionPlanner;
     private TrajectorySet mTrajectorySet = null;
@@ -120,6 +124,7 @@ public class TrajectoryGenerator {
 
     // STARTING IN CENTER
     public static final Pose2d kCenterStartPose = new Pose2d(0.0, -4.0, Rotation2d.fromDegrees(180.0));
+    public static final Pose2d kSimpleSwitchStartPose = new Pose2d(0.0, -2.0, Rotation2d.fromDegrees(180.0));
     public static final Pose2d kRightSwitchPose = new Pose2d(new Translation2d(100.0, -60.0), Rotation2d.fromDegrees(0.0+180.0));
     public static final Pose2d kLeftSwitchPose = new Pose2d(new Translation2d(100.0, 60.0), Rotation2d.fromDegrees(0.0+180.0));
 
@@ -179,6 +184,8 @@ public class TrajectoryGenerator {
 
         public final Trajectory<TimedState<Pose2dWithCurvature>> centerStartToLeftSwitch;
         public final Trajectory<TimedState<Pose2dWithCurvature>> centerStartToRightSwitch;
+        public final Trajectory<TimedState<Pose2dWithCurvature>> simpleStartToLeftSwitch;
+        public final Trajectory<TimedState<Pose2dWithCurvature>> simpleStartToRightSwitch;
         public final MirroredTrajectory switchToPyramidCube;
         public final MirroredTrajectory pyramidCubeToSwitch;
         public final MirroredTrajectory switchToPyramidCube1;
@@ -217,6 +224,8 @@ public class TrajectoryGenerator {
 
             centerStartToLeftSwitch = getCenterStartToLeftSwitch();
             centerStartToRightSwitch = getCenterStartToRightSwitch();
+            simpleStartToLeftSwitch = getSimpleStartToLeftSwitch();
+            simpleStartToRightSwitch = getSimpleStartToRightSwitch();
             switchToPyramidCube = new MirroredTrajectory(getSwitchToPyramidCube());
             pyramidCubeToSwitch = new MirroredTrajectory(getPyramidCubeToSwitch());
             switchToPyramidCube1 = new MirroredTrajectory(getSwitchToPyramidCube1());
@@ -410,14 +419,32 @@ public class TrajectoryGenerator {
                     kMaxVelocity, kMaxAccel, kMaxVoltage);
         }
 
+        private Trajectory<TimedState<Pose2dWithCurvature>> getSimpleStartToRightSwitch() {
+            List<Pose2d> waypoints = new ArrayList<>();
+            waypoints.add(kSimpleSwitchStartPose);
+            waypoints.add(kRightSwitchPose);
+
+            return generateTrajectory(true, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kSimpleSwitchMaxCentripetalAccel)),
+                    kSimpleSwitchMaxVelocity, kSimpleSwitchMaxAccel, kMaxVoltage);
+        }
+
+        private Trajectory<TimedState<Pose2dWithCurvature>> getSimpleStartToLeftSwitch() {
+            List<Pose2d> waypoints = new ArrayList<>();
+            waypoints.add(kSimpleSwitchStartPose);
+            waypoints.add(kLeftSwitchPose);
+
+            return generateTrajectory(true, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kSimpleSwitchMaxCentripetalAccel)),
+                    kSimpleSwitchMaxVelocity, kSimpleSwitchMaxAccel, kMaxVoltage);
+        }
+
         private Trajectory<TimedState<Pose2dWithCurvature>> getSwitchToPyramidCube() {
             List<Pose2d> waypoints = new ArrayList<>();
             waypoints.add(kRightSwitchPose);
             waypoints.add(kPyramidCubePose.transformBy(Pose2d.fromTranslation(new Translation2d(-12.0, 0.0))));
             waypoints.add(kPyramidCubePose);
 
-            return generateTrajectory(false, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxCentripetalAccel)),
-                    kMaxVelocity, kMaxAccel, kMaxVoltage);
+            return generateTrajectory(false, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kSimpleSwitchMaxCentripetalAccel)),
+                    kSimpleSwitchMaxVelocity, kSimpleSwitchMaxAccel, kMaxVoltage);
         }
 
         private Trajectory<TimedState<Pose2dWithCurvature>> getPyramidCubeToSwitch() {
@@ -425,8 +452,8 @@ public class TrajectoryGenerator {
             waypoints.add(kPyramidCubePose);
             waypoints.add(kRightSwitchPose);
 
-            return generateTrajectory(true, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxCentripetalAccel)),
-                    kMaxVelocity, kMaxAccel, kMaxVoltage);
+            return generateTrajectory(true, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kSimpleSwitchMaxCentripetalAccel)),
+                    kSimpleSwitchMaxVelocity, kSimpleSwitchMaxAccel, kMaxVoltage);
         }
 
         private Trajectory<TimedState<Pose2dWithCurvature>> getSwitchToPyramidCube1() {
@@ -435,8 +462,8 @@ public class TrajectoryGenerator {
             waypoints.add(kPyramidCube1Pose.transformBy(Pose2d.fromTranslation(new Translation2d(-12.0, 0.0))));
             waypoints.add(kPyramidCube1Pose);
 
-            return generateTrajectory(false, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxCentripetalAccel)),
-                    kMaxVelocity, kMaxAccel, kMaxVoltage);
+            return generateTrajectory(false, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kSimpleSwitchMaxCentripetalAccel)),
+                    kSimpleSwitchMaxVelocity, kSimpleSwitchMaxAccel, kMaxVoltage);
         }
 
         private Trajectory<TimedState<Pose2dWithCurvature>> getPyramidCube1ToSwitch() {
@@ -444,8 +471,8 @@ public class TrajectoryGenerator {
             waypoints.add(kPyramidCube1Pose);
             waypoints.add(kRightSwitchPose);
 
-            return generateTrajectory(true, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxCentripetalAccel)),
-                    kMaxVelocity, kMaxAccel, kMaxVoltage);
+            return generateTrajectory(true, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kSimpleSwitchMaxCentripetalAccel)),
+                    kSimpleSwitchMaxVelocity, kSimpleSwitchMaxAccel, kMaxVoltage);
         }
 
         private Trajectory<TimedState<Pose2dWithCurvature>> getSwitchToPyramidCube2() {
@@ -454,8 +481,8 @@ public class TrajectoryGenerator {
             waypoints.add(kPyramidCube2Pose.transformBy(Pose2d.fromTranslation(new Translation2d(-12.0, 0.0))));
             waypoints.add(kPyramidCube2Pose);
 
-            return generateTrajectory(false, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxCentripetalAccel)),
-                    kMaxVelocity, kMaxAccel, kMaxVoltage);
+            return generateTrajectory(false, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kSimpleSwitchMaxCentripetalAccel)),
+                    kSimpleSwitchMaxVelocity, kSimpleSwitchMaxAccel, kMaxVoltage);
         }
 
         private Trajectory<TimedState<Pose2dWithCurvature>> getPyramidCube2ToCenterField() {
@@ -463,8 +490,8 @@ public class TrajectoryGenerator {
             waypoints.add(kPyramidCube1Pose);
             waypoints.add(kSimpleSwitchEndPose);
 
-            return generateTrajectory(true, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kMaxCentripetalAccel)),
-                    kMaxVelocity, kMaxAccel, kMaxVoltage);
+            return generateTrajectory(true, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kSimpleSwitchMaxCentripetalAccel)),
+                    kSimpleSwitchMaxVelocity, kSimpleSwitchMaxAccel, kMaxVoltage);
         }
 
 
