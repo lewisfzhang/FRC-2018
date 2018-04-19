@@ -91,13 +91,13 @@ public class TrajectoryGenerator {
     public static final Pose2d kNearScaleEndPose = new Pose2d(new Translation2d(220.0, 0.0), Rotation2d.fromDegrees
             (45.0));
 
-    public static final Pose2d kFarScaleEmptyPose = new Pose2d(new Translation2d(253.0, 202.0), Rotation2d
+    public static final Pose2d kFarScaleEmptyPose = new Pose2d(new Translation2d(256.0, 200.0), Rotation2d
             .fromDegrees(-10.0+180.0));
-    public static final Pose2d kFarScaleFullPose = new Pose2d(new Translation2d(253.0, 202.0 - 5.0), Rotation2d.fromDegrees
+    public static final Pose2d kFarScaleFullPose = new Pose2d(new Translation2d(256.0, 200.0 - 5.0), Rotation2d.fromDegrees
             (-15.0+180.0));
-    public static final Pose2d kFarScaleFullPose1 = new Pose2d(new Translation2d(253.0, 202.0 - 8.0), Rotation2d.fromDegrees
+    public static final Pose2d kFarScaleFullPose1 = new Pose2d(new Translation2d(256.0, 200.0 - 8.0), Rotation2d.fromDegrees
             (-15.0+180.0));
-    public static final Pose2d kFarScaleFullPose2 = new Pose2d(new Translation2d(253.0, 202.0 - 11.0 - 10.0), Rotation2d.fromDegrees
+    public static final Pose2d kFarScaleFullPose2 = new Pose2d(new Translation2d(256.0, 200.0 - 11.0 - 10.0), Rotation2d.fromDegrees
             (-15.0+180.0));
 
     public static final Pose2d kCenterToIntake = new Pose2d(new Translation2d(-24.0, 0.0), Rotation2d.identity());
@@ -110,9 +110,9 @@ public class TrajectoryGenerator {
     public static final Pose2d kNearFence2Pose = kNearCube2Pose.transformBy(kCenterToIntake);
     public static final Pose2d kNearFence3Pose = kNearCube3Pose.transformBy(kCenterToIntake);
 
-    public static final Pose2d kFarCube1Pose = new Pose2d(new Translation2d(183.0, 184.0), Rotation2d.fromDegrees(180.0 + 25.0));
-    public static final Pose2d kFarCube2Pose = new Pose2d(new Translation2d(180.0, 184.0 - 30.0 - 15.0), Rotation2d.fromDegrees(180.0 + 65.0));
-    public static final Pose2d kFarCube3Pose = new Pose2d(new Translation2d(170.0, 184.0 - 30.0 * 2 - 20.0), Rotation2d.fromDegrees(180.0 + 60.0));
+    public static final Pose2d kFarCube1Pose = new Pose2d(new Translation2d(185.0, 180.0), Rotation2d.fromDegrees(180.0 + 25.0));
+    public static final Pose2d kFarCube2Pose = new Pose2d(new Translation2d(183.0, 180.0 - 30.0 - 15.0), Rotation2d.fromDegrees(180.0 + 65.0));
+    public static final Pose2d kFarCube3Pose = new Pose2d(new Translation2d(174.0, 180.0 - 30.0 * 2 - 20.0), Rotation2d.fromDegrees(180.0 + 60.0));
 
     public static final Pose2d kFarFence1Pose = kFarCube1Pose.transformBy(kCenterToIntake);
     public static final Pose2d kFarFence2Pose = kFarCube2Pose.transformBy(kCenterToIntake);
