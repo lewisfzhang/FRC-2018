@@ -141,14 +141,14 @@ public class SimpleSwitchMode extends AutoModeBase {
         ));
 
         // Get fourth cube
-        runAction(new ParallelAction(
-                Arrays.asList(
-                        mSwitchToPyramidCube2,
-                        new SetIntaking(true, false),
-                        new OpenCloseJawAction(false)
-                )
-        ));
-        runAction(new WaitAction(AutoConstants.kWaitForCubeTime));
+//        runAction(new ParallelAction(
+//                Arrays.asList(
+//                        mSwitchToPyramidCube2,
+//                        new SetIntaking(true, false),
+//                        new OpenCloseJawAction(false)
+//                )
+//        ));
+//        runAction(new WaitAction(AutoConstants.kWaitForCubeTime));
 
         /*
         //Drive to center field
