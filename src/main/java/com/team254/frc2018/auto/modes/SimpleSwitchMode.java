@@ -6,6 +6,7 @@ import com.team254.frc2018.auto.actions.*;
 import com.team254.frc2018.auto.AutoConstants;
 import com.team254.frc2018.paths.TrajectoryGenerator;
 import com.team254.frc2018.states.SuperstructureConstants;
+import com.team254.lib.geometry.Translation2d;
 
 import java.util.Arrays;
 
@@ -23,7 +24,7 @@ public class SimpleSwitchMode extends AutoModeBase {
     private DriveTrajectory mPyramidCube1ToSwitch;
     private DriveTrajectory mPyramidCube2ToCenterField;
 
-    private double mPyramidCubeWaitTime, mPyramidCube1WaitTime, mStartCubeWaitTime;
+    private double mPyramidCubeWaitTime, mPyramidCube1WaitTime, mStartCubeWaitTime, mPyramidCubeClampTime;
 
     public SimpleSwitchMode(boolean driveToLeftSwitch) {
         mStartedLeft = driveToLeftSwitch;
@@ -43,7 +44,8 @@ public class SimpleSwitchMode extends AutoModeBase {
         mPyramidCubeToSwitch = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().pyramidCubeToSwitch.get(mStartedLeft));
         mPyramidCube1ToSwitch = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().pyramidCube1ToSwitch.get(mStartedLeft));
         mPyramidCube2ToCenterField = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().pyramidCube2ToCenterField.get(mStartedLeft));
-        
+
+        mPyramidCubeClampTime = mTrajectoryGenerator.getTrajectorySet().switchToPyramidCube1.get(mStartedLeft).getLastState().t() - 0.15;
         mPyramidCubeWaitTime = mTrajectoryGenerator.getTrajectorySet().pyramidCubeToSwitch.get(mStartedLeft).getLastState().t() - 0.2;
         mPyramidCube1WaitTime = mTrajectoryGenerator.getTrajectorySet().pyramidCube1ToSwitch.get(mStartedLeft).getLastState().t() - 0.2;
     }
@@ -69,11 +71,24 @@ public class SimpleSwitchMode extends AutoModeBase {
 
         // Get second cube
         runAction(new ParallelAction(
-                Arrays.asList(
-                        mSwitchToPyramidCube,
-                        new SetIntaking(true, false),
+            Arrays.asList(
+                mSwitchToPyramidCube1,
+                new SeriesAction(
+                    Arrays.asList(
+                        new WaitUntilInsideRegion(new Translation2d(-1000.0, -50.0), new Translation2d
+                                (1000.0, 50.0), mStartedLeft),
+                        new SetSuperstructurePosition(SuperstructureConstants.kIntakeSecondLevelHeight, SuperstructureConstants.kIntakePositionAngle, true),
+                        new SetIntaking(false, false),
+                        new OpenCloseJawAction(true)
+                    )
+                ),
+                new SeriesAction(
+                    Arrays.asList(
+                        new WaitAction(mPyramidCubeClampTime),
                         new OpenCloseJawAction(false)
+                    )
                 )
+            )
         ));
         runAction(new WaitAction(AutoConstants.kWaitForCubeTime));
 

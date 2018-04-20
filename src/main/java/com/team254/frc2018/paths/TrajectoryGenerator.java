@@ -90,7 +90,7 @@ public class TrajectoryGenerator {
             (10.0+180.0));
 
     public static final Pose2d kNearScaleFullPose2 = new Pose2d(new Translation2d(253.0, 28.0 + 11.0 + 7.0), Rotation2d.fromDegrees
-            (15.0+180.0));
+            (20.0+180.0));
 
     public static final Pose2d kNearScaleEndPose = new Pose2d(new Translation2d(220.0, 0.0), Rotation2d.fromDegrees
             (45.0));
@@ -132,7 +132,7 @@ public class TrajectoryGenerator {
             .transformBy(kCenterToIntake);
     public static final Pose2d kCenterPyramidCubePose = new Pose2d(new Translation2d(90.0, 0.0), Rotation2d.fromDegrees(0.0))
             .transformBy(kCenterToIntake);
-    public static final Pose2d kPyramidCube1Pose = new Pose2d(new Translation2d(82.0 + 18, 10.0), Rotation2d.fromDegrees(0.0 + 60.0))
+    public static final Pose2d kPyramidCube1Pose = new Pose2d(new Translation2d(116.0, 3.0), Rotation2d.fromDegrees(0.0))
             .transformBy(kCenterToIntake);
     public static final Pose2d kPyramidCube2Pose = new Pose2d(new Translation2d(82.0 + 14.0, 6.0 - 2.0), Rotation2d.fromDegrees(0.0 + 60.0))
             .transformBy(kCenterToIntake);
@@ -459,7 +459,9 @@ public class TrajectoryGenerator {
         private Trajectory<TimedState<Pose2dWithCurvature>> getSwitchToPyramidCube1() {
             List<Pose2d> waypoints = new ArrayList<>();
             waypoints.add(kRightSwitchPose);
-            waypoints.add(kPyramidCube1Pose.transformBy(Pose2d.fromTranslation(new Translation2d(-12.0, 0.0))));
+            waypoints.add(kRightSwitchPose.transformBy(Pose2d.fromTranslation(new Translation2d(30.0, 0.0))));
+            waypoints.add(kPyramidCube1Pose.transformBy(Pose2d.fromTranslation(new Translation2d(-36.0, -16.0)))
+                    .transformBy(Pose2d.fromRotation(Rotation2d.fromDegrees(65.0))));
             waypoints.add(kPyramidCube1Pose);
 
             return generateTrajectory(false, waypoints, Arrays.asList(new CentripetalAccelerationConstraint(kSimpleSwitchMaxCentripetalAccel)),
