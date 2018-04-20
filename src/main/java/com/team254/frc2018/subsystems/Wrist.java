@@ -365,8 +365,8 @@ public class Wrist extends Subsystem {
     }
 
     public synchronized double getSetpoint() {
-        return mDesiredState == SystemState.MOTION_PROFILING ? sensorUnitsToDegrees((mPeriodicIO
-                .demand)) : Double.NaN;
+        return mDesiredState == SystemState.MOTION_PROFILING || mDesiredState == SystemState.POSITION_PID
+                ? sensorUnitsToDegrees((mPeriodicIO.demand)) : Double.NaN;
     }
 
     private double sensorUnitsToDegrees(double units) {
@@ -430,7 +430,11 @@ public class Wrist extends Subsystem {
                     (mIntake.hasCube() ? Constants.kWristKaWithCube : Constants.kWristKaWithoutCube);
             mPeriodicIO.feedforward = (elevatorAccelerationComponent) * wristGravityComponent + wristAccelerationComponent;
         } else {
-            mPeriodicIO.feedforward = 0.0;
+            if(getSetpoint() < Util.kEpsilon) {
+                mPeriodicIO.feedforward = -0.1;
+            } else {
+                mPeriodicIO.feedforward = 0.0;
+            }
         }
         if (mCSVWriter != null) {
             mCSVWriter.add(mPeriodicIO);

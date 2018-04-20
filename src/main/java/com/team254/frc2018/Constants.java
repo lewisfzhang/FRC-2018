@@ -103,7 +103,7 @@ public class Constants {
     public static final double kWristKfMultiplierWithCube = 0.15;
     public static final double kWristKfMultiplierWithoutCube = 0.1;
     public static final double kWristElevatorAccelerationMultiplier = -1.0;
-    public static final double kWristEpsilon = 3.0;
+    public static final double kWristEpsilon = 2.0;
 
     public static final int kWristMaxIntegralAccumulator = 500000; //todo: tune me
     public static final int kWristIZone = 500; //todo: tune me
