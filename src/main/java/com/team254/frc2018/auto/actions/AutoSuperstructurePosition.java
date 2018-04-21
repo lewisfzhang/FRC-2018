@@ -21,6 +21,12 @@ public class AutoSuperstructurePosition implements Action {
     private final boolean mWaitForCompletion;
     private final boolean mUseKickstand;
     private double mStartTime;
+    private double mMinHeight = 0.0;
+
+    public AutoSuperstructurePosition(int numCubes, double angle, boolean waitForCompletion, boolean useKickstand, double minHeight) {
+        this(numCubes, angle, waitForCompletion, useKickstand);
+        mMinHeight = minHeight;
+    }
 
     public AutoSuperstructurePosition(int numCubes, double angle, boolean waitForCompletion, boolean useKickstand) {
         mNumCubes = numCubes;
@@ -31,7 +37,12 @@ public class AutoSuperstructurePosition implements Action {
 
     @Override
     public void start() {
-        mHeight = mCheesyVision2.getDesiredHeight((mAngle == SuperstructureConstants.kScoreBackwardsAngle), mNumCubes, mUseKickstand);
+        double cheesyVisionHeight = mCheesyVision2.getDesiredHeight((mAngle == SuperstructureConstants.kScoreBackwardsAngle), mNumCubes, mUseKickstand);
+        if(cheesyVisionHeight < mMinHeight) {
+            mHeight = mMinHeight;
+        } else {
+            mHeight = cheesyVisionHeight;
+        }
         mSuperstructure.setDesiredHeight(mHeight);
         mSuperstructure.setDesiredAngle(mAngle);
         mStartTime = Timer.getFPGATimestamp();
@@ -39,7 +50,12 @@ public class AutoSuperstructurePosition implements Action {
 
     @Override
     public void update() {
-        mHeight = mCheesyVision2.getDesiredHeight((mAngle == SuperstructureConstants.kScoreBackwardsAngle), mNumCubes, mUseKickstand);
+        double cheesyVisionHeight = mCheesyVision2.getDesiredHeight((mAngle == SuperstructureConstants.kScoreBackwardsAngle), mNumCubes, mUseKickstand);
+        if(cheesyVisionHeight < mMinHeight) {
+            mHeight = mMinHeight;
+        } else {
+            mHeight = cheesyVisionHeight;
+        }
         mSuperstructure.setDesiredHeight(mHeight);
     }
 

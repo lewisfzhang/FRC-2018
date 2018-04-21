@@ -74,8 +74,8 @@ public class FarScaleOnlyMode extends AutoModeBase {
 
                                         (CheesyVision2.getInstance().isConnected() ?
                                                 (AutoConstants.kUseKickstand ?
-                                                        new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngle, true, true) :
-                                                        new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngleNoKick, true, false)
+                                                        new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngle, true, true, SuperstructureConstants.kScaleNeutralHeightBackwards) :
+                                                        new AutoSuperstructurePosition(0, SuperstructureConstants.kScoreBackwardsAngleNoKick, true, false, SuperstructureConstants.kScaleNeutralHeightBackwards)
                                                 ) : (AutoConstants.kUseKickstand ?
                                                 new SetSuperstructurePosition(SuperstructureConstants.kScaleHighHeightBackwards,
                                                         SuperstructureConstants.kScoreBackwardsAngle, true) :
