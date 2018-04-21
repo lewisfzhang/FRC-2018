@@ -50,6 +50,9 @@ public class FarScaleOnlyMode extends AutoModeBase {
     protected void routine() throws AutoModeEndedException {
         // System.out.println("Running far scale only");
 
+        runAction(new WaitAction(1.0));
+
+
         if(!AutoConstants.kUseKickstand) {
             runAction(new EngageKickstand(false));
         }
