@@ -100,7 +100,7 @@ public class TrajectoryGenerator {
     public static final Pose2d kFarScaleFullPose = new Pose2d(new Translation2d(256.0, 200.0 - 5.0), Rotation2d.fromDegrees
             (-15.0+180.0));
     public static final Pose2d kFarScaleFullPose1 = new Pose2d(new Translation2d(256.0, 200.0 - 8.0), Rotation2d.fromDegrees
-            (-15.0+180.0));
+            (-20.0+180.0));
     public static final Pose2d kFarScaleFullPose2 = new Pose2d(new Translation2d(256.0, 200.0 - 11.0 - 10.0), Rotation2d.fromDegrees
             (-15.0+180.0));
 
