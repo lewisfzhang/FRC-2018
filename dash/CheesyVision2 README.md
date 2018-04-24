@@ -1,10 +1,10 @@
-# CheesyVision2
+# Cheesy Vision 2.0
 
 A program to track the angle of the scale using a webcam.
 
 ## Basic usage
 
-1.  Opening `run_dashboard.bat` launches CheesyVision2.
+1.  Opening `run_dashboard.bat` launches `CheesyVision2.py` and `firstperson.html` (see [First Person View](#first-person-view)).
 2.  Press <kbd>D</kbd> to cycle through cameras until the webcam is the active one.
 3.  Click and drag to select the rectangular region-of-interest.
     - The tighter the rectangle, the more accurate it will be; however, make sure that the entire range of the scale is included.
@@ -41,3 +41,7 @@ Then the program's ready.
  You can see the list of command-line arguments by running:
  
  ```$ python CheesyVision2.py --help```
+
+## First Person View
+- `firstperson.html` displays a MJPEG feed from the First Person View Camera on the robot
+- Feed is streamed over Network Tables using the WPILib `MjpegServer` class
