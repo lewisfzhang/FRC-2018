@@ -41,7 +41,6 @@ public class Robot extends IterativeRobot {
                     Elevator.getInstance(),
                     CarriageCanifier.getInstance(),
                     Infrastructure.getInstance(),
-                    Limelight.getInstance(),
                     CheesyVision2.getInstance()
             )
     );
@@ -54,7 +53,6 @@ public class Robot extends IterativeRobot {
     private Infrastructure mInfrastructure = Infrastructure.getInstance();
     private Superstructure mSuperstructure = Superstructure.getInstance();
     private Elevator mElevator = Elevator.getInstance();
-    private Limelight mLimelight = Limelight.getInstance();
     private CheesyVision2 mCheesyVision2 = CheesyVision2.getInstance();
 
     private LatchedBoolean mRunIntakeReleased = new LatchedBoolean();
@@ -233,8 +231,6 @@ public class Robot extends IterativeRobot {
     @Override
     public void disabledPeriodic() {
         SmartDashboard.putString("Match Cycle", "DISABLED");
-
-        mLimelight.setStream(2);
 
         try {
             outputToSmartDashboard();
