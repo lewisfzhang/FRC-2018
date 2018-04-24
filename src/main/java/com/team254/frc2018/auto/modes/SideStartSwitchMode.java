@@ -1,9 +1,9 @@
 package com.team254.frc2018.auto.modes;
 
+import com.team254.frc2018.auto.AutoConstants;
 import com.team254.frc2018.auto.AutoModeBase;
 import com.team254.frc2018.auto.AutoModeEndedException;
 import com.team254.frc2018.auto.actions.*;
-import com.team254.frc2018.auto.AutoConstants;
 import com.team254.frc2018.paths.TrajectoryGenerator;
 import com.team254.frc2018.states.SuperstructureConstants;
 
@@ -19,7 +19,7 @@ public class SideStartSwitchMode extends AutoModeBase {
         mStartedLeft = robotStartedOnLeft;
         mGoLeft = switchIsLeft;
 
-        if(mGoLeft == mStartedLeft) {
+        if (mGoLeft == mStartedLeft) {
             mTrajectory = new DriveTrajectory(TrajectoryGenerator.getInstance().getTrajectorySet().sideStartToNearSwitch.get(mStartedLeft), true);
         } else {
             mTrajectory = new DriveTrajectory(TrajectoryGenerator.getInstance().getTrajectorySet().sideStartToFarSwitch.get(mStartedLeft), true);

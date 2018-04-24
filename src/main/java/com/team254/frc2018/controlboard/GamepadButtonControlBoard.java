@@ -26,7 +26,7 @@ public class GamepadButtonControlBoard implements IButtonControlBoard {
     public boolean goToIntakingWrist() {
         return mJoystick.getPOV() == 90;
     }
-    
+
     @Override
     public boolean goToScoringWrist() {
         return mJoystick.getPOV() == 180;
@@ -34,7 +34,7 @@ public class GamepadButtonControlBoard implements IButtonControlBoard {
 
     @Override
     public boolean goToVerticalWrist() {
-    		return mJoystick.getPOV() == 0;
+        return mJoystick.getPOV() == 0;
     }
 
     @Override
@@ -43,7 +43,9 @@ public class GamepadButtonControlBoard implements IButtonControlBoard {
     }
 
     @Override
-    public boolean goToScoringAngledWrist() { return mJoystick.getPOV() == 45; }
+    public boolean goToScoringAngledWrist() {
+        return mJoystick.getPOV() == 45;
+    }
 
     //Elevator
     @Override
@@ -141,5 +143,7 @@ public class GamepadButtonControlBoard implements IButtonControlBoard {
     }
 
     @Override
-    public boolean getToggleKickstand() { return mJoystick.getRawButton(7); }
+    public boolean getToggleKickstand() {
+        return mJoystick.getRawButton(7);
+    }
 }

@@ -21,7 +21,7 @@ public interface TimedLEDState {
 
         @Override
         public void getCurrentLEDState(LEDState desiredState, double timestamp) {
-            if ((int)(timestamp / mDuration) % 2 == 0) {
+            if ((int) (timestamp / mDuration) % 2 == 0) {
                 desiredState.copyFrom(mStateOne);
             } else {
                 desiredState.copyFrom(mStateTwo);
@@ -30,11 +30,12 @@ public interface TimedLEDState {
     }
 
     class StaticLEDState implements TimedLEDState {
-        public static StaticLEDState kStaticOff =  new StaticLEDState(LEDState.kOff);
+        public static StaticLEDState kStaticOff = new StaticLEDState(LEDState.kOff);
         public static StaticLEDState kIntaking = new StaticLEDState(LEDState.kIntakeIntaking);
         public static StaticLEDState kHasCube = new StaticLEDState(LEDState.kIntakeHasCube);
 
         LEDState mStaticState = new LEDState(0.0, 0.0, 0.0);
+
         public StaticLEDState(LEDState staticState) {
             mStaticState.copyFrom(staticState);
         }

@@ -4,7 +4,6 @@ import com.team254.frc2018.auto.AutoModeBase;
 import com.team254.frc2018.auto.AutoModeExecuter;
 import com.team254.frc2018.loops.Looper;
 import com.team254.frc2018.paths.TrajectoryGenerator;
-import com.team254.frc2018.subsystems.RobotStateEstimator;
 import com.team254.frc2018.statemachines.IntakeStateMachine;
 import com.team254.frc2018.statemachines.SuperstructureStateMachine;
 import com.team254.frc2018.states.SuperstructureConstants;
@@ -306,7 +305,7 @@ public class Robot extends IterativeRobot {
                 }
 
                 double elevatorThrottle = mControlBoard.getElevatorThrottle();
-                if(Math.abs(elevatorThrottle) < Constants.kElevatorThrottleDeadband) {
+                if (Math.abs(elevatorThrottle) < Constants.kElevatorThrottleDeadband) {
                     elevatorThrottle = 0.0;
                 } else {
                     elevatorThrottle =
@@ -317,7 +316,7 @@ public class Robot extends IterativeRobot {
                 mSuperstructure.setHangThrottle(elevatorThrottle);
 
                 if (mLowShiftPressed.update(mControlBoard.getElevatorLowShift())) {
-                   mSuperstructure.setElevatorLowGear();
+                    mSuperstructure.setElevatorLowGear();
                 } else if (mHighShiftPressed.update(mControlBoard.getElevatorHighShift())) {
                     mSuperstructure.setElevatorHighGear();
                 }
@@ -350,7 +349,7 @@ public class Robot extends IterativeRobot {
 
                 boolean shootReleased = mShootReleased.update(!(normalShoot || poopyShoot));
 
-                if(forceSuperClamp) {
+                if (forceSuperClamp) {
                     mIntake.forceClampJaw(true);
                 } else {
                     mIntake.forceClampJaw(false);
@@ -374,9 +373,9 @@ public class Robot extends IterativeRobot {
                             mIntake.shoot(IntakeStateMachine.kStrongShootSetpoint);
                         }
                     }
-                } else if(poopyShoot) {
+                } else if (poopyShoot) {
                     intakeAction = true;
-                    if(mElevator.getInchesOffGround() < SuperstructureConstants.kSwitchHeight + 5.0 && mWrist.getAngle() < SuperstructureConstants.kWeakShootAngle) {
+                    if (mElevator.getInchesOffGround() < SuperstructureConstants.kSwitchHeight + 5.0 && mWrist.getAngle() < SuperstructureConstants.kWeakShootAngle) {
                         mIntake.shoot(IntakeStateMachine.kExchangeShootSetpoint);
                     } else {
                         mIntake.shoot(IntakeStateMachine.kPoopyShootSetpoint);
@@ -415,7 +414,7 @@ public class Robot extends IterativeRobot {
 
                 boolean kick_stand_released =
                         mKickStandReleased.update(!mControlBoard.getToggleKickstand())
-                        && (timestamp - mLastHangModeTimestamp > Constants.kKickstandDelay);
+                                && (timestamp - mLastHangModeTimestamp > Constants.kKickstandDelay);
                 // Only toggle if below.
                 if (kick_stand_released &&
                         (mElevator.getInchesOffGround() <
@@ -555,7 +554,7 @@ public class Robot extends IterativeRobot {
                 }
 
                 double elevator_jog = mControlBoard.getJogElevatorThrottle();
-                if(Math.abs(elevator_jog) > Constants.kJoystickJogThreshold) {
+                if (Math.abs(elevator_jog) > Constants.kJoystickJogThreshold) {
                     elevator_jog =
                             (elevator_jog - Math.signum(elevator_jog) *
                                     Constants.kJoystickJogThreshold) /
@@ -565,7 +564,7 @@ public class Robot extends IterativeRobot {
                 }
 
                 double wrist_jog = mControlBoard.getJogWristThrottle();
-                if(Math.abs(wrist_jog) > Constants.kJoystickJogThreshold) {
+                if (Math.abs(wrist_jog) > Constants.kJoystickJogThreshold) {
                     wrist_jog =
                             (wrist_jog - Math.signum(wrist_jog) *
                                     Constants.kJoystickJogThreshold) /

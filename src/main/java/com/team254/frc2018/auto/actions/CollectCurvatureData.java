@@ -26,10 +26,9 @@ public class CollectCurvatureData implements Action {
     private double mStartTime = 0.0;
 
     /**
-     * @param data reference to the list where data points should be stored
+     * @param data     reference to the list where data points should be stored
      * @param highGear use high gear or low
-     * @param reverse if true drive in reverse, if false drive normally
-     *
+     * @param reverse  if true drive in reverse, if false drive normally
      */
 
     public CollectCurvatureData(List<DriveCharacterization.CurvatureDataPoint> data, boolean highGear, boolean reverse) {
@@ -50,11 +49,11 @@ public class CollectCurvatureData implements Action {
     @Override
     public void update() {
         double t = Timer.getFPGATimestamp() - mStartTime;
-        if(t < kStartTime) { //give the robot some time to accelerate before recording data
+        if (t < kStartTime) { //give the robot some time to accelerate before recording data
             return;
         }
         double rightPower = kStartPower + (t - kStartTime) * kRampRate;
-        if(rightPower > kMaxPower) {
+        if (rightPower > kMaxPower) {
             isFinished = true;
             return;
         }

@@ -2,9 +2,8 @@ package com.team254.frc2018.auto.actions;
 
 import com.team254.frc2018.RobotState;
 import com.team254.lib.geometry.Translation2d;
-import edu.wpi.first.wpilibj.Timer;
 
-public class WaitUntilInsideRegion implements Action  {
+public class WaitUntilInsideRegion implements Action {
     private final static RobotState mRobotState = RobotState.getInstance();
 
     private final Translation2d mBottomLeft;
@@ -12,7 +11,7 @@ public class WaitUntilInsideRegion implements Action  {
 
     //(100, 100) (200, 200)
     public WaitUntilInsideRegion(Translation2d bottomLeft, Translation2d topRight, boolean isOnLeft) {
-        if(isOnLeft) {
+        if (isOnLeft) {
             mBottomLeft = new Translation2d(bottomLeft.x(), -topRight.y());
             mTopRight = new Translation2d(topRight.x(), -bottomLeft.y());
         } else {

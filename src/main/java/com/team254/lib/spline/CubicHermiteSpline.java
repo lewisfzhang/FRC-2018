@@ -63,7 +63,7 @@ public class CubicHermiteSpline extends Spline {
         final double dy = 3 * t * t * ay + 2 * t * by + cy;
         final double ddx = 6 * t * ax + 2 * bx;
         final double ddy = 6 * t * ay + 2 * by;
-        return (dx*ddy - dy*ddx) / ((dx*dx + dy*dy) * Math.sqrt(dx*dx + dy*dy));
+        return (dx * ddy - dy * ddx) / ((dx * dx + dy * dy) * Math.sqrt(dx * dx + dy * dy));
     }
 
     @Override

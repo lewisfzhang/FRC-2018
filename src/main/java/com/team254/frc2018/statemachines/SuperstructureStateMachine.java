@@ -39,6 +39,7 @@ public class SuperstructureStateMachine {
         mOpenLoopPower = 0.0;
         mManualWantsLowGear = false;
     }
+
     public synchronized void setMaxHeight(double height) {
         mMaxHeight = height;
     }
@@ -47,7 +48,9 @@ public class SuperstructureStateMachine {
         mManualWantsLowGear = wantsLowGear;
     }
 
-    public synchronized void setOpenLoopPower(double power) { mOpenLoopPower = power; }
+    public synchronized void setOpenLoopPower(double power) {
+        mOpenLoopPower = power;
+    }
 
     public synchronized void setScoringHeight(double inches) {
         mScoringHeight = inches;
@@ -148,7 +151,7 @@ public class SuperstructureStateMachine {
         mDesiredEndState.angle = mScoringAngle;
         mDesiredEndState.height = mScoringHeight;
 
-         System.out.println("Setting motion planner to height: " + mDesiredEndState.height
+        System.out.println("Setting motion planner to height: " + mDesiredEndState.height
                 + " angle: " + mDesiredEndState.angle);
 
         // Push into elevator planner.
@@ -181,9 +184,10 @@ public class SuperstructureStateMachine {
 
     // HOLDING_POSITION
     private SystemState handleHoldingPositionTransitions(WantedAction wantedAction,
-                                               SuperstructureState currentState) {
+                                                         SuperstructureState currentState) {
         return handleDefaultTransitions(wantedAction, currentState);
     }
+
     private void getHoldingPositionCommandedState() {
         mCommand.elevatorLowGear = false;
         mCommand.openLoopElevator = false;
@@ -191,10 +195,11 @@ public class SuperstructureStateMachine {
 
     // MOVING_TO_POSITION
     private SystemState handleMovingToPositionTransitions(WantedAction wantedAction,
-                                                         SuperstructureState currentState) {
+                                                          SuperstructureState currentState) {
 
         return handleDefaultTransitions(wantedAction, currentState);
     }
+
     private void getMovingToPositionCommandedState() {
         mCommand.elevatorLowGear = false;
         mCommand.openLoopElevator = false;
@@ -202,7 +207,7 @@ public class SuperstructureStateMachine {
 
     // MANUAL
     private SystemState handleManualTransitions(WantedAction wantedAction,
-                                                 SuperstructureState currentState) {
+                                                SuperstructureState currentState) {
         if (wantedAction != WantedAction.WANT_MANUAL) {
             // Freeze height.
             mScoringAngle = currentState.angle;
@@ -211,6 +216,7 @@ public class SuperstructureStateMachine {
         }
         return handleDefaultTransitions(wantedAction, currentState);
     }
+
     private void getManualCommandedState() {
         mCommand.elevatorLowGear = mManualWantsLowGear;
         mCommand.wristAngle = SuperstructureConstants.kWristMinAngle;

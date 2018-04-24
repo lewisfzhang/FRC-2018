@@ -122,13 +122,12 @@ public class RobotState {
     }
 
 
-
     public void addVisionUpdate(double timestamp, List<Limelight.TargetInfo> vision_update) {
-        if(vision_update.size() != 2)
+        if (vision_update.size() != 2)
             return;
         List<Translation2d> positions = new ArrayList<>();
         Pose2d robot_pose = getFieldToVehicle(timestamp).transformBy(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(180.0)));
-        for(Limelight.TargetInfo target : vision_update) {
+        for (Limelight.TargetInfo target : vision_update) {
             Pose2d robot_to_target = new Pose2d(getTranslationFromTargetInfo(target), Rotation2d.identity());
             positions.add(robot_pose.transformBy(robot_to_target).getTranslation());
         }

@@ -25,11 +25,10 @@ public class CollectAccelerationData implements Action {
     private double mPrevTime = 0.0;
 
     /**
-     * @param data reference to the list where data points should be stored
+     * @param data     reference to the list where data points should be stored
      * @param highGear use high gear or low
-     * @param reverse if true drive in reverse, if false drive normally
-     * @param turn if true turn, if false drive straight
-     *
+     * @param reverse  if true drive in reverse, if false drive normally
+     * @param turn     if true turn, if false drive straight
      */
     public CollectAccelerationData(List<DriveCharacterization.AccelerationDataPoint> data, boolean highGear, boolean reverse, boolean turn) {
         mAccelerationData = data;
@@ -53,7 +52,7 @@ public class CollectAccelerationData implements Action {
         double currentTime = Timer.getFPGATimestamp();
 
         //don't calculate acceleration until we've populated prevTime and prevVelocity
-        if(mPrevTime == mStartTime) {
+        if (mPrevTime == mStartTime) {
             mPrevTime = currentTime;
             mPrevVelocity = currentVelocity;
             return;
@@ -62,7 +61,7 @@ public class CollectAccelerationData implements Action {
         double acceleration = (currentVelocity - mPrevVelocity) / (currentTime - mPrevTime);
 
         //ignore accelerations that are too small
-        if(acceleration < Util.kEpsilon) {
+        if (acceleration < Util.kEpsilon) {
             mPrevTime = currentTime;
             mPrevVelocity = currentVelocity;
             return;

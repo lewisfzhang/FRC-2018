@@ -1,10 +1,10 @@
 package com.team254.lib.spline;
 
-import java.util.List;
-
 import com.team254.lib.geometry.Pose2d;
 import com.team254.lib.geometry.Rotation2d;
 import com.team254.lib.geometry.Translation2d;
+
+import java.util.List;
 
 public class QuinticHermiteSpline extends Spline {
     private static final double kEpsilon = 1e-5;
@@ -26,8 +26,8 @@ public class QuinticHermiteSpline extends Spline {
     }
 
     /**
-     * @param p0 The starting pose of the spline
-     * @param p1 The ending pose of the spline
+     * @param p0  The starting pose of the spline
+     * @param p1  The ending pose of the spline
      * @param ref ReferenceFrame of this spline
      */
     public QuinticHermiteSpline(Pose2d p0, Pose2d p1, ReferenceFrame ref) {
@@ -151,15 +151,15 @@ public class QuinticHermiteSpline extends Spline {
     }
 
     @Override
-    public  double getDCurvature(double t) {
+    public double getDCurvature(double t) {
         double dx2dy2 = (dx(t) * dx(t) + dy(t) * dy(t));
-        double num = (dx(t)*dddy(t) - dddx(t)*dy(t)) * dx2dy2 - 3 * (dx(t) * ddy(t) - ddx(t) * dy(t)) * (dx(t) * ddx(t) + dy(t) * ddy(t));
+        double num = (dx(t) * dddy(t) - dddx(t) * dy(t)) * dx2dy2 - 3 * (dx(t) * ddy(t) - ddx(t) * dy(t)) * (dx(t) * ddx(t) + dy(t) * ddy(t));
         return num / (dx2dy2 * dx2dy2 * Math.sqrt(dx2dy2));
     }
 
     private double dCurvature2(double t) {
         double dx2dy2 = (dx(t) * dx(t) + dy(t) * dy(t));
-        double num = (dx(t)*dddy(t) - dddx(t)*dy(t)) * dx2dy2 - 3 * (dx(t) * ddy(t) - ddx(t) * dy(t)) * (dx(t) * ddx(t) + dy(t) * ddy(t));
+        double num = (dx(t) * dddy(t) - dddx(t) * dy(t)) * dx2dy2 - 3 * (dx(t) * ddy(t) - ddx(t) * dy(t)) * (dx(t) * ddx(t) + dy(t) * ddy(t));
         return num * num / (dx2dy2 * dx2dy2 * dx2dy2 * dx2dy2 * dx2dy2);
     }
 
@@ -234,7 +234,7 @@ public class QuinticHermiteSpline extends Spline {
 
         for (int i = 0; i < splines.size() - 1; ++i) {
             //don't try to optimize colinear points
-            if(splines.get(i).getStartPose().isColinear(splines.get(i + 1).getStartPose()) || splines.get(i).getEndPose().isColinear(splines.get(i + 1).getEndPose())) {
+            if (splines.get(i).getStartPose().isColinear(splines.get(i + 1).getStartPose()) || splines.get(i).getEndPose().isColinear(splines.get(i + 1).getEndPose())) {
                 continue;
             }
             double original = sumDCurvature2(splines);
@@ -269,7 +269,7 @@ public class QuinticHermiteSpline extends Spline {
         p2 = new Translation2d(0, sumDCurvature2(splines)); //middle point is at the current location
 
         for (int i = 0; i < splines.size() - 1; ++i) { //first point is offset from the middle location by -stepSize
-            if(splines.get(i).getStartPose().isColinear(splines.get(i + 1).getStartPose()) || splines.get(i).getEndPose().isColinear(splines.get(i + 1).getEndPose())) {
+            if (splines.get(i).getStartPose().isColinear(splines.get(i + 1).getStartPose()) || splines.get(i).getEndPose().isColinear(splines.get(i + 1).getEndPose())) {
                 continue;
             }
             //normalize to step size
@@ -289,7 +289,7 @@ public class QuinticHermiteSpline extends Spline {
         p1 = new Translation2d(-kStepSize, sumDCurvature2(splines));
 
         for (int i = 0; i < splines.size() - 1; ++i) { //last point is offset from the middle location by +stepSize
-            if(splines.get(i).getStartPose().isColinear(splines.get(i + 1).getStartPose()) || splines.get(i).getEndPose().isColinear(splines.get(i + 1).getEndPose())) {
+            if (splines.get(i).getStartPose().isColinear(splines.get(i + 1).getStartPose()) || splines.get(i).getEndPose().isColinear(splines.get(i + 1).getEndPose())) {
                 continue;
             }
             //move along the gradient by 2 times the step size amount (to return to original location and move by 1
@@ -309,7 +309,7 @@ public class QuinticHermiteSpline extends Spline {
         double stepSize = fitParabola(p1, p2, p3); //approximate step size to minimize sumDCurvature2 along the gradient
 
         for (int i = 0; i < splines.size() - 1; ++i) {
-            if(splines.get(i).getStartPose().isColinear(splines.get(i + 1).getStartPose()) || splines.get(i).getEndPose().isColinear(splines.get(i + 1).getEndPose())) {
+            if (splines.get(i).getStartPose().isColinear(splines.get(i + 1).getStartPose()) || splines.get(i).getEndPose().isColinear(splines.get(i + 1).getEndPose())) {
                 continue;
             }
             //move by the step size calculated by the parabola fit (+1 to offset for the final transformation to find

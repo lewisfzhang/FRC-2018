@@ -1,9 +1,9 @@
 package com.team254.frc2018.paths;
 
-import java.util.List;
-
 import com.team254.lib.geometry.Pose2d;
 import com.team254.lib.spline.Spline;
+
+import java.util.List;
 
 /**
  * Interface containing all information necessary for a path including the Path itself, the Path's starting pose, and

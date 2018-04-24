@@ -3,7 +3,6 @@ package com.team254.frc2018.auto.creators;
 import com.team254.frc2018.AutoFieldState;
 import com.team254.frc2018.auto.AutoModeBase;
 import com.team254.frc2018.auto.modes.CrossAutoLineMode;
-import com.team254.frc2018.auto.modes.SimpleSwitchMode;
 
 public class CrossAutoLineCreator implements AutoModeCreator {
 

@@ -13,12 +13,12 @@ public class AutoModeTiming {
         mTrajectoryGenerator.generateTrajectories();
 
         double nearScaleDuration = mTrajectoryGenerator.getTrajectorySet().sideStartToNearScale.get(mStartedLeft).getLastState().t() +
-                                   mTrajectoryGenerator.getTrajectorySet().nearScaleToNearFence.get(mStartedLeft).getLastState().t() +
-                                   mTrajectoryGenerator.getTrajectorySet().nearFenceToNearScale.get(mStartedLeft).getLastState().t() +
-                                   mTrajectoryGenerator.getTrajectorySet().nearScaleToNearFence2.get(mStartedLeft).getLastState().t() +
-                                   mTrajectoryGenerator.getTrajectorySet().nearFence2ToNearScale.get(mStartedLeft).getLastState().t() +
-                                   mTrajectoryGenerator.getTrajectorySet().nearScaleToNearFence3.get(mStartedLeft).getLastState().t() +
-                                   mTrajectoryGenerator.getTrajectorySet().nearFence3ToNearScale.get(mStartedLeft).getLastState().t();
+                mTrajectoryGenerator.getTrajectorySet().nearScaleToNearFence.get(mStartedLeft).getLastState().t() +
+                mTrajectoryGenerator.getTrajectorySet().nearFenceToNearScale.get(mStartedLeft).getLastState().t() +
+                mTrajectoryGenerator.getTrajectorySet().nearScaleToNearFence2.get(mStartedLeft).getLastState().t() +
+                mTrajectoryGenerator.getTrajectorySet().nearFence2ToNearScale.get(mStartedLeft).getLastState().t() +
+                mTrajectoryGenerator.getTrajectorySet().nearScaleToNearFence3.get(mStartedLeft).getLastState().t() +
+                mTrajectoryGenerator.getTrajectorySet().nearFence3ToNearScale.get(mStartedLeft).getLastState().t();
         double nearScaleBestCaseWait = 3 * AutoConstants.kWaitForCubeTime;
         double nearScaleWorstCaseWait = nearScaleBestCaseWait + 0.5 * 4;
 

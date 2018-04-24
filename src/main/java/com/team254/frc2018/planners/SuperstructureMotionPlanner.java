@@ -1,7 +1,7 @@
 package com.team254.frc2018.planners;
 
-import com.team254.frc2018.states.SuperstructureState;
 import com.team254.frc2018.states.SuperstructureConstants;
+import com.team254.frc2018.states.SuperstructureState;
 import com.team254.lib.util.Util;
 
 import java.util.LinkedList;
@@ -9,6 +9,7 @@ import java.util.Optional;
 
 public class SuperstructureMotionPlanner {
     private boolean mUpwardsSubcommandEnabled = true;
+
     class SubCommand {
         public SubCommand(SuperstructureState endState) {
             mEndState = endState;

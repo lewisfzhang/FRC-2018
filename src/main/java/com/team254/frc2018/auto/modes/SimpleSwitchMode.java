@@ -1,9 +1,9 @@
 package com.team254.frc2018.auto.modes;
 
+import com.team254.frc2018.auto.AutoConstants;
 import com.team254.frc2018.auto.AutoModeBase;
 import com.team254.frc2018.auto.AutoModeEndedException;
 import com.team254.frc2018.auto.actions.*;
-import com.team254.frc2018.auto.AutoConstants;
 import com.team254.frc2018.paths.TrajectoryGenerator;
 import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.lib.geometry.Translation2d;
@@ -29,7 +29,7 @@ public class SimpleSwitchMode extends AutoModeBase {
     public SimpleSwitchMode(boolean driveToLeftSwitch) {
         mStartedLeft = driveToLeftSwitch;
 
-        if(mStartedLeft) {
+        if (mStartedLeft) {
             mStartToSwitch = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().simpleStartToLeftSwitch, true);
             mStartCubeWaitTime = mTrajectoryGenerator.getTrajectorySet().simpleStartToLeftSwitch.getLastState().t() - 0.2;
         } else {
@@ -100,24 +100,24 @@ public class SimpleSwitchMode extends AutoModeBase {
 
         // Get third cube
         runAction(new ParallelAction(
-            Arrays.asList(
-                mSwitchToPyramidCube1,
-                new SeriesAction(
-                    Arrays.asList(
-                        new WaitUntilInsideRegion(new Translation2d(-1000.0, -50.0), new Translation2d
-                                (1000.0, 50.0), mStartedLeft),
-                        new SetSuperstructurePosition(SuperstructureConstants.kIntakeSecondLevelHeight, SuperstructureConstants.kIntakePositionAngle, true),
-                        new SetIntaking(false, false),
-                        new OpenCloseJawAction(true)
-                    )
-                ),
-                new SeriesAction(
-                    Arrays.asList(
-                        new WaitAction(mPyramidCubeClampTime),
-                        new OpenCloseJawAction(false)
-                    )
+                Arrays.asList(
+                        mSwitchToPyramidCube1,
+                        new SeriesAction(
+                                Arrays.asList(
+                                        new WaitUntilInsideRegion(new Translation2d(-1000.0, -50.0), new Translation2d
+                                                (1000.0, 50.0), mStartedLeft),
+                                        new SetSuperstructurePosition(SuperstructureConstants.kIntakeSecondLevelHeight, SuperstructureConstants.kIntakePositionAngle, true),
+                                        new SetIntaking(false, false),
+                                        new OpenCloseJawAction(true)
+                                )
+                        ),
+                        new SeriesAction(
+                                Arrays.asList(
+                                        new WaitAction(mPyramidCubeClampTime),
+                                        new OpenCloseJawAction(false)
+                                )
+                        )
                 )
-            )
         ));
         runAction(new WaitAction(AutoConstants.kWaitForCubeTime));
 

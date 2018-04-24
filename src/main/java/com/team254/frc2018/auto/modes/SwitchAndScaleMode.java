@@ -7,10 +7,7 @@ import com.team254.frc2018.auto.actions.*;
 import com.team254.frc2018.paths.TrajectoryGenerator;
 import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.frc2018.subsystems.CheesyVision2;
-import com.team254.lib.geometry.Pose2dWithCurvature;
 import com.team254.lib.geometry.Translation2d;
-import com.team254.lib.trajectory.Trajectory;
-import com.team254.lib.trajectory.timing.TimedState;
 
 import java.util.Arrays;
 
@@ -30,14 +27,14 @@ public class SwitchAndScaleMode extends AutoModeBase {
         mSwitchLeft = isSwitchOnLeft;
         mScaleLeft = isScaleOnLeft;
 
-        if(isSwitchOnLeft) {
+        if (isSwitchOnLeft) {
             mStartToSwitch = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().centerStartToLeftSwitch, true);
             mStartCubeWaitTime = mTrajectoryGenerator.getTrajectorySet().centerStartToLeftSwitch.getLastState().t() - 0.1;
         } else {
             mStartToSwitch = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().centerStartToRightSwitch, true);
             mStartCubeWaitTime = mTrajectoryGenerator.getTrajectorySet().centerStartToRightSwitch.getLastState().t() - 0.1;
         }
-        if(isScaleOnLeft) {
+        if (isScaleOnLeft) {
             mPyramidCubeToScale = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().centerPyramidCubeToScaleLeft.get(mScaleLeft));
             mScaleToFence = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().scaleToFenceLeft.get(mScaleLeft));
             mFenceToScale = new DriveTrajectory(mTrajectoryGenerator.getTrajectorySet().fenceToScaleLeft.get(mScaleLeft));

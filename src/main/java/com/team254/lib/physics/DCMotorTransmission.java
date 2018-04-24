@@ -25,9 +25,11 @@ public class DCMotorTransmission {
     public double speed_per_volt() {
         return speed_per_volt_;
     }
+
     public double torque_per_volt() {
         return torque_per_volt_;
     }
+
     public double friction_voltage() {
         return friction_voltage_;
     }

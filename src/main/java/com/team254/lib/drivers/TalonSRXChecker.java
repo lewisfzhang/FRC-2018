@@ -3,7 +3,6 @@ package com.team254.lib.drivers;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.team254.frc2018.subsystems.Subsystem;
-import com.team254.lib.drivers.LazyTalonSRX;
 import com.team254.lib.util.Util;
 import edu.wpi.first.wpilibj.Timer;
 

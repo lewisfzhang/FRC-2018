@@ -65,7 +65,7 @@ public class Limelight extends Subsystem {
      */
     public List<TargetInfo> getRawTargetInfo() {
         List<TargetInfo> targets = new ArrayList<>();
-        for(int i = 0; i < 2; ++i) {
+        for (int i = 0; i < 2; ++i) {
             TargetInfo target = new TargetInfo();
 
             double nx = mTable.getEntry("tx" + i).getDouble(0.0);
@@ -97,21 +97,23 @@ public class Limelight extends Subsystem {
 
     /**
      * Converts a normalized x pixel coordinate (-1 to 1) to an angle to the target
+     *
      * @param nx normalized x pixel corrdinate
      * @return horizontal angle to target
      */
     private double normalizedXtoDegrees(double nx) {
-        double x = vpw/2.0 * nx;
+        double x = vpw / 2.0 * nx;
         return Math.atan2(x, 1);
     }
 
     /**
      * Converts a normalized y pixel coordinate (-1 to 1) to an angle to the target
+     *
      * @param ny normalized y pixel corrdinate
      * @return vertical angle to target
      */
     private double normalizedYtoDegrees(double ny) {
-        double y = vph/2.0 * ny;
+        double y = vph / 2.0 * ny;
         return Math.atan2(y, 1);
     }
 

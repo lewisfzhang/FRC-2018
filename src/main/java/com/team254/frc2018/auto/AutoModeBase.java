@@ -1,7 +1,6 @@
 package com.team254.frc2018.auto;
 
 import com.team254.frc2018.auto.actions.Action;
-
 import edu.wpi.first.wpilibj.DriverStation;
 
 /**

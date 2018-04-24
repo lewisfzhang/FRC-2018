@@ -13,7 +13,9 @@ public class AutoModeSelector {
         LEFT,
         CENTER,
         RIGHT,
-    };
+    }
+
+    ;
 
     enum SwitchScalePosition {
         USE_FMS_DATA,
@@ -21,7 +23,9 @@ public class AutoModeSelector {
         LEFT_SWITCH_RIGHT_SCALE,
         RIGHT_SWITCH_LEFT_SCALE,
         RIGHT_SWITCH_RIGHT_SCALE,
-    };
+    }
+
+    ;
 
     enum DesiredMode {
         DO_NOTHING,
@@ -30,7 +34,9 @@ public class AutoModeSelector {
         SCALE_AND_SWITCH,
         ONLY_SCALE,
         ADVANCED, // This uses 4 additional sendable choosers to pick one for each field state combo
-    };
+    }
+
+    ;
 
     private DesiredMode mCachedDesiredMode = null;
     private SwitchScalePosition mCachedSwitchScalePosition = null;
@@ -73,10 +79,10 @@ public class AutoModeSelector {
         DesiredMode desiredMode = mModeChooser.getSelected();
         StartingPosition staringPosition = mStartPositionChooser.getSelected();
         SwitchScalePosition switchScalePosition = mSwitchScalePositionChooser.getSelected();
-        if(mCachedDesiredMode != desiredMode || staringPosition != mCachedStartingPosition || switchScalePosition != mCachedSwitchScalePosition) {
+        if (mCachedDesiredMode != desiredMode || staringPosition != mCachedStartingPosition || switchScalePosition != mCachedSwitchScalePosition) {
             System.out.println("Auto selection changed, updating creator: desiredMode->" + desiredMode.name() + ", starting position->" + staringPosition.name() + ", switch/scale position->" + switchScalePosition.name());
             mCreator = getCreatorForParams(desiredMode, staringPosition);
-            if(switchScalePosition == SwitchScalePosition.USE_FMS_DATA) {
+            if (switchScalePosition == SwitchScalePosition.USE_FMS_DATA) {
                 mFieldState.disableOverride();
             } else {
                 setFieldOverride(switchScalePosition);
@@ -141,7 +147,7 @@ public class AutoModeSelector {
         if (!mCreator.isPresent()) {
             return Optional.empty();
         }
-        if(fieldState.isOverridingGameData()) {
+        if (fieldState.isOverridingGameData()) {
             System.out.println("Overriding FMS switch/scale positions!");
         }
         return Optional.of(mCreator.get().getStateDependentAutoMode(fieldState));

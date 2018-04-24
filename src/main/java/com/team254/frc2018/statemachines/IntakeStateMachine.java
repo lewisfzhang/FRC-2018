@@ -1,7 +1,6 @@
 package com.team254.frc2018.statemachines;
 
 import com.team254.frc2018.states.IntakeState;
-import com.team254.frc2018.states.LEDState;
 import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.frc2018.states.TimedLEDState;
 import com.team254.lib.util.TimeDelayedBoolean;
@@ -69,14 +68,14 @@ public class IntakeStateMachine {
                     newState = mSystemState;
                     break;
             }
-            
+
             if (newState != mSystemState) {
                 System.out.println(timestamp + ": Intake changed state: " + mSystemState + " -> " + newState);
                 mSystemState = newState;
                 mCurrentStateStartTime = timestamp;
                 mLastSeenCube.update(false, kLostCubeTime);
             }
-            
+
             // Handle State outputs
             switch (mSystemState) {
                 case OPEN_LOOP:
@@ -103,11 +102,12 @@ public class IntakeStateMachine {
                 return SystemState.OPEN_LOOP;
         }
     }
+
     private synchronized void getOpenLoopCommandedState(IntakeState currentState, IntakeState commandedState) {
         commandedState.setPower(mWantedPower);
         if (mustStayClosed(currentState)) {
             commandedState.jawState = (mWantedJawState == IntakeState.JawState.CLAMPED) ?
-                   IntakeState.JawState.CLAMPED : IntakeState.JawState.CLOSED;
+                    IntakeState.JawState.CLAMPED : IntakeState.JawState.CLOSED;
         } else {
             commandedState.jawState = mWantedJawState;
         }
@@ -123,6 +123,7 @@ public class IntakeStateMachine {
                 return SystemState.KEEPING_CUBE;
         }
     }
+
     private synchronized void getKeepingCubeCommandedState(IntakeState currentState, IntakeState commandedState, double timestamp) {
         commandedState.setPower(kIntakeCubeSetpoint);
         boolean clamp = (currentState.seesCube() && mWantedJawState != IntakeState.JawState.OPEN) || mustStayClosed(currentState);
@@ -154,7 +155,7 @@ public class IntakeStateMachine {
         } else {
             commandedState.setPower(kIntakeCubeSetpoint);
 
-            if(mForceClamp) {
+            if (mForceClamp) {
                 commandedState.jawState = IntakeState.JawState.CLAMPED;
             } else if (!Double.isNaN(mLastSeenCubeTime) &&
                     (timestamp - mLastSeenCubeTime < kUnclampWaitingTime)) {

@@ -9,6 +9,7 @@ import java.util.List;
 public class Trajectory<S extends State<S>> implements CSVWritable {
     protected final List<TrajectoryPoint<S>> points_;
     protected final IndexView index_view_ = new IndexView();
+
     /**
      * Create an empty trajectory.
      */
@@ -45,9 +46,13 @@ public class Trajectory<S extends State<S>> implements CSVWritable {
         return getPoint(index).state();
     }
 
-    public S getFirstState() { return getState(0); }
+    public S getFirstState() {
+        return getState(0);
+    }
 
-    public S getLastState() { return getState(length() - 1); }
+    public S getLastState() {
+        return getState(length() - 1);
+    }
 
     public TrajectorySamplePoint<S> getInterpolated(final double index) {
         if (isEmpty()) {
@@ -113,6 +118,8 @@ public class Trajectory<S extends State<S>> implements CSVWritable {
         }
 
         @Override
-        public Trajectory<S> trajectory() { return Trajectory.this; }
+        public Trajectory<S> trajectory() {
+            return Trajectory.this;
+        }
     }
 }

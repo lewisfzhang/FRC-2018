@@ -1,6 +1,5 @@
 package com.team254.frc2018.auto.actions;
 
-import com.team254.frc2018.states.IntakeState;
 import com.team254.frc2018.subsystems.Intake;
 
 public class OpenCloseJawAction implements Action {

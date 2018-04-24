@@ -46,7 +46,7 @@ public class CarriageCanifier extends Subsystem {
     }
 
     public synchronized void resetWristEncoder() {
-        mCanifier.setQuadraturePosition(0, 0 );
+        mCanifier.setQuadraturePosition(0, 0);
     }
 
     public int getDeviceId() {

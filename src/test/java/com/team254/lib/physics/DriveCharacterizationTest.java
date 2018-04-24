@@ -18,7 +18,7 @@ public class DriveCharacterizationTest {
 
         List<DriveCharacterization.VelocityDataPoint> velocityData = new ArrayList<>();
         // generate velocity data points
-        for(double v = 0; v < 1.0; v += 0.01) {
+        for (double v = 0; v < 1.0; v += 0.01) {
             velocityData.add(new DriveCharacterization.VelocityDataPoint(Math.max(0.0, (v - ks) / kv), v));
         }
 

@@ -9,7 +9,6 @@ import java.util.List;
  * This is used in the event that multiple goals are detected to judge all goals based on timestamp, stability, and
  * continuation of previous goals (i.e. if a goal was detected earlier and has changed locations). This allows the robot
  * to make consistent decisions about which goal to aim at and to smooth out jitter from vibration of the camera.
- *
  */
 public class GoalTracker {
     /**

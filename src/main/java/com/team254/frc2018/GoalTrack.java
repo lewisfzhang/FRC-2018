@@ -4,16 +4,16 @@ import com.team254.lib.geometry.Pose2d;
 import com.team254.lib.geometry.Rotation2d;
 import com.team254.lib.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Timer;
+
 import java.util.Map;
 import java.util.TreeMap;
 
 /**
  * A class that is used to keep track of all goals detected by the vision system. As goals are detected/not detected
  * anymore by the vision system, function calls will be made to create, destroy, or update a goal track.
- *
+ * <p>
  * This helps in the goal ranking process that determines which goal to fire into, and helps to smooth measurements of
  * the goal's location over time.
- *
  */
 public class GoalTrack {
     private static final double kMaxTrackerDistance = 12.0;
@@ -68,7 +68,6 @@ public class GoalTrack {
 
     /**
      * Removes the track if it is older than the set "age" described in the Constants file.
-     *
      */
     void pruneByTime() {
         double delete_before = Timer.getFPGATimestamp() - kMaxGoalTrackAge;
