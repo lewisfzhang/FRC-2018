@@ -13,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TrajectoryGeneratorTest {
+        public static final double kTestEpsilon = 1e-5;
 
     public void verifyMirroredTrajectories(final TrajectoryGenerator.TrajectorySet.MirroredTrajectory mirrored,
                                            boolean shouldBeReversed) {
@@ -29,12 +30,12 @@ public class TrajectoryGeneratorTest {
             TimedState<Pose2dWithCurvature> left_state = left_iterator.getState();
             TimedState<Pose2dWithCurvature> right_state = right_iterator.getState();
 
-            assertEquals(left_state.t(), right_state.t(), Util.kEpsilon);
-            assertEquals(left_state.velocity(), right_state.velocity(), Util.kEpsilon);
-            assertEquals(left_state.acceleration(), right_state.acceleration(), Util.kEpsilon);
+            assertEquals(left_state.t(), right_state.t(), kTestEpsilon);
+            assertEquals(left_state.velocity(), right_state.velocity(), kTestEpsilon);
+            assertEquals(left_state.acceleration(), right_state.acceleration(), kTestEpsilon);
 
-            assertTrue((shouldBeReversed ? -1.0 : 1.0) * left_state.velocity() >= -Util.kEpsilon);
-            assertTrue((shouldBeReversed ? -1.0 : 1.0) * right_state.velocity() >= -Util.kEpsilon);
+            assertTrue((shouldBeReversed ? -1.0 : 1.0) * left_state.velocity() >= -kTestEpsilon);
+            assertTrue((shouldBeReversed ? -1.0 : 1.0) * right_state.velocity() >= -kTestEpsilon);
 
             if (prev_left != null && prev_right != null) {
                 // Check there are no angle discontinuities.
@@ -48,24 +49,24 @@ public class TrajectoryGeneratorTest {
                 if (!Util.epsilonEquals(left_change.dtheta, 0.0) || !Util.epsilonEquals(right_change.dtheta, 0.0)) {
                     // Could be a curvature sign change between prev and now, so just check that either matches our
                     // expected sign.
-                    final boolean left_curvature_positive = left_state.state().getCurvature() > Util.kEpsilon ||
-                            prev_left.state().getCurvature() > Util.kEpsilon;
-                    final boolean left_curvature_negative = left_state.state().getCurvature() < -Util.kEpsilon ||
-                            prev_left.state().getCurvature() < -Util.kEpsilon;
-                    final boolean right_curvature_positive = right_state.state().getCurvature() > Util.kEpsilon ||
-                            prev_right.state().getCurvature() > Util.kEpsilon;
-                    final boolean right_curvature_negative = right_state.state().getCurvature() < -Util.kEpsilon ||
-                            prev_right.state().getCurvature() < -Util.kEpsilon;
+                    final boolean left_curvature_positive = left_state.state().getCurvature() > kTestEpsilon ||
+                            prev_left.state().getCurvature() > kTestEpsilon;
+                    final boolean left_curvature_negative = left_state.state().getCurvature() < -kTestEpsilon ||
+                            prev_left.state().getCurvature() < -kTestEpsilon;
+                    final boolean right_curvature_positive = right_state.state().getCurvature() > kTestEpsilon ||
+                            prev_right.state().getCurvature() > kTestEpsilon;
+                    final boolean right_curvature_negative = right_state.state().getCurvature() < -kTestEpsilon ||
+                            prev_right.state().getCurvature() < -kTestEpsilon;
                     final double actual_left_curvature = left_change.dtheta / left_change.dx;
                     final double actual_right_curvature = right_change.dtheta / right_change.dx;
-                    if (actual_left_curvature < -Util.kEpsilon) {
+                    if (actual_left_curvature < -kTestEpsilon) {
                         assertTrue(left_curvature_negative);
-                    } else if (actual_left_curvature > Util.kEpsilon) {
+                    } else if (actual_left_curvature > kTestEpsilon) {
                         assertTrue(left_curvature_positive);
                     }
-                    if (actual_right_curvature < -Util.kEpsilon) {
+                    if (actual_right_curvature < -kTestEpsilon) {
                         assertTrue(right_curvature_negative);
-                    } else if (actual_right_curvature > Util.kEpsilon) {
+                    } else if (actual_right_curvature > kTestEpsilon) {
                         assertTrue(right_curvature_positive);
                     }
                 }
@@ -76,7 +77,7 @@ public class TrajectoryGeneratorTest {
             assertEquals(left_state.state().getTranslation().y(), -right_state.state().getTranslation().y(), Util
                     .kEpsilon);
             assertEquals(left_state.state().getRotation(), right_state.state().getRotation().inverse());
-            assertEquals(left_state.state().getCurvature(), -right_state.state().getCurvature(), Util.kEpsilon);
+            assertEquals(left_state.state().getCurvature(), -right_state.state().getCurvature(), kTestEpsilon);
 
             left_iterator.advance(dt);
             right_iterator.advance(dt);
