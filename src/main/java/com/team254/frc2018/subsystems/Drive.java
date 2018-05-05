@@ -172,7 +172,7 @@ public class Drive extends Subsystem {
     }
 
     private static double radiansPerSecondToTicksPer100ms(double rad_s) {
-        return rad_s /(Math.PI * 2.0) * 4096.0 / 10.0;
+        return rad_s / (Math.PI * 2.0) * 4096.0 / 10.0;
     }
 
     @Override
@@ -222,7 +222,7 @@ public class Drive extends Subsystem {
     }
 
     public synchronized void setTrajectory(TrajectoryIterator<TimedState<Pose2dWithCurvature>> trajectory) {
-        if(mMotionPlanner != null) {
+        if (mMotionPlanner != null) {
             mOverrideTrajectory = false;
             mMotionPlanner.reset();
             mMotionPlanner.setTrajectory(trajectory);
@@ -231,7 +231,7 @@ public class Drive extends Subsystem {
     }
 
     public boolean isDoneWithTrajectory() {
-        if(mMotionPlanner == null || mDriveControlState != DriveControlState.PATH_FOLLOWING) {
+        if (mMotionPlanner == null || mDriveControlState != DriveControlState.PATH_FOLLOWING) {
             return false;
         }
         return mMotionPlanner.isDone() || mOverrideTrajectory;
@@ -296,7 +296,7 @@ public class Drive extends Subsystem {
         SmartDashboard.putNumber("x err", mPeriodicIO.error.getTranslation().x());
         SmartDashboard.putNumber("y err", mPeriodicIO.error.getTranslation().y());
         SmartDashboard.putNumber("theta err", mPeriodicIO.error.getRotation().getDegrees());
-        if(getHeading() != null) {
+        if (getHeading() != null) {
             SmartDashboard.putNumber("Gyro Heading", getHeading().getDegrees());
         }
         if (mCSVWriter != null) {
@@ -362,7 +362,7 @@ public class Drive extends Subsystem {
     }
 
     private void updatePathFollower() {
-        if(mDriveControlState == DriveControlState.PATH_FOLLOWING) {
+        if (mDriveControlState == DriveControlState.PATH_FOLLOWING) {
             final double now = Timer.getFPGATimestamp();
 
             DriveMotionPlanner.Output output = mMotionPlanner.update(now, RobotState.getInstance().getFieldToVehicle(now));
@@ -372,7 +372,7 @@ public class Drive extends Subsystem {
             mPeriodicIO.error = mMotionPlanner.error();
             mPeriodicIO.path_setpoint = mMotionPlanner.setpoint();
 
-            if(!mOverrideTrajectory) {
+            if (!mOverrideTrajectory) {
                 setVelocity(new DriveSignal(radiansPerSecondToTicksPer100ms(output.left_velocity), radiansPerSecondToTicksPer100ms(output.right_velocity)),
                         new DriveSignal(output.left_feedforward_voltage / 12.0, output.right_feedforward_voltage / 12.0));
 

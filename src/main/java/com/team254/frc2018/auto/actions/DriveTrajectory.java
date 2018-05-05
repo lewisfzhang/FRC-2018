@@ -1,20 +1,13 @@
 package com.team254.frc2018.auto.actions;
 
 import com.team254.frc2018.RobotState;
-import com.team254.frc2018.paths.TrajectoryGenerator;
 import com.team254.frc2018.subsystems.Drive;
-import com.team254.lib.geometry.Pose2d;
 import com.team254.lib.geometry.Pose2dWithCurvature;
-import com.team254.lib.geometry.Rotation2d;
-import com.team254.lib.geometry.Translation2d;
 import com.team254.lib.trajectory.TimedView;
 import com.team254.lib.trajectory.Trajectory;
 import com.team254.lib.trajectory.TrajectoryIterator;
 import com.team254.lib.trajectory.timing.TimedState;
-import com.team254.lib.trajectory.timing.TimingConstraint;
 import edu.wpi.first.wpilibj.Timer;
-
-import java.util.List;
 
 public class DriveTrajectory implements Action {
     private static final Drive mDrive = Drive.getInstance();
@@ -53,7 +46,7 @@ public class DriveTrajectory implements Action {
     @Override
     public void start() {
         System.out.println("Starting trajectory! (length=" + mTrajectory.getRemainingProgress() + ")");
-        if(mResetPose) {
+        if (mResetPose) {
             mRobotState.reset(Timer.getFPGATimestamp(), mTrajectory.getState().state().getPose());
         }
         mDrive.setTrajectory(mTrajectory);

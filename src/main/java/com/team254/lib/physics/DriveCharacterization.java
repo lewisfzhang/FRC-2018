@@ -56,7 +56,7 @@ public class DriveCharacterization {
 
     private static CharacterizationConstants getVelocityCharacterization(double[][] points) {
         CharacterizationConstants constants = new CharacterizationConstants();
-        if(points == null) {
+        if (points == null) {
             return constants;
         }
         PolynomialRegression p = new PolynomialRegression(points, 1);
@@ -67,7 +67,7 @@ public class DriveCharacterization {
     }
 
     private static CharacterizationConstants getAccelerationCharacterization(double[][] points, CharacterizationConstants velocityChacterization) {
-        if(points == null) {
+        if (points == null) {
             return velocityChacterization;
         }
 
@@ -83,9 +83,9 @@ public class DriveCharacterization {
     private static double[][] getVelocityData(List<VelocityDataPoint> input) {
         double[][] output = null;
         int startTrim = 0;
-        for(int i = 0; i < input.size(); ++i) {
-            if(input.get(i).velocity > Util.kEpsilon) {
-                if(output == null) {
+        for (int i = 0; i < input.size(); ++i) {
+            if (input.get(i).velocity > Util.kEpsilon) {
+                if (output == null) {
                     output = new double[input.size() - i][2];
                     startTrim = i;
                 }
@@ -98,7 +98,7 @@ public class DriveCharacterization {
 
     private static double[][] getAccelerationData(List<AccelerationDataPoint> input, CharacterizationConstants constants) {
         double[][] output = new double[input.size()][2];
-        for(int i = 0; i < input.size(); ++i) {
+        for (int i = 0; i < input.size(); ++i) {
             output[i][0] = input.get(i).acceleration;
             output[i][1] = input.get(i).power - constants.kv * input.get(i).velocity - constants.ks;
         }

@@ -48,6 +48,7 @@ public interface IButtonControlBoard {
     boolean getDeployForks();
 
     boolean getElevatorLowShift();
+
     boolean getElevatorHighShift();
 
     // LED

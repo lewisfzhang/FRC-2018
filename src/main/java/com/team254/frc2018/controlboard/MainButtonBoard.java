@@ -41,7 +41,9 @@ public class MainButtonBoard implements IButtonControlBoard {
     }
 
     @Override
-    public boolean goToScoringAngledWrist() { return false; }
+    public boolean goToScoringAngledWrist() {
+        return false;
+    }
 
     //Elevator
     @Override
@@ -98,7 +100,9 @@ public class MainButtonBoard implements IButtonControlBoard {
     }
 
     @Override
-    public boolean getIntakePosition() { return false; }
+    public boolean getIntakePosition() {
+        return false;
+    }
 
     @Override
     public void setRumble(boolean on) {
@@ -137,5 +141,7 @@ public class MainButtonBoard implements IButtonControlBoard {
     }
 
     @Override
-    public boolean getToggleKickstand() { return false; }
+    public boolean getToggleKickstand() {
+        return false;
+    }
 }

@@ -70,7 +70,9 @@ public class ControlBoard implements IControlBoard {
     }
 
     @Override
-    public boolean goToScoringAngledWrist() { return mButtonControlBoard.goToScoringAngledWrist(); }
+    public boolean goToScoringAngledWrist() {
+        return mButtonControlBoard.goToScoringAngledWrist();
+    }
 
     @Override
     public boolean goToVerticalWrist() {

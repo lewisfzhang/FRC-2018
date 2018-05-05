@@ -1,12 +1,5 @@
 package com.team254.frc2018.statemachines;
 
-import com.team254.frc2018.states.IntakeState;
-import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 public class TestIntakeStateMachine {
     /*
     IntakeStateMachine sm = new IntakeStateMachine();

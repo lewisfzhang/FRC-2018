@@ -9,6 +9,7 @@ public class PurePursuitController<S extends ITranslation2d<S>> implements IPath
     protected final double lookahead_;
     protected final double goal_tolerance_;
     protected boolean done_ = false;
+
     public PurePursuitController(final DistanceView<S> path, double sampling_dist, double lookahead,
                                  double goal_tolerance) {
         sampling_dist_ = sampling_dist;
@@ -48,7 +49,7 @@ public class PurePursuitController<S extends ITranslation2d<S>> implements IPath
         if (arc.length < Util.kEpsilon) {
             return new Twist2d(0.0, 0.0, 0.0);
         } else {
-            return new Twist2d(arc.length, 0.0,arc.length / arc.radius);
+            return new Twist2d(arc.length, 0.0, arc.length / arc.radius);
         }
     }
 

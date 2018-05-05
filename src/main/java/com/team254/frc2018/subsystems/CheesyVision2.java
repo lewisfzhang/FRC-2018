@@ -1,12 +1,11 @@
 package com.team254.frc2018.subsystems;
 
 import com.team254.frc2018.AutoFieldState;
-import com.team254.frc2018.Constants;
 import com.team254.frc2018.AutoFieldState.Side;
+import com.team254.frc2018.Constants;
 import com.team254.frc2018.loops.ILooper;
 import com.team254.frc2018.loops.Loop;
 import com.team254.frc2018.states.SuperstructureConstants;
-
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -32,8 +31,9 @@ public class CheesyVision2 extends Subsystem {
         HIGH
     }
 
-    private CheesyVision2() {}
-    
+    private CheesyVision2() {
+    }
+
     private double mAngle = 0.0;
     private double mTip = 0.0;
     private boolean mError = true;
@@ -56,11 +56,11 @@ public class CheesyVision2 extends Subsystem {
     public boolean getError() {
         return mError;
     }
-    
+
     /**
      * @return the current angle of the scale, in degrees, as seen
-     *         from the driver station (positive = right side raised;
-     *         negative = left side raised)
+     * from the driver station (positive = right side raised;
+     * negative = left side raised)
      */
     public double getAngle() {
         return mAngle;
@@ -68,7 +68,7 @@ public class CheesyVision2 extends Subsystem {
 
     /**
      * @return the current thresholded "height" of the <em>right</em> scale
-     *         plate, as seen from the driver station (-1, 0, or +1)
+     * plate, as seen from the driver station (-1, 0, or +1)
      */
     public double getTip() {
         return mTip;
@@ -84,8 +84,8 @@ public class CheesyVision2 extends Subsystem {
                 baseHeight = backwards ? SuperstructureConstants.kScaleNeutralHeightBackwards : SuperstructureConstants.kScaleNeutralHeight;
             } else {
                 baseHeight = backwards ? SuperstructureConstants.kScaleHighHeightBackwards : SuperstructureConstants.kScaleHighHeight;
-             }
-         } else {
+            }
+        } else {
             if (mFilteredHeight == ScaleHeight.LOW) {
                 baseHeight = backwards ? SuperstructureConstants.kScaleLowHeightBackwardsNoKick : SuperstructureConstants.kScaleLowHeightNoKick;
             } else if (mFilteredHeight == ScaleHeight.NEUTRAL) {
@@ -96,8 +96,8 @@ public class CheesyVision2 extends Subsystem {
         }
 
         //assume we are losing the scale if we don't have a reading
-        if(!isConnected()) { // check for error as well?
-            if(useKickstand) {
+        if (!isConnected()) { // check for error as well?
+            if (useKickstand) {
                 baseHeight = backwards ? SuperstructureConstants.kScaleHighHeightBackwards : SuperstructureConstants.kScaleHighHeight;
             } else {
                 baseHeight = backwards ? SuperstructureConstants.kScaleHighHeightBackwardsNoKick : SuperstructureConstants.kScaleHighHeightNoKick;
@@ -106,7 +106,7 @@ public class CheesyVision2 extends Subsystem {
 
         baseHeight += cubeNum * SuperstructureConstants.kCubeOffset;
 
-        if(useKickstand) {
+        if (useKickstand) {
             baseHeight = Math.min(baseHeight, SuperstructureConstants.kElevatorMaxHeightKickEngaged);
         } else {
             baseHeight = Math.min(baseHeight, SuperstructureConstants.kElevatorMaxHeight);
@@ -160,7 +160,7 @@ public class CheesyVision2 extends Subsystem {
     public boolean checkSystem() {
         return false;
     }
-    
+
     @Override
     public void outputTelemetry() {
         SmartDashboard.putBoolean("Connected to CheesyVision2", isConnected());
@@ -168,15 +168,17 @@ public class CheesyVision2 extends Subsystem {
         SmartDashboard.putNumber("Desired Height (1 cube)", getDesiredHeight(false, 1, true));
         SmartDashboard.putNumber("Desired Height (2 cubes)", getDesiredHeight(false, 2, true));
     }
-    
+
     @Override
-    public void stop() {}
-    
+    public void stop() {
+    }
+
     @Override
     public void registerEnabledLoops(ILooper looper) {
         Loop loop = new Loop() {
             @Override
-            public void onStart(double timestamp) {}
+            public void onStart(double timestamp) {
+            }
 
             @Override
             public void onLoop(double timestamp) {
@@ -198,7 +200,7 @@ public class CheesyVision2 extends Subsystem {
 
                 }
             }
-            
+
             @Override
             public void onStop(double timestamp) {
                 stop();

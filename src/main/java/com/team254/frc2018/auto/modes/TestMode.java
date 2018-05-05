@@ -5,14 +5,8 @@ import com.team254.frc2018.auto.AutoModeEndedException;
 import com.team254.frc2018.auto.actions.DriveTrajectory;
 import com.team254.frc2018.paths.TrajectoryGenerator;
 import com.team254.frc2018.subsystems.Drive;
-import com.team254.lib.geometry.Pose2d;
-import com.team254.lib.geometry.Rotation2d;
-import com.team254.lib.geometry.Translation2d;
-import com.team254.lib.trajectory.timing.CentripetalAccelerationConstraint;
 
-import java.util.Arrays;
-
-public class TestMode extends AutoModeBase{
+public class TestMode extends AutoModeBase {
     @Override
     protected void routine() throws AutoModeEndedException {
         System.out.println("Test mode");

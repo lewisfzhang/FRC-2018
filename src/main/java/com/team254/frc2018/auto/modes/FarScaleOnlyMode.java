@@ -1,9 +1,9 @@
 package com.team254.frc2018.auto.modes;
 
+import com.team254.frc2018.auto.AutoConstants;
 import com.team254.frc2018.auto.AutoModeBase;
 import com.team254.frc2018.auto.AutoModeEndedException;
 import com.team254.frc2018.auto.actions.*;
-import com.team254.frc2018.auto.AutoConstants;
 import com.team254.frc2018.paths.TrajectoryGenerator;
 import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.frc2018.subsystems.CheesyVision2;
@@ -53,7 +53,7 @@ public class FarScaleOnlyMode extends AutoModeBase {
         runAction(new WaitAction(1.0));
 
 
-        if(!AutoConstants.kUseKickstand) {
+        if (!AutoConstants.kUseKickstand) {
             runAction(new EngageKickstand(false));
         }
 
@@ -175,7 +175,7 @@ public class FarScaleOnlyMode extends AutoModeBase {
                                                         SuperstructureConstants.kScoreBackwardsAngle, true) :
                                                 new SetSuperstructurePosition(SuperstructureConstants.kScaleHighHeightBackwardsNoKick + SuperstructureConstants.kCubeOffset,
                                                         SuperstructureConstants.kScoreBackwardsAngleNoKick, true)
-                                            )
+                                        )
                                         ),
 
                                         new WaitUntilInsideRegion(new Translation2d(245.0, -1000.0), new Translation2d

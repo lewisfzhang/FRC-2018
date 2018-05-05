@@ -32,7 +32,7 @@ public class LED extends Subsystem {
     }
 
     private LED() {
-       mCarriageCanifier = CarriageCanifier.getInstance();
+        mCarriageCanifier = CarriageCanifier.getInstance();
     }
 
     public synchronized void setIntakeLEDState(TimedLEDState intakeLEDState) {
@@ -47,6 +47,7 @@ public class LED extends Subsystem {
     public void registerEnabledLoops(ILooper enabledLooper) {
         enabledLooper.register(new Loop() {
             double stateStartTime;
+
             @Override
             public void onStart(double timestamp) {
                 stateStartTime = timestamp;
@@ -101,16 +102,17 @@ public class LED extends Subsystem {
     }
 
     private void setFaultLEDCommand(double timeInState) {
-         // Blink red.
-        if ((int)(timeInState / kFaultBlinkDuration) % 2 == 0) {
+        // Blink red.
+        if ((int) (timeInState / kFaultBlinkDuration) % 2 == 0) {
             mDesiredLEDState.copyFrom(LEDState.kFault);
         } else {
             mDesiredLEDState.copyFrom(LEDState.kOff);
         }
     }
+
     private void setHangLEDCommand(double timeInState) {
         // Blink orange.
-        if ((int)(timeInState / kHangingBlinkDuration) % 2 == 0) {
+        if ((int) (timeInState / kHangingBlinkDuration) % 2 == 0) {
             mDesiredLEDState.copyFrom(LEDState.kHanging);
         } else {
             mDesiredLEDState.copyFrom(LEDState.kOff);
@@ -119,7 +121,7 @@ public class LED extends Subsystem {
 
     private void setBlinkLEDCommand(double timeInState) {
         // Blink white.
-        if ((int)(timeInState / kWantsCubeBlinkDuration) % 2 == 0) {
+        if ((int) (timeInState / kWantsCubeBlinkDuration) % 2 == 0) {
             mDesiredLEDState.copyFrom(LEDState.kWantsCube);
         } else {
             mDesiredLEDState.copyFrom(LEDState.kOff);
@@ -153,10 +155,12 @@ public class LED extends Subsystem {
     }
 
     @Override
-    public void outputTelemetry() {}
+    public void outputTelemetry() {
+    }
 
     @Override
-    public void stop() {}
+    public void stop() {
+    }
 
     public enum WantedAction {
         DISPLAY_HANG,

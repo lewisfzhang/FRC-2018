@@ -48,5 +48,7 @@ public class TimedView<S extends State<S>> implements TrajectoryView<TimedState<
     }
 
     @Override
-    public Trajectory<TimedState<S>> trajectory() { return trajectory_; }
+    public Trajectory<TimedState<S>> trajectory() {
+        return trajectory_;
+    }
 }

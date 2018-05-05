@@ -1,6 +1,5 @@
 package com.team254.frc2018;
 
-import com.team254.lib.util.Units;
 import edu.wpi.first.wpilibj.Solenoid;
 
 import java.net.NetworkInterface;
@@ -80,12 +79,12 @@ public class Constants {
     // PID gains for elevator velocity loop (HIGH GEAR)
     // Units: setpoint, error, and output are in native units per 100ms.
     // Elevator encoder is CTRE mag encoder which is 4096 native units per revolution.
-    public static final double kElevatorHighGearKp =  0.15;
+    public static final double kElevatorHighGearKp = 0.15;
     public static final double kElevatorHighGearKi = 0.0;//0.0;
     public static final double kElevatorHighGearKd = 4.0;
     public static final double kElevatorHighGearKf = 0.06; // lower speed:  0.08;
-    public static final double kElevatorJogKp =  0.1;
-    public static final double kElevatorJogKd =  3.0;
+    public static final double kElevatorJogKp = 0.1;
+    public static final double kElevatorJogKd = 3.0;
     public static final double kElevatorFeedforwardNoCube = -0.06;//33000;
     public static final double kElevatorFeedforwardWithCube = -0.07;//33000;
 

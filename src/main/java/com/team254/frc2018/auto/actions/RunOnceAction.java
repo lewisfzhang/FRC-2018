@@ -2,7 +2,7 @@ package com.team254.frc2018.auto.actions;
 
 /**
  * Template action for something that only needs to be done once and has no need for updates.
- * 
+ *
  * @see Action
  */
 public abstract class RunOnceAction implements Action {
@@ -12,10 +12,12 @@ public abstract class RunOnceAction implements Action {
     }
 
     @Override
-    public void update() {}
+    public void update() {
+    }
 
     @Override
-    public void done() {}
+    public void done() {
+    }
 
     @Override
     public void start() {

@@ -1,7 +1,5 @@
 package com.team254.frc2018.auto.actions;
 
-import com.team254.frc2018.statemachines.SuperstructureStateMachine;
-import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.frc2018.states.SuperstructureState;
 import com.team254.frc2018.subsystems.Superstructure;
 import com.team254.lib.util.Util;
@@ -38,11 +36,11 @@ public class SetSuperstructurePosition implements Action {
 
     @Override
     public boolean isFinished() {
-        if(Timer.getFPGATimestamp() - mStartTime > kTimeout) {
+        if (Timer.getFPGATimestamp() - mStartTime > kTimeout) {
             System.out.println("Set Superstructure Position timed out!!!");
             return true;
         }
-        if(mWaitForCompletion) {
+        if (mWaitForCompletion) {
             SuperstructureState state = mSuperstructure.getObservedState();
             return Util.epsilonEquals(state.height, mHeight, kHeightEpsilon) &&
                     Util.epsilonEquals(state.angle, mAngle, kAngleEpsilon);

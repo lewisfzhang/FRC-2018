@@ -311,7 +311,7 @@ public class Wrist extends Subsystem {
      */
     public synchronized void setMotionProfileAngle(double angle) {
         mPeriodicIO.demand = (degreesToSensorUnits(angle));
-        if(mDesiredState != SystemState.MOTION_PROFILING) {
+        if (mDesiredState != SystemState.MOTION_PROFILING) {
             mDesiredState = SystemState.MOTION_PROFILING;
             mMaster.selectProfileSlot(kMagicMotionSlot, 0);
         }
@@ -322,7 +322,7 @@ public class Wrist extends Subsystem {
      */
     public synchronized void setPositionPIDAngle(double angle) {
         mPeriodicIO.demand = (degreesToSensorUnits(angle));
-        if(mDesiredState != SystemState.POSITION_PID) {
+        if (mDesiredState != SystemState.POSITION_PID) {
             mDesiredState = SystemState.POSITION_PID;
             mMaster.selectProfileSlot(kPositionControlSlot, 0);
         }
@@ -430,7 +430,7 @@ public class Wrist extends Subsystem {
                     (mIntake.hasCube() ? Constants.kWristKaWithCube : Constants.kWristKaWithoutCube);
             mPeriodicIO.feedforward = (elevatorAccelerationComponent) * wristGravityComponent + wristAccelerationComponent;
         } else {
-            if(getSetpoint() < Util.kEpsilon) {
+            if (getSetpoint() < Util.kEpsilon) {
                 mPeriodicIO.feedforward = -0.1;
             } else {
                 mPeriodicIO.feedforward = 0.0;
@@ -443,10 +443,10 @@ public class Wrist extends Subsystem {
 
     @Override
     public synchronized void writePeriodicOutputs() {
-        if(mDesiredState == SystemState.MOTION_PROFILING) {
+        if (mDesiredState == SystemState.MOTION_PROFILING) {
             mMaster.set(ControlMode.MotionMagic,
                     mPeriodicIO.demand, DemandType.ArbitraryFeedForward, mPeriodicIO.feedforward);
-        } else if(mDesiredState == SystemState.POSITION_PID) {
+        } else if (mDesiredState == SystemState.POSITION_PID) {
             mMaster.set(ControlMode.Position,
                     mPeriodicIO.demand, DemandType.ArbitraryFeedForward, mPeriodicIO.feedforward);
         } else {

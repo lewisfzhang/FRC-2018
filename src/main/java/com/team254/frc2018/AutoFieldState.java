@@ -10,8 +10,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class AutoFieldState {
     private static AutoFieldState mInstance = null;
 
-    public enum Side { LEFT, RIGHT }
-    
+    public enum Side {LEFT, RIGHT}
+
     private Side ourSwitchSide, scaleSide, opponentSwitchSide;
     private Side overrideOurSwitchSide, overrideScaleSide, overrideOpponentSwitchSide;
     private boolean overrideGameData = false;
@@ -25,7 +25,7 @@ public class AutoFieldState {
         }
         return mInstance;
     }
-    
+
     /**
      * Sets the switch/scale sides based on the given GameSpecificMessage.
      * If the message is invalid or null, returns false and leaves this
@@ -52,7 +52,7 @@ public class AutoFieldState {
     }
 
     public synchronized boolean isValid() {
-        if(overrideGameData) {
+        if (overrideGameData) {
             return overrideScaleSide != null && overrideOurSwitchSide != null;
         } else {
             return scaleSide != null && ourSwitchSide != null;
@@ -87,39 +87,41 @@ public class AutoFieldState {
     public synchronized boolean isOverridingGameData() {
         return overrideGameData;
     }
-    
-    /** Helper method to convert 'L' or 'R' to their respective Side. */
+
+    /**
+     * Helper method to convert 'L' or 'R' to their respective Side.
+     */
     private Side getCharSide(char c) {
-        return c=='L'? Side.LEFT : c=='R'? Side.RIGHT : null;
+        return c == 'L' ? Side.LEFT : c == 'R' ? Side.RIGHT : null;
     }
-    
+
     /**
      * Returns which Side of our switch is our alliance's.
      */
     public synchronized Side getOurSwitchSide() {
-        if(overrideGameData) {
+        if (overrideGameData) {
             return overrideOurSwitchSide;
         } else {
             return ourSwitchSide;
         }
     }
-    
+
     /**
      * Returns which Side of the scale is our alliance's.
      */
     public synchronized Side getScaleSide() {
-        if(overrideGameData) {
+        if (overrideGameData) {
             return overrideScaleSide;
         } else {
             return scaleSide;
         }
     }
-    
+
     /**
      * Returns which Side of our opponent's switch is our alliance's.
      */
     public synchronized Side getOpponentSwitchSide() {
-        if(overrideGameData) {
+        if (overrideGameData) {
             return overrideOpponentSwitchSide;
         } else {
             return opponentSwitchSide;
@@ -127,7 +129,7 @@ public class AutoFieldState {
     }
 
     public void outputToSmartDashboard() {
-        SmartDashboard.putString("FieldState OurSwitch",  getOurSwitchSide() == null ? "NULL" : getOurSwitchSide().toString());
+        SmartDashboard.putString("FieldState OurSwitch", getOurSwitchSide() == null ? "NULL" : getOurSwitchSide().toString());
         SmartDashboard.putString("FieldState Scale", getScaleSide() == null ? "NULL" : getScaleSide().toString());
         SmartDashboard.putString("FieldState TheirSwitch", getOpponentSwitchSide() == null ? "NULL" : getOpponentSwitchSide().toString());
     }

@@ -7,7 +7,6 @@ import com.team254.frc2018.loops.ILooper;
 import com.team254.frc2018.loops.Loop;
 import com.team254.frc2018.statemachines.IntakeStateMachine;
 import com.team254.frc2018.states.IntakeState;
-import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.lib.drivers.TalonSRXChecker;
 import com.team254.lib.drivers.TalonSRXFactory;
 import edu.wpi.first.wpilibj.Solenoid;
@@ -205,10 +204,12 @@ public class Intake extends Subsystem {
     }
 
     @Override
-    public void readPeriodicInputs() {}
+    public void readPeriodicInputs() {
+    }
 
     @Override
-    public void writePeriodicOutputs() {}
+    public void writePeriodicOutputs() {
+    }
 
     @Override
     public boolean checkSystem() {

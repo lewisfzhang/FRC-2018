@@ -23,7 +23,7 @@ public class SetIntaking implements Action {
 
     @Override
     public void start() {
-        if(mMoveToIntakingPosition) {
+        if (mMoveToIntakingPosition) {
             mSuperstructure.setDesiredAngle(SuperstructureConstants.kIntakePositionAngle);
             mSuperstructure.setDesiredHeight(SuperstructureConstants.kIntakeFloorLevelHeight);
         }
@@ -33,16 +33,16 @@ public class SetIntaking implements Action {
 
     @Override
     public void update() {
-        if(mMoveToIntakingPosition && mSuperstructure.getSuperStructureState() == SuperstructureStateMachine.SystemState.HOLDING_POSITION) {
+        if (mMoveToIntakingPosition && mSuperstructure.getSuperStructureState() == SuperstructureStateMachine.SystemState.HOLDING_POSITION) {
             mIntake.getOrKeepCube();
         }
     }
 
     @Override
     public boolean isFinished() {
-        if(mWaitUntilHasCube) {
+        if (mWaitUntilHasCube) {
             boolean timedOut = Timer.getFPGATimestamp() - mStartTime > 0.5;
-            if(timedOut) {
+            if (timedOut) {
                 System.out.println("Timed out!!!!!");
             }
             return mDebounce.update(mIntake.definitelyHasCube(), .1) || timedOut;

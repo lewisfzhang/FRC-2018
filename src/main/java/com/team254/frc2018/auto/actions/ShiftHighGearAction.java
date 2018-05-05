@@ -1,11 +1,8 @@
 package com.team254.frc2018.auto.actions;
 
 import com.team254.frc2018.subsystems.Drive;
-import com.team254.lib.physics.DriveCharacterization;
 import com.team254.lib.util.DriveSignal;
 import edu.wpi.first.wpilibj.Timer;
-
-import java.util.List;
 
 public class ShiftHighGearAction implements Action {
     private static final double kTime = 2.0;
@@ -28,7 +25,8 @@ public class ShiftHighGearAction implements Action {
     }
 
     @Override
-    public void update() { }
+    public void update() {
+    }
 
     @Override
     public boolean isFinished() {

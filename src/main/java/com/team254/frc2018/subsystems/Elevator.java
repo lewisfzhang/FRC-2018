@@ -82,7 +82,7 @@ public class Elevator extends Subsystem {
 
         TalonSRXUtil.checkError(
                 mMaster.config_kD(
-                        kHighGearSlot, Constants.kElevatorHighGearKd  + Constants.kElevatorHighGearKd / 100.0, Constants.kLongCANTimeoutMs),
+                        kHighGearSlot, Constants.kElevatorHighGearKd + Constants.kElevatorHighGearKd / 100.0, Constants.kLongCANTimeoutMs),
                 "Could not set elevator kd: ");
 
         TalonSRXUtil.checkError(
@@ -171,7 +171,6 @@ public class Elevator extends Subsystem {
         mMaster.enableCurrentLimit(true);
 
 
-
         mMaster.configSetParameter(ParamEnum.eClearPositionOnLimitF, 0, 0, 0, 0);
         mMaster.configSetParameter(ParamEnum.eClearPositionOnLimitR, 0, 0, 0, 0);
 
@@ -231,7 +230,7 @@ public class Elevator extends Subsystem {
     public synchronized void setPositionPID(double positionInchesOffGround) {
         double positionInchesFromHome = positionInchesOffGround - kHomePositionInches;
         double encoderPosition = positionInchesFromHome * kEncoderTicksPerInch;
-        if(mElevatorControlState != ElevatorControlState.POSITION_PID) {
+        if (mElevatorControlState != ElevatorControlState.POSITION_PID) {
             mElevatorControlState = ElevatorControlState.POSITION_PID;
             mMaster.selectProfileSlot(kPositionControlSlot, 0);
         }
@@ -239,7 +238,7 @@ public class Elevator extends Subsystem {
     }
 
     private synchronized void setClosedLoopRawPosition(double encoderPosition) {
-        if(mElevatorControlState != ElevatorControlState.MOTION_MAGIC) {
+        if (mElevatorControlState != ElevatorControlState.MOTION_MAGIC) {
             mElevatorControlState = ElevatorControlState.MOTION_MAGIC;
             mMaster.selectProfileSlot(kHighGearSlot, 0);
         }
@@ -360,10 +359,10 @@ public class Elevator extends Subsystem {
 
     @Override
     public synchronized void writePeriodicOutputs() {
-        if(mElevatorControlState == ElevatorControlState.MOTION_MAGIC) {
+        if (mElevatorControlState == ElevatorControlState.MOTION_MAGIC) {
             mMaster.set(ControlMode.MotionMagic,
                     mPeriodicIO.demand, DemandType.ArbitraryFeedForward, mPeriodicIO.feedforward);
-        } else if(mElevatorControlState == ElevatorControlState.POSITION_PID) {
+        } else if (mElevatorControlState == ElevatorControlState.POSITION_PID) {
             mMaster.set(ControlMode.Position,
                     mPeriodicIO.demand, DemandType.ArbitraryFeedForward, mPeriodicIO.feedforward);
         } else {

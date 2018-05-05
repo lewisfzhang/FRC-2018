@@ -9,7 +9,6 @@ import com.team254.frc2018.states.IntakeState;
 import com.team254.frc2018.states.SuperstructureCommand;
 import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.frc2018.states.SuperstructureState;
-import com.team254.lib.util.LatchedBoolean;
 import com.team254.lib.util.Util;
 import edu.wpi.first.wpilibj.Solenoid;
 
@@ -36,8 +35,8 @@ public class Superstructure extends Subsystem {
     private SuperstructureStateMachine mStateMachine = new SuperstructureStateMachine();
     private SuperstructureStateMachine.WantedAction mWantedAction =
             SuperstructureStateMachine.WantedAction.IDLE;
-    private Solenoid mUnlockHookSolenoid =  Constants.makeSolenoidForId(Constants.kUnlockHookSolenoid);
-    private Solenoid mJazzHandsSolenoid =  Constants.makeSolenoidForId(Constants.kJazzHandsSolenoid);
+    private Solenoid mUnlockHookSolenoid = Constants.makeSolenoidForId(Constants.kUnlockHookSolenoid);
+    private Solenoid mJazzHandsSolenoid = Constants.makeSolenoidForId(Constants.kJazzHandsSolenoid);
     private Solenoid mKickstandSolenoid = Constants.makeSolenoidForId(Constants.kKickstandSolenoid);
 
     private boolean isHangMode;
@@ -93,7 +92,7 @@ public class Superstructure extends Subsystem {
         if (commandState.openLoopElevator) {
             mElevator.setOpenLoop(commandState.openLoopElevatorPercent);
         } else {
-            if(isElevatorJogging) {
+            if (isElevatorJogging) {
                 mElevator.setPositionPID(commandState.height);
             } else {
                 mElevator.setMotionMagicPosition(commandState.height);
@@ -104,13 +103,13 @@ public class Superstructure extends Subsystem {
         } else {
             mElevator.setHangMode(false);
         }
-        if(isWristJogging) {
+        if (isWristJogging) {
             mWrist.setPositionPIDAngle(commandState.wristAngle);
         } else {
             mWrist.setMotionProfileAngle(commandState.wristAngle);
         }
 
-        if(!isHangMode) {
+        if (!isHangMode) {
             if (Util.epsilonEquals(mStateMachine.getScoringHeight(), SuperstructureConstants.kSwitchHeightBackwards, Constants.kJazzHandsEpsilon)
                     && Util.epsilonEquals(mStateMachine.getScoringAngle(), SuperstructureConstants.kScoreSwitchBackwardsAngle, Constants.kJazzHandsEpsilon)) {
                 setJazzHands(true);

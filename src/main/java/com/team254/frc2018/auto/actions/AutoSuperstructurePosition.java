@@ -1,6 +1,5 @@
 package com.team254.frc2018.auto.actions;
 
-import com.team254.frc2018.statemachines.SuperstructureStateMachine;
 import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.frc2018.states.SuperstructureState;
 import com.team254.frc2018.subsystems.CheesyVision2;
@@ -38,7 +37,7 @@ public class AutoSuperstructurePosition implements Action {
     @Override
     public void start() {
         double cheesyVisionHeight = mCheesyVision2.getDesiredHeight((mAngle == SuperstructureConstants.kScoreBackwardsAngle), mNumCubes, mUseKickstand);
-        if(cheesyVisionHeight < mMinHeight) {
+        if (cheesyVisionHeight < mMinHeight) {
             mHeight = mMinHeight;
         } else {
             mHeight = cheesyVisionHeight;
@@ -51,7 +50,7 @@ public class AutoSuperstructurePosition implements Action {
     @Override
     public void update() {
         double cheesyVisionHeight = mCheesyVision2.getDesiredHeight((mAngle == SuperstructureConstants.kScoreBackwardsAngle), mNumCubes, mUseKickstand);
-        if(cheesyVisionHeight < mMinHeight) {
+        if (cheesyVisionHeight < mMinHeight) {
             mHeight = mMinHeight;
         } else {
             mHeight = cheesyVisionHeight;
@@ -61,11 +60,11 @@ public class AutoSuperstructurePosition implements Action {
 
     @Override
     public boolean isFinished() {
-        if(Timer.getFPGATimestamp() - mStartTime > kTimeout) {
+        if (Timer.getFPGATimestamp() - mStartTime > kTimeout) {
             System.out.println("Auto Superstructure Position timed out!!!");
             return true;
         }
-        if(mWaitForCompletion) {
+        if (mWaitForCompletion) {
             SuperstructureState state = mSuperstructure.getObservedState();
             return Util.epsilonEquals(state.height, mHeight, kHeightEpsilon) &&
                     Util.epsilonEquals(state.angle, mAngle, kAngleEpsilon);

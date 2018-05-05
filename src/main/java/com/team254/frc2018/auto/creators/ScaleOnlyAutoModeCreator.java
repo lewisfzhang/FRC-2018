@@ -2,8 +2,8 @@ package com.team254.frc2018.auto.creators;
 
 import com.team254.frc2018.AutoFieldState;
 import com.team254.frc2018.auto.AutoModeBase;
-import com.team254.frc2018.auto.modes.NearScaleOnlyMode;
 import com.team254.frc2018.auto.modes.FarScaleOnlyMode;
+import com.team254.frc2018.auto.modes.NearScaleOnlyMode;
 
 public class ScaleOnlyAutoModeCreator implements AutoModeCreator {
 
@@ -22,7 +22,7 @@ public class ScaleOnlyAutoModeCreator implements AutoModeCreator {
         System.out.print("Getting ScaleOnlyAutoMode for " + mRobotStartedOnLeft + " / " + fieldState.toString());
         if ((mRobotStartedOnLeft && fieldState.getScaleSide() == AutoFieldState.Side.LEFT) ||
                 (!mRobotStartedOnLeft && fieldState.getScaleSide() == AutoFieldState.Side.RIGHT)) {
-                return easyScaleMode;
+            return easyScaleMode;
         } else {
             return hardScaleMode;
         }

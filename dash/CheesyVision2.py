@@ -3,11 +3,15 @@ import cv2
 from networktables import NetworkTables
 
 import math
-import time
+from time import perf_counter
 import collections
-import socket
 import argparse
-import sys
+
+
+
+##########################################
+############# some utilities #############
+##########################################
 
 def fadeHSV(image, mask):
     fade = cv2.multiply(image, (0.6,))
@@ -15,10 +19,6 @@ def fadeHSV(image, mask):
 
 def getKernel(size):
     return cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (size,size))
-
-def processMask(mask, closeSize=4, openSize=2):
-    cv2.morphologyEx(mask, cv2.MORPH_CLOSE, getKernel(closeSize), mask)
-    cv2.morphologyEx(mask, cv2.MORPH_OPEN,  getKernel(openSize), mask)
 
 def getColorMask(input):
     # convert to HSV
@@ -34,164 +34,19 @@ def getColorMask(input):
     
     return mask, hsv
 
-# returns: blobs, hsv, mask
-def getBlobs(input):
-    mask, hsv = getColorMask(input)
-    
-    # reduce noise with morphological operations
-    processMask(mask)
-    
-    # find contours
-    _, contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    
-    # construct list of blobs
-    blobs = []
-    maxArea = 0
-    def getMedian(contour):
-        xs, ys = zip(*(p[0] for p in contour))
-        medianX = (max(xs) + min(xs)) / 2
-        medianY = (max(ys) + min(ys)) / 2
-        return (medianX, medianY)
-    for contour in contours:
-        m = cv2.moments(contour)
-        area = m["m00"]
-        centroid = (m["m10"]/m["m00"], m["m01"]/m["m00"]) if area>0 else (math.inf, math.inf)
-        median = getMedian(contour)
-        blobs.append({"contour": contour, "area": area, "centroid": centroid, "median": median})
-        maxArea = max(maxArea, area)
-    
-    # prune blobs
-    blobs = [b for b in blobs if b["area"] > maxArea*0.30]
-    
-    # return the final list
-    return blobs, hsv, mask
+
+
+#########################################
+############# main pipeline #############
+#########################################
 
 MAX_LINE_ANGLE = 15
-MAX_LINE_ANGLE_RAD = math.radians(MAX_LINE_ANGLE)
-def process(input):
-    if args.auto:
-        autoSetColor(input)
-    height, width = input.shape[:2]
-    
-    global curFrame
-    blobs, curFrame, mask = getBlobs(input)
-    if args.debug_mask:
-        scaledMask = cv2.resize(mask, (0,0), fx=args.roi_scale, fy=args.roi_scale, interpolation=cv2.INTER_NEAREST)
-        cv2.imshow("mask", scaledMask)
-    
-    # convert contours to a mask for line detection
-    contourMask = np.zeros((height-2,width-2,1), np.uint8)
-    for b in blobs:
-        cv2.drawContours(contourMask, [b["contour"]], 0, (255), offset=(-1,-1))
-    contourMask = cv2.copyMakeBorder(contourMask, 1,1,1,1, cv2.BORDER_CONSTANT)
-    
-    # find lines using the Hough lines transform
-    lines = cv2.HoughLines(contourMask, 1, np.pi*0.1/180, 1,
-                           min_theta=np.pi/2-MAX_LINE_ANGLE_RAD, max_theta=np.pi/2+MAX_LINE_ANGLE_RAD)
-    lines = [] if lines is None else lines.reshape((len(lines), 2))
-    
-    # remove close-dulplicate lines by Y-intercept in the middle
-    BUCKET_SIZE = 5 # in pixels
-    rBuckets = set()
-    def keepLine(l):
-        rho, theta = l
-        val = (rho - (width//2)*math.cos(theta)) / math.sin(theta)
-        bi1 = int(val//BUCKET_SIZE) + 1
-        bi2 = bi1-1 if val%BUCKET_SIZE < BUCKET_SIZE/2 else bi1+1
-        if (bi1 in rBuckets) or (bi2 in rBuckets):
-            return False
-        rBuckets.add(bi1)
-        rBuckets.add(bi2)
-        return True
-    lines = [l for l in lines if keepLine(l)]
-    
-    # use the two best lines
-    lines = lines[:2]
-    
-    # send angle data to be processed
-    lineAngles = None
-    if len(lines) == 2:
-        lineAngles = [90 - math.degrees(l[1]) for l in lines]
-    updateAngle(lineAngles)
-    
-    
-    ### draw debug info onto the input image and show it ###
-    output = input.copy()
-    fadeHSV(output, mask)
-    
-    # detected lines
-    for l in lines:
-        a = math.cos(l[1])
-        b = math.sin(l[1])
-        x0 = a*l[0]
-        y0 = b*l[0]
-        x1 = int(x0 + 1000*(-b))
-        y1 = int(y0 + 1000*(a))
-        x2 = int(x0 - 1000*(-b))
-        y2 = int(y0 - 1000*(a))
-        cv2.line(output, (x1,y1), (x2,y2), (255, 230, 0), 1)
-    
-    # blobs/contours being used for detection
-    for b in blobs:
-        cv2.drawContours(output, [b["contour"]], 0, (0, 255, 0), 1)
-        cv2.drawMarker(output, tuple(int(v) for v in b["centroid"]), (255,0,255), cv2.MARKER_CROSS)
-        cv2.drawMarker(output, tuple(int(v) for v in b["median"]), (0,255,255), cv2.MARKER_CROSS)
-    
-    # blow up image for easier viewing
-    if args.roi_scale != 1.0:
-        output = cv2.resize(output, (0,0), fx=args.roi_scale, fy=args.roi_scale, interpolation=cv2.INTER_NEAREST)
-    
-    def drawText(text, x, y, color, size=0.4, fromM=0):
-        textSz, _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, size, 1)
-        y += int(textSz[1]*fromM)
-        cv2.putText(output, text, (x, y), cv2.FONT_HERSHEY_SIMPLEX,
-                    size, color, 1, cv2.LINE_AA)
-    
-    # FPS/debug text
-    global dt, fps
-    debugStr = ""
-    if dt is not None:
-        debugStr += f"{int(dt*1000)} ms"
-    if fps is not None:
-        debugStr += f" ({int(fps)} FPS)"
-    drawText(debugStr, 10, int(height*args.roi_scale)-10, (0,255,0))
-    if not NetworkTables.isConnected():
-        drawText("Not Connected!", 10, int(height*args.roi_scale)-45, (0,0,255))
-    else:
-        drawText("Connected!", 10, int(height*args.roi_scale)-45, (0,255,0))
-    if args.auto:
-        drawText("tuning mode = auto", 60, 45, (0, 255, 0))
-    else:
-        drawText("tuning mode = manual", 60, 45, (0, 255, 0))
-    drawText(f"using device {args.device}", 10, int(height*args.roi_scale)-30, (0,255,0))
-    
-    # visualize the detected angle and state
-    angle = getAngle()
-    if angle is not None:
-        PRE_SZ = 50
-        cv2.rectangle(output, (0, 0), (PRE_SZ, PRE_SZ), (255,255,255), cv2.FILLED)
-        rads = math.radians(angle)
-        offX = 200*math.cos(rads)
-        offY = -200*math.sin(rads)
-        cv2.line(output[0:PRE_SZ, 0:PRE_SZ], (int(PRE_SZ/2-offX),int(PRE_SZ/2-offY)), (int(PRE_SZ/2+offX),int(PRE_SZ/2+offY)), (0,0,0), lineType=cv2.LINE_AA)
-        drawText(f"angle = {int(angle*100)/100} deg  (tip = {getTip()})", 60, PRE_SZ//2, (0,255,0), fromM=0.5)
-        if errorMsg is not None:
-            drawText(errorMsg, 5, 60, (0,0,255), fromM=1)
-    
-    cv2.line(output, (output.shape[1]//2, 0), (output.shape[1]//2, output.shape[0]), (255, 0, 0), 2)
-    cv2.imshow("raw", output)
-
-
-
-#########################################
-############ experimentation ############
-#########################################
 
 angleMap = np.zeros((1,1))
 angleMask = None
 pivotChanged = True
 def initAngleMap(shape):
-    start = time.perf_counter()
+    start = perf_counter()
     
     global angleMap, angleMask, pivotChanged
     height, width = shape
@@ -211,12 +66,12 @@ def initAngleMap(shape):
     
     pivotChanged = False
     
-    end = time.perf_counter()
+    end = perf_counter()
     if args.debug_timing: print(f"initAngleMap took {int((end-start)*1000)} ms")
 
 autoPivotMask = None
 def autoDetectPivot():
-    start = time.perf_counter()
+    start = perf_counter()
     
     global pivotLoc, pivotChanged
     if autoPivotMask is not None:
@@ -237,10 +92,10 @@ def autoDetectPivot():
             pivotLoc = ((xs.max()+xs.min())/2, (ys.max()+ys.min())/2)
             pivotChanged = True
     
-    end = time.perf_counter()
+    end = perf_counter()
     if args.debug_timing: print(f"autoDetectPivot took {int((end-start)*1000)} ms")
 
-def process2(input):
+def process(input):
     shape = input.shape[:2]
     height, width = shape
     
@@ -253,7 +108,7 @@ def process2(input):
     if args.auto:
         autoSetColor(input)
     
-    start = time.perf_counter()
+    start = perf_counter()
     
     # get the color mask
     global curFrame
@@ -289,12 +144,12 @@ def process2(input):
     
     
     
-    end = time.perf_counter()
-    if args.debug_timing: print(f"process2 took {int((end-start)*1000)} ms")
+    end = perf_counter()
+    if args.debug_timing: print(f"process took {int((end-start)*1000)} ms")
     
     ### draw debug info onto the input image and show it ###
     if args.debug_mask:
-        cv2.imshow("mask", mask)
+        cv2.imshow("mask", getColorMask(input)[0])
         cv2.imshow("dist transform", dist/(maxDist+0.01))
         if mask2 is not None: cv2.imshow("mask2", autoPivotMask)
     
@@ -406,9 +261,9 @@ def getClosestMinRight(hist, maxI):
     return minI
 
 lastMax, lastMin0, lastMin1 = None, None, None
-MIN_HUE, TARGET_HUE, MAX_HUE = 126, 138, 164
+MIN_HUE, TARGET_HUE, MAX_HUE = 126, 148, 164
 def computeHueRange(hsv):
-    start = time.perf_counter()
+    start = perf_counter()
     
     # compute hue histogram
     mask = cv2.inRange(hsv, (0, 64, 64), (180, 255, 255))
@@ -432,7 +287,7 @@ def computeHueRange(hsv):
     lastMin0 = update(lastMin0, min0)
     lastMin1 = update(lastMin1, min1)
     
-    end = time.perf_counter()
+    end = perf_counter()
     if args.debug_timing: print(f"    computeHueRange took {int((end-start)*1000)} ms")
     
     if args.debug_histograms:
@@ -447,7 +302,7 @@ H_BINS = 256//SCALE
 hists = collections.deque(maxlen=15)
 
 def svHist(hsv, mask, peakHue):
-    start = time.perf_counter()
+    start = perf_counter()
     
     # compute histogram
     hsv = hsv[mask > 128]
@@ -490,7 +345,7 @@ def svHist(hsv, mask, peakHue):
     # get bounding rect
     x,y,w,h = cv2.boundingRect(contour)
     
-    end = time.perf_counter()
+    end = perf_counter()
     if args.debug_timing: print(f"    svHist took {int((end-start)*1000)} ms")
     
     if args.debug_histograms:
@@ -504,7 +359,7 @@ def svHist(hsv, mask, peakHue):
     return x*SCALE, (x+w)*SCALE, y*SCALE, (y+h)*SCALE
 
 def autoSetColor(input):
-    start = time.perf_counter()
+    start = perf_counter()
     
     # convert to HSV
     hsv = cv2.cvtColor(input, cv2.COLOR_BGR2HSV)
@@ -514,6 +369,7 @@ def autoSetColor(input):
     
     # process/visualize S-V histogram
     mask = cv2.inRange(hsv, (minH, 40, 40), (maxH, 255, 255))
+    # TODO: add hysteresis to this rectangle (like for the hue range)
     minS,maxS,minV,maxV = svHist(hsv, mask, peakHue)
     if args.debug_hue_mask:
         scaledMask = cv2.resize(mask, (0,0), fx=args.roi_scale, fy=args.roi_scale, interpolation=cv2.INTER_NEAREST)
@@ -527,7 +383,7 @@ def autoSetColor(input):
     maxColor[1] = maxColor[0]
     
     
-    end = time.perf_counter()
+    end = perf_counter()
     if args.debug_timing: print(f"autoSetColor took {int((end-start)*1000)} ms")
 
 
@@ -574,7 +430,7 @@ def updateAngle(lineAngles):
         errorMsg = "NOT ZEROED YET"
     
     # calculate dt
-    now = time.perf_counter()
+    now = perf_counter()
     if lastUpdate is None: lastUpdate = now
     dt = now - lastUpdate
     lastUpdate = now
@@ -626,16 +482,13 @@ def updateAngle(lineAngles):
 def getRawAngle():
     return curAngle
 
-SCALE_VIEW_ANGLE = 0 # degrees
-COS_SCALE_VIEW_ANGLE = math.cos(math.radians(SCALE_VIEW_ANGLE))
 def getAngle():
     if len(smoothHistory) == 0: return 0.0
     # do a polynomial fit on the history, putting more weight on recent data points
     weights = [x**0 for x in range(1, len(smoothHistory)+1)]
     fitFunc = np.poly1d(np.polyfit(*zip(*smoothHistory), SMOOTH_FIT_DEGREE, w=weights))
     lastTime = smoothHistory[-1][0]
-    screenAngle = math.radians(fitFunc(lastTime) - zeroPoint)
-    return math.degrees(math.atan(COS_SCALE_VIEW_ANGLE*math.tan(screenAngle)))
+    return fitFunc(lastTime) - zeroPoint
 
 curTip = 0
 def getTip():
@@ -660,7 +513,6 @@ def zeroAngle():
 ##########################################
 
 parser = argparse.ArgumentParser(description="Program to track the scale arm using OpenCV. (by Quinn Tucker '18)")
-parser.add_argument("--old-process", action="store_true", help="use the old image processing method")
 parser.add_argument("-n", "--no-network", action="store_true", help="don't initialize/output to NetworkTables")
 optGroup = parser.add_mutually_exclusive_group()
 optGroup.add_argument("-d", "--device", type=int, default=0, metavar="ID",
@@ -849,7 +701,7 @@ global dt, fps
 dt = fps = None
 frameCount = 0
 heartbeat = 0
-lastSecond = time.perf_counter()
+lastSecond = perf_counter()
 first_call = True
 
 while True:
@@ -876,7 +728,7 @@ while True:
     height, width = frame.shape[:2]
     
     if args.hue_shift != 0.0:
-        start = time.perf_counter()
+        start = perf_counter()
         
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         shift = (args.hue_shift//2) % 180
@@ -889,7 +741,7 @@ while True:
             frame[:, :, 0] += np.uint8(shift)
         frame = cv2.cvtColor(frame, cv2.COLOR_HSV2BGR)
         
-        end = time.perf_counter()
+        end = perf_counter()
         if args.debug_timing: print(f"hue shift took {int((end-start)*1000)} ms")
     
     # show the raw frame (with ROI rect)
@@ -914,17 +766,14 @@ while True:
         first_call = False
     
     if gotROI:
-        start = time.perf_counter()
+        start = perf_counter()
         frameROI = frame[roi[1]:roi[3], roi[0]:roi[2]]
-        if args.old_process:
-            process(frameROI)
-        else:
-            process2(frameROI)
-        end = time.perf_counter()
+        process(frameROI)
+        end = perf_counter()
         dt = end - start
         
         frameCount += 1
-        if time.perf_counter() - lastSecond > 1.0:
+        if perf_counter() - lastSecond > 1.0:
             lastSecond += 1.0
             fps = frameCount
             frameCount = 0

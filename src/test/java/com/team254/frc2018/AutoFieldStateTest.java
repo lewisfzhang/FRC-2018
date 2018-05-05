@@ -1,14 +1,8 @@
 package com.team254.frc2018;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import com.team254.lib.geometry.Pose2d;
-import com.team254.lib.geometry.Rotation2d;
-
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 
 public class AutoFieldStateTest {
@@ -17,7 +11,7 @@ public class AutoFieldStateTest {
     public void test() {
         AutoFieldState state = AutoFieldState.getInstance();
 
-        String[] badStates = new String[] {null, "dakjfhaksdjh", "", "foo", "LRQ"};
+        String[] badStates = new String[]{null, "dakjfhaksdjh", "", "foo", "LRQ"};
         for (String str : badStates) {
             assertFalse(state.setSides(str));
             assertNull(state.getOurSwitchSide());
@@ -25,12 +19,12 @@ public class AutoFieldStateTest {
             assertNull(state.getOpponentSwitchSide());
             assertFalse(state.isValid());
         }
-        
-        String[] goodStates = new String[] {"RLR", "    RLR", "RLR    ", "    RLR    "};
+
+        String[] goodStates = new String[]{"RLR", "    RLR", "RLR    ", "    RLR    "};
         for (String str : goodStates) {
             assertTrue(state.setSides(str));
             assertEquals(AutoFieldState.Side.RIGHT, state.getOurSwitchSide());
-            assertEquals(AutoFieldState.Side.LEFT,  state.getScaleSide());
+            assertEquals(AutoFieldState.Side.LEFT, state.getScaleSide());
             assertEquals(AutoFieldState.Side.RIGHT, state.getOpponentSwitchSide());
             assertTrue(state.isValid());
         }
@@ -41,12 +35,12 @@ public class AutoFieldStateTest {
         assertTrue(state.overrideSides("LRL"));
         assertTrue(state.isOverridingGameData());
         assertEquals(AutoFieldState.Side.LEFT, state.getOurSwitchSide());
-        assertEquals(AutoFieldState.Side.RIGHT,  state.getScaleSide());
+        assertEquals(AutoFieldState.Side.RIGHT, state.getScaleSide());
         assertEquals(AutoFieldState.Side.LEFT, state.getOpponentSwitchSide());
 
         state.disableOverride();
         assertEquals(AutoFieldState.Side.RIGHT, state.getOurSwitchSide());
-        assertEquals(AutoFieldState.Side.LEFT,  state.getScaleSide());
+        assertEquals(AutoFieldState.Side.LEFT, state.getScaleSide());
         assertEquals(AutoFieldState.Side.RIGHT, state.getOpponentSwitchSide());
     }
 }

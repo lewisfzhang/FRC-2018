@@ -1,13 +1,6 @@
 package com.team254.lib.physics;
 
 import com.team254.lib.util.Util;
-import com.team254.lib.util.Units;
-import org.junit.jupiter.api.Test;
-
-import java.lang.reflect.Array;
-import java.util.Arrays;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public class PhysicsTest {
     public static final double kTestEpsilon = Util.kEpsilon;

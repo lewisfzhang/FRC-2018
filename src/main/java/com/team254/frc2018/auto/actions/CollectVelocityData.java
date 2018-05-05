@@ -23,11 +23,10 @@ public class CollectVelocityData implements Action {
     private double mStartTime = 0.0;
 
     /**
-     * @param data reference to the list where data points should be stored
+     * @param data     reference to the list where data points should be stored
      * @param highGear use high gear or low
-     * @param reverse if true drive in reverse, if false drive normally
-     * @param turn if true turn, if false drive straight
-     *
+     * @param reverse  if true drive in reverse, if false drive normally
+     * @param turn     if true turn, if false drive straight
      */
 
     public CollectVelocityData(List<DriveCharacterization.VelocityDataPoint> data, boolean highGear, boolean reverse, boolean turn) {
@@ -48,7 +47,7 @@ public class CollectVelocityData implements Action {
     @Override
     public void update() {
         double percentPower = kRampRate * (Timer.getFPGATimestamp() - mStartTime);
-        if(percentPower > kMaxPower) {
+        if (percentPower > kMaxPower) {
             isFinished = true;
             return;
         }

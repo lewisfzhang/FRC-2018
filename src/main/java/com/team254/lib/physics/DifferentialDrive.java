@@ -301,10 +301,10 @@ public class DifferentialDrive {
                 double variable_torque = 0.0;
                 // TODO variable torque is wrong.  Units don't work.
                 if (left) {
-                    variable_torque = ((/*-moi_ * chassis_velocity.linear * chassis_velocity.linear * dcurvature*/ - drag_torque) * mass_ * wheel_radius_ + fixed_torque *
+                    variable_torque = ((/*-moi_ * chassis_velocity.linear * chassis_velocity.linear * dcurvature*/ -drag_torque) * mass_ * wheel_radius_ + fixed_torque *
                             (linear_term + angular_term)) / (linear_term - angular_term);
                 } else {
-                    variable_torque = ((/*moi_ * chassis_velocity.linear * chassis_velocity.linear * dcurvature*/ + drag_torque) * mass_ * wheel_radius_ + fixed_torque *
+                    variable_torque = ((/*moi_ * chassis_velocity.linear * chassis_velocity.linear * dcurvature*/ +drag_torque) * mass_ * wheel_radius_ + fixed_torque *
                             (linear_term - angular_term)) / (linear_term + angular_term);
                 }
                 final double variable_voltage = variable_transmission.getVoltageForTorque(wheel_velocities.get(!left), variable_torque);
