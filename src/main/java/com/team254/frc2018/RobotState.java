@@ -23,6 +23,10 @@ public class RobotState {
 
     private static final int kObservationBufferSize = 100;
 
+    private static final Pose2d kVehicleToLidar = new Pose2d(
+            new Translation2d(Constants.kLidarXOffset, Constants.kLidarYOffset), Rotation2d.fromDegrees(Constants
+            .kLidarYawAngleDegrees));
+
     // FPGATimestamp -> RigidTransform2d or Rotation2d
     private InterpolatingTreeMap<InterpolatingDouble, Pose2d> field_to_vehicle_;
     private Twist2d vehicle_velocity_predicted_;
@@ -64,6 +68,10 @@ public class RobotState {
     public synchronized Pose2d getPredictedFieldToVehicle(double lookahead_time) {
         return getLatestFieldToVehicle().getValue()
                 .transformBy(Pose2d.exp(vehicle_velocity_predicted_.scaled(lookahead_time)));
+    }
+
+    public synchronized Pose2d getFieldToLidar(double timestamp) {
+        return getFieldToVehicle(timestamp).transformBy(kVehicleToLidar);
     }
 
     public synchronized void addFieldToVehicleObservation(double timestamp, Pose2d observation) {
