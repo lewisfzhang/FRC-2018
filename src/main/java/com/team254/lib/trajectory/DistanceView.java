@@ -47,4 +47,6 @@ public class DistanceView<S extends State<S>> implements TrajectoryView<S> {
         return 0.0;
     }
 
+    @Override
+    public Trajectory<S> trajectory() { return trajectory_; }
 }

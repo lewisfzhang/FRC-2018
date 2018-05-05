@@ -3,6 +3,7 @@ package com.team254.frc2018.auto.actions;
 import com.team254.frc2018.subsystems.Drive;
 import com.team254.lib.physics.DriveCharacterization;
 import com.team254.lib.util.DriveSignal;
+import com.team254.lib.util.ReflectingCSVWriter;
 import com.team254.lib.util.Util;
 import edu.wpi.first.wpilibj.Timer;
 
@@ -10,9 +11,10 @@ import java.util.List;
 
 public class CollectAccelerationData implements Action {
     private static final double kPower = 0.5;
-    private static final double kTotalTime = 5.0; //how long to run the test for
+    private static final double kTotalTime = 2.0; //how long to run the test for
     private static final Drive mDrive = Drive.getInstance();
 
+    private final ReflectingCSVWriter<DriveCharacterization.AccelerationDataPoint> mCSVWriter;
     private final List<DriveCharacterization.AccelerationDataPoint> mAccelerationData;
     private final boolean mTurn;
     private final boolean mReverse;
@@ -34,6 +36,7 @@ public class CollectAccelerationData implements Action {
         mHighGear = highGear;
         mReverse = reverse;
         mTurn = turn;
+        mCSVWriter = new ReflectingCSVWriter<>("/home/lvuser/ACCEL_DATA.csv", DriveCharacterization.AccelerationDataPoint.class);
     }
 
     @Override
@@ -71,6 +74,8 @@ public class CollectAccelerationData implements Action {
                 acceleration
         ));
 
+        mCSVWriter.add(mAccelerationData.get(mAccelerationData.size() - 1));
+
         mPrevTime = currentTime;
         mPrevVelocity = currentVelocity;
     }
@@ -83,5 +88,6 @@ public class CollectAccelerationData implements Action {
     @Override
     public void done() {
         mDrive.setOpenLoop(DriveSignal.BRAKE);
+        mCSVWriter.flush();
     }
 }

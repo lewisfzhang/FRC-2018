@@ -6,7 +6,6 @@ import com.team254.util.test.ControlledActuatorLinearSim;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
@@ -123,7 +122,7 @@ public class SuperstructureMotionPlannerTest {
             assertEquals(PIVOT_MAX_ANGLE, command.angle, EPSILON, "wrist must not go past max limit");
         }
     }
-
+/*
     @Test
     public void testWristStowsForBigMovements() {
         // Start with intake on ground
@@ -159,7 +158,6 @@ public class SuperstructureMotionPlannerTest {
         }
     }
 
-    /*
     @Test
     public void testCantCommandToIllegalCrossBarZone() {
         // Start with intake on ground

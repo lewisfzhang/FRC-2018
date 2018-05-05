@@ -8,4 +8,6 @@ public interface TrajectoryView<S extends State<S>> {
     public double first_interpolant();
 
     public double last_interpolant();
+
+    public Trajectory<S> trajectory();
 }

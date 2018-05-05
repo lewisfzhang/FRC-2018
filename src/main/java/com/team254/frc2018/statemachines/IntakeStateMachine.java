@@ -1,34 +1,50 @@
 package com.team254.frc2018.statemachines;
 
 import com.team254.frc2018.states.IntakeState;
+import com.team254.frc2018.states.LEDState;
 import com.team254.frc2018.states.SuperstructureConstants;
+import com.team254.frc2018.states.TimedLEDState;
+import com.team254.lib.util.TimeDelayedBoolean;
 
 public class IntakeStateMachine {
     public final static double kActuationTime = 0.0;
-    public final static double kShootSetpoint = 1.0;
+    public final static double kExchangeShootSetpoint = 1.0;
+    public final static double kSwitchShootSetpoint = 0.65;
+    public final static double kStrongShootSetpoint = 0.85;
+    public final static double kWeakShootSetpoint = .5;
+    public final static double kPoopyShootSetpoint = .40;
     public final static double kIntakeCubeSetpoint = -1.0;
     public final static double kHoldSetpoint = 0.0;
-    public final static double kLostCubeTime = 0.5;
+    public final static double kLostCubeTime = 0.25;
+    public final static double kUnclampWaitingTime = 1.0;
 
     public enum WantedAction {
         WANT_MANUAL,
-        WANT_CUBE
+        WANT_CUBE,
     }
 
     private enum SystemState {
         OPEN_LOOP,
-        KEEPING_CUBE
+        KEEPING_CUBE,
     }
 
     private SystemState mSystemState = SystemState.OPEN_LOOP;
     private IntakeState mCommandedState = new IntakeState();
     private double mCurrentStateStartTime = 0;
 
+    private TimeDelayedBoolean mLastSeenCube = new TimeDelayedBoolean();
+    private double mLastSeenCubeTime = Double.NaN;
+
     private IntakeState.JawState mWantedJawState = IntakeState.JawState.CLAMPED;
     private double mWantedPower = 0.0;
+    private boolean mForceClamp = false;
 
     public synchronized void setWantedJawState(final IntakeState.JawState jaw_state) {
         mWantedJawState = jaw_state;
+    }
+
+    public synchronized void forceClampJaw(boolean clamp) {
+        mForceClamp = clamp;
     }
 
     public synchronized void setWantedPower(double power) {
@@ -58,6 +74,7 @@ public class IntakeStateMachine {
                 System.out.println(timestamp + ": Intake changed state: " + mSystemState + " -> " + newState);
                 mSystemState = newState;
                 mCurrentStateStartTime = timestamp;
+                mLastSeenCube.update(false, kLostCubeTime);
             }
             
             // Handle State outputs
@@ -66,7 +83,7 @@ public class IntakeStateMachine {
                     getOpenLoopCommandedState(currentState, mCommandedState);
                     break;
                 case KEEPING_CUBE:
-                    getKeepingCubeCommandedState(currentState, mCommandedState);
+                    getKeepingCubeCommandedState(currentState, mCommandedState, timestamp);
                     break;
                 default:
                     getOpenLoopCommandedState(currentState, mCommandedState);
@@ -78,12 +95,9 @@ public class IntakeStateMachine {
 
     // OPEN_LOOP
     private synchronized SystemState handleOpenLoopTransitions(WantedAction wantedAction, IntakeState currentState) {
-        if (currentState.seesCube() && mWantedPower <= 0.0 && mWantedJawState != IntakeState.JawState.OPEN) {
-            // TODO think about this...
-            return SystemState.KEEPING_CUBE;
-        }
         switch (wantedAction) {
             case WANT_CUBE:
+                mLastSeenCubeTime = Double.NaN;
                 return SystemState.KEEPING_CUBE;
             default:
                 return SystemState.OPEN_LOOP;
@@ -91,12 +105,13 @@ public class IntakeStateMachine {
     }
     private synchronized void getOpenLoopCommandedState(IntakeState currentState, IntakeState commandedState) {
         commandedState.setPower(mWantedPower);
-        if (mustStayClamped(currentState)) {
-            commandedState.jawState = IntakeState.JawState.CLAMPED;
+        if (mustStayClosed(currentState)) {
+            commandedState.jawState = (mWantedJawState == IntakeState.JawState.CLAMPED) ?
+                   IntakeState.JawState.CLAMPED : IntakeState.JawState.CLOSED;
         } else {
             commandedState.jawState = mWantedJawState;
         }
-        commandedState.ledState = new IntakeState.LEDState(0.0,0.0,0.0);
+        commandedState.ledState = TimedLEDState.StaticLEDState.kStaticOff;
     }
 
     // KEEP_CUBE
@@ -108,22 +123,51 @@ public class IntakeStateMachine {
                 return SystemState.KEEPING_CUBE;
         }
     }
-    private synchronized void getKeepingCubeCommandedState(IntakeState currentState, IntakeState commandedState) {
+    private synchronized void getKeepingCubeCommandedState(IntakeState currentState, IntakeState commandedState, double timestamp) {
         commandedState.setPower(kIntakeCubeSetpoint);
-        final boolean clamp = (currentState.seesCube() && mWantedJawState != IntakeState.JawState.OPEN) || mustStayClamped(currentState);
-        final boolean open = !clamp && mWantedJawState == IntakeState.JawState.OPEN;
-        if (currentState.seesCube()) {
-            commandedState.setPower(kHoldSetpoint);
+        boolean clamp = (currentState.seesCube() && mWantedJawState != IntakeState.JawState.OPEN) || mustStayClosed(currentState);
+
+        boolean currentlySeeCube = currentState.seesCube();
+        boolean resetSeenCubeTime = true;
+        if (!currentlySeeCube && !Double.isNaN(mLastSeenCubeTime) &&
+                (timestamp - mLastSeenCubeTime < kLostCubeTime)) {
+            currentlySeeCube = true;
+            clamp = (mWantedJawState != IntakeState.JawState.OPEN) || mustStayClosed(currentState);
+            resetSeenCubeTime = false;
+        }
+
+        boolean seenCube = mLastSeenCube.update(currentlySeeCube, kLostCubeTime);
+
+        if (currentlySeeCube) {
+            if (!seenCube) {
+                commandedState.setPower(kIntakeCubeSetpoint);
+            } else {
+                commandedState.setPower(kHoldSetpoint);
+            }
             commandedState.jawState = clamp ? IntakeState.JawState.CLAMPED : IntakeState.JawState.OPEN;
-            commandedState.ledState = new IntakeState.LEDState(1.0, 0.0, 0.0);
+            commandedState.ledState = currentState.kickStandEngaged ?
+                    TimedLEDState.StaticLEDState.kHasCube :
+                    TimedLEDState.BlinkingLEDState.kHasCube;
+            if (resetSeenCubeTime) {
+                mLastSeenCubeTime = timestamp;
+            }
         } else {
             commandedState.setPower(kIntakeCubeSetpoint);
-            commandedState.jawState = clamp ? IntakeState.JawState.CLAMPED : (mWantedJawState == IntakeState.JawState.OPEN ? IntakeState.JawState.OPEN : IntakeState.JawState.CLOSED);
-            commandedState.ledState = new IntakeState.LEDState(0.0, 1.0, 0.0);
+
+            if(mForceClamp) {
+                commandedState.jawState = IntakeState.JawState.CLAMPED;
+            } else if (!Double.isNaN(mLastSeenCubeTime) &&
+                    (timestamp - mLastSeenCubeTime < kUnclampWaitingTime)) {
+                commandedState.jawState = IntakeState.JawState.CLAMPED;
+            } else {
+                commandedState.jawState = mustStayClosed(currentState) ? IntakeState.JawState.CLOSED : (mWantedJawState == IntakeState.JawState.OPEN ? IntakeState.JawState.OPEN : IntakeState.JawState.CLOSED);
+            }
+
+            commandedState.ledState = TimedLEDState.StaticLEDState.kIntaking;
         }
     }
 
-    private boolean mustStayClamped(IntakeState state) {
+    private boolean mustStayClosed(IntakeState state) {
         return state.wristSetpoint < SuperstructureConstants.kAlwaysNeedsJawClampMinAngle ||
                 state.wristAngle < SuperstructureConstants.kAlwaysNeedsJawClampMinAngle;
     }

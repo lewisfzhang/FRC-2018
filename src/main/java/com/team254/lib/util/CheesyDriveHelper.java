@@ -25,7 +25,7 @@ public class CheesyDriveHelper {
     private static final double kHighSensitivity = 0.65;
     private static final double kLowSensitiity = 0.65;
 
-    private static final double kQuickStopDeadband = 0.2;
+    private static final double kQuickStopDeadband = 0.5;
     private static final double kQuickStopWeight = 0.1;
     private static final double kQuickStopScalar = 5.0;
 

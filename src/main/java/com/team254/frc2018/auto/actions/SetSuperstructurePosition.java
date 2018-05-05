@@ -1,11 +1,17 @@
 package com.team254.frc2018.auto.actions;
 
 import com.team254.frc2018.statemachines.SuperstructureStateMachine;
+import com.team254.frc2018.states.SuperstructureConstants;
+import com.team254.frc2018.states.SuperstructureState;
 import com.team254.frc2018.subsystems.Superstructure;
+import com.team254.lib.util.Util;
 import edu.wpi.first.wpilibj.Timer;
 
 public class SetSuperstructurePosition implements Action {
     private static final Superstructure mSuperstructure = Superstructure.getInstance();
+    private static final double kHeightEpsilon = 2.0;
+    private static final double kAngleEpsilon = 5.0;
+    private static final double kTimeout = 4.0;
 
     private final double mHeight;
     private final double mAngle;
@@ -14,6 +20,7 @@ public class SetSuperstructurePosition implements Action {
 
     public SetSuperstructurePosition(double height, double angle, boolean waitForCompletion) {
         mHeight = height;
+        // mHeight = SuperstructureConstants.kElevatorMinHeight;
         mAngle = angle;
         mWaitForCompletion = waitForCompletion;
     }
@@ -31,9 +38,14 @@ public class SetSuperstructurePosition implements Action {
 
     @Override
     public boolean isFinished() {
+        if(Timer.getFPGATimestamp() - mStartTime > kTimeout) {
+            System.out.println("Set Superstructure Position timed out!!!");
+            return true;
+        }
         if(mWaitForCompletion) {
-            return Timer.getFPGATimestamp() - mStartTime > 0.1 && //wait for superstructure looper to update
-                    mSuperstructure.getSuperStructureState() == SuperstructureStateMachine.SystemState.HOLDING_POSITION;
+            SuperstructureState state = mSuperstructure.getObservedState();
+            return Util.epsilonEquals(state.height, mHeight, kHeightEpsilon) &&
+                    Util.epsilonEquals(state.angle, mAngle, kAngleEpsilon);
         } else {
             return true;
         }
@@ -41,5 +53,6 @@ public class SetSuperstructurePosition implements Action {
 
     @Override
     public void done() {
+        System.out.println("Set Superstructure Position action finished");
     }
 }

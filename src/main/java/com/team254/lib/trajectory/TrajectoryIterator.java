@@ -47,4 +47,8 @@ public class TrajectoryIterator<S extends State<S>> {
                 Math.min(view_.last_interpolant(), progress_ + additional_progress));
         return view_.sample(progress);
     }
+
+    public Trajectory<S> trajectory() {
+        return view_.trajectory();
+    }
 }

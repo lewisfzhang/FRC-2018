@@ -1,12 +1,10 @@
 package com.team254.frc2018.subsystems;
 
+import com.team254.frc2018.loops.ILooper;
 import com.team254.frc2018.loops.Loop;
-import com.team254.frc2018.loops.Looper;
 import com.team254.frc2018.statemachines.IntakeStateMachine;
 import com.team254.frc2018.statemachines.SuperstructureStateMachine;
-import com.team254.lib.util.LatchedBoolean;
 import edu.wpi.first.wpilibj.Compressor;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Infrastructure extends Subsystem {
 
@@ -17,10 +15,6 @@ public class Infrastructure extends Subsystem {
 
     private boolean mIsDuringAuto = false;
 
-    public static Infrastructure getInstance() {
-        return mInstance;
-    }
-
     private Infrastructure() {
         mCompressor = new Compressor();
         mCompressor.start();
@@ -29,13 +23,17 @@ public class Infrastructure extends Subsystem {
         mIntake = Intake.getInstance();
     }
 
+    public static Infrastructure getInstance() {
+        return mInstance;
+    }
+
     @Override
     public boolean checkSystem() {
         return false;
     }
 
     @Override
-    public void outputToSmartDashboard() {
+    public void outputTelemetry() {
     }
 
     @Override
@@ -56,12 +54,17 @@ public class Infrastructure extends Subsystem {
         mCompressor.stop();
     }
 
-    public void setIsDuringAuto(boolean isDuringAuto) {
+    public synchronized void setIsDuringAuto(boolean isDuringAuto) {
         mIsDuringAuto = isDuringAuto;
+        if (isDuringAuto) stopCompressor();
+    }
+
+    public synchronized boolean isDuringAuto() {
+        return mIsDuringAuto;
     }
 
     @Override
-    public void registerEnabledLoops(Looper enabledLooper) {
+    public void registerEnabledLoops(ILooper enabledLooper) {
         enabledLooper.register(new Loop() {
             @Override
             public void onStart(double timestamp) {

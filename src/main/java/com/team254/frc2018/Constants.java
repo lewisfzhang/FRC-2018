@@ -1,5 +1,6 @@
 package com.team254.frc2018;
 
+import com.team254.lib.util.Units;
 import edu.wpi.first.wpilibj.Solenoid;
 
 import java.net.NetworkInterface;
@@ -11,30 +12,31 @@ import java.util.Enumeration;
  * determined through calibrations.
  */
 public class Constants {
-    public static final double kLooperDt = 0.005;
+    public static final double kLooperDt = 0.01;
 
     /* ROBOT PHYSICAL CONSTANTS */
 
     // Wheels
-    public static final double kFollowerWheelTrackWidthInches = 25.624;
-    public static final double kFollowerWheelBackOffset = 14.19; // Tune me!
-    public static final double kFollowerWheelDiameterInches = 2.28;  // Tune me!
-    public static final double kFollowerWheelDiameterInchesForwards = 2.19809459784;  // Tune me!
-    public static final double kFollowerWheelDiameterInchesReverse = 2.36983336671;  // Tune me!
-    public static final double kDriveWheelTrackWidthInches = 26.0;  // TODO: measure
-    public static final double kDriveWheelDiameterInches = 4; // TODO: measure
-    public static final double kDriveWheelDiameterInchesForwards = 3.8914785807;
-    public static final double kDriveWheelDiameterInchesReverse = 4.07731790636;
+    public static final double kDriveWheelTrackWidthInches = 25.54;
+    public static final double kDriveWheelDiameterInches = 3.92820959548 * 0.99;
+    public static final double kDriveWheelRadiusInches = kDriveWheelDiameterInches / 2.0;
     public static final double kTrackScrubFactor = 1.0;  // Tune me!
 
+    // Tuned dynamics
+    public static final double kRobotLinearInertia = 60.0;  // kg TODO tune
+    public static final double kRobotAngularInertia = 10.0;  // kg m^2 TODO tune
+    public static final double kRobotAngularDrag = 12.0;  // N*m / (rad/sec) TODO tune
+    public static final double kDriveVIntercept = 1.055;  // V
+    public static final double kDriveKv = 0.135;  // V per rad/s
+    public static final double kDriveKa = 0.012;  // V per rad/s^2
+
     // Geometry
-    public static final double kCenterToFrontBumperDistance = 16.33;
-    public static final double kCenterToIntakeDistance = 23.11;
-    public static final double kCenterToRearBumperDistance = 16.99;
-    public static final double kCenterToSideBumperDistance = 17.225;
+    public static final double kCenterToFrontBumperDistance = 38.25 / 2.0;
+    public static final double kCenterToRearBumperDistance = 38.25 / 2.0;
+    public static final double kCenterToSideBumperDistance = 33.75 / 2.0;
 
     // Pose of the LIDAR frame w.r.t. the robot frame
-    // TUNE ME
+    // TODO measure in CAD/on robot!
     public static final double kLidarXOffset = -3.3211;
     public static final double kLidarYOffset = 0.0;
     public static final double kLidarYawAngleDegrees = 0.0;
@@ -50,6 +52,11 @@ public class Constants {
     public static final double kLidarICPTranslationEpsilon = 0.01; // convergence threshold for tx,ty
     public static final double kLidarICPAngleEpsilon = 0.01;       // convergence threshold for theta
 
+    public static final int kCameraStreamPort = 5810;
+
+    /* LIDAR CONSTANTS */
+    public static final double kScaleTrackerTimeout = 0.6;
+
     /* CONTROL LOOP GAINS */
 
     // Gearing and mechanical constants.
@@ -57,60 +64,64 @@ public class Constants {
     public static final double kDriveDownShiftAngularVelocity = Math.PI / 2.0; // rad/sec
     public static final double kDriveUpShiftVelocity = 11.0 * 12.0;  // inches per second
 
-    // PID gains for drive velocity loop (HIGH GEAR)
-    // Units: setpoint, error, and output are in inches per second.
-    public static final double kDriveHighGearVelocityKp = 1.2;
-    public static final double kDriveHighGearVelocityKi = 0.0;
-    public static final double kDriveHighGearVelocityKd = 6.0;
-    public static final double kDriveHighGearVelocityKf = .15;
-    public static final int kDriveHighGearVelocityIZone = 0;
-    public static final double kDriveHighGearVelocityRampRate = 240.0;
-    public static final double kDriveHighGearMaxSetpoint = 17.0 * 12.0; // 17 fps
+    public static final double kPathKX = 4.0;  // units/s per unit of error
+    public static final double kPathLookaheadTime = 0.4;  // seconds to look ahead along the path for steering
+    public static final double kPathMinLookaheadDistance = 24.0;  // inches
 
     // PID gains for drive velocity loop (LOW GEAR)
-    // Units: setpoint, error, and output are in inches per second.
-    public static final double kDriveLowGearPositionKp = 1.0;
-    public static final double kDriveLowGearPositionKi = 0.002;
-    public static final double kDriveLowGearPositionKd = 100.0;
-    public static final double kDriveLowGearPositionKf = .45;
-    public static final int kDriveLowGearPositionIZone = 700;
-    public static final double kDriveLowGearPositionRampRate = 240.0; // V/s
-    public static final double kDriveLowGearMaxVelocity = 6.0 * 12.0 * 60.0 / (Math.PI * kDriveWheelDiameterInches);
-    // 6 fps
-    // in RPM
-    public static final double kDriveLowGearMaxAccel = 18.0 * 12.0 * 60.0 / (Math.PI * kDriveWheelDiameterInches); //
-    // 18 fps/s
-    // in RPM/s
+    // Units: setpoint, error, and output are in ticks per second.
+    public static final double kDriveLowGearVelocityKp = 0.9;
+    public static final double kDriveLowGearVelocityKi = 0.0;
+    public static final double kDriveLowGearVelocityKd = 10.0;
+    public static final double kDriveLowGearVelocityKf = 0.0;
+    public static final int kDriveLowGearVelocityIZone = 0;
+    public static final double kDriveVoltageRampRate = 0.0;
 
     // PID gains for elevator velocity loop (HIGH GEAR)
     // Units: setpoint, error, and output are in native units per 100ms.
     // Elevator encoder is CTRE mag encoder which is 4096 native units per revolution.
-    public static final double kElevatorHighGearKp =  0.18;//0.15;
-    public static final double kElevatorHighGearKi = 0.0;
-    public static final double kElevatorHighGearKd = 0; //0.1;
-    public static final double kElevatorHighGearKf = 0.082; // lower speed:  0.08;
+    public static final double kElevatorHighGearKp =  0.15;
+    public static final double kElevatorHighGearKi = 0.0;//0.0;
+    public static final double kElevatorHighGearKd = 4.0;
+    public static final double kElevatorHighGearKf = 0.06; // lower speed:  0.08;
+    public static final double kElevatorJogKp =  0.1;
+    public static final double kElevatorJogKd =  3.0;
+    public static final double kElevatorFeedforwardNoCube = -0.06;//33000;
+    public static final double kElevatorFeedforwardWithCube = -0.07;//33000;
+
     public static final int kElevatorHighGearMaxIntegralAccumulator = 500000; //todo: tune me
     public static final int kElevatorHighGearIZone = 0;
     public static final int kElevatorHighGearDeadband = 0;
     public static final int kElevatorHighGearCruiseVelocity = 12500;
-    public static final int kElevatorHighGearAcceleration = 33000;//33000;
+    public static final int kElevatorHighGearAcceleration = 27000;//33000;
+    public static final double kElevatorEpsilon = 1.0;//33000;
     public static final double kElevatorRampRate = 0.1;
 
-    public static final double kWristKp = 1.7; //todo: tune me
-    public static final double kWristKi = 0.0; //todo: tune me
-    public static final double kWristKd = 40.0; //todo: tune me
-    public static final double kWristKf = 1.7; //todo: tune me
+    public static final double kWristKp = 3.0;
+    public static final double kWristKi = 0.0;
+    public static final double kWristKd = 50.0;
+    public static final double kWristKf = 1.05;
+    public static final double kWristJogKp = 2.0;
+    public static final double kWristJogKd = 40.0;
+    public static final double kWristKaWithCube = 0.006;
+    public static final double kWristKaWithoutCube = 0.003;
+    public static final double kWristKfMultiplierWithCube = 0.15;
+    public static final double kWristKfMultiplierWithoutCube = 0.1;
+    public static final double kWristElevatorAccelerationMultiplier = -1.0;
+    public static final double kWristEpsilon = 2.0;
+
     public static final int kWristMaxIntegralAccumulator = 500000; //todo: tune me
     public static final int kWristIZone = 500; //todo: tune me
-    public static final int kWristDeadband = 25; //todo: tune me
-    public static final int kWristCruiseVelocity = 650; //todo: tune me
-    public static final int kWristAcceleration = 700; //todo: tune me
-    public static final double kWristRampRate = 0.1;
+    public static final int kWristDeadband = 5; //todo: tune me
+    public static final int kWristCruiseVelocity = 2500; //todo: tune me
+    public static final int kWristAcceleration = 2500; //2000 //todo: tune me
+    public static final double kWristRampRate = 0.001;
+    public static final double kAutoWristRampRate = 0.01;
 
     // Do not change anything after this line unless you rewire the robot and
     // update the spreadsheet!
     // Port assignments should match up with the spreadsheet here:
-    // https://docs.google.com/spreadsheets/d/12_Mrd6xKmxCjKtsWNpWZDqT7ukrB9-1KKFCuRrO4aPM/edit#gid=0
+    // https://docs.google.com/spreadsheets/d/179YszqnEWPWInuHUrYJnYL48LUL7LUhZrnvmNu1kujE/edit#gid=0
 
     /* I/O */
     // (Note that if multiple talons are dedicated to a mechanism, any sensors
@@ -135,7 +146,6 @@ public class Constants {
     public static final int kFollowerRearAChannelId = 4;
     public static final int kFollowerRearBChannelId = 5;
 
-
     // Intake
     public static final int kIntakeLeftMasterId = 9;
     public static final int kIntakeRightMasterId = 10;
@@ -155,13 +165,11 @@ public class Constants {
     public static final int kIntakeCloseSolenoid = 10;
     public static final int kIntakeClampSolenoid = 9;
     public static final int kForkliftDeploySolenoid = 7;  // CURRENTLY 6 ON PRACTICE!!!
-    public static final int kHangerReleaseSolenoid = 6;
     public static final int kFollowerWheelSolenoid = 11;
     public static final int kElevatorShifterSolenoidId = 8;
-
-    // Sensors
-    public static final int kIntakeLeftBannerId = 9; //todo: get actual value
-    public static final int kIntakeRightBannerId = 10; //todo: get actual value
+    public static final int kUnlockHookSolenoid = 4;
+    public static final int kJazzHandsSolenoid = 5;
+    public static final int kKickstandSolenoid = 3;
 
     // Control Board
     public static final boolean kUseGamepadForDriving = false;
@@ -172,10 +180,18 @@ public class Constants {
     public static final int kMainThrottleJoystickPort = 0;
     public static final int kMainTurnJoystickPort = 1;
     public static final double kJoystickThreshold = 0.5;
+    public static final double kJoystickJogThreshold = 0.4;
 
     // Height in in after applying turn factor.
     public static final double kElevatorLowSensitivityThreshold = 50.0;
     public static final double kLowSensitivityFactor = 1.0 / 4.0;
+
+    public static final double kElevatorThrottleDeadband = 0.3;
+    public static final double kMinShootTimeSec = 0.2;
+    public static final double kJazzHandsEpsilon = 2.5;
+
+    public static final double kKickstandToggleRumbleTime = 0.5;
+    public static final double kKickstandDelay = 1.0;
 
     /**
      * Make an {@link Solenoid} instance for the single-number ID of the solenoid

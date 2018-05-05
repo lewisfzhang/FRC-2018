@@ -48,8 +48,7 @@ public class PurePursuitController<S extends ITranslation2d<S>> implements IPath
         if (arc.length < Util.kEpsilon) {
             return new Twist2d(0.0, 0.0, 0.0);
         } else {
-            return new Twist2d(arc.length, 0.0,
-                    getDirection(current_pose, iterator_.getState()) * arc.length / arc.radius);
+            return new Twist2d(arc.length, 0.0,arc.length / arc.radius);
         }
     }
 
@@ -57,25 +56,26 @@ public class PurePursuitController<S extends ITranslation2d<S>> implements IPath
         return done_;
     }
 
-    protected int getDirection(Pose2d pose, S point) {
+    protected static <S extends ITranslation2d<S>> double getDirection(Pose2d pose, S point) {
         Translation2d poseToPoint = new Translation2d(pose.getTranslation(), point.getTranslation());
         Translation2d robot = pose.getRotation().toTranslation();
         double cross = robot.x() * poseToPoint.y() - robot.y() * poseToPoint.x();
-        return (cross < 0) ? -1 : 1; // if robot < pose turn left
+        return (cross < 0.) ? -1. : 1.; // if robot < pose turn left
     }
 
-    protected static class Arc<S extends ITranslation2d<S>> {
+    public static class Arc<S extends ITranslation2d<S>> {
         public Translation2d center;
         public double radius;
         public double length;
 
         public Arc(final Pose2d pose, final S point) {
-            center = getCenter(pose, point);
+            center = findCenter(pose, point);
             radius = new Translation2d(center, point.getTranslation()).norm();
-            length = getLength(pose, point, center, radius);
+            length = findLength(pose, point, center, radius);
+            radius *= getDirection(pose, point);
         }
 
-        protected Translation2d getCenter(Pose2d pose, S point) {
+        protected Translation2d findCenter(Pose2d pose, S point) {
             final Translation2d poseToPointHalfway = pose.getTranslation().interpolate(point.getTranslation(), 0.5);
             final Rotation2d normal = pose.getTranslation().inverse().translateBy(poseToPointHalfway).direction()
                     .normal();
@@ -89,12 +89,7 @@ public class PurePursuitController<S extends ITranslation2d<S>> implements IPath
             return normalFromPose.intersection(perpendicularBisector);
         }
 
-        protected double getRadius(Pose2d pose, S point) {
-            Translation2d center = getCenter(pose, point);
-            return new Translation2d(center, point.getTranslation()).norm();
-        }
-
-        protected double getLength(Pose2d pose, S point, Translation2d center, double radius) {
+        protected double findLength(Pose2d pose, S point, Translation2d center, double radius) {
             if (radius < Double.MAX_VALUE) {
                 final Translation2d centerToPoint = new Translation2d(center, point.getTranslation());
                 final Translation2d centerToPose = new Translation2d(center, pose.getTranslation());

@@ -38,7 +38,11 @@ public class ReflectingCSVWriter<T> {
                 line.append(", ");
             }
             try {
-                line.append(field.get(value).toString());
+                if (CSVWritable.class.isAssignableFrom(field.getType())) {
+                    line.append(((CSVWritable)field.get(value)).toCSV());
+                } else {
+                    line.append(field.get(value).toString());
+                }
             } catch (IllegalArgumentException e) {
                 e.printStackTrace();
             } catch (IllegalAccessException e) {

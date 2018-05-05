@@ -12,9 +12,9 @@ public class DriveCharacterizationTest {
 
     @Test
     public void test() {
-        final double ks = Math.random(); //0.75;
-        final double kv = Math.random(); //0.2;
-        final double ka = Math.random(); //0.15;
+        final double ks = 0.75; //Math.random();
+        final double kv = 0.2; //Math.random();
+        final double ka = 0.15; //Math.random();
 
         List<DriveCharacterization.VelocityDataPoint> velocityData = new ArrayList<>();
         // generate velocity data points

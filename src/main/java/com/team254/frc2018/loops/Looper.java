@@ -13,7 +13,7 @@ import java.util.List;
  * This code runs all of the robot's loops. Loop objects are stored in a List object. They are started when the robot
  * powers up and stopped after the match.
  */
-public class Looper {
+public class Looper implements ILooper {
     public final double kPeriod = Constants.kLooperDt;
 
     private boolean running_;
@@ -48,6 +48,7 @@ public class Looper {
         loops_ = new ArrayList<>();
     }
 
+    @Override
     public synchronized void register(Loop loop) {
         synchronized (taskRunningLock_) {
             loops_.add(loop);

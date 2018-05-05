@@ -11,19 +11,18 @@ public class AutoModeExecuter {
 
     public void setAutoMode(AutoModeBase new_auto_mode) {
         m_auto_mode = new_auto_mode;
+        m_thread = new Thread(new CrashTrackingRunnable() {
+            @Override
+            public void runCrashTracked() {
+                if (m_auto_mode != null) {
+                    m_auto_mode.run();
+                }
+            }
+        });
     }
 
     public void start() {
-        if (m_thread == null) {
-            m_thread = new Thread(new CrashTrackingRunnable() {
-                @Override
-                public void runCrashTracked() {
-                    if (m_auto_mode != null) {
-                        m_auto_mode.run();
-                    }
-                }
-            });
-
+        if (m_thread != null) {
             m_thread.start();
         }
 
@@ -37,4 +36,7 @@ public class AutoModeExecuter {
         m_thread = null;
     }
 
+    public AutoModeBase getAutoMode() {
+        return m_auto_mode;
+    }
 }

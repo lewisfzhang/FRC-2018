@@ -71,8 +71,9 @@ public class TimedState<S extends State<S>> implements State<TimedState<S>> {
         if (delta_t < 0.0) {
             return other.interpolate(this, 1.0 - x);
         }
+        boolean reversing = velocity() < 0.0 || (Util.epsilonEquals(velocity(), 0.0) && acceleration() < 0.0);
         final double new_v = velocity() + acceleration() * delta_t;
-        final double new_s = velocity() * delta_t + .5 * acceleration() * delta_t * delta_t;
+        final double new_s = (reversing ? -1.0 : 1.0) * (velocity() * delta_t + .5 * acceleration() * delta_t * delta_t);
         // System.out.println("x: " + x + " , new_t: " + new_t + ", new_s: " + new_s + " , distance: " + state()
         // .distance(other.state()));
         return new TimedState<S>(state().interpolate(other.state(), new_s / state().distance(other.state())),
@@ -87,7 +88,9 @@ public class TimedState<S extends State<S>> implements State<TimedState<S>> {
     }
 
     @Override
-    public boolean isEqual(TimedState<S> other) {
-        return state().isEqual(other.state()) && Util.epsilonEquals(t(), other.t());
+    public boolean equals(final Object other) {
+        if (other == null || !(other instanceof TimedState<?>)) return false;
+        TimedState<?> ts = (TimedState<?>)other;
+        return state().equals(ts.state()) && Util.epsilonEquals(t(), ts.t());
     }
 }

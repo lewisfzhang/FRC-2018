@@ -6,19 +6,7 @@ public class IntakeState {
         CLOSED,
         CLAMPED
     }
-    public static class LEDState {
-        public LEDState() {}
 
-        public LEDState(double b, double g, double r) {
-            blue = b;
-            green = g;
-            red = r;
-        }
-
-        public double blue;
-        public double green;
-        public double red;
-    }
     public JawState jawState = JawState.CLOSED;
     public double leftMotor = 0;
     public double rightMotor = 0;
@@ -28,13 +16,16 @@ public class IntakeState {
     public boolean leftCubeSensorTriggered = false;
     public boolean rightCubeSensorTriggered = false;
 
-    public LEDState ledState = new LEDState();
+    // Kinda doesn't belong, but avoid cyclic dependencies...
+    public boolean kickStandEngaged = true;
+
+    public TimedLEDState ledState = TimedLEDState.StaticLEDState.kStaticOff;
 
     public void setPower(double power) {
         leftMotor = rightMotor = power;
     }
 
     public boolean seesCube() {
-        return leftCubeSensorTriggered || rightCubeSensorTriggered;
+        return leftCubeSensorTriggered && rightCubeSensorTriggered;
     }
 }

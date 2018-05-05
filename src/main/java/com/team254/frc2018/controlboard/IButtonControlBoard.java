@@ -23,15 +23,15 @@ public interface IButtonControlBoard {
 
     boolean getGoToStowHeight();
 
-    //Jog Elevator
-    boolean getJogElevatorUp();
+    boolean getBackwardsModifier();
 
-    boolean getJogElevatorDown();
+    boolean getAutoHeightModifier();
+
+    //Jog Elevator
+    double getJogElevatorThrottle();
 
     //Jog Wrist
-    boolean getJogWristBack();
-
-    boolean getJogWristForward();
+    double getJogWristThrottle();
 
     //Intake
     boolean getRunIntake();
@@ -39,4 +39,19 @@ public interface IButtonControlBoard {
     boolean getIntakePosition();
 
     void setRumble(boolean on);
+
+    //Climbing
+    boolean getEnableHangMode();
+
+    double getElevatorThrottle();
+
+    boolean getDeployForks();
+
+    boolean getElevatorLowShift();
+    boolean getElevatorHighShift();
+
+    // LED
+    boolean getWantsCubeLEDBlink();
+
+    boolean getToggleKickstand();
 }

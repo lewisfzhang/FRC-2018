@@ -64,10 +64,13 @@ public class IntegrationTest {
         // Create a differential drive.
         final double kRobotMassKg = 60.0;
         final double kRobotAngularInertia = 80.0;
+        final double kRobotAngularDrag = 0.0;
         final double kWheelRadius = Units.inches_to_meters(2.0);
-        DCMotorTransmission transmission = new DCMotorTransmission(1.0 / 0.143, (kWheelRadius * kWheelRadius *
-                kRobotMassKg / 2.0) / 0.12, 0.75);
-        DifferentialDrive drive = new DifferentialDrive(kRobotMassKg, kRobotAngularInertia, kWheelRadius, Units
+        DCMotorTransmission transmission = new DCMotorTransmission(
+                1.0 / 0.143,
+                (kWheelRadius * kWheelRadius * kRobotMassKg / 2.0) / 0.02,
+                0.8);
+        DifferentialDrive drive = new DifferentialDrive(kRobotMassKg, kRobotAngularInertia, kRobotAngularDrag, kWheelRadius, Units
                 .inches_to_meters(26.0 / 2.0), transmission, transmission);
 
         // Create the constraint that the robot must be able to traverse the trajectory without ever applying more
@@ -76,7 +79,7 @@ public class IntegrationTest {
                 DifferentialDriveDynamicsConstraint<>(drive, 10.0);
 
         // Generate the timed trajectory.
-        Trajectory<TimedState<Pose2dWithCurvature>> timed_trajectory = TimingUtil.timeParameterizeTrajectory(new
+        Trajectory<TimedState<Pose2dWithCurvature>> timed_trajectory = TimingUtil.timeParameterizeTrajectory(false, new
                         DistanceView<>(trajectory), 2.0, Arrays.asList(drive_constraints),
                 0.0, 0.0, 12.0 * 14.0, 12.0 * 10.0);
 

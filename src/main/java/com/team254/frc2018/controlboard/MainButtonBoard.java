@@ -69,26 +69,26 @@ public class MainButtonBoard implements IButtonControlBoard {
         return mButtonBoard.getRawButton(10);
     }
 
-    //Jog Elevator
     @Override
-    public boolean getJogElevatorUp() {
-    		return mButtonBoard.getRawButton(1);
+    public boolean getBackwardsModifier() {
+        return false;
     }
 
     @Override
-    public boolean getJogElevatorDown() {
-        return mButtonBoard.getRawButton(2);
+    public boolean getAutoHeightModifier() {
+        return mButtonBoard.getRawButton(8);
+    }
+
+    //Jog Elevator
+    @Override
+    public double getJogElevatorThrottle() {
+        return mButtonBoard.getRawButton(1) ? 0.5 : (mButtonBoard.getRawButton(2) ? -0.5 : 0.0);
     }
 
     //Jog Wrist
     @Override
-    public boolean getJogWristBack() {
-        return mButtonBoard.getRawButton(11);
-    }
-
-    @Override
-    public boolean getJogWristForward() {
-        return mButtonBoard.getRawButton(12);
+    public double getJogWristThrottle() {
+        return mButtonBoard.getRawButton(11) ? 0.5 : (mButtonBoard.getRawButton(12) ? -0.5 : 0.0);
     }
 
     //Intake
@@ -104,4 +104,38 @@ public class MainButtonBoard implements IButtonControlBoard {
     public void setRumble(boolean on) {
 
     }
+
+    //Climbing
+    @Override
+    public boolean getEnableHangMode() {
+        return false;
+    }
+
+    @Override
+    public double getElevatorThrottle() {
+        return 0.0;
+    }
+
+    @Override
+    public boolean getDeployForks() {
+        return false;
+    }
+
+    @Override
+    public boolean getElevatorLowShift() {
+        return false;
+    }
+
+    @Override
+    public boolean getElevatorHighShift() {
+        return false;
+    }
+
+    @Override
+    public boolean getWantsCubeLEDBlink() {
+        return false;
+    }
+
+    @Override
+    public boolean getToggleKickstand() { return false; }
 }

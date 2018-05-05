@@ -1,13 +1,14 @@
 package com.team254.lib.geometry;
 
+import com.team254.lib.util.CSVWritable;
 import com.team254.lib.util.Interpolable;
 
-public interface State<S> extends Interpolable<S> {
-    public double distance(final S other);
+public interface State<S> extends Interpolable<S>, CSVWritable {
+    double distance(final S other);
 
-    public boolean isEqual(final S other);
+    boolean equals(final Object other);
 
-    public String toString();
+    String toString();
 
-    public String toCSV();
+    String toCSV();
 }

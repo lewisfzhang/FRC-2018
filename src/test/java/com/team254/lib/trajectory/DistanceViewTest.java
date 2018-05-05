@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DistanceViewTest {
     public static final double kTestEpsilon = Util.kEpsilon;
@@ -30,9 +29,9 @@ public class DistanceViewTest {
         assertEquals(0.0, distance_view.first_interpolant(), kTestEpsilon);
         assertEquals(84.0, distance_view.last_interpolant(), kTestEpsilon);
 
-        assertTrue(distance_view.sample(0.0).state().isEqual(waypoints.get(0)));
-        assertTrue(distance_view.sample(12.0).state().isEqual(waypoints.get(0).interpolate(waypoints.get(1), 0.5)));
-        assertTrue(distance_view.sample(72.0).state().isEqual(waypoints.get(3).interpolate(waypoints.get(4), 0.5)));
+        assertEquals(waypoints.get(0), distance_view.sample(0.0).state());
+        assertEquals(waypoints.get(0).interpolate(waypoints.get(1), 0.5), distance_view.sample(12.0).state());
+        assertEquals(waypoints.get(3).interpolate(waypoints.get(4), 0.5), distance_view.sample(72.0).state());
     }
 
 }

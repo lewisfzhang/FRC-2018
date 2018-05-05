@@ -1,6 +1,5 @@
 package com.team254.frc2018.states;
 
-import com.team254.frc2018.statemachines.IntakeStateMachine;
 import com.team254.lib.util.Util;
 
 public class SuperstructureState {

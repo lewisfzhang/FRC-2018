@@ -71,32 +71,32 @@ public class GamepadButtonControlBoard implements IButtonControlBoard {
         return mJoystick.getRawButton(6);
     }
 
-    //Jog Elevator
     @Override
-    public boolean getJogElevatorUp() {
-        return -mJoystick.getRawAxis(5) > Constants.kJoystickThreshold;
+    public boolean getBackwardsModifier() {
+        return mJoystick.getRawAxis(3) > Constants.kJoystickThreshold;
     }
 
     @Override
-    public boolean getJogElevatorDown() {
-        return -mJoystick.getRawAxis(5) < -Constants.kJoystickThreshold;
+    public boolean getAutoHeightModifier() {
+        return false;
+    }
+
+    //Jog Elevator
+    @Override
+    public double getJogElevatorThrottle() {
+        return -mJoystick.getRawAxis(5);
     }
 
     //Jog Wrist
     @Override
-    public boolean getJogWristBack() {
-        return mJoystick.getRawAxis(0) < -Constants.kJoystickThreshold;
-    }
-
-    @Override
-    public boolean getJogWristForward() {
-        return mJoystick.getRawAxis(0) > Constants.kJoystickThreshold;
+    public double getJogWristThrottle() {
+        return mJoystick.getRawAxis(0);
     }
 
     //Intake
     @Override
     public boolean getIntakePosition() {
-        return mJoystick.getRawAxis(2) != 0;
+        return mJoystick.getRawAxis(2) > Constants.kJoystickThreshold;
     }
 
     @Override
@@ -108,4 +108,38 @@ public class GamepadButtonControlBoard implements IButtonControlBoard {
     public void setRumble(boolean on) {
         mJoystick.setRumble(GenericHID.RumbleType.kRightRumble, on ? 1.0 : 0);
     }
+
+    //Climbing
+    @Override
+    public boolean getEnableHangMode() {
+        return mJoystick.getRawButton(8) && mJoystick.getRawButton(7);
+    }
+
+    @Override
+    public double getElevatorThrottle() {
+        return mJoystick.getRawAxis(5);
+    }
+
+    @Override
+    public boolean getDeployForks() {
+        return mJoystick.getRawButton(5) && mJoystick.getRawButton(6);
+    }
+
+    @Override
+    public boolean getElevatorLowShift() {
+        return mJoystick.getRawButton(3);
+    }
+
+    @Override
+    public boolean getElevatorHighShift() {
+        return mJoystick.getRawButton(4);
+    }
+
+    @Override
+    public boolean getWantsCubeLEDBlink() {
+        return mJoystick.getRawButton(8);
+    }
+
+    @Override
+    public boolean getToggleKickstand() { return mJoystick.getRawButton(7); }
 }

@@ -101,6 +101,7 @@ public class Pose2d implements IPose2d<Pose2d> {
      * @param other The other transform.
      * @return This transform * other
      */
+    @Override
     public Pose2d transformBy(final Pose2d other) {
         return new Pose2d(translation_.translateBy(other.translation_.rotateBy(rotation_)),
                 rotation_.rotateBy(other.rotation_));
@@ -197,12 +198,18 @@ public class Pose2d implements IPose2d<Pose2d> {
     }
 
     @Override
-    public boolean isEqual(final Pose2d other) {
-        return epsilonEquals(other, Util.kEpsilon);
+    public boolean equals(final Object other) {
+        if (other == null || !(other instanceof Pose2d)) return false;
+        return epsilonEquals((Pose2d)other, Util.kEpsilon);
     }
 
     @Override
     public Pose2d getPose() {
         return this;
+    }
+
+    @Override
+    public Pose2d mirror() {
+        return new Pose2d(new Translation2d(getTranslation().x(), -getTranslation().y()), getRotation().inverse());
     }
 }

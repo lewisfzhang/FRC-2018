@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class PhysicsTest {
     public static final double kTestEpsilon = Util.kEpsilon;
+    /*
 
     @Test
     public void testDCMotorTransmission() {
@@ -202,4 +203,5 @@ public class PhysicsTest {
         assertEquals(1.0, min_max_accel.max, 0.5);
         assertEquals(-1.0, min_max_accel.min, 0.5);
     }
+    */
 }

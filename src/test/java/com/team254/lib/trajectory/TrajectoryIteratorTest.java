@@ -26,33 +26,33 @@ public class TrajectoryIteratorTest {
         // Initial conditions.
         assertEquals(0.0, iterator.getProgress(), kTestEpsilon);
         assertEquals(3.0, iterator.getRemainingProgress(), kTestEpsilon);
-        assertTrue(iterator.getState().isEqual(kWaypoints.get(0)));
+        assertEquals(kWaypoints.get(0), iterator.getState());
         assertFalse(iterator.isDone());
 
         // Advance forward.
-        assertTrue(iterator.preview(0.5).state().isEqual(kWaypoints.get(0).interpolate(kWaypoints.get(1), 0.5)));
-        assertTrue(iterator.advance(0.5).state().isEqual(kWaypoints.get(0).interpolate(kWaypoints.get(1), 0.5)));
+        assertEquals(kWaypoints.get(0).interpolate(kWaypoints.get(1), 0.5), iterator.preview(0.5).state());
+        assertEquals(kWaypoints.get(0).interpolate(kWaypoints.get(1), 0.5), iterator.advance(0.5).state());
         assertEquals(0.5, iterator.getProgress(), kTestEpsilon);
         assertEquals(2.5, iterator.getRemainingProgress(), kTestEpsilon);
         assertFalse(iterator.isDone());
 
         // Advance backwards.
-        assertTrue(iterator.preview(-0.25).state().isEqual(kWaypoints.get(0).interpolate(kWaypoints.get(1), 0.25)));
-        assertTrue(iterator.advance(-0.25).state().isEqual(kWaypoints.get(0).interpolate(kWaypoints.get(1), 0.25)));
+        assertEquals(kWaypoints.get(0).interpolate(kWaypoints.get(1), 0.25), iterator.preview(-0.25).state());
+        assertEquals(kWaypoints.get(0).interpolate(kWaypoints.get(1), 0.25), iterator.advance(-0.25).state());
         assertEquals(0.25, iterator.getProgress(), kTestEpsilon);
         assertEquals(2.75, iterator.getRemainingProgress(), kTestEpsilon);
         assertFalse(iterator.isDone());
 
         // Advance past end.
-        assertTrue(iterator.preview(5.0).state().isEqual(kWaypoints.get(3)));
-        assertTrue(iterator.advance(5.0).state().isEqual(kWaypoints.get(3)));
+        assertEquals(kWaypoints.get(3), iterator.preview(5.0).state());
+        assertEquals(kWaypoints.get(3), iterator.advance(5.0).state());
         assertEquals(3.0, iterator.getProgress(), kTestEpsilon);
         assertEquals(0.0, iterator.getRemainingProgress(), kTestEpsilon);
         assertTrue(iterator.isDone());
 
         // Advance past beginning.
-        assertTrue(iterator.preview(-5.0).state().isEqual(kWaypoints.get(0)));
-        assertTrue(iterator.advance(-5.0).state().isEqual(kWaypoints.get(0)));
+        assertEquals(kWaypoints.get(0), iterator.preview(-5.0).state());
+        assertEquals(kWaypoints.get(0), iterator.advance(-5.0).state());
         assertEquals(0.0, iterator.getProgress(), kTestEpsilon);
         assertEquals(3.0, iterator.getRemainingProgress(), kTestEpsilon);
         assertFalse(iterator.isDone());

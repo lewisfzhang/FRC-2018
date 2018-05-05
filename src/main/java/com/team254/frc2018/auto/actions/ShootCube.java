@@ -1,21 +1,28 @@
 package com.team254.frc2018.auto.actions;
 
 import com.team254.frc2018.statemachines.IntakeStateMachine;
-import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.frc2018.subsystems.Intake;
-import com.team254.frc2018.subsystems.Superstructure;
 import edu.wpi.first.wpilibj.Timer;
 
 public class ShootCube implements Action {
     private static final Intake mIntake = Intake.getInstance();
-    private static final double kShootTime = 0.75;
+    private static final double kShootTime = 0.35;
+    private final double mPower;
 
     private double mStartTime;
+
+    public ShootCube(double power) {
+        mPower = power;
+    }
+
+    public ShootCube() {
+        mPower = 1.0;
+    }
 
     @Override
     public void start() {
         mStartTime = Timer.getFPGATimestamp();
-        mIntake.shoot();
+        mIntake.shoot(mPower);
     }
 
     @Override

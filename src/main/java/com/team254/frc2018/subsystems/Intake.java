@@ -3,10 +3,11 @@ package com.team254.frc2018.subsystems;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.team254.frc2018.Constants;
+import com.team254.frc2018.loops.ILooper;
 import com.team254.frc2018.loops.Loop;
-import com.team254.frc2018.loops.Looper;
 import com.team254.frc2018.statemachines.IntakeStateMachine;
 import com.team254.frc2018.states.IntakeState;
+import com.team254.frc2018.states.SuperstructureConstants;
 import com.team254.lib.drivers.TalonSRXChecker;
 import com.team254.lib.drivers.TalonSRXFactory;
 import edu.wpi.first.wpilibj.Solenoid;
@@ -20,24 +21,15 @@ public class Intake extends Subsystem {
     private final static boolean kClamped = false;
 
     private static Intake mInstance;
-
-    public synchronized static Intake getInstance() {
-        if (mInstance == null) {
-            mInstance = new Intake();
-        }
-        return mInstance;
-    }
-
     private final Solenoid mCloseSolenoid, mClampSolenoid; //open->false, false; close->true, false; clamp->true, true;
     private final TalonSRX mLeftMaster, mRightMaster;
-
     private final CarriageCanifier mCanifier = CarriageCanifier.getInstance();
-
+    private final LED mLED = LED.getInstance();
     private IntakeStateMachine.WantedAction mWantedAction = IntakeStateMachine.WantedAction.WANT_MANUAL;
     private IntakeState.JawState mJawState;
-
     private IntakeState mCurrentState = new IntakeState();
     private IntakeStateMachine mStateMachine = new IntakeStateMachine();
+    private boolean mKickStandEngaged = true;
 
     private Intake() {
         mCloseSolenoid = Constants.makeSolenoidForId(Constants.kIntakeCloseSolenoid);
@@ -56,8 +48,15 @@ public class Intake extends Subsystem {
         mRightMaster.enableVoltageCompensation(true);
     }
 
+    public synchronized static Intake getInstance() {
+        if (mInstance == null) {
+            mInstance = new Intake();
+        }
+        return mInstance;
+    }
+
     @Override
-    public void outputToSmartDashboard() {
+    public void outputTelemetry() {
         SmartDashboard.putBoolean("LeftBanner", getLeftBannerSensor());
         SmartDashboard.putBoolean("RightBanner", getRightBannerSensor());
     }
@@ -75,16 +74,22 @@ public class Intake extends Subsystem {
         mCurrentState.rightCubeSensorTriggered = getRightBannerSensor();
         mCurrentState.wristAngle = Wrist.getInstance().getAngle();
         mCurrentState.wristSetpoint = Wrist.getInstance().getSetpoint();
+        mCurrentState.kickStandEngaged = mKickStandEngaged;
         return mCurrentState;
     }
 
     @Override
-    public void registerEnabledLoops(Looper enabledLooper) {
+    public void registerEnabledLoops(ILooper enabledLooper) {
         Loop loop = new Loop() {
 
 
             @Override
             public void onStart(double timestamp) {
+                if (hasCube()) {
+                    mWantedAction = IntakeStateMachine.WantedAction.WANT_CUBE;
+                } else {
+                    mWantedAction = IntakeStateMachine.WantedAction.WANT_MANUAL;
+                }
 
             }
 
@@ -92,7 +97,8 @@ public class Intake extends Subsystem {
             public void onLoop(double timestamp) {
 
                 synchronized (Intake.this) {
-                    IntakeState newState = mStateMachine.update(Timer.getFPGATimestamp(), mWantedAction, getCurrentState());
+                    IntakeState newState = mStateMachine.update(Timer.getFPGATimestamp(), mWantedAction,
+                            getCurrentState());
                     updateActuatorFromState(newState);
                 }
 
@@ -133,11 +139,16 @@ public class Intake extends Subsystem {
         mLeftMaster.set(ControlMode.PercentOutput, state.leftMotor);
         mRightMaster.set(ControlMode.PercentOutput, state.rightMotor);
         setJaw(state.jawState);
-        setLEDsOn(state.ledState.blue, state.ledState.green, state.ledState.red);
+
+        mLED.setIntakeLEDState(state.ledState);
     }
 
     public synchronized boolean hasCube() {
         return getLeftBannerSensor() || getRightBannerSensor();
+    }
+
+    public synchronized boolean definitelyHasCube() {
+        return getLeftBannerSensor() && getRightBannerSensor();
     }
 
     private boolean getLeftBannerSensor() {
@@ -146,16 +157,6 @@ public class Intake extends Subsystem {
 
     private boolean getRightBannerSensor() {
         return mCanifier.getRightBannerSensor();
-    }
-
-    public void setLEDsOn(double blue, double green, double red) {
-        // A: Blue
-        // B: Green
-        // C: Red
-        mCanifier.setLEDColor(red, green, blue);
-//        mCanifier.setLEDOutput(blue, CANifier.LEDChannel.LEDChannelA);
-//        mCanifier.setLEDOutput(green, CANifier.LEDChannel.LEDChannelB);
-//        mCanifier.setLEDOutput(red, CANifier.LEDChannel.LEDChannelC);
     }
 
     public IntakeState.JawState getJawState() {
@@ -170,9 +171,9 @@ public class Intake extends Subsystem {
         mStateMachine.setWantedPower(power);
     }
 
-    public synchronized void shoot() {
+    public synchronized void shoot(double power) {
         setState(IntakeStateMachine.WantedAction.WANT_MANUAL);
-        setPower(IntakeStateMachine.kShootSetpoint);
+        setPower(power);
     }
 
     public IntakeStateMachine.WantedAction getWantedAction() {
@@ -190,6 +191,24 @@ public class Intake extends Subsystem {
     public synchronized void clampJaw() {
         mStateMachine.setWantedJawState(IntakeState.JawState.CLAMPED);
     }
+
+    public synchronized void forceClampJaw(boolean clamp) {
+        mStateMachine.forceClampJaw(clamp);
+    }
+
+    public synchronized void closeJaw() {
+        mStateMachine.setWantedJawState(IntakeState.JawState.CLOSED);
+    }
+
+    public synchronized void setKickStand(boolean engaged) {
+        mKickStandEngaged = engaged;
+    }
+
+    @Override
+    public void readPeriodicInputs() {}
+
+    @Override
+    public void writePeriodicOutputs() {}
 
     @Override
     public boolean checkSystem() {

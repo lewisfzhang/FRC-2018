@@ -40,6 +40,11 @@ public class ControlBoard implements IControlBoard {
     }
 
     @Override
+    public boolean getPoopyShoot() {
+        return mDriveControlBoard.getPoopyShoot();
+    }
+
+    @Override
     public boolean getQuickTurn() {
         return mDriveControlBoard.getQuickTurn();
     }
@@ -103,23 +108,23 @@ public class ControlBoard implements IControlBoard {
     }
 
     @Override
-    public boolean getJogElevatorUp() {
-        return mButtonControlBoard.getJogElevatorUp();
+    public boolean getBackwardsModifier() {
+        return mButtonControlBoard.getBackwardsModifier();
     }
 
     @Override
-    public boolean getJogElevatorDown() {
-        return mButtonControlBoard.getJogElevatorDown();
+    public boolean getAutoHeightModifier() {
+        return mButtonControlBoard.getAutoHeightModifier();
     }
 
     @Override
-    public boolean getJogWristBack() {
-        return mButtonControlBoard.getJogWristBack();
+    public double getJogElevatorThrottle() {
+        return mButtonControlBoard.getJogElevatorThrottle();
     }
 
     @Override
-    public boolean getJogWristForward() {
-        return mButtonControlBoard.getJogWristForward();
+    public double getJogWristThrottle() {
+        return mButtonControlBoard.getJogWristThrottle();
     }
 
     @Override
@@ -133,16 +138,42 @@ public class ControlBoard implements IControlBoard {
     }
 
     @Override
-    public boolean getHangMode() {
-        return false;
+    public boolean getEnableHangMode() {
+        return mButtonControlBoard.getEnableHangMode();
     }
 
     @Override
-    public double getHangThrottle() {
-        return 0.0;
+    public double getElevatorThrottle() {
+        return mButtonControlBoard.getElevatorThrottle();
     }
 
+    @Override
+    public boolean getDeployForks() {
+        return mButtonControlBoard.getDeployForks();
+    }
+
+    @Override
+    public boolean getElevatorLowShift() {
+        return mButtonControlBoard.getElevatorLowShift();
+    }
+
+    @Override
+    public boolean getElevatorHighShift() {
+        return mButtonControlBoard.getElevatorHighShift();
+    }
+
+    @Override
+    public boolean getWantsCubeLEDBlink() {
+        return mButtonControlBoard.getWantsCubeLEDBlink();
+    }
+
+    @Override
     public void setRumble(boolean on) {
         mButtonControlBoard.setRumble(on);
+    }
+
+    @Override
+    public boolean getToggleKickstand() {
+        return mButtonControlBoard.getToggleKickstand();
     }
 }
