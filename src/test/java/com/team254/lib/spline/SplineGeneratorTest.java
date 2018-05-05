@@ -16,7 +16,7 @@ public class SplineGeneratorTest {
         // Create the test spline
         Pose2d p1 = new Pose2d(new Translation2d(0, 0), new Rotation2d());
         Pose2d p2 = new Pose2d(new Translation2d(15, 10), new Rotation2d(1, -5, true));
-        Spline s = new QuinticHermiteSpline(p1, p2);
+        Spline s = new CubicHermiteSpline(p1, p2);
 
         List<Pose2dWithCurvature> samples = SplineGenerator.parameterizeSpline(s);
 

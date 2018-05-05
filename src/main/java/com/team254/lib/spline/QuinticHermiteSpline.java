@@ -15,12 +15,22 @@ public class QuinticHermiteSpline extends Spline {
 
     private double x0, x1, dx0, dx1, ddx0, ddx1, y0, y1, dy0, dy1, ddy0, ddy1;
     private double ax, bx, cx, dx, ex, fx, ay, by, cy, dy, ey, fy;
+    private ReferenceFrame mReferenceFrame;
+
+    /**
+     * @param p0 The starting pose of the spline
+     * @param p1 The ending pose of the spline
+     */
+    public QuinticHermiteSpline(Pose2d p0, Pose2d p1) {
+        this(p0, p1, ReferenceFrame.NONE);
+    }
 
     /**
      * @param p0  The starting pose of the spline
      * @param p1  The ending pose of the spline
+     * @param ref ReferenceFrame of this spline
      */
-    public QuinticHermiteSpline(Pose2d p0, Pose2d p1) {
+    public QuinticHermiteSpline(Pose2d p0, Pose2d p1, ReferenceFrame ref) {
         double scale = 1.2 * p0.getTranslation().distance(p1.getTranslation());
         x0 = p0.getTranslation().x();
         x1 = p1.getTranslation().x();
@@ -34,6 +44,7 @@ public class QuinticHermiteSpline extends Spline {
         dy1 = p1.getRotation().sin() * scale;
         ddy0 = 0;
         ddy1 = 0;
+        mReferenceFrame = ref;
 
         computeCoefficients();
     }
