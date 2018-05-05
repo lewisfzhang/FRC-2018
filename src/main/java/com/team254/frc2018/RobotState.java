@@ -1,7 +1,6 @@
 package com.team254.frc2018;
 
 import com.team254.frc2018.subsystems.Drive;
-import com.team254.frc2018.subsystems.Limelight;
 import com.team254.lib.geometry.Pose2d;
 import com.team254.lib.geometry.Rotation2d;
 import com.team254.lib.geometry.Translation2d;
@@ -23,14 +22,6 @@ public class RobotState {
     }
 
     private static final int kObservationBufferSize = 100;
-    private static final double kMinStability = 0.5;
-    private final double exchange_differential_height_ = 24.5;
-    private final Rotation2d limelight_pitch_ = Rotation2d.fromDegrees(32.0);
-    private GoalTracker exchange_tracker_ = new GoalTracker();
-
-    private static final Pose2d kVehicleToLidar = new Pose2d(
-            new Translation2d(Constants.kLidarXOffset, Constants.kLidarYOffset), Rotation2d.fromDegrees(Constants
-            .kLidarYawAngleDegrees));
 
     private static final Pose2d kVehicleToLidar = new Pose2d(
             new Translation2d(Constants.kLidarXOffset, Constants.kLidarYOffset), Rotation2d.fromDegrees(Constants
@@ -123,52 +114,5 @@ public class RobotState {
         SmartDashboard.putNumber("Robot Pose Y", odometry.getTranslation().y());
         SmartDashboard.putNumber("Robot Pose Theta", odometry.getRotation().getDegrees());
         SmartDashboard.putNumber("Robot Linear Velocity", vehicle_velocity_measured_.dx);
-    }
-
-
-    public void addVisionUpdate(double timestamp, List<Limelight.TargetInfo> vision_update) {
-        if (vision_update.size() != 2)
-            return;
-        List<Translation2d> positions = new ArrayList<>();
-        Pose2d robot_pose = getFieldToVehicle(timestamp).transformBy(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(180.0)));
-        for (Limelight.TargetInfo target : vision_update) {
-            Pose2d robot_to_target = new Pose2d(getTranslationFromTargetInfo(target), Rotation2d.identity());
-            positions.add(robot_pose.transformBy(robot_to_target).getTranslation());
-        }
-        exchange_tracker_.update(timestamp, getTargetPoseFromPositions(positions.get(0), positions.get(1), robot_pose));
-    }
-
-    public void addVisionUpdate(double timestamp, Limelight.TargetInfo vision_update) {
-        Pose2d robot_pose = getFieldToVehicle(timestamp).transformBy(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(180.0)));
-        Pose2d robot_to_target = new Pose2d(getTranslationFromTargetInfo(vision_update), Rotation2d.identity());
-        Pose2d target_pos = new Pose2d(robot_pose.transformBy(robot_to_target).getTranslation(), Rotation2d.identity());
-        exchange_tracker_.update(timestamp, target_pos);
-    }
-
-    public synchronized Optional<Pose2d> getFieldToExchange() {
-        List<GoalTracker.TrackReport> reports = exchange_tracker_.getTracks();
-        if (!reports.isEmpty() && reports.get(0).stability > kMinStability) {
-            GoalTracker.TrackReport report = reports.get(0);
-            return Optional.of(report.field_to_goal);
-        } else {
-            return Optional.empty();
-        }
-    }
-
-    private Translation2d getTranslationFromTargetInfo(Limelight.TargetInfo target) {
-        Rotation2d vertical_angle_to_target = (limelight_pitch_.rotateBy(target.verticalAngle));
-        double perpendicular_distance = exchange_differential_height_ / vertical_angle_to_target.tan();
-        double scalar = perpendicular_distance / target.horizontalAngle.cos();
-        return target.horizontalAngle.toTranslation().scale(scalar);
-    }
-
-    private static Pose2d getTargetPoseFromPositions(Translation2d left, Translation2d right, Pose2d robot_pose) {
-        Translation2d target_center = left.interpolate(right, 0.5);
-        Translation2d target_to_robot = new Translation2d(target_center, robot_pose.getTranslation());
-        Rotation2d parallel_angle = new Rotation2d(new Translation2d(left, right), true);
-        target_to_robot = target_to_robot.rotateBy(parallel_angle.inverse());
-        Rotation2d target_direction = Rotation2d.fromDegrees(90.0 * Math.signum(target_to_robot.y()));
-        Rotation2d target_rotation = target_direction.rotateBy(parallel_angle);
-        return new Pose2d(target_center, target_rotation);
     }
 }
